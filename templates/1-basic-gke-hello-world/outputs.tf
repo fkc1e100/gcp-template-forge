@@ -11,5 +11,5 @@ output "cluster_endpoint" {
 }
 
 output "hello_world_service_ip" {
-  value = kubernetes_service.hello_world.status[0].load_balancer[0].ingress[0].ip
+  value = try(kubernetes_service.hello_world.status[0].load_balancer[0].ingress[0].ip, "Provisioning...")
 }

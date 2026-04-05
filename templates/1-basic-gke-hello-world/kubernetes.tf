@@ -1,5 +1,12 @@
 data "google_client_config" "default" {}
 
+locals {
+  app_name = "hello-world"
+}
+
+# NOTE: Configuring the Kubernetes provider using attributes from a cluster created in the same 
+# state can lead to errors during plan. For production use, it is best to separate the cluster
+# infrastructure and the Kubernetes resource management into different states.
 provider "kubernetes" {
   host                   = "https://${google_container_cluster.hello_world_cluster.endpoint}"
   token                  = data.google_client_config.default.access_token
@@ -8,16 +15,16 @@ provider "kubernetes" {
 
 resource "kubernetes_namespace" "hello_world" {
   metadata {
-    name = "hello-world"
+    name = local.app_name
   }
 }
 
 resource "kubernetes_deployment" "hello_world" {
   metadata {
-    name      = "hello-world"
+    name      = local.app_name
     namespace = kubernetes_namespace.hello_world.metadata[0].name
     labels = {
-      app = "hello-world"
+      app = local.app_name
     }
   }
 
@@ -26,21 +33,32 @@ resource "kubernetes_deployment" "hello_world" {
 
     selector {
       match_labels = {
-        app = "hello-world"
+        app = local.app_name
       }
     }
 
     template {
       metadata {
         labels = {
-          app = "hello-world"
+          app = local.app_name
         }
       }
 
       spec {
         container {
           image = "us-docker.pkg.dev/google-samples/containers/gke/hello-app:1.0"
-          name  = "hello-world"
+          name  = local.app_name
+
+          security_context {
+            allow_privilege_escalation = false
+            read_only_root_filesystem  = true
+            run_as_non_root            = true
+            run_as_user                = 1000
+
+            capabilities {
+              drop = ["ALL"]
+            }
+          }
 
           port {
             container_port = 8080
@@ -64,13 +82,13 @@ resource "kubernetes_deployment" "hello_world" {
 
 resource "kubernetes_service" "hello_world" {
   metadata {
-    name      = "hello-world-service"
+    name      = "${local.app_name}-service"
     namespace = kubernetes_namespace.hello_world.metadata[0].name
   }
 
   spec {
     selector = {
-      app = kubernetes_deployment.hello_world.metadata[0].labels.app
+      app = local.app_name
     }
 
     port {

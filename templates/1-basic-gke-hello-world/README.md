@@ -5,14 +5,27 @@ This template provisions a basic GKE Standard cluster and deploys a simple hello
 ## Resources Created
 
 - VPC Network and Subnetwork
-- GKE Standard Cluster with a single node pool (e2-medium nodes)
+- GKE Standard Cluster with a single node pool (e2-medium Spot nodes)
+- Dedicated Service Account for GKE Nodes
 - Kubernetes Namespace: `hello-world`
 - Kubernetes Deployment: `hello-world` (using `google-samples/hello-app:1.0`)
 - Kubernetes Service: `hello-world-service` (Type: `LoadBalancer`)
 
-## Deployment
+## Infrastructure as Code Options
 
-1. Initialize Terraform:
+This template provides two ways to deploy the infrastructure:
+
+1.  **Terraform:** Standard Terraform configurations located in the root of this template directory.
+2.  **Config Connector (KCC):** Kubernetes-native manifests located in the `kcc/` directory. These can be used with Google Cloud Config Controller or a GKE cluster with Config Connector installed.
+
+## Deployment (Terraform)
+
+1. Authenticate with Google Cloud:
+   ```bash
+   gcloud auth application-default login
+   ```
+
+2. Initialize Terraform:
    ```bash
    terraform init
    ```
