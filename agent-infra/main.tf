@@ -27,7 +27,7 @@ resource "google_compute_subnetwork" "forge_subnet" {
 
 # GKE Standard Cluster
 resource "google_container_cluster" "template_forge_cluster" {
-  name     = "gcp-template-forge"
+  name     = "gcp-template-forge-tf"
   location = "us-central1"
 
   # We need Standard to support privileged pods for security scanning
@@ -118,4 +118,21 @@ resource "google_service_account_iam_member" "forge_builder_workload_identity" {
   service_account_id = google_service_account.forge_builder.name
   role               = "roles/iam.workloadIdentityUser"
   member             = "serviceAccount:gca-gke-2025.svc.id.goog[cnrm-system/cnrm-controller-manager-hello-world]"
+}
+
+resource "google_service_account" "forge_kcc_admin" {
+  account_id   = "forge-kcc-admin"
+  display_name = "Forge KCC Admin Service Account"
+}
+
+resource "google_project_iam_member" "forge_kcc_admin_owner" {
+  project = "gca-gke-2025"
+  role    = "roles/owner"
+  member  = "serviceAccount:${google_service_account.forge_kcc_admin.email}"
+}
+
+resource "google_service_account_iam_member" "forge_kcc_admin_workload_identity" {
+  service_account_id = google_service_account.forge_kcc_admin.name
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "serviceAccount:gca-gke-2025.svc.id.goog[cnrm-system/cnrm-controller-manager-forge-management]"
 }

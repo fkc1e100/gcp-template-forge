@@ -1,0 +1,39 @@
+apiVersion: container.cnrm.cloud.google.com/v1beta1
+kind: ContainerCluster
+metadata:
+  name: gcp-template-forge-kcc
+  namespace: forge-management
+spec:
+  location: us-central1
+  initialNodeCount: 1
+  nodeConfig:
+    machineType: e2-standard-4
+    serviceAccountRef:
+      external: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+  networkRef:
+    external: forge-network
+  subnetworkRef:
+    external: forge-subnet
+  workloadIdentityConfig:
+    workloadPool: gca-gke-2025.svc.id.goog
+  gatewayApiConfig:
+    channel: CHANNEL_STANDARD
+  releaseChannel:
+    channel: REGULAR
+---
+apiVersion: container.cnrm.cloud.google.com/v1beta1
+kind: ContainerNodePool
+metadata:
+  name: primary-nodes
+  namespace: forge-management
+spec:
+  clusterRef:
+    name: gcp-template-forge-kcc
+  location: us-central1
+  autoscaling:
+    minNodeCount: 1
+    maxNodeCount: 3
+  nodeConfig:
+    machineType: e2-standard-4
+    serviceAccountRef:
+      external: forge-builder@gca-gke-2025.iam.gserviceaccount.com
