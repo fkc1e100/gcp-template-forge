@@ -1,3 +1,10 @@
+terraform {
+  backend "gcs" {
+    bucket = "gke-gca-2025-forge-tf-state"
+    prefix = "terraform/state"
+  }
+}
+
 provider "google" {
   project = "gca-gke-2025"
   region  = "us-central1"
@@ -33,6 +40,10 @@ resource "google_container_cluster" "template_forge_cluster" {
 
   release_channel {
     channel = "REGULAR"
+  }
+
+  gateway_api_config {
+    channel = "CHANNEL_STANDARD"
   }
 }
 
@@ -72,6 +83,7 @@ locals {
     "roles/gkehub.admin",
     "roles/resourcemanager.projectIamAdmin",
     "roles/secretmanager.secretAccessor",
+    "roles/storage.admin",
   ]
 }
 
@@ -89,4 +101,10 @@ resource "google_storage_bucket" "validation_tf_state" {
   versioning {
     enabled = true
   }
+}
+
+resource "google_service_account_iam_member" "syncer_workload_identity" {
+  service_account_id = google_service_account.forge_builder.name
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "serviceAccount:gca-gke-2025.svc.id.goog[repo-agent-system/syncer]"
 }
