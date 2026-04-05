@@ -27,9 +27,11 @@ spec:
   resourceRef:
     apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
     kind: Project
-    name: YOUR_PROJECT_ID # Or use external-id if project is managed by KCC
+    external: YOUR_PROJECT_ID
   role: roles/logging.logWriter
-  member: serviceAccount:hello-world-nodes-sa@YOUR_PROJECT_ID.iam.gserviceaccount.com
+  memberRef:
+    kind: IAMServiceAccount
+    name: hello-world-nodes-sa
 ---
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPolicyMember
@@ -39,9 +41,11 @@ spec:
   resourceRef:
     apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
     kind: Project
-    name: YOUR_PROJECT_ID
+    external: YOUR_PROJECT_ID
   role: roles/monitoring.metricWriter
-  member: serviceAccount:hello-world-nodes-sa@YOUR_PROJECT_ID.iam.gserviceaccount.com
+  memberRef:
+    kind: IAMServiceAccount
+    name: hello-world-nodes-sa
 ---
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPolicyMember
@@ -51,9 +55,11 @@ spec:
   resourceRef:
     apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
     kind: Project
-    name: YOUR_PROJECT_ID
+    external: YOUR_PROJECT_ID
   role: roles/monitoring.viewer
-  member: serviceAccount:hello-world-nodes-sa@YOUR_PROJECT_ID.iam.gserviceaccount.com
+  memberRef:
+    kind: IAMServiceAccount
+    name: hello-world-nodes-sa
 ---
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPolicyMember
@@ -63,8 +69,9 @@ spec:
   resourceRef:
     apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
     kind: Project
-    name: YOUR_PROJECT_ID
+    external: YOUR_PROJECT_ID
   role: roles/stackdriver.resourceMetadata.writer
-  member: serviceAccount:hello-world-nodes-sa@YOUR_PROJECT_ID.iam.gserviceaccount.com
-# Note: KCC often uses external-id or you need to know the project.
-# Since this is a template, we use placeholders.
+  memberRef:
+    kind: IAMServiceAccount
+    name: hello-world-nodes-sa
+# Note: KCC uses external project ID if project is NOT managed by KCC
