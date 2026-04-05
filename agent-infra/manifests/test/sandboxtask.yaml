@@ -1,0 +1,13 @@
+apiVersion: custom.agents.x-k8s.io/v1alpha1
+kind: SandboxTask
+metadata:
+  name: test-task-provisioning
+  namespace: overseer-system
+spec:
+  sandboxName: test-sandbox-provisioning
+  type: script
+  script: |
+    echo "This is a test task running in the sandbox!"
+    echo "Date: $(date)"
+    echo "I am $(whoami)"
+    echo "Finished test task!"
