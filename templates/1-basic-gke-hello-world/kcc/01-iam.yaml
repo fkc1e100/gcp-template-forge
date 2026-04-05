@@ -27,11 +27,11 @@ spec:
   resourceRef:
     apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
     kind: Project
-    external: gca-gke-2025
+    external: YOUR_PROJECT_ID
   role: roles/logging.logWriter
-  memberRef:
-    kind: IAMServiceAccount
-    name: hello-world-nodes-sa
+  memberFrom:
+    serviceAccountRef:
+      name: hello-world-nodes-sa
 ---
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPolicyMember
@@ -41,11 +41,11 @@ spec:
   resourceRef:
     apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
     kind: Project
-    external: gca-gke-2025
+    external: YOUR_PROJECT_ID
   role: roles/monitoring.metricWriter
-  memberRef:
-    kind: IAMServiceAccount
-    name: hello-world-nodes-sa
+  memberFrom:
+    serviceAccountRef:
+      name: hello-world-nodes-sa
 ---
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPolicyMember
@@ -55,11 +55,11 @@ spec:
   resourceRef:
     apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
     kind: Project
-    external: gca-gke-2025
+    external: YOUR_PROJECT_ID
   role: roles/monitoring.viewer
-  memberRef:
-    kind: IAMServiceAccount
-    name: hello-world-nodes-sa
+  memberFrom:
+    serviceAccountRef:
+      name: hello-world-nodes-sa
 ---
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPolicyMember
@@ -69,9 +69,9 @@ spec:
   resourceRef:
     apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
     kind: Project
-    external: gca-gke-2025
+    external: YOUR_PROJECT_ID
   role: roles/stackdriver.resourceMetadata.writer
-  memberRef:
-    kind: IAMServiceAccount
-    name: hello-world-nodes-sa
+  memberFrom:
+    serviceAccountRef:
+      name: hello-world-nodes-sa
 # Note: KCC uses external project ID if project is NOT managed by KCC

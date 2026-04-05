@@ -1,7 +1,8 @@
-data "google_client_config" "default" {}
-
 locals {
   app_name = "hello-world"
+  labels = {
+    "app.kubernetes.io/name" = local.app_name
+  }
 }
 
 # NOTE: Configuring the Kubernetes provider using attributes from a cluster created in the same 
@@ -9,8 +10,13 @@ locals {
 # infrastructure and the Kubernetes resource management into different states.
 provider "kubernetes" {
   host                   = "https://${google_container_cluster.hello_world_cluster.endpoint}"
-  token                  = data.google_client_config.default.access_token
   cluster_ca_certificate = base64decode(google_container_cluster.hello_world_cluster.master_auth[0].cluster_ca_certificate)
+  
+  exec {
+    api_version = "client.authentication.k8s.io/v1beta1"
+    command     = "gcloud"
+    args        = ["config", "config-helper", "--format=json"]
+  }
 }
 
 resource "kubernetes_namespace" "hello_world" {
@@ -23,25 +29,19 @@ resource "kubernetes_deployment" "hello_world" {
   metadata {
     name      = local.app_name
     namespace = kubernetes_namespace.hello_world.metadata[0].name
-    labels = {
-      app = local.app_name
-    }
+    labels    = local.labels
   }
 
   spec {
-    replicas = 1
+    replicas = 2
 
     selector {
-      match_labels = {
-        app = local.app_name
-      }
+      match_labels = local.labels
     }
 
     template {
       metadata {
-        labels = {
-          app = local.app_name
-        }
+        labels = local.labels
       }
 
       spec {
@@ -62,6 +62,24 @@ resource "kubernetes_deployment" "hello_world" {
 
           port {
             container_port = 8080
+          }
+
+          liveness_probe {
+            http_get {
+              path = "/"
+              port = 8080
+            }
+            initial_delay_seconds = 3
+            period_seconds        = 3
+          }
+
+          readiness_probe {
+            http_get {
+              path = "/"
+              port = 8080
+            }
+            initial_delay_seconds = 3
+            period_seconds        = 3
           }
 
           resources {
@@ -87,9 +105,7 @@ resource "kubernetes_service" "hello_world" {
   }
 
   spec {
-    selector = {
-      app = local.app_name
-    }
+    selector = local.labels
 
     port {
       port        = 80

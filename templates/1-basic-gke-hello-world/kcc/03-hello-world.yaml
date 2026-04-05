@@ -23,16 +23,16 @@ metadata:
   name: hello-world
   namespace: hello-world
   labels:
-    app: hello-world
+    app.kubernetes.io/name: hello-world
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
-      app: hello-world
+      app.kubernetes.io/name: hello-world
   template:
     metadata:
       labels:
-        app: hello-world
+        app.kubernetes.io/name: hello-world
     spec:
       containers:
       - name: hello-world
@@ -47,6 +47,18 @@ spec:
               - ALL
         ports:
         - containerPort: 8080
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 3
+          periodSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 3
+          periodSeconds: 3
         resources:
           limits:
             cpu: 500m
@@ -62,7 +74,7 @@ metadata:
   namespace: hello-world
 spec:
   selector:
-    app: hello-world
+    app.kubernetes.io/name: hello-world
   ports:
   - protocol: TCP
     port: 80

@@ -30,14 +30,20 @@ This template provides two ways to deploy the infrastructure:
    terraform init
    ```
 
-3. Plan the deployment:
+3. Provide your Project ID:
+   You can provide the `project_id` variable in a few ways:
+   - Create a `terraform.tfvars` file: `project_id = "YOUR_PROJECT_ID"`
+   - Set an environment variable: `export TF_VAR_project_id="YOUR_PROJECT_ID"`
+   - Pass it on the command line: `-var="project_id=YOUR_PROJECT_ID"`
+
+4. Plan the deployment:
    ```bash
-   terraform plan -var="project_id=gca-gke-2025"
+   terraform plan
    ```
 
-4. Apply the changes:
+5. Apply the changes:
    ```bash
-   terraform apply -var="project_id=gca-gke-2025"
+   terraform apply
    ```
 
    > **Note:** Configuring the Kubernetes provider using attributes from a cluster created in the same state can sometimes cause issues during the initial `plan`. For production, we recommend separating infrastructure and workload management.
@@ -46,10 +52,10 @@ This template provides two ways to deploy the infrastructure:
 
 1. Ensure you have Config Connector installed in your cluster or are using Google Cloud Config Controller.
 
-2. Replace `gca-gke-2025` in the manifests with your actual GCP project ID:
+2. Replace `YOUR_PROJECT_ID` in the manifests with your actual GCP project ID:
    ```bash
    # On macOS/Linux
-   find kcc/ -type f -exec sed -i 's/gca-gke-2025/your-actual-project-id/g' {} +
+   find kcc/ -type f -exec sed -i 's/YOUR_PROJECT_ID/your-actual-project-id/g' {} +
    ```
 
 3. Apply the manifests:
@@ -88,7 +94,7 @@ Access the application in your browser at `http://<external_ip>`.
 
 **For Terraform:**
 ```bash
-terraform destroy -var="project_id=gca-gke-2025"
+terraform destroy
 ```
 
 **For KCC:**

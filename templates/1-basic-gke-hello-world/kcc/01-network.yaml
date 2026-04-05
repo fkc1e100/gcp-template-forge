@@ -28,6 +28,7 @@ metadata:
 spec:
   ipCidrRange: 10.10.0.0/24
   region: us-central1
+  privateIpGoogleAccess: true
   networkRef:
     name: hello-world-network
   secondaryIpRange:

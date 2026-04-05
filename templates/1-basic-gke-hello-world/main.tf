@@ -1,3 +1,18 @@
+terraform {
+  required_version = ">= 1.0"
+
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = "~> 6.0"
+    }
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "~> 2.30"
+    }
+  }
+}
+
 provider "google" {
   project = var.project_id
   region  = var.region
@@ -11,10 +26,11 @@ resource "google_compute_network" "hello_world_network" {
 
 # Subnet
 resource "google_compute_subnetwork" "hello_world_subnet" {
-  name          = "${var.cluster_name}-subnet"
-  ip_cidr_range = "10.10.0.0/24"
-  region        = var.region
-  network       = google_compute_network.hello_world_network.id
+  name                       = "${var.cluster_name}-subnet"
+  ip_cidr_range              = "10.10.0.0/24"
+  region                     = var.region
+  network                    = google_compute_network.hello_world_network.id
+  private_ip_google_access   = true
 
   secondary_ip_range {
     range_name    = "pods"
@@ -48,6 +64,10 @@ resource "google_container_cluster" "hello_world_cluster" {
   ip_allocation_policy {
     cluster_secondary_range_name  = "pods"
     services_secondary_range_name = "services"
+  }
+
+  workload_identity_config {
+    workload_pool = "${var.project_id}.svc.id.goog"
   }
 }
 
@@ -100,5 +120,9 @@ resource "google_container_node_pool" "hello_world_nodes" {
       "https://www.googleapis.com/auth/monitoring",
       "https://www.googleapis.com/auth/devstorage.read_only"
     ]
+
+    shielded_instance_config {
+      enable_secure_boot = true
+    }
   }
 }
