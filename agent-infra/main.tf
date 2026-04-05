@@ -46,6 +46,16 @@ resource "google_container_cluster" "template_forge_cluster" {
   gateway_api_config {
     channel = "CHANNEL_STANDARD"
   }
+
+  addons_config {
+    config_connector_config {
+      enabled = true
+    }
+  }
+
+  workload_identity_config {
+    workload_pool = "gca-gke-2025.svc.id.goog"
+  }
 }
 
 # Node Pool for Standard Cluster
