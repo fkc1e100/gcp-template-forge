@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pr-review-api
+  namespace: repo-agent-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pr-review-api
+  template:
+    metadata:
+      labels:
+        app: pr-review-api
+    spec:
+      serviceAccountName: pr-review-api
+      containers:
+      - name: api
+        image: ko://repo-agent/review-ui/images/review-api # This will be built locally
+        ports:
+        - containerPort: 8080
+        env:
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: github-token
+              key: token
+              optional: true # For local development
+        - name: GITHUB_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: github-token
+              key: github-client-id
+              optional: true
+        - name: GITHUB_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: github-token
+              key: github-client-secret
+              optional: true
+        - name: GITHUB_ALLOWED_USERS
+          valueFrom:
+            configMapKeyRef:
+              name: allowed-users
+              key: GITHUB_ALLOWED_USERS
+              optional: true
+        - name: GITHUB_ADMIN_USERS
+          valueFrom:
+            configMapKeyRef:
+              name: allowed-users
+              key: GITHUB_ADMIN_USERS
+              optional: true
+        - name: REPO_SANDBOX_IMAGE
+          value: ko://repo-agent/images/repo-sandbox
+        - name: CONFIGDIR_CLI_IMAGE
+          value: ko://repo-agent/configdir/cmd/configdir-cli

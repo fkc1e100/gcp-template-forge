@@ -1,0 +1,94 @@
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: repowatch-controller
+  namespace: repo-agent-system
+  labels:
+    app: repowatch-controller
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: repowatch-controller
+subjects:
+- kind: ServiceAccount
+  name: repowatch-controller
+  namespace: repo-agent-system
+roleRef:
+  kind: ClusterRole
+  name: repo-agent-controller
+  apiGroup: rbac.authorization.k8s.io
+
+---
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: repowatch-controller
+  namespace: repo-agent-system
+  labels:
+    app: repowatch-controller
+spec:
+  selector:
+    app: repowatch-controller
+  ports:
+  - port: 80
+    targetPort: 8080
+    protocol: TCP
+
+---
+
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: repowatch-controller
+  namespace: repo-agent-system
+  labels:
+    app: repowatch-controller
+spec:
+  serviceName: repowatch-controller
+  replicas: 1
+  selector:
+    matchLabels:
+      app: repowatch-controller
+  template:
+    metadata:
+      labels:
+        app: repowatch-controller
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        fsGroup: 65532
+      serviceAccountName: repowatch-controller
+      containers:
+      - name: repowatch-controller
+        image: ghcr.io/gke-labs/gemini-for-kubernetes-development/repowatch-controller:latest
+        args:
+        - --concurrent-reconciles=5
+        env:
+        - name: REPO_SANDBOX_IMAGE
+          value: ghcr.io/gke-labs/gemini-for-kubernetes-development/repo-sandbox:latest
+        - name: CONFIGDIR_CLI_IMAGE
+          value: ghcr.io/gke-labs/gemini-for-kubernetes-development/configdir-cli:latest
+        - name: GITHUB_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: github-token
+              key: github-client-id
+              optional: true
+        - name: GITHUB_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: github-token
+              key: github-client-secret
+              optional: true
+        resources:
+          limits:
+            cpu: 2000m
+            memory: 2048Mi
+          requests:
+            cpu: 500m
+            memory: 1024Mi
