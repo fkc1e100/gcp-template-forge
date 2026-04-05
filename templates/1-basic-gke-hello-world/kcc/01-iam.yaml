@@ -1,0 +1,77 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMServiceAccount
+metadata:
+  name: hello-world-nodes-sa
+spec:
+  displayName: Service Account for GKE Nodes
+---
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMPolicyMember
+metadata:
+  name: nodes-log-writer
+spec:
+  resourceRef:
+    apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
+    kind: Project
+    external: YOUR_PROJECT_ID
+  role: roles/logging.logWriter
+  memberRef:
+    kind: IAMServiceAccount
+    name: hello-world-nodes-sa
+---
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMPolicyMember
+metadata:
+  name: nodes-metric-writer
+spec:
+  resourceRef:
+    apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
+    kind: Project
+    external: YOUR_PROJECT_ID
+  role: roles/monitoring.metricWriter
+  memberRef:
+    kind: IAMServiceAccount
+    name: hello-world-nodes-sa
+---
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMPolicyMember
+metadata:
+  name: nodes-monitoring-viewer
+spec:
+  resourceRef:
+    apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
+    kind: Project
+    external: YOUR_PROJECT_ID
+  role: roles/monitoring.viewer
+  memberRef:
+    kind: IAMServiceAccount
+    name: hello-world-nodes-sa
+---
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMPolicyMember
+metadata:
+  name: nodes-resource-metadata-writer
+spec:
+  resourceRef:
+    apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
+    kind: Project
+    external: YOUR_PROJECT_ID
+  role: roles/stackdriver.resourceMetadata.writer
+  memberRef:
+    kind: IAMServiceAccount
+    name: hello-world-nodes-sa
+# Note: KCC uses external project ID if project is NOT managed by KCC
