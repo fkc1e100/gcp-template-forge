@@ -29,6 +29,8 @@ resource "google_container_cluster" "template_forge_cluster" {
   network          = google_compute_network.forge_network.name
   subnetwork       = google_compute_subnetwork.forge_subnet.name
 
+  deletion_protection = false
+
   release_channel {
     channel = "REGULAR"
   }

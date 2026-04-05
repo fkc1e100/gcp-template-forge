@@ -32,12 +32,12 @@ This template provides two ways to deploy the infrastructure:
 
 3. Plan the deployment:
    ```bash
-   terraform plan -var="project_id=YOUR_PROJECT_ID"
+   terraform plan -var="project_id=gca-gke-2025"
    ```
 
 4. Apply the changes:
    ```bash
-   terraform apply -var="project_id=YOUR_PROJECT_ID"
+   terraform apply -var="project_id=gca-gke-2025"
    ```
 
    > **Note:** Configuring the Kubernetes provider using attributes from a cluster created in the same state can sometimes cause issues during the initial `plan`. For production, we recommend separating infrastructure and workload management.
@@ -46,10 +46,10 @@ This template provides two ways to deploy the infrastructure:
 
 1. Ensure you have Config Connector installed in your cluster or are using Google Cloud Config Controller.
 
-2. Replace `YOUR_PROJECT_ID` in the manifests with your actual GCP project ID:
+2. Replace `gca-gke-2025` in the manifests with your actual GCP project ID:
    ```bash
    # On macOS/Linux
-   find kcc/ -type f -exec sed -i 's/YOUR_PROJECT_ID/your-actual-project-id/g' {} +
+   find kcc/ -type f -exec sed -i 's/gca-gke-2025/your-actual-project-id/g' {} +
    ```
 
 3. Apply the manifests:
@@ -88,7 +88,7 @@ Access the application in your browser at `http://<external_ip>`.
 
 **For Terraform:**
 ```bash
-terraform destroy -var="project_id=YOUR_PROJECT_ID"
+terraform destroy -var="project_id=gca-gke-2025"
 ```
 
 **For KCC:**

@@ -27,7 +27,7 @@ spec:
   resourceRef:
     apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
     kind: Project
-    external: YOUR_PROJECT_ID
+    external: gca-gke-2025
   role: roles/logging.logWriter
   memberRef:
     kind: IAMServiceAccount
@@ -41,7 +41,7 @@ spec:
   resourceRef:
     apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
     kind: Project
-    external: YOUR_PROJECT_ID
+    external: gca-gke-2025
   role: roles/monitoring.metricWriter
   memberRef:
     kind: IAMServiceAccount
@@ -55,7 +55,7 @@ spec:
   resourceRef:
     apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
     kind: Project
-    external: YOUR_PROJECT_ID
+    external: gca-gke-2025
   role: roles/monitoring.viewer
   memberRef:
     kind: IAMServiceAccount
@@ -69,7 +69,7 @@ spec:
   resourceRef:
     apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
     kind: Project
-    external: YOUR_PROJECT_ID
+    external: gca-gke-2025
   role: roles/stackdriver.resourceMetadata.writer
   memberRef:
     kind: IAMServiceAccount

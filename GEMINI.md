@@ -49,3 +49,13 @@ If stuck, do not retry blindly. Follow these escalation paths:
 - **Documentation:** Every generated template MUST include an auto-generated `README.md`.
 - **Git Flow:** Do not commit to `main`. Use feature branches and PRs for human review.
 - **Secrets:** **ZERO hardcoded secrets.** Use Secret Manager or Workload Identity.
+
+### 4. Standard GKE Design Patterns
+When generating templates, follow these established best practices:
+- **KCC IAM:** Use `memberRef` instead of `member` for `IAMPolicyMember` to avoid email dependency.
+- **KCC Resources:** Use `external: YOUR_PROJECT_ID` in `resourceRef` when referencing a project.
+- **Compute:** Use `spot: true` and `machineType: e2-medium` (or equivalent) for sandbox node pools.
+- **Terraform:** Always set `deletion_protection = false` for clusters in templates to simplify teardown.
+- **Networking:** Use secondary IP ranges for pods and services in GKE clusters.
+- **Security:** Ensure `securityContext` is defined for workloads (non-root, drop capabilities).
+- **Structure:** Put Terraform files (`main.tf`, `variables.tf`, etc.) in the template root, and KCC manifests in a `kcc/` subdirectory.
