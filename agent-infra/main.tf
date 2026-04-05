@@ -47,12 +47,6 @@ resource "google_container_cluster" "template_forge_cluster" {
     channel = "CHANNEL_STANDARD"
   }
 
-  addons_config {
-    config_connector_config {
-      enabled = true
-    }
-  }
-
   workload_identity_config {
     workload_pool = "gca-gke-2025.svc.id.goog"
   }
@@ -118,4 +112,10 @@ resource "google_service_account_iam_member" "syncer_workload_identity" {
   service_account_id = google_service_account.forge_builder.name
   role               = "roles/iam.workloadIdentityUser"
   member             = "serviceAccount:gca-gke-2025.svc.id.goog[repo-agent-system/syncer]"
+}
+
+resource "google_service_account_iam_member" "forge_builder_workload_identity" {
+  service_account_id = google_service_account.forge_builder.name
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "serviceAccount:gca-gke-2025.svc.id.goog[cnrm-system/cnrm-controller-manager-hello-world]"
 }

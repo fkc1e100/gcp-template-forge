@@ -78,12 +78,30 @@ jobs:
           cluster_name: gcp-template-forge
           location: us-central1
           
+      - name: Install KCC Operator
+        run: |
+          gcloud storage cp gs://configconnector-operator/latest/release-bundle.tar.gz release-bundle.tar.gz
+          tar zxvf release-bundle.tar.gz
+          kubectl apply -f operator-system/configconnector-operator.yaml
+          
+          # Create ConfigConnector resource
+          cat <<EOF | kubectl apply -f -
+          apiVersion: core.cnrm.cloud.google.com/v1beta1
+          kind: ConfigConnector
+          metadata:
+            name: configconnector.core.cnrm.cloud.google.com
+          spec:
+            mode: namespaced
+            stateIntoSpec: Absent
+          EOF
+
       - name: Deploy KCC
         run: |
           for dir in templates/*/kcc; do
             if [ -d "$dir" ]; then
               echo "Applying KCC manifests from $dir"
               kubectl apply -f "$dir"/
+              kubectl annotate namespace hello-world cnrm.cloud.google.com/project-id=gca-gke-2025 --overwrite
             fi
           done
           
