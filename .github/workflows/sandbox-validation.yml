@@ -1,15 +1,136 @@
-name: Sandbox Validation Placeholder
+name: Sandbox Validation
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, 'feature/**' ]
   pull_request:
     branches: [ main ]
 
 jobs:
-  build:
+  create-infra:
+    name: Create Infrastructure
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Run a one-line script
-        run: echo "This is a placeholder for sandbox validation."
+      
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+          
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        
+      - name: Terraform Init
+        run: terraform init
+        working-directory: agent-infra
+        
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+        working-directory: agent-infra
+        
+  deploy-helm:
+    name: Deploy Helm Charts
+    needs: create-infra
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+          
+      - name: Get GKE Credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: gcp-template-forge
+          location: us-central1
+          
+      - name: Deploy Helm
+        run: |
+          for dir in templates/*/helm; do
+            if [ -d "$dir" ]; then
+              echo "Deploying Helm charts from $dir"
+              for chart in "$dir"/*; do
+                if [ -d "$chart" ]; then
+                  helm upgrade --install $(basename "$chart") "$chart"
+                fi
+              done
+            fi
+          done
+          
+  deploy-kcc:
+    name: Deploy KCC Manifests
+    needs: create-infra
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+          
+      - name: Get GKE Credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: gcp-template-forge
+          location: us-central1
+          
+      - name: Deploy KCC
+        run: |
+          for dir in templates/*/kcc; do
+            if [ -d "$dir" ]; then
+              echo "Applying KCC manifests from $dir"
+              kubectl apply -f "$dir"/
+            fi
+          done
+          
+  verify:
+    name: Verify Deployment
+    needs: [deploy-helm, deploy-kcc]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+          
+      - name: Get GKE Credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: gcp-template-forge
+          location: us-central1
+          
+      - name: Run Verification
+        run: |
+          echo "Running verification tests..."
+          # Add actual verification commands here, e.g., checking pods status
+          kubectl get pods -A
+          
+  teardown:
+    name: Teardown Infrastructure
+    needs: verify
+    runs-on: ubuntu-latest
+    if: success()
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+          
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        
+      - name: Terraform Init
+        run: terraform init
+        working-directory: agent-infra
+        
+      - name: Terraform Destroy
+        run: terraform destroy -auto-approve
+        working-directory: agent-infra
