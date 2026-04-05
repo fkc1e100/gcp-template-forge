@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: allowed-users
+  namespace: repo-agent-system
+data:
+  GITHUB_ALLOWED_USERS: ""
+  GITHUB_ADMIN_USERS: "barney-s,xiaoweim,aditya-shantanu"

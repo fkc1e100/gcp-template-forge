@@ -1,0 +1,139 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.19.0
+  name: overseers.overseer.gemini.google.com
+spec:
+  group: overseer.gemini.google.com
+  names:
+    kind: Overseer
+    listKind: OverseerList
+    plural: overseers
+    singular: overseer
+  scope: Cluster
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        properties:
+          apiVersion:
+            type: string
+          kind:
+            type: string
+          metadata:
+            type: object
+          spec:
+            properties:
+              chores:
+                properties:
+                  exclude:
+                    items:
+                      type: string
+                    type: array
+                  include:
+                    items:
+                      type: string
+                    type: array
+                  mode:
+                    default: enabled
+                    enum:
+                    - enabled
+                    - disabled
+                    - dryrun
+                    type: string
+                type: object
+              configdirRef:
+                type: string
+              ephemeralStorage:
+                default: 10Gi
+                type: string
+              extensions:
+                items:
+                  properties:
+                    ref:
+                      type: string
+                    source:
+                      type: string
+                  required:
+                  - source
+                  type: object
+                type: array
+              geminiAPIKeySecretName:
+                type: string
+              image:
+                type: string
+              issuePrompt:
+                type: string
+              maxActiveIssues:
+                format: int32
+                type: integer
+              maxActiveReviews:
+                format: int32
+                type: integer
+              repo:
+                properties:
+                  issueMode:
+                    default: enabled
+                    enum:
+                    - enabled
+                    - disabled
+                    - dryrun
+                    type: string
+                  prMode:
+                    default: enabled
+                    enum:
+                    - enabled
+                    - disabled
+                    - dryrun
+                    type: string
+                  reviewMode:
+                    default: enabled
+                    enum:
+                    - enabled
+                    - disabled
+                    - dryrun
+                    type: string
+                type: object
+              repoURL:
+                type: string
+              review:
+                properties:
+                  ignoreFiles:
+                    items:
+                      type: string
+                    type: array
+                  maxReviewFiles:
+                    default: 150
+                    type: integer
+                  prompt:
+                    type: string
+                  severityThreshold:
+                    enum:
+                    - LOW
+                    - MEDIUM
+                    - HIGH
+                    - CRITICAL
+                    type: string
+                type: object
+              robotAccount:
+                type: string
+              workspaceDiskSize:
+                default: 10Gi
+                type: string
+            required:
+            - repoURL
+            type: object
+          status:
+            properties:
+              message:
+                type: string
+              overseerStatus:
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

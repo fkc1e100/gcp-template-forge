@@ -1,0 +1,16 @@
+name: New GKE Architecture Request
+description: Request a new GKE architecture template based on natural language intent.
+labels: [intent-capture]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please describe your desired GKE architecture in natural language.
+  - type: textarea
+    id: intent
+    attributes:
+      label: Architecture Intent
+      description: "Example: I need a private GKE cluster that can run a high-traffic web app connecting to Cloud SQL."
+      placeholder: Describe your requirements here...
+    validations:
+      required: true
