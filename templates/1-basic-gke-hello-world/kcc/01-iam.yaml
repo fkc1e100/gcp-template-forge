@@ -29,6 +29,42 @@ spec:
     kind: Project
     name: YOUR_PROJECT_ID # Or use external-id if project is managed by KCC
   role: roles/logging.logWriter
-  member: serviceAccount:hello-world-nodes-sa.YOUR_PROJECT_ID.iam.gserviceaccount.com
+  member: serviceAccount:hello-world-nodes-sa@YOUR_PROJECT_ID.iam.gserviceaccount.com
+---
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMPolicyMember
+metadata:
+  name: nodes-metric-writer
+spec:
+  resourceRef:
+    apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
+    kind: Project
+    name: YOUR_PROJECT_ID
+  role: roles/monitoring.metricWriter
+  member: serviceAccount:hello-world-nodes-sa@YOUR_PROJECT_ID.iam.gserviceaccount.com
+---
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMPolicyMember
+metadata:
+  name: nodes-monitoring-viewer
+spec:
+  resourceRef:
+    apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
+    kind: Project
+    name: YOUR_PROJECT_ID
+  role: roles/monitoring.viewer
+  member: serviceAccount:hello-world-nodes-sa@YOUR_PROJECT_ID.iam.gserviceaccount.com
+---
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMPolicyMember
+metadata:
+  name: nodes-resource-metadata-writer
+spec:
+  resourceRef:
+    apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
+    kind: Project
+    name: YOUR_PROJECT_ID
+  role: roles/stackdriver.resourceMetadata.writer
+  member: serviceAccount:hello-world-nodes-sa@YOUR_PROJECT_ID.iam.gserviceaccount.com
 # Note: KCC often uses external-id or you need to know the project.
 # Since this is a template, we use placeholders.
