@@ -1,0 +1,53 @@
+replicaCount: 3
+
+project_id: "gca-gke-2025"
+
+image:
+  repository: gcr.io/google-samples/hello-app
+  tag: "1.0"
+  pullPolicy: IfNotPresent
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+serviceAccount:
+  create: true
+  name: "enterprise-workload-sa"
+  # This GSA will be created by KCC in the same namespace
+  gcpServiceAccountName: "enterprise-workload-gsa"
+
+config:
+  appSetting: "Enterprise-Value"
+
+secrets:
+  secretName: "app-secret"
+  secretKey: "db-password"
+
+pdb:
+  minAvailable: 2
+
+probes:
+  liveness:
+    path: /
+    port: 8080
+  readiness:
+    path: /
+    port: 8080
+
+securityContext:
+  runAsUser: 1000
+  runAsGroup: 3000
+  fsGroup: 2000
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true

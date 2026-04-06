@@ -1,0 +1,60 @@
+apiVersion: container.cnrm.cloud.google.com/v1beta1
+kind: ContainerCluster
+metadata:
+  name: enterprise-cluster
+spec:
+  location: us-central1
+  initialNodeCount: 1
+  removeDefaultNodePool: true
+  
+  networkRef:
+    name: enterprise-network
+  subnetworkRef:
+    name: enterprise-subnet
+    
+  ipAllocationPolicy:
+    clusterSecondaryRangeName: pods
+    servicesSecondaryRangeName: services
+
+  privateClusterConfig:
+    enablePrivateNodes: true
+    enablePrivateEndpoint: false
+    masterIpv4CidrBlock: 172.16.0.0/28
+    
+  masterAuthorizedNetworksConfig:
+    cidrBlocks:
+      - cidrBlock: 10.128.0.0/20
+        displayName: subnet-access
+        
+  workloadIdentityConfig:
+    workloadPool: ${project_id}.svc.id.goog
+
+  networkPolicy:
+    enabled: true
+    provider: CALICO
+
+  binaryAuthorization:
+    evaluationMode: PROJECT_SINGLETON_POLICY_ENFORCE
+
+  monitoringConfig:
+    enableComponents:
+      - SYSTEM_COMPONENTS
+      
+  loggingConfig:
+    enableComponents:
+      - SYSTEM_COMPONENTS
+      - WORKLOADS
+
+  securityPostureConfig:
+    mode: BASIC
+    vulnerabilityMode: VULNERABILITY_BASIC
+
+  addonsConfig:
+    networkPolicyConfig:
+      disabled: false
+    dnsCacheConfig:
+      enabled: true
+    gcePersistentDiskCsiDriverConfig:
+      enabled: true
+    gcpSecretManagerConfig:
+      enabled: true

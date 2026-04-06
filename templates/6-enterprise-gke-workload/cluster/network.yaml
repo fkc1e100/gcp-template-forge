@@ -1,0 +1,23 @@
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeNetwork
+metadata:
+  name: enterprise-network
+spec:
+  routingMode: REGIONAL
+  autoCreateSubnetworks: false
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeSubnetwork
+metadata:
+  name: enterprise-subnet
+spec:
+  ipCidrRange: 10.128.0.0/20
+  region: us-central1
+  networkRef:
+    name: enterprise-network
+  privateIpGoogleAccess: true
+  secondaryIpRange:
+    - rangeName: pods
+      ipCidrRange: 10.1.0.0/16
+    - rangeName: services
+      ipCidrRange: 10.2.0.0/20
