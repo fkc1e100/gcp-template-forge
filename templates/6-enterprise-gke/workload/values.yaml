@@ -1,0 +1,65 @@
+replicaCount: 3
+
+image:
+  repository: nginx
+  pullPolicy: IfNotPresent
+  tag: "1.25.3"
+
+serviceAccount:
+  create: true
+  name: "enterprise-workload-sa"
+  # Annotate with GCP Service Account for Workload Identity
+  gcpServiceAccount: "YOUR_GCP_SA@YOUR_PROJECT_ID.iam.gserviceaccount.com"
+
+podSecurityContext:
+  runAsUser: 1000
+  runAsGroup: 3000
+  fsGroup: 2000
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+
+service:
+  type: ClusterIP
+  port: 8080
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+
+pdb:
+  enabled: true
+  minAvailable: 2
+
+networkPolicy:
+  enabled: true
+
+# ConfigMap properties
+config:
+  LOG_LEVEL: "info"
+  ENVIRONMENT: "production"
+
+# Secret Manager CSI Driver setup
+secrets:
+  enabled: true
+  providerClass: "enterprise-secrets"
+  gcpProjectId: "YOUR_PROJECT_ID"
+  secretName: "enterprise-workload-secret"
+  secretVersion: "latest"
