@@ -26,7 +26,8 @@ As a starting point, this project looks to the following publicly available repo
 
 ## Architecture & Validation Pipeline
 * **Control Plane:** A GKE Standard cluster hosting the orchestration and validation agents.
-* **Infrastructure as Code (Dual-Path):** * **Terraform/Helm:** Traditional IaC for base infrastructure provisioning combined with Helm for workload deployment.
+* **Infrastructure as Code (Dual-Path):**
+  * **Terraform/Helm:** Traditional IaC for base infrastructure provisioning combined with Helm for workload deployment.
   * **Config Connector:** Cloud-native infrastructure management using Kubernetes Custom Resource Definitions (CRDs) to deploy and manage Google Cloud resources directly from the cluster.
 * **Validation Sandbox:** Automated testing execution and security scanning within an isolated Google Cloud project to guarantee the stability of the generated templates.
 
