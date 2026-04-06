@@ -1,28 +1,47 @@
-# GKE Template Forge
-
-Automated pipeline to translate natural language intent from GitHub Issues into validated and security-scanned Infrastructure as Code (Terraform, Helm, Config Connector) templates.
+# GCP Template Forge
 
 ## Overview
-This project implements an agentic orchestration layer on GKE to automate the generation and validation of Kubernetes architectures. It listens for feature requests or architecture descriptions in GitHub Issues, uses `repo-agent` and `overseer` (from `gemini-for-kubernetes-development`) to generate the corresponding IaC, validates it in a sandbox project, and publishes the results as reusable templates.
+GCP Template Forge is an automated pipeline and orchestration framework designed to generate, test, deploy, and validate Infrastructure as Code (IaC) templates for full-stack application environments. Rather than starting from scratch, this repository focuses on aggregating, building out, and rigorously validating publicly available Google Cloud reference architectures to ensure they deploy successfully and function as intended in real-world scenarios.
 
-## Architecture
-- **Control Plane:** GKE Standard cluster hosting `repo-agent` and `overseer`.
-- **Infrastructure as Code:** Terraform for base infra, Helm and Config Connector for workloads.
-- **Validation:** Automated sandbox execution and security scanning.
+## Objectives
+* **Generate & Deploy:** Automate the provisioning of full-stack environments. The forge supports dual-path IaC generation: traditional provisioning via Terraform and Helm, and Kubernetes-native declarative infrastructure via Config Connector.
+* **Test & Validate:** Provide a robust sandbox execution environment that continuously tests reference architectures to confirm they work out-of-the-box.
+* **Consolidate:** Act as a central forge to pull together disparate Google Cloud patterns into cohesive, validated, and security-scanned stacks.
+
+## Supported Public Reference Templates
+As a starting point, this project looks to the following publicly available repositories. The forge enables the building out of these reference architectures and continuously validates their reliability:
+
+* **[Cloud Foundation Toolkit](https://github.com/GoogleCloudPlatform/cloud-foundation-toolkit)**
+* **[Cluster Toolkit](https://github.com/GoogleCloudPlatform/cluster-toolkit)**
+* **[Kubernetes Engine Samples](https://github.com/GoogleCloudPlatform/kubernetes-engine-samples)**
+* **[Terraform GKE Modules](https://github.com/terraform-google-modules/terraform-google-kubernetes-engine)**
+* **[Terraform Docs Samples (GKE)](https://github.com/terraform-google-modules/terraform-docs-samples/tree/main/gke)**
+* **[GKE AI Labs](https://gke-ai-labs.dev/)**
+* **[GKE AI Labs (Early Adopter Code Samples)](https://github.com/ai-on-gke/tutorials-and-examples)**
+* **[LLM-D](https://github.com/llm-d/llm-d)**
+* **[Accelerated Platforms](https://github.com/GoogleCloudPlatform/accelerated-platforms)**
+* **[Generative AI](https://github.com/GoogleCloudPlatform/generative-ai)**
+* **[GKE Policy Automation](https://github.com/google/gke-policy-automation)**
+* **[Gemini for Kubernetes Development](https://github.com/gke-labs/gemini-for-kubernetes-development)**
+
+## Architecture & Validation Pipeline
+* **Control Plane:** A GKE Standard cluster hosting the orchestration and validation agents.
+* **Infrastructure as Code (Dual-Path):** * **Terraform/Helm:** Traditional IaC for base infrastructure provisioning combined with Helm for workload deployment.
+  * **Config Connector:** Cloud-native infrastructure management using Kubernetes Custom Resource Definitions (CRDs) to deploy and manage Google Cloud resources directly from the cluster.
+* **Validation Sandbox:** Automated testing execution and security scanning within an isolated Google Cloud project to guarantee the stability of the generated templates.
 
 ## Current Status
-- [x] Initial repository scaffolding established.
-- [x] Agent infrastructure drafted and validated with Terraform.
-- [x] External agent manifests organized and updated with inferred images.
-- [x] Remote repository created and code pushed.
-- [ ] **Pending:** Manual secret provisioning in GCP Secret Manager to enable deployment.
+* Initial repository scaffolding established.
+* Validation agent infrastructure drafted and validated with Terraform.
+* Framework ready to ingest, deploy, and validate architectures from the designated upstream public repositories.
 
 ## Next Steps
-To complete the setup and deploy the infrastructure, please refer to the manual intervention steps detailed in [GUIDANCE.md](GUIDANCE.md) regarding GitHub App creation and Secret Manager configuration.
-
-The desired bot identity for this project is **`forgebot-robot`**.
+To complete the setup and deploy the infrastructure validation pipeline, please refer to the manual intervention steps detailed in `GUIDANCE.md` regarding identity creation and Secret Manager configuration.
 
 ## Repository Structure
-- `.github/`: Issue templates and GitHub Actions workflows.
-- `agent-infra/`: Terraform code for cluster and manifests for agents.
-- `templates/`: Destination for successfully validated templates.
+* `.github/`: Issue templates and GitHub Actions workflows for continuous validation.
+* `agent-infra/`: Terraform code for cluster provisioning and agent manifests.
+* `templates/`: Destination for the integrated, tested, and successfully validated full-stack templates.
+  * `[template-name]/`
+    * `terraform-helm/`: IaC implementation using Terraform and Helm.
+    * `config-connector/`: Native Kubernetes IaC implementation using Google Cloud Config Connector.
