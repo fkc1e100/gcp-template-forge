@@ -1,15 +1,65 @@
-name: Sandbox Validation Placeholder
+name: Sandbox Validation
 
 on:
-  push:
-    branches: [ main ]
   pull_request:
     branches: [ main ]
 
 jobs:
-  build:
+  validate-kcc:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Run a one-line script
-        run: echo "This is a placeholder for sandbox validation."
+      
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+          
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        
+      - name: Get GKE Credentials (Management)
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: repo-agent
+          location: us-central1
+          
+      - name: Parameterize Manifests
+        run: |
+          PROJECT_ID="gca-gke-2025"
+          UNIQUE_NAME="ent-cls-pr-${{ github.event.pull_request.number }}"
+          
+          sed -i "s/YOUR_PROJECT_ID/$PROJECT_ID/g" templates/6-enterprise-gke/cluster/*.yaml
+          sed -i "s/enterprise-cluster/$UNIQUE_NAME/g" templates/6-enterprise-gke/cluster/*.yaml
+          
+      - name: Deploy KCC Template
+        run: |
+          kubectl apply -f templates/6-enterprise-gke/cluster/
+          
+      - name: Wait for Cluster Readiness
+        run: |
+          UNIQUE_NAME="ent-cls-pr-${{ github.event.pull_request.number }}"
+          # Wait up to 20 minutes for the cluster to be ready
+          kubectl wait --for=condition=Ready containercluster/$UNIQUE_NAME --timeout=20m
+          
+      - name: Get Credentials for New Cluster
+        run: |
+          UNIQUE_NAME="ent-cls-pr-${{ github.event.pull_request.number }}"
+          gcloud container clusters get-credentials $UNIQUE_NAME --region us-central1 --project gca-gke-2025
+          
+      - name: Deploy Workload (Helm)
+        run: |
+          cd templates/6-enterprise-gke/workload
+          helm install my-workload . --wait --timeout 5m
+          
+      - name: Verify Workload
+        run: |
+          kubectl get pods --all-namespaces
+          
+      - name: Tear Down
+        if: always()
+        run: |
+          # Switch back to management cluster to delete
+          gcloud container clusters get-credentials repo-agent --region us-central1 --project gca-gke-2025
+          UNIQUE_NAME="ent-cls-pr-${{ github.event.pull_request.number }}"
+          kubectl delete containercluster $UNIQUE_NAME --ignore-not-found
