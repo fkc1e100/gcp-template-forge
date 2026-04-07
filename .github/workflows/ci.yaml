@@ -85,45 +85,9 @@ jobs:
           exit 1
         fi
 
-  terraform-live-deploy:
+  live-deploy-and-test:
     runs-on: ubuntu-latest
     needs: terraform-validation
-    steps:
-    - uses: actions/checkout@v4
-    - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v3
-    - name: Authenticate to GCP
-      uses: google-github-actions/auth@v2
-      with:
-        credentials_json: ${{ secrets.GCP_SA_KEY }}
-    - name: Terraform Init
-      run: |
-        cd templates/6-enterprise-gke/Terraform_HELM/terraform
-        terraform init -backend=false
-    - name: Terraform Apply
-      run: |
-        cd templates/6-enterprise-gke/Terraform_HELM/terraform
-        terraform apply -auto-approve -var="project_id=gca-gke-2025" -var="service_account=template-forge-validator@gca-gke-2025.iam.gserviceaccount.com"
-    - name: Terraform Destroy
-      if: always()
-      run: |
-        cd templates/6-enterprise-gke/Terraform_HELM/terraform
-        terraform destroy -auto-approve -var="project_id=gca-gke-2025" -var="service_account=template-forge-validator@gca-gke-2025.iam.gserviceaccount.com"
-
-  kcc-live-deploy:
-    runs-on: ubuntu-latest
-    needs: terraform-live-deploy # Wait for cluster to be created?
-    # Wait, if we destroy it in the same job, kcc-live-deploy cannot use it!
-    # Ah! That is a problem!
-    # If we want to use the created cluster for KCC, we cannot destroy it in terraform-live-deploy!
-    # We must destroy it in a LATER job or at the END of the workflow!
-    # But GitHub Actions doesn't have an easy way to run a cleanup job at the very end regardless of failures in intermediate jobs, unless we use a complex workflow!
-    # Or we do EVERYTHING in a SINGLE job!
-    # Yes! That is much safer!
-    # Do Terraform Apply, then KCC Apply, then Helm Apply, then Cleanup!
-    # All in ONE job!
-    # That guarantees cleanup!
-    # Let's do that! It's much simpler and safer!
     steps:
     - uses: actions/checkout@v4
     - name: Set up Terraform
@@ -134,6 +98,11 @@ jobs:
       uses: google-github-actions/auth@v2
       with:
         credentials_json: ${{ secrets.GCP_SA_KEY }}
+    - name: Cleanup Orphaned Cluster
+      run: |
+        gcloud container clusters update enterprise-cluster --region us-central1 --no-enable-deletion-protection || true
+        gcloud container clusters delete enterprise-cluster --region us-central1 --quiet || true
+
     - name: Terraform Init
       run: |
         cd templates/6-enterprise-gke/Terraform_HELM/terraform
