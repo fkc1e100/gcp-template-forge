@@ -28,7 +28,8 @@ jobs:
         if [ -d "templates/6-enterprise-gke/cluster" ]; then
           kubectl apply --dry-run=client -f templates/6-enterprise-gke/cluster/
         else
-          echo "No KCC cluster directory found, skipping."
+          echo "Error: No KCC cluster directory found!"
+          exit 1
         fi
 
   helm-validation:
@@ -58,7 +59,8 @@ jobs:
           cd templates/6-enterprise-gke/terraform
           terraform init -backend=false
         else
-          echo "No terraform directory found, skipping."
+          echo "Error: No terraform directory found!"
+          exit 1
         fi
     - name: Terraform Validate
       run: |
@@ -66,7 +68,8 @@ jobs:
           cd templates/6-enterprise-gke/terraform
           terraform validate
         else
-          echo "No terraform directory found, skipping."
+          echo "Error: No terraform directory found!"
+          exit 1
         fi
     - name: Terraform Dry-Run (Plan)
       run: |
@@ -74,6 +77,7 @@ jobs:
           cd templates/6-enterprise-gke/terraform
           terraform plan
         else
-          echo "No terraform directory found, skipping."
+          echo "Error: No terraform directory found!"
+          exit 1
         fi
       continue-on-error: true # Might fail without credentials
