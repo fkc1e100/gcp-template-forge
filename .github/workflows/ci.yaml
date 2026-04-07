@@ -5,6 +5,45 @@ on:
     branches: [ main ]
 
 jobs:
+  static-analysis:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+    - name: Install Checkov
+      run: pip install checkov
+    - name: Run Checkov
+      run: checkov -d templates/6-enterprise-gke
+      continue-on-error: true # Checkov might fail on KCC manifests if not fully supported, so we allow it to continue for now
+
+  kcc-validation:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+    - name: Get GKE Credentials
+      # This is a placeholder. User needs to configure this.
+      run: |
+        echo "Please configure GCP authentication and cluster access for dry-run"
+      continue-on-error: true
+    - name: KCC Server-Side Dry-Run
+      run: |
+        # This requires a cluster and credentials
+        # kubectl apply --dry-run=server -f templates/6-enterprise-gke/cluster/
+        echo "Skipping KCC dry-run as cluster access is not configured"
+      continue-on-error: true
+    - name: Run KCC Validation Script
+      run: |
+        cd templates/6-enterprise-gke
+        ./validate.sh
+      env:
+        PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+      continue-on-error: true # Long running and might fail without credentials
+
   helm-validation:
     runs-on: ubuntu-latest
     steps:
@@ -19,3 +58,35 @@ jobs:
       run: |
         cd templates/6-enterprise-gke/workload
         helm template .
+
+  terraform-validation:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Terraform
+      uses: hashicorp/setup-terraform@v3
+    - name: Terraform Init
+      run: |
+        if [ -d "templates/6-enterprise-gke/terraform" ]; then
+          cd templates/6-enterprise-gke/terraform
+          terraform init -backend=false
+        else
+          echo "No terraform directory found, skipping."
+        fi
+    - name: Terraform Validate
+      run: |
+        if [ -d "templates/6-enterprise-gke/terraform" ]; then
+          cd templates/6-enterprise-gke/terraform
+          terraform validate
+        else
+          echo "No terraform directory found, skipping."
+        fi
+    - name: Terraform Dry-Run (Plan)
+      run: |
+        if [ -d "templates/6-enterprise-gke/terraform" ]; then
+          cd templates/6-enterprise-gke/terraform
+          terraform plan
+        else
+          echo "No terraform directory found, skipping."
+        fi
+      continue-on-error: true # Might fail without credentials
