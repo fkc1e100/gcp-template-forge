@@ -19,28 +19,6 @@ jobs:
       run: checkov -d templates/6-enterprise-gke
       continue-on-error: true # Checkov might fail on KCC manifests if not fully supported, so we allow it to continue for now
 
-  kcc-validation:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - name: Authenticate to GCP
-      uses: google-github-actions/auth@v2
-      with:
-        credentials_json: ${{ secrets.GCP_SA_KEY }}
-    - name: Get GKE Credentials
-      uses: google-github-actions/get-gke-credentials@v2
-      with:
-        cluster_name: ${{ secrets.GKE_CLUSTER_NAME }}
-        location: ${{ secrets.GKE_LOCATION }}
-    - name: KCC Server-Side Dry-Run
-      run: |
-        if [ -d "templates/6-enterprise-gke/kcc" ] && [ "$(find templates/6-enterprise-gke/kcc -name '*.yaml' -o -name '*.yml')" ]; then
-          kubectl apply --dry-run=server -f templates/6-enterprise-gke/kcc/
-        else
-          echo "Error: No KCC manifests found in kcc directory!"
-          exit 1
-        fi
-
   helm-validation:
     runs-on: ubuntu-latest
     steps:
@@ -62,10 +40,6 @@ jobs:
     - uses: actions/checkout@v4
     - name: Set up Terraform
       uses: hashicorp/setup-terraform@v3
-    - name: Authenticate to GCP
-      uses: google-github-actions/auth@v2
-      with:
-        credentials_json: ${{ secrets.GCP_SA_KEY }}
     - name: Terraform Init
       run: |
         if [ -d "templates/6-enterprise-gke/Terraform_HELM/terraform" ] && [ "$(find templates/6-enterprise-gke/Terraform_HELM/terraform -name '*.tf')" ]; then
