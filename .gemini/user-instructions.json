@@ -1,0 +1,23 @@
+{
+  "repository_objective": "Generate, test, deploy, and validate IaC templates for full-stack application environments on GCP.",
+  "tech_stack": [
+    "Terraform",
+    "Helm",
+    "Config Connector"
+  ],
+  "guidelines": [
+    "Support dual-path IaC generation: Terraform/Helm and Config Connector.",
+    "Focus on aggregating and validating public reference architectures (refer to README.md for listed repositories).",
+    "Ensure templates are security scanned and work out-of-the-box.",
+    "Use the example repositories listed in the README.md as sources of truth and options for deployments.",
+    "Consider and factor in new GKE features if the example architectures could benefit from them."
+  ],
+  "success_criteria": {
+    "definition": "A successful issue resolution involves a successful deployment of a TF/Helm based cluster/workload, as well as a completely separate successful deployment of a KCC managed deployment.",
+    "requirements": [
+      "Cluster and workloads are deployed.",
+      "Workload has an endpoint that is accessible."
+    ],
+    "failure_handling": "If deployments fail, the agent should look at failures, research options, and work to resolve/fix, always looking back at the ask in the original issue."
+  }
+}
