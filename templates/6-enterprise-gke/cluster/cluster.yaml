@@ -1,0 +1,43 @@
+apiVersion: container.cnrm.cloud.google.com/v1beta1
+kind: ContainerCluster
+metadata:
+  name: enterprise-cluster
+  namespace: default
+  annotations:
+    cnrm.cloud.google.com/project-id: "YOUR_PROJECT_ID"
+spec:
+  location: us-central1
+  initialNodeCount: 1
+  networkingMode: VPC_NATIVE
+  networkRef:
+    name: "projects/YOUR_PROJECT_ID/global/networks/default"
+  subnetworkRef:
+    name: "projects/YOUR_PROJECT_ID/regions/us-central1/subnetworks/default"
+  ipAllocationPolicy:
+    clusterIpv4CidrBlock: /14
+    servicesIpv4CidrBlock: /20
+  privateClusterConfig:
+    enablePrivateNodes: true
+    enablePrivateEndpoint: false
+    masterIpv4CidrBlock: "172.16.0.0/28"
+  workloadIdentityConfig:
+    workloadPool: "YOUR_PROJECT_ID.svc.id.goog"
+  networkPolicy:
+    enabled: true
+    provider: CALICO
+  binaryAuthorization:
+    evaluationMode: PROJECT_SINGLETON_POLICY_ENFORCE
+  loggingConfig:
+    enableComponents:
+      - SYSTEM_COMPONENTS
+      - WORKLOADS
+  monitoringConfig:
+    enableComponents:
+      - SYSTEM_COMPONENTS
+    managedPrometheus:
+      enabled: true
+  securityPostureConfig:
+    mode: BASIC
+    vulnerabilityMode: VULNERABILITY_ENTERPRISE
+  releaseChannel:
+    channel: REGULAR
