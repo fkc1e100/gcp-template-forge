@@ -57,6 +57,10 @@ resource "google_container_cluster" "enterprise_cluster" {
     vulnerability_mode = "VULNERABILITY_ENTERPRISE"
   }
 
+  secret_manager_config {
+    enabled = true
+  }
+
   release_channel {
     channel = "REGULAR"
   }
