@@ -49,11 +49,11 @@ jobs:
       uses: azure/setup-helm@v4
     - name: Helm Lint
       run: |
-        cd templates/6-enterprise-gke/workload
+        cd templates/6-enterprise-gke/Terraform_HELM/workload
         helm lint .
     - name: Helm Template
       run: |
-        cd templates/6-enterprise-gke/workload
+        cd templates/6-enterprise-gke/Terraform_HELM/workload
         helm template .
 
   terraform-validation:
@@ -64,8 +64,8 @@ jobs:
       uses: hashicorp/setup-terraform@v3
     - name: Terraform Init
       run: |
-        if [ -d "templates/6-enterprise-gke/terraform" ] && [ "$(find templates/6-enterprise-gke/terraform -name '*.tf')" ]; then
-          cd templates/6-enterprise-gke/terraform
+        if [ -d "templates/6-enterprise-gke/Terraform_HELM/terraform" ] && [ "$(find templates/6-enterprise-gke/Terraform_HELM/terraform -name '*.tf')" ]; then
+          cd templates/6-enterprise-gke/Terraform_HELM/terraform
           terraform init -backend=false
         else
           echo "Error: No terraform files found in directory!"
@@ -73,8 +73,8 @@ jobs:
         fi
     - name: Terraform Validate
       run: |
-        if [ -d "templates/6-enterprise-gke/terraform" ]; then
-          cd templates/6-enterprise-gke/terraform
+        if [ -d "templates/6-enterprise-gke/Terraform_HELM/terraform" ]; then
+          cd templates/6-enterprise-gke/Terraform_HELM/terraform
           terraform validate
         else
           echo "Error: No terraform directory found!"
@@ -82,8 +82,8 @@ jobs:
         fi
     - name: Terraform Dry-Run (Plan)
       run: |
-        if [ -d "templates/6-enterprise-gke/terraform" ]; then
-          cd templates/6-enterprise-gke/terraform
+        if [ -d "templates/6-enterprise-gke/Terraform_HELM/terraform" ]; then
+          cd templates/6-enterprise-gke/Terraform_HELM/terraform
           terraform plan
         else
           echo "Error: No terraform directory found!"
