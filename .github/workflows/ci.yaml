@@ -32,10 +32,10 @@ jobs:
       with:
         cluster_name: ${{ secrets.GKE_CLUSTER_NAME }}
         location: ${{ secrets.GKE_LOCATION }}
-    - name: KCC Server-Side Dry-Run
+    - name: KCC Client-Side Dry-Run
       run: |
         if [ -d "templates/6-enterprise-gke/kcc" ] && [ "$(find templates/6-enterprise-gke/kcc -name '*.yaml' -o -name '*.yml')" ]; then
-          kubectl apply --dry-run=server -f templates/6-enterprise-gke/kcc/
+          kubectl apply --dry-run=client -f templates/6-enterprise-gke/kcc/
         else
           echo "Error: No KCC manifests found in kcc directory!"
           exit 1
@@ -85,6 +85,7 @@ jobs:
           exit 1
         fi
     - name: Terraform Dry-Run (Plan)
+      timeout-minutes: 5
       run: |
         if [ -d "templates/6-enterprise-gke/Terraform_HELM/terraform" ]; then
           cd templates/6-enterprise-gke/Terraform_HELM/terraform
