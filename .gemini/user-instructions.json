@@ -14,7 +14,8 @@
     "Ensure templates are security scanned and work out-of-the-box.",
     "Use the example repositories listed in the README.md as sources of truth and options for deployments.",
     "Consider and factor in new GKE features if the example architectures could benefit from them.",
-    "When selecting GKE release channels: Use RAPID for templates requiring bleeding-edge features or AI/ML workloads. Use REGULAR or STABLE for standard enterprise templates to ensure production maturity."
+    "When selecting GKE release channels: Use RAPID for templates requiring bleeding-edge features or AI/ML workloads. Use REGULAR or STABLE for standard enterprise templates to ensure production maturity.",
+    "Do not remove or weaken CI validation checks that enforce the presence of templates. If a directory is expected to have files, the CI must fail if it is empty or missing, even if that specific issue doesn't require them. This enforces repository standards."
   ],
   "success_criteria": {
     "definition": "A successful issue resolution involves a successful deployment of a TF/Helm based cluster/workload, as well as a completely separate successful deployment of a KCC managed deployment.",
