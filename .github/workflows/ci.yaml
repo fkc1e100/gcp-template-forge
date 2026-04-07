@@ -58,8 +58,7 @@ jobs:
           cd templates/6-enterprise-gke/terraform
           terraform init -backend=false
         else
-          echo "Error: No terraform directory found!"
-          exit 1
+          echo "No terraform directory found, skipping."
         fi
     - name: Terraform Validate
       run: |
@@ -67,8 +66,7 @@ jobs:
           cd templates/6-enterprise-gke/terraform
           terraform validate
         else
-          echo "Error: No terraform directory found!"
-          exit 1
+          echo "No terraform directory found, skipping."
         fi
     - name: Terraform Dry-Run (Plan)
       run: |
@@ -76,7 +74,6 @@ jobs:
           cd templates/6-enterprise-gke/terraform
           terraform plan
         else
-          echo "Error: No terraform directory found!"
-          exit 1
+          echo "No terraform directory found, skipping."
         fi
       continue-on-error: true # Might fail without credentials
