@@ -6,6 +6,21 @@ Also load `.gemini/user-instructions.json` — it contains the full structured s
 
 ---
 
+## First Step: Sync Guidance from Upstream
+
+**Run this before starting any task.** The sandbox works on a fork (`codebot-sfle/gcp-template-forge`), so guidance updates pushed to the canonical repo (`fkc1e100/gcp-template-forge`) won't arrive automatically.
+
+```bash
+git fetch upstream main --quiet
+git checkout upstream/main -- GEMINI.md .gemini/user-instructions.json 2>/dev/null || true
+git add GEMINI.md .gemini/user-instructions.json
+git commit -m "chore: sync guidance from upstream" --quiet 2>/dev/null || true
+```
+
+This ensures you always have the latest project rules, guardrails, and success criteria before generating any code.
+
+---
+
 ## Project Context
 
 | | |
@@ -392,3 +407,4 @@ Do not open a PR or comment success until this is captured. Do not mark an issue
 | Pin provider versions `~> 6.0` | Prevents unexpected breaking changes on re-runs |
 | Empty `backend "gcs" {}` block | CI injects state location; hardcoding causes conflicts |
 | Issue comments at every checkpoint | Visibility for human reviewers; catch problems early |
+
