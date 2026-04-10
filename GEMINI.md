@@ -349,6 +349,36 @@ gh issue comment <number> --repo fkc1e100/gcp-template-forge --body "..."
 
 ---
 
+## Definition of Success
+
+**A healthy cluster is not enough.** Success requires a live interaction with a running workload endpoint that returns a valid response.
+
+### Endpoint Interaction (Mandatory)
+
+| Workload type | How to prove it works |
+|---|---|
+| HTTP/HTTPS service | `curl -sf http://<EXTERNAL_IP>` → assert HTTP 2xx response |
+| Private/internal service | `kubectl run -it --rm probe --image=curlimages/curl -- curl http://<CLUSTER_IP>:<PORT>` |
+| Database (Cloud SQL) | Connect via Cloud SQL Auth Proxy: `psql ... -c "SELECT 1"` |
+| Pub/Sub | `gcloud pubsub subscriptions pull <sub> --limit=1` after publishing a message |
+| GPU workload | `kubectl exec <pod> -- nvidia-smi` and verify GPU is detected |
+| LLM inference | Send a test prompt to the inference endpoint and verify a generated response |
+
+Capture the command and output. Append to `verification_plan.md` under a `## Validation Output` section:
+
+```markdown
+## Validation Output
+
+**Endpoint:** http://34.123.45.67:8080
+**Command:** `curl -sf http://34.123.45.67:8080/healthz`
+**Response:** `{"status":"ok","version":"1.0.0"}` (HTTP 200)
+**Validated at:** 2026-04-10T15:32:00Z
+```
+
+Do not open a PR or comment success until this is captured. Do not mark an issue resolved without it.
+
+---
+
 ## Guardrails Summary
 
 | Rule | Why |
