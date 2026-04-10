@@ -2,9 +2,11 @@ apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMServiceAccount
 metadata:
   name: enterprise-workload-sa
-  namespace: default
+  namespace: forge-management
+  labels:
+    template: templates/6-enterprise-gke
   annotations:
-    cnrm.cloud.google.com/project-id: "YOUR_PROJECT_ID"
+    cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   displayName: "Enterprise Workload Service Account"
 ---
@@ -12,11 +14,13 @@ apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPolicyMember
 metadata:
   name: workload-identity-binding
-  namespace: default
+  namespace: forge-management
+  labels:
+    template: templates/6-enterprise-gke
   annotations:
-    cnrm.cloud.google.com/project-id: "YOUR_PROJECT_ID"
+    cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
-  member: "serviceAccount:YOUR_PROJECT_ID.svc.id.goog[default/enterprise-workload-sa]"
+  member: "serviceAccount:gca-gke-2025.svc.id.goog[default/enterprise-workload-sa]"
   role: roles/iam.workloadIdentityUser
   resourceRef:
     apiVersion: iam.cnrm.cloud.google.com/v1beta1

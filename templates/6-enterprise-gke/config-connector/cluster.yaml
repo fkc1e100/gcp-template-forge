@@ -1,27 +1,30 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerCluster
 metadata:
-  name: enterprise-cluster
-  namespace: default
+  name: enterprise-cluster-6-kcc
+  namespace: forge-management
+  labels:
+    template: templates/6-enterprise-gke
   annotations:
-    cnrm.cloud.google.com/project-id: "YOUR_PROJECT_ID"
+    cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   location: us-central1
   initialNodeCount: 1
+  removeDefaultNodePool: true
   networkingMode: VPC_NATIVE
   networkRef:
-    name: "projects/YOUR_PROJECT_ID/global/networks/default"
+    name: vpc-issue-6-kcc
   subnetworkRef:
-    name: "projects/YOUR_PROJECT_ID/regions/us-central1/subnetworks/default"
+    name: subnet-issue-6-kcc
   ipAllocationPolicy:
-    clusterIpv4CidrBlock: /14
-    servicesIpv4CidrBlock: /20
+    clusterSecondaryRangeName: pods
+    servicesSecondaryRangeName: services
   privateClusterConfig:
     enablePrivateNodes: true
     enablePrivateEndpoint: false
-    masterIpv4CidrBlock: "172.16.0.0/28"
+    masterIpv4CidrBlock: "172.16.206.0/28"
   workloadIdentityConfig:
-    workloadPool: "YOUR_PROJECT_ID.svc.id.goog"
+    workloadPool: "gca-gke-2025.svc.id.goog"
   networkPolicy:
     enabled: true
     provider: CALICO

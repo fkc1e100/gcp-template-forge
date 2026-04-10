@@ -1,0 +1,29 @@
+apiVersion: container.cnrm.cloud.google.com/v1beta1
+kind: ContainerNodePool
+metadata:
+  name: primary-node-pool-6-kcc
+  namespace: forge-management
+  labels:
+    template: templates/6-enterprise-gke
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
+spec:
+  location: us-central1
+  clusterRef:
+    name: enterprise-cluster-6-kcc
+  nodeCount: 1
+  nodeConfig:
+    spot: true
+    machineType: e2-standard-4
+    diskSizeGb: 50
+    diskType: pd-standard
+    imageType: COS_CONTAINERD
+    serviceAccountRef:
+      external: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+    oauthScopes:
+      - "https://www.googleapis.com/auth/cloud-platform"
+    workloadMetadataConfig:
+      mode: GKE_METADATA
+    shieldedInstanceConfig:
+      enableSecureBoot: true
+      enableIntegrityMonitoring: true
