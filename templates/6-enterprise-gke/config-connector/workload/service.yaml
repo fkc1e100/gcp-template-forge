@@ -6,7 +6,7 @@ metadata:
   labels:
     app.kubernetes.io/name: enterprise-workload
 spec:
-  type: ClusterIP
+  type: LoadBalancer
   ports:
     - port: 8080
       targetPort: http

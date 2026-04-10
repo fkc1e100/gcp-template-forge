@@ -22,7 +22,7 @@ spec:
   privateClusterConfig:
     enablePrivateNodes: true
     enablePrivateEndpoint: false
-    masterIpv4CidrBlock: "172.16.206.0/28"
+    masterIpv4CidrBlock: "172.16.106.0/28"
   workloadIdentityConfig:
     workloadPool: "gca-gke-2025.svc.id.goog"
   networkPolicy:

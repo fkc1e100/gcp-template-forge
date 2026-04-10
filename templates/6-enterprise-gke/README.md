@@ -13,24 +13,27 @@ This template provides an enterprise-grade Google Kubernetes Engine (GKE) archit
 ### Config Connector (`config-connector/`)
 - Uses KCC resources (`ContainerCluster`, `ContainerNodePool`, `ComputeNetwork`, `ComputeSubnetwork`) to provision the same infrastructure.
 - Manages IAM roles and Service Accounts via KCC for seamless Workload Identity integration.
+- Workload manifests are located in the `workload/` subdirectory.
 
 ## Cluster Details
 - **Type**: GKE Standard
 - **Release channel**: REGULAR
-- **Node pools**: primary-node-pool (e2-standard-4, spot nodes)
+- **Node pools**: pool-issue-6 (e2-standard-4, spot nodes)
 - **Networking**: VPC-native, Private nodes, dedicated VPC per issue
 
 ## Workload Details
 - **Application**: Nginx-based production-ready workload
-- **Access**: LoadBalancer / ClusterIP
+- **Access**: LoadBalancer
 - **Dependencies**: Google Secret Manager (via Secrets Store CSI), IAM Workload Identity
 
 ## Enabled Features
 - [x] Workload Identity
 - [x] VPC-native networking
-- [x] Private cluster
+- [x] Private cluster + Cloud NAT
 - [x] Binary Authorization
-- [x] Security Posture Monitoring
-- [x] Pod Anti-Affinity
-- [x] HPA / PDB
-- [x] Config Connector resources: ContainerCluster, ContainerNodePool, ComputeNetwork, ComputeSubnetwork, IAMServiceAccount, IAMPolicyMember
+- [ ] Confidential GKE Nodes
+- [x] Vertical / Horizontal Pod Autoscaler
+- [ ] Cluster Autoscaler / Node Auto-provisioning
+- [ ] DWS + Kueue (accelerator templates)
+- [ ] GPU node pool with driver auto-install
+- [x] Config Connector resources: ContainerCluster, ContainerNodePool, ComputeNetwork, ComputeSubnetwork, IAMServiceAccount, IAMPolicyMember, ComputeRouter, ComputeRouterNAT

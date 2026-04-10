@@ -43,6 +43,26 @@ resource "google_compute_subnetwork" "subnet" {
   }
 }
 
+# Cloud NAT for private nodes
+resource "google_compute_router" "router" {
+  name    = "router-issue-${var.issue_number}"
+  region  = var.region
+  network = google_compute_network.vpc.id
+}
+
+resource "google_compute_router_nat" "nat" {
+  name                               = "nat-issue-${var.issue_number}"
+  router                             = google_compute_router.router.name
+  region                             = var.region
+  nat_ip_allocate_option             = "AUTO_ONLY"
+  source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
+
+  log_config {
+    enable = true
+    filter = "ERRORS_ONLY"
+  }
+}
+
 resource "google_container_cluster" "enterprise_cluster" {
   name     = var.cluster_name
   location = var.region
@@ -107,10 +127,10 @@ resource "google_container_cluster" "enterprise_cluster" {
 }
 
 resource "google_container_node_pool" "primary_nodes" {
-  name       = "pool-issue-6"
+  name       = "pool-issue-${var.issue_number}"
   location   = var.region
   cluster    = google_container_cluster.enterprise_cluster.name
-  node_count = 1 # Reducing for sandbox cost, was 3
+  node_count = 1
 
   node_config {
     # Use spot/preemptible for sandbox
@@ -135,6 +155,10 @@ resource "google_container_node_pool" "primary_nodes" {
       enable_secure_boot          = true
       enable_integrity_monitoring = true
     }
+
+    labels = {
+      template = "templates/6-enterprise-gke"
+    }
   }
 }
 
@@ -144,7 +168,7 @@ resource "google_service_account" "workload_sa" {
   display_name = "Enterprise Workload Service Account"
 }
 
-# Workload Identity binding
+# Workload Identity Binding
 resource "google_service_account_iam_member" "workload_identity_binding" {
   service_account_id = google_service_account.workload_sa.name
   role               = "roles/iam.workloadIdentityUser"

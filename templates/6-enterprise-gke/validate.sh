@@ -31,16 +31,8 @@ echo "Drift & Revert passed."
 
 # 3. Workload Identity Integration
 echo "Test 3: Workload Identity Integration..."
-# We need to target the NEW cluster. KCC creates it, but we need to get credentials.
+# Get credentials for the newly created cluster
 gcloud container clusters get-credentials ${CLUSTER_NAME} --region ${REGION} --project ${PROJECT_ID}
-
-# Apply workload manifests to the new cluster
-echo "Applying workload manifests to the new cluster..."
-kubectl apply -f config-connector/workload/ -n default
-
-# Wait for workload deployment
-echo "Waiting for workload deployment..."
-kubectl rollout status deployment/enterprise-workload -n default --timeout=5m
 
 cat <<EOF | kubectl apply -f -
 apiVersion: batch/v1
@@ -66,11 +58,41 @@ kubectl logs job/test-workload-identity -n default
 kubectl delete job test-workload-identity -n default
 echo "Workload Identity Integration passed."
 
-# 4. Teardown Verification
-echo "Test 4: Teardown Verification..."
-# Switch back to KCC management cluster context if needed
-# (Assuming the runner stays in the right context or we use -n forge-management)
+# 4. Endpoint Interaction
+echo "Test 4: Endpoint Interaction..."
+# Wait for LoadBalancer IP
+SERVICE_IP=""
+for i in {1..20}; do
+  SERVICE_IP=$(kubectl get svc enterprise-workload -o jsonpath='{.status.loadBalancer.ingress[0].ip}' -n default || true)
+  if [ ! -z "$SERVICE_IP" ]; then
+    break
+  fi
+  echo "Waiting for LoadBalancer IP (attempt $i/20)..."
+  sleep 30
+done
 
+if [ -z "$SERVICE_IP" ]; then
+  echo "Failed to get LoadBalancer IP!"
+  exit 1
+fi
+
+echo "Testing endpoint http://${SERVICE_IP}:8080/..."
+# Retry curl as the LB might take a few moments to actually start serving
+for i in {1..10}; do
+  if curl -sf http://${SERVICE_IP}:8080/; then
+    echo "Endpoint test passed!"
+    break
+  fi
+  echo "Endpoint not ready (attempt $i/10)..."
+  sleep 10
+  if [ $i -eq 10 ]; then
+    echo "Endpoint test failed after 10 attempts!"
+    exit 1
+  fi
+done
+
+# 5. Teardown Verification
+echo "Test 5: Teardown Verification..."
 # Delete KCC manifests
 kubectl delete -f config-connector/ -n ${NAMESPACE} --ignore-not-found
 echo "Waiting for cluster deletion (sleeping 5m)..."
