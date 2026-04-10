@@ -5,14 +5,79 @@
     "Helm",
     "Config Connector"
   ],
+  "reference_repositories": {
+    "description": "These are the canonical upstream sources. When generating any template, you MUST browse the relevant repos below to find real, working examples before writing code. Do not rely solely on training knowledge — fetch actual files from these repos to use as starting points.",
+    "how_to_use": "Use `gh` CLI or `curl` to fetch specific files/directories from these repos. For example: `gh api repos/GoogleCloudPlatform/cloud-foundation-toolkit/contents/infra/blueprint-test` or `curl https://raw.githubusercontent.com/<org>/<repo>/main/<path>`. Always check the repo for the most current version of any module or manifest.",
+    "sources": [
+      {
+        "name": "Cloud Foundation Toolkit",
+        "url": "https://github.com/GoogleCloudPlatform/cloud-foundation-toolkit",
+        "use_for": "Battle-tested Terraform modules for GCP foundations (VPC, IAM, GKE). Prefer CFT modules over hand-rolled resources where available."
+      },
+      {
+        "name": "Cluster Toolkit",
+        "url": "https://github.com/GoogleCloudPlatform/cluster-toolkit",
+        "use_for": "HPC and AI/ML cluster blueprints on GKE. Use for GPU/TPU node pool configs and high-performance workload patterns."
+      },
+      {
+        "name": "Kubernetes Engine Samples",
+        "url": "https://github.com/GoogleCloudPlatform/kubernetes-engine-samples",
+        "use_for": "Reference workload manifests (Deployments, Services, Ingress). Use for hello-world and real-workload Kubernetes YAML examples."
+      },
+      {
+        "name": "Terraform GKE Modules",
+        "url": "https://github.com/terraform-google-modules/terraform-google-kubernetes-engine",
+        "use_for": "The standard Terraform module for GKE clusters. Use the `beta-public-cluster`, `private-cluster`, or `autopilot-cluster` submodules as appropriate. Always check the `examples/` directory."
+      },
+      {
+        "name": "Terraform Docs Samples (GKE)",
+        "url": "https://github.com/terraform-google-modules/terraform-docs-samples/tree/main/gke",
+        "use_for": "Minimal, focused Terraform snippets for specific GKE features. Good for finding the exact resource block for a specific capability."
+      },
+      {
+        "name": "GKE AI Labs",
+        "url": "https://gke-ai-labs.dev/",
+        "use_for": "Production AI/ML patterns on GKE — inference serving, fine-tuning, model storage. Check for published labs matching the issue intent."
+      },
+      {
+        "name": "GKE AI Labs Code Samples",
+        "url": "https://github.com/ai-on-gke/tutorials-and-examples",
+        "use_for": "Concrete code for AI workloads on GKE: vLLM, Triton, JupyterHub, Ray. Fetch manifests and Terraform from here for AI/ML issues."
+      },
+      {
+        "name": "LLM-D",
+        "url": "https://github.com/llm-d/llm-d",
+        "use_for": "Distributed LLM inference on Kubernetes. Use for issues requiring multi-node model serving."
+      },
+      {
+        "name": "Accelerated Platforms",
+        "url": "https://github.com/GoogleCloudPlatform/accelerated-platforms",
+        "use_for": "End-to-end GPU/TPU platform blueprints. Use for issues requiring accelerator-optimised clusters."
+      },
+      {
+        "name": "Generative AI",
+        "url": "https://github.com/GoogleCloudPlatform/generative-ai",
+        "use_for": "Vertex AI and Gemini API integration examples. Use for issues that combine GKE workloads with GCP AI services."
+      },
+      {
+        "name": "GKE Policy Automation",
+        "url": "https://github.com/google/gke-policy-automation",
+        "use_for": "Policy and security scanning for GKE clusters. Reference for security hardening requirements in generated templates."
+      },
+      {
+        "name": "Gemini for Kubernetes Development",
+        "url": "https://github.com/gke-labs/gemini-for-kubernetes-development",
+        "use_for": "The agent infrastructure underpinning this repo. Reference for understanding the repo-agent/overseer system you are running within."
+      }
+    ]
+  },
   "guidelines": [
+    "For every issue, start by identifying which reference_repositories are most relevant to the intent, then FETCH actual files from those repos before writing any code.",
     "Support dual-path IaC generation: Terraform/Helm and Config Connector.",
     "For every issue requiring infrastructure generation, the agent MUST create two distinct folders under templates/<issue_number>-<description>/: one named config-connector/ for Config Connector manifests, and one named terraform-helm/ for Terraform/Helm files.",
     "All generated cloud resources (clusters, networks, buckets) MUST include the issue number in their name (e.g., cluster-issue-6 or bucket-issue-6) to ensure uniqueness and easy cleanup.",
     "Do not use hardcoded project IDs or generic placeholders like YOUR_PROJECT_ID in templates. Instead, use variable interpolation for Terraform, and clearly documented environment variable placeholders (e.g., ${PROJECT_ID}) for KCC manifests.",
-    "Focus on aggregating and validating public reference architectures (refer to README.md for listed repositories).",
     "Ensure templates are security scanned and work out-of-the-box.",
-    "Use the example repositories listed in the README.md as sources of truth and options for deployments.",
     "Consider and factor in new GKE features if the example architectures could benefit from them.",
     "When selecting GKE release channels: Use RAPID for templates requiring bleeding-edge features or AI/ML workloads. Use REGULAR or STABLE for standard enterprise templates to ensure production maturity."
   ],
