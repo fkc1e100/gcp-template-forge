@@ -20,13 +20,13 @@ metadata:
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
-  ipCidrRange: 10.6.128.0/20
+  ipCidrRange: 10.6.0.0/20
   region: us-central1
   networkRef:
     name: vpc-issue-6-kcc
   privateIpGoogleAccess: true
   secondaryIpRange:
     - rangeName: pods
-      ipCidrRange: 10.106.0.0/16
+      ipCidrRange: 10.16.0.0/16
     - rangeName: services
-      ipCidrRange: 172.16.106.0/20
+      ipCidrRange: 172.16.6.0/20

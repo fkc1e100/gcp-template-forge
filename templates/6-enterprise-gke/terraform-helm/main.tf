@@ -107,7 +107,7 @@ resource "google_container_cluster" "enterprise_cluster" {
 }
 
 resource "google_container_node_pool" "primary_nodes" {
-  name       = "primary-node-pool"
+  name       = "pool-issue-6"
   location   = var.region
   cluster    = google_container_cluster.enterprise_cluster.name
   node_count = 1 # Reducing for sandbox cost, was 3
@@ -136,6 +136,19 @@ resource "google_container_node_pool" "primary_nodes" {
       enable_integrity_monitoring = true
     }
   }
+}
+
+# Workload Service Account
+resource "google_service_account" "workload_sa" {
+  account_id   = "enterprise-workload-sa"
+  display_name = "Enterprise Workload Service Account"
+}
+
+# Workload Identity binding
+resource "google_service_account_iam_member" "workload_identity_binding" {
+  service_account_id = google_service_account.workload_sa.name
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "serviceAccount:${var.project_id}.svc.id.goog[default/enterprise-workload-sa]"
 }
 
 resource "helm_release" "workload" {

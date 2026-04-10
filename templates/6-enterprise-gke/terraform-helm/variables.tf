@@ -19,7 +19,7 @@ variable "issue_number" {
 variable "cluster_name" {
   description = "The name of the cluster"
   type        = string
-  default     = "enterprise-cluster-6"
+  default     = "cluster-issue-6"
 }
 
 variable "service_account" {

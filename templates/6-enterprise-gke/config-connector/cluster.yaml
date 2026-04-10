@@ -1,7 +1,7 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerCluster
 metadata:
-  name: enterprise-cluster-6-kcc
+  name: cluster-issue-6-kcc
   namespace: forge-management
   labels:
     template: templates/6-enterprise-gke

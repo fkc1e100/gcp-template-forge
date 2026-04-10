@@ -4,8 +4,8 @@ set -e
 echo "Starting KCC Validation Tests..."
 
 PROJECT_ID=${PROJECT_ID:-"gca-gke-2025"}
-CLUSTER_NAME="enterprise-cluster-6-kcc"
-NODE_POOL_NAME="primary-node-pool-6-kcc"
+CLUSTER_NAME="cluster-issue-6-kcc"
+NODE_POOL_NAME="pool-issue-6-kcc"
 NAMESPACE="forge-management"
 REGION="us-central1"
 
@@ -33,6 +33,14 @@ echo "Drift & Revert passed."
 echo "Test 3: Workload Identity Integration..."
 # We need to target the NEW cluster. KCC creates it, but we need to get credentials.
 gcloud container clusters get-credentials ${CLUSTER_NAME} --region ${REGION} --project ${PROJECT_ID}
+
+# Apply workload manifests to the new cluster
+echo "Applying workload manifests to the new cluster..."
+kubectl apply -f config-connector/workload/ -n default
+
+# Wait for workload deployment
+echo "Waiting for workload deployment..."
+kubectl rollout status deployment/enterprise-workload -n default --timeout=5m
 
 cat <<EOF | kubectl apply -f -
 apiVersion: batch/v1

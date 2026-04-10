@@ -1,7 +1,7 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
 metadata:
-  name: primary-node-pool-6-kcc
+  name: pool-issue-6-kcc
   namespace: forge-management
   labels:
     template: templates/6-enterprise-gke
@@ -10,7 +10,7 @@ metadata:
 spec:
   location: us-central1
   clusterRef:
-    name: enterprise-cluster-6-kcc
+    name: cluster-issue-6-kcc
   nodeCount: 1
   nodeConfig:
     spot: true

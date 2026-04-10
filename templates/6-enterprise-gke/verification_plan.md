@@ -41,11 +41,11 @@ terraform apply -auto-approve
 ### Verification
 1. **Cluster Health:**
    ```bash
-   gcloud container clusters describe enterprise-cluster-6 --region us-central1 --format="value(status)"
+   gcloud container clusters describe cluster-issue-6 --region us-central1 --format="value(status)"
    ```
 2. **Workload Health:**
    ```bash
-   gcloud container clusters get-credentials enterprise-cluster-6 --region us-central1
+   gcloud container clusters get-credentials cluster-issue-6 --region us-central1
    kubectl get pods -l app.kubernetes.io/name=enterprise-workload
    ```
 3. **Endpoint Interaction:**
@@ -71,7 +71,7 @@ kubectl apply -f config-connector/ -n forge-management
 ### Verification
 1. **Resource Readiness:**
    ```bash
-   kubectl wait --for=condition=Ready containercluster/enterprise-cluster-6-kcc -n forge-management --timeout=20m
+   kubectl wait --for=condition=Ready containercluster/cluster-issue-6-kcc -n forge-management --timeout=20m
    ```
 2. **Workload Identity:**
    ```bash
