@@ -1,15 +1,186 @@
-name: Sandbox Validation Placeholder
+name: Sandbox Validation
 
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'templates/**/config-connector/**'
+      - 'templates/**/terraform-helm/**'
+      - 'agent-infra/**'
   pull_request:
     branches: [ main ]
+    paths:
+      - 'templates/**/config-connector/**'
+      - 'templates/**/terraform-helm/**'
+      - 'agent-infra/**'
+
+permissions:
+  contents: read
+  id-token: write   # required for WIF token exchange
+
+env:
+  PROJECT_ID: gca-gke-2025
+  KCC_CLUSTER: krmapihost-kcc-instance
+  KCC_REGION: us-central1
+  KCC_NAMESPACE: forge-management
+  WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+  WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+  TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
 
 jobs:
-  build:
+  # ── Validate KCC manifests (runs on every PR) ────────────────────────────
+  validate-kcc:
+    name: Validate KCC Manifests
     runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'pull_request' &&
+      contains(github.event.pull_request.changed_files, 'config-connector')
     steps:
       - uses: actions/checkout@v4
-      - name: Run a one-line script
-        run: echo "This is a placeholder for sandbox validation."
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+
+      - name: Get KCC cluster credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ env.KCC_CLUSTER }}
+          location: ${{ env.KCC_REGION }}
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Dry-run apply KCC manifests
+        run: |
+          set -e
+          # Find all config-connector directories changed in this PR
+          for dir in $(find templates -name 'config-connector' -type d); do
+            echo "Validating: $dir"
+            kubectl apply -n $KCC_NAMESPACE --dry-run=server -f "$dir/"
+          done
+
+  # ── Apply KCC manifests to forge-management (runs on merge to main) ──────
+  apply-kcc:
+    name: Apply KCC Manifests
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+
+      - name: Get KCC cluster credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ env.KCC_CLUSTER }}
+          location: ${{ env.KCC_REGION }}
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Apply KCC manifests
+        run: |
+          set -e
+          for dir in $(find templates -name 'config-connector' -type d); do
+            echo "Applying: $dir"
+            kubectl apply -n $KCC_NAMESPACE -f "$dir/"
+          done
+
+      - name: Wait for KCC resources to become ready
+        run: |
+          set -e
+          # Wait up to 10 minutes for all KCC resources in the namespace to be Ready
+          kubectl wait \
+            --for=condition=Ready \
+            --all \
+            --all-namespaces=false \
+            -n $KCC_NAMESPACE \
+            --timeout=600s \
+            $(kubectl api-resources --api-group=cnrm.cloud.google.com -o name | tr '\n' ',')
+
+      - name: Drift and revert test
+        run: |
+          echo "Drift test: manually mutate a resource and verify KCC reverts it."
+          echo "TODO: implement per-template drift checks."
+
+  # ── Terraform plan (runs on every PR touching agent-infra or terraform-helm) ──
+  terraform-plan:
+    name: Terraform Plan
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    defaults:
+      run:
+        working-directory: agent-infra
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -backend-config="bucket=$TF_STATE_BUCKET" \
+            -backend-config="prefix=agent-infra"
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan -input=false
+
+      - name: Upload plan artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan
+          path: agent-infra/tfplan
+          retention-days: 7
+
+  # ── Terraform apply (runs on merge to main) ───────────────────────────────
+  terraform-apply:
+    name: Terraform Apply
+    runs-on: ubuntu-latest
+    needs: [terraform-plan]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment: production
+    defaults:
+      run:
+        working-directory: agent-infra
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -backend-config="bucket=$TF_STATE_BUCKET" \
+            -backend-config="prefix=agent-infra"
+
+      - name: Download plan artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan
+          path: agent-infra
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve -input=false tfplan
