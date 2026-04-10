@@ -421,4 +421,5 @@ Do not open a PR or comment success until this is captured. Do not mark an issue
 | Pin provider versions `~> 6.0` | Prevents unexpected breaking changes on re-runs |
 | Empty `backend "gcs" {}` block | CI injects state location; hardcoding causes conflicts |
 | Issue comments at every checkpoint | Visibility for human reviewers; catch problems early |
+| **Never create `.github/workflows/` files** | `sandbox-validation.yml` is the only CI workflow — do not add `ci.yaml` or any other workflow. Extra workflows break CI with missing-secret errors (`GCP_SA_KEY`, `GKE_CLUSTER_NAME` do not exist; auth is WIF-only). |
 
