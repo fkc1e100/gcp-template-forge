@@ -29,15 +29,22 @@ This template provides an Enterprise-grade Google Kubernetes Engine (GKE) cluste
 ## Deployment Instructions
 
 1. **Deploy the Cluster (KCC):**
-   - Update `YOUR_PROJECT_ID` in `cluster/cluster.yaml` and `cluster/nodepool.yaml`.
+   - Update `YOUR_PROJECT_ID` in `kcc/cluster.yaml` and `kcc/nodepool.yaml`.
    - Apply the cluster manifests to your management cluster:
      ```bash
-     kubectl apply -f cluster/
+     kubectl apply -f kcc/
      ```
 
-2. **Deploy the Workload:**
-   - Modify values in `workload/values.yaml` (e.g., project ID, service account details).
+2. **Deploy the Workload (Option A: KCC/Kubernetes):**
+   - Update `YOUR_PROJECT_ID` in `kcc/workload/` manifests.
+   - Apply the manifests to your target cluster:
+     ```bash
+     kubectl apply -f kcc/workload/
+     ```
+
+3. **Deploy the Workload (Option B: Helm):**
+   - Modify values in `Terraform_HELM/workload/values.yaml` (e.g., project ID, service account details).
    - Install using Helm on the target cluster:
      ```bash
-     helm install enterprise-app ./workload -f workload/values.yaml
+     helm install enterprise-app ./Terraform_HELM/workload -f Terraform_HELM/workload/values.yaml
      ```

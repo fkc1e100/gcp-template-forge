@@ -1,0 +1,24 @@
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMServiceAccount
+metadata:
+  name: enterprise-workload-sa
+  namespace: default
+  annotations:
+    cnrm.cloud.google.com/project-id: "YOUR_PROJECT_ID"
+spec:
+  displayName: "Enterprise Workload Service Account"
+---
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMPolicyMember
+metadata:
+  name: workload-identity-binding
+  namespace: default
+  annotations:
+    cnrm.cloud.google.com/project-id: "YOUR_PROJECT_ID"
+spec:
+  member: "serviceAccount:YOUR_PROJECT_ID.svc.id.goog[default/enterprise-workload-sa]"
+  role: roles/iam.workloadIdentityUser
+  resourceRef:
+    apiVersion: iam.cnrm.cloud.google.com/v1beta1
+    kind: IAMServiceAccount
+    name: enterprise-workload-sa

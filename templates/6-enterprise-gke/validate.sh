@@ -58,7 +58,7 @@ echo "Workload Identity Integration passed."
 # 4. Teardown Verification
 echo "Test 4: Teardown Verification..."
 # Delete KCC manifests
-kubectl delete -f cluster/
+kubectl delete -f kcc/
 echo "Waiting for cluster deletion (sleeping 5m)..."
 sleep 300
 
