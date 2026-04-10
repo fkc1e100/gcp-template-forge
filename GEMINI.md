@@ -48,7 +48,72 @@ templates/<issue_number>-<short-name>/
 ├── config-connector/
 │   └── *.yaml            # KCC manifests targeting forge-management namespace
 ├── verification_plan.md  # exact commands to deploy, verify, and destroy both paths
-└── README.md
+└── README.md             # YOU write descriptive sections; CI appends Validation Record
+```
+
+---
+
+## README.md — What to Write
+
+Every template needs a `README.md`. Write the descriptive sections; the CI appends the **Validation Record** table automatically after a successful run (date, duration, region, zones, cluster, token cost). Do not write that section yourself.
+
+```markdown
+# Template: <short descriptive name>
+
+## Overview
+<2–3 sentences: what this deploys, what problem it solves, intended use case>
+
+## Template Paths
+
+### Terraform + Helm (`terraform-helm/`)
+- What infrastructure is provisioned (VPC, cluster, node pools, supporting services)
+- What workload is deployed via Helm and which chart/version
+
+### Config Connector (`config-connector/`)
+- Which GCP resources are KCC-managed (e.g. SQLInstance, PubSubTopic, IAMPolicyMember)
+- How KCC resources relate to the workload
+
+## Cluster Details
+- **Type**: GKE Standard / Autopilot
+- **Release channel**: RAPID / REGULAR / STABLE
+- **Node pools**: pool name, machine type, min/max nodes, spot/preemptible
+- **Networking**: VPC-native / private / public, Cloud NAT if applicable
+
+## Workload Details
+- **Application**: what it is and what it does
+- **Access**: endpoint type (LoadBalancer, Ingress, internal), port, auth method
+- **Dependencies**: databases, queues, buckets, etc.
+
+## Enabled Features
+- [x] Workload Identity
+- [x] VPC-native networking
+- [ ] Private cluster + Cloud NAT
+- [ ] Binary Authorization
+- [ ] Confidential GKE Nodes
+- [ ] Vertical / Horizontal Pod Autoscaler
+- [ ] Cluster Autoscaler / Node Auto-provisioning
+- [ ] DWS + Kueue (accelerator templates)
+- [ ] GPU node pool with driver auto-install
+- [ ] Config Connector resources: <list types>
+```
+
+The CI appends this automatically after validation — **do not write it**:
+
+```markdown
+---
+## Validation Record
+
+| | Terraform + Helm | Config Connector |
+|---|---|---|
+| **Status** | ✅ success | ✅ success |
+| **Date** | 2026-04-10 | 2026-04-10 |
+| **Duration** | 8m 32s | 4m 15s |
+| **Region** | us-central1 | us-central1 (KCC cluster) |
+| **Zones** | us-central1-b, us-central1-f | forge-management namespace |
+| **Cluster** | cluster-issue-6 | krmapihost-kcc-instance |
+| **Agent tokens used** | 42,150 input / 8,320 output | (shared session) |
+| **Estimated agent cost** | $0.043 | — |
+| **Commit** | `be1d879d` | `be1d879d` |
 ```
 
 ---
@@ -234,6 +299,26 @@ Key sources:
 - **Cloud Foundation Toolkit** — `GoogleCloudPlatform/cloud-foundation-toolkit` (VPC, IAM modules)
 
 See `user-instructions.json` → `reference_repositories` for the full list.
+
+---
+
+## Agent Metrics Reporting
+
+Before opening the PR, write a `.agent-metrics` file to the template root. The CI reads this to populate the token/cost row in the Validation Record. Use your best estimate of total tokens consumed across the whole session for the issue.
+
+```bash
+cat > templates/<issue>-<name>/.agent-metrics <<EOF
+{
+  "input_tokens": 42150,
+  "output_tokens": 8320,
+  "estimated_cost_usd": "0.043",
+  "model": "gemini-2.5-pro",
+  "session_start": "2026-04-10T14:00:00Z"
+}
+EOF
+```
+
+If you cannot determine the token count, omit the file — the CI records "not recorded".
 
 ---
 
