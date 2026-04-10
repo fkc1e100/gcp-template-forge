@@ -246,9 +246,9 @@ jobs:
         with:
           script: |
             const template = '${{ matrix.template }}';
-            const tfResult = '${{ steps.tf-plan.outcome || "skipped" }}';
-            const helmResult = '${{ steps.helm-dry-run.outcome || "skipped" }}';
-            const kccResult = '${{ steps.kcc-dry-run.outcome || "skipped" }}';
+            const tfResult = '${{ steps.tf-plan.outcome || 'skipped' }}';
+            const helmResult = '${{ steps.helm-dry-run.outcome || 'skipped' }}';
+            const kccResult = '${{ steps.kcc-dry-run.outcome || 'skipped' }}';
             const body = [
               `### Dry Run: \`${template}\``,
               `| Path | Result |`,
