@@ -27,6 +27,7 @@ env:
   TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
 
 jobs:
+  # ── 1. Detect which templates changed ────────────────────────────────────
   detect-changes:
     name: Detect Changed Templates
     runs-on: ubuntu-latest
@@ -55,9 +56,83 @@ jobs:
           echo "has_templates=$([ "$DIRS" = "[]" ] && echo false || echo true)" >> $GITHUB_OUTPUT
           echo "Changed templates: $DIRS"
 
-  preview:
-    name: "Preview (${{ matrix.template }})"
+  # ── 2. Lint / static analysis (PR + push) ────────────────────────────────
+  lint:
+    name: "Lint (${{ matrix.template }})"
     needs: detect-changes
+    if: needs.detect-changes.outputs.has_templates == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Terraform fmt + validate
+        if: "hashFiles(format('{0}/terraform-helm/main.tf', matrix.template)) != ''"
+        working-directory: ${{ matrix.template }}/terraform-helm
+        run: |
+          terraform init -backend=false -input=false
+          terraform fmt -check -recursive
+          terraform validate
+
+      - name: Helm lint
+        if: "hashFiles(format('{0}/terraform-helm/values.yaml', matrix.template)) != ''"
+        run: |
+          for chart in $(find ${{ matrix.template }}/terraform-helm -name Chart.yaml -exec dirname {} \;); do
+            echo "Linting chart: $chart"
+            helm lint "$chart"
+          done
+
+      - name: KCC manifest syntax check
+        if: "hashFiles(format('{0}/config-connector', matrix.template)) != ''"
+        run: |
+          # Basic YAML syntax validation
+          python3 -c "
+          import yaml, sys, pathlib, os
+          errors = []
+          for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml'):
+              try:
+                  yaml.safe_load_all(p.read_text())
+              except yaml.YAMLError as e:
+                  errors.append(str(p) + ': ' + str(e))
+          if errors:
+              print('YAML errors found:')
+              for e in errors: print(' ', e)
+              sys.exit(1)
+          print('All KCC manifests parse OK')
+          "
+
+      - name: Check deletion_protection = false
+        if: "hashFiles(format('{0}/terraform-helm/main.tf', matrix.template)) != ''"
+        run: |
+          if grep -r 'google_container_cluster' ${{ matrix.template }}/terraform-helm/ >/dev/null 2>&1; then
+            if ! grep -r 'deletion_protection.*=.*false' ${{ matrix.template }}/terraform-helm/ >/dev/null 2>&1; then
+              echo "ERROR: google_container_cluster found without deletion_protection = false"
+              exit 1
+            fi
+          fi
+
+      - name: Check no KCC abandon annotations
+        if: "hashFiles(format('{0}/config-connector', matrix.template)) != ''"
+        run: |
+          if grep -r 'deletion-policy.*abandon' ${{ matrix.template }}/config-connector/ >/dev/null 2>&1; then
+            echo "ERROR: cnrm.cloud.google.com/deletion-policy: abandon found -- this orphans GCP resources"
+            exit 1
+          fi
+
+  # ── 3. PR dry-run: terraform plan + KCC server-side dry-run ─────────────
+  dry-run:
+    name: "Dry Run (${{ matrix.template }})"
+    needs: [ detect-changes, lint ]
     if: github.event_name == 'pull_request' && needs.detect-changes.outputs.has_templates == 'true'
     runs-on: ubuntu-latest
     strategy:
@@ -84,19 +159,18 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      - name: Terraform plan
-        id: terraform-plan
+      - name: Terraform plan (TF+Helm path)
+        id: tf-plan
         if: "hashFiles(format('{0}/terraform-helm/main.tf', matrix.template)) != ''"
         working-directory: ${{ matrix.template }}/terraform-helm
         run: |
           terraform init \
             -backend-config="bucket=$TF_STATE_BUCKET" \
             -backend-config="prefix=${{ matrix.template }}/terraform-helm"
-          terraform fmt -check -recursive
-          terraform validate
-          terraform plan -input=false
+          terraform plan -input=false -detailed-exitcode 2>&1 | tee /tmp/tf-plan.txt
+          echo "tf_plan_exit=${PIPESTATUS[0]}" >> $GITHUB_OUTPUT
 
-      - name: KCC dry-run
+      - name: KCC server-side dry-run (Config Connector path)
         id: kcc-dry-run
         if: "hashFiles(format('{0}/config-connector', matrix.template)) != ''"
         run: |
@@ -104,21 +178,29 @@ jobs:
             --dry-run=server \
             -f ${{ matrix.template }}/config-connector/
 
-      - name: Post preview summary
+      - name: Post dry-run summary
         if: always()
         uses: actions/github-script@v7
         with:
           script: |
             const template = '${{ matrix.template }}';
-            const tfResult = '${{ steps.terraform-plan.outcome || "skipped" }}';
+            const tfResult = '${{ steps.tf-plan.outcome || "skipped" }}';
             const kccResult = '${{ steps.kcc-dry-run.outcome || "skipped" }}';
+            const body = [
+              `### Dry Run: \`${template}\``,
+              `| Path | Result |`,
+              `|---|---|`,
+              `| Terraform + Helm plan | **${tfResult}** |`,
+              `| KCC server-side dry-run | **${kccResult}** |`,
+            ].join('\n');
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `### Validation Preview: \`${template}\`\n- Terraform plan: **${tfResult}**\n- KCC dry-run: **${kccResult}**`
+              body,
             });
 
+  # ── 4. Post-merge: full deploy -> verify -> teardown -> mark validated ───
   validate-and-publish:
     name: "Validate & Publish (${{ matrix.template }})"
     needs: detect-changes
@@ -160,6 +242,7 @@ jobs:
         if: steps.skip-check.outputs.skip != 'true'
         uses: hashicorp/setup-terraform@v3
 
+      # TF+Helm: deploy
       - name: Terraform apply
         id: tf-apply
         if: >-
@@ -190,7 +273,8 @@ jobs:
             echo "tf_zones=${ZONES}" >> $GITHUB_OUTPUT
           fi
 
-      - name: Verify Terraform workload
+      # TF+Helm: verify cluster is RUNNING
+      - name: Verify Terraform cluster
         id: tf-verify
         if: steps.tf-outputs.outcome == 'success'
         working-directory: ${{ matrix.template }}/terraform-helm
@@ -198,15 +282,19 @@ jobs:
           CLUSTER="${{ steps.tf-outputs.outputs.tf_cluster }}"
           LOCATION="${{ steps.tf-outputs.outputs.tf_location }}"
           if [ -n "$CLUSTER" ] && [ -n "$LOCATION" ]; then
+            gcloud container clusters get-credentials $CLUSTER --location=$LOCATION
+            kubectl get nodes
             gcloud container clusters describe $CLUSTER --location=$LOCATION \
               --format="value(status)" | grep -q RUNNING
           fi
 
+      # TF+Helm: tear down
       - name: Terraform destroy
         if: always() && steps.tf-apply.outcome == 'success'
         working-directory: ${{ matrix.template }}/terraform-helm
         run: terraform destroy -auto-approve -input=false
 
+      # KCC: deploy
       - name: Apply KCC manifests
         id: kcc-apply
         if: >-
@@ -217,7 +305,8 @@ jobs:
           kubectl apply -n $KCC_NAMESPACE \
             -f ${{ matrix.template }}/config-connector/
 
-      - name: Wait for KCC resources ready
+      # KCC: wait for all resources Ready
+      - name: Wait for KCC resources Ready
         id: kcc-wait
         if: steps.kcc-apply.outcome == 'success'
         run: |
@@ -230,11 +319,14 @@ jobs:
           KCC_DURATION=$(( $(date -u +%s) - ${KCC_START} ))
           echo "kcc_duration=${KCC_DURATION}" >> $GITHUB_OUTPUT
 
+      # KCC: drift test
       - name: KCC drift and revert test
         if: steps.kcc-wait.outcome == 'success'
         run: echo "Drift test placeholder -- template-specific tests go here."
 
+      # KCC: tear down and verify GCP resources are gone
       - name: Delete KCC resources
+        id: kcc-delete
         if: always() && steps.kcc-apply.outcome == 'success'
         run: |
           kubectl delete \
@@ -242,6 +334,7 @@ jobs:
             -f ${{ matrix.template }}/config-connector/ \
             --wait=true --timeout=300s || true
 
+      # Mark validated and update README
       - name: Update README and mark validated
         if: >-
           steps.skip-check.outputs.skip != 'true' &&
@@ -264,7 +357,6 @@ jobs:
           fmt_duration() { local s=$1; [ -z "$s" ] && echo "n/a" || echo "$((s/60))m $((s%60))s"; }
           TF_DUR=$(fmt_duration "$TF_DURATION")
           KCC_DUR=$(fmt_duration "$KCC_DURATION")
-
           REGION="${TF_LOCATION:-us-central1}"
           ZONES="${TF_ZONES:-${REGION}}"
 
@@ -294,7 +386,7 @@ jobs:
           COST_STR="${AGENT_COST:+\$${AGENT_COST}}"
           COST_STR="${COST_STR:--}"
 
-          # Append validation record using python to avoid shell heredoc/YAML conflicts
+          # Append validation record using Python (avoids | and --- in YAML block scalars)
           python3 - "$README" "$DATE" "$TF_STATUS" "$KCC_STATUS" "$TF_DUR" "$KCC_DUR" \
               "$REGION" "$ZONES" "${TF_CLUSTER:---}" "${COMMIT:0:8}" \
               "$TOKEN_STR" "$COST_STR" << 'PYEOF'
@@ -312,11 +404,9 @@ jobs:
               ("**Estimated cost**", cost,      "--"),
               ("**Commit**",         commit,    commit),
           ]
-          lines = [
-              "\n\n## Validation Record\n",
-              sep.join(["", "", "Terraform + Helm", "Config Connector", ""]).strip(),
-              sep.join(["", "---", "---", "---", ""]).strip(),
-          ]
+          header = sep.join(["", "", "Terraform + Helm", "Config Connector", ""]).strip()
+          divider = sep.join(["", "---", "---", "---", ""]).strip()
+          lines = ["\n\n## Validation Record\n", header, divider]
           for label, tf_val, kcc_val in rows:
               lines.append(sep.join(["", label, tf_val, kcc_val, ""]).strip())
           lines.append("")
