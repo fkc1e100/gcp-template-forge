@@ -6,18 +6,32 @@ Also load `.gemini/user-instructions.json` — it contains the full structured s
 
 ---
 
-## First Step: Sync Guidance from Upstream
+## First Step: Sync Guidance and Resolve Divergence
 
-**Run this before starting any task.** The sandbox works on a fork (`codebot-sfle/gcp-template-forge`), so guidance updates pushed to the canonical repo (`fkc1e100/gcp-template-forge`) won't arrive automatically.
+**Run this before starting any task.** The sandbox works on a fork (`codebot-sfle/gcp-template-forge`), so guidance updates pushed to the canonical repo (`fkc1e100/gcp-template-forge`) won't arrive automatically. Also, CI workflow fixes and merge commits pushed to the PR branch from outside the sandbox can cause the local branch to diverge — always reconcile first.
 
 ```bash
-git fetch upstream main --quiet
-git checkout upstream/main -- GEMINI.md .gemini/user-instructions.json 2>/dev/null || true
-git add GEMINI.md .gemini/user-instructions.json
+# 1. Ensure rebase-on-pull is set (prevents fast-forward failures)
+git config --global pull.rebase true
+git config --global rebase.autoStash true
+
+# 2. Fetch all remotes
+git fetch --all --quiet
+
+# 3. If local branch has diverged from upstream (fkc1e100), reset to upstream
+# NOTE: origin = codebot-sfle fork, upstream = fkc1e100/gcp-template-forge (canonical)
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if git ls-remote --exit-code upstream "refs/heads/${BRANCH}" >/dev/null 2>&1; then
+  git fetch upstream "${BRANCH}" --quiet
+  git checkout -B "${BRANCH}" "upstream/${BRANCH}"
+fi
+
+# 4. Sync guidance files from upstream main
+git add GEMINI.md .gemini/user-instructions.json 2>/dev/null || true
 git commit -m "chore: sync guidance from upstream" --quiet 2>/dev/null || true
 ```
 
-This ensures you always have the latest project rules, guardrails, and success criteria before generating any code.
+This ensures you always have the latest project rules and a clean working tree before generating any code.
 
 ---
 
