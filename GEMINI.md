@@ -6,18 +6,35 @@ Also load `.gemini/user-instructions.json` — it contains the full structured s
 
 ---
 
-## First Step: Sync Guidance from Upstream
+## First Step: Sync Guidance and Resolve Divergence
 
-**Run this before starting any task.** The sandbox works on a fork (`codebot-sfle/gcp-template-forge`), so guidance updates pushed to the canonical repo (`fkc1e100/gcp-template-forge`) won't arrive automatically.
+**Run this before starting any task.** The sandbox works on a fork (`codebot-sfle/gcp-template-forge`), so guidance updates pushed to the canonical repo (`fkc1e100/gcp-template-forge`) won't arrive automatically. Also, CI workflow fixes and merge commits pushed to the PR branch from outside the sandbox can cause the local branch to diverge — always reconcile first.
 
 ```bash
-git fetch upstream main --quiet
-git checkout upstream/main -- GEMINI.md .gemini/user-instructions.json 2>/dev/null || true
-git add GEMINI.md .gemini/user-instructions.json
+# 1. Ensure rebase-on-pull is set (prevents fast-forward failures)
+git config --global pull.rebase true
+git config --global rebase.autoStash true
+
+# 2. Fetch all remotes
+git fetch --all --quiet
+
+# 3. If the current branch has diverged from origin, rebase onto it
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if ! git merge-base --is-ancestor HEAD "origin/${BRANCH}" 2>/dev/null && \
+   ! git merge-base --is-ancestor "origin/${BRANCH}" HEAD 2>/dev/null; then
+  echo "Branch diverged — rebasing local onto origin/${BRANCH}"
+  git rebase "origin/${BRANCH}" || git rebase --abort
+fi
+
+# 4. Sync guidance files from upstream main
+git checkout origin/main -- GEMINI.md .gemini/user-instructions.json 2>/dev/null || \
+  git fetch origin main:refs/remotes/origin/main --quiet && \
+  git checkout origin/main -- GEMINI.md .gemini/user-instructions.json 2>/dev/null || true
+git add GEMINI.md .gemini/user-instructions.json 2>/dev/null || true
 git commit -m "chore: sync guidance from upstream" --quiet 2>/dev/null || true
 ```
 
-This ensures you always have the latest project rules, guardrails, and success criteria before generating any code.
+This ensures you always have the latest project rules and a clean working tree before generating any code.
 
 ---
 
