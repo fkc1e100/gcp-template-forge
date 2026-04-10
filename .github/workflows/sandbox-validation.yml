@@ -200,7 +200,23 @@ jobs:
               body,
             });
 
-  # ── 4. Post-merge: full deploy -> verify -> teardown -> mark validated ───
+  # ── 4. Auto-merge PR when lint + dry-run both pass ───────────────────────
+  auto-merge:
+    name: Auto-merge
+    needs: [ detect-changes, lint, dry-run ]
+    if: >-
+      github.event_name == 'pull_request' &&
+      needs.detect-changes.outputs.has_templates == 'true' &&
+      needs.lint.result == 'success' &&
+      needs.dry-run.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enable auto-merge
+        run: gh pr merge ${{ github.event.pull_request.number }} --auto --squash --repo ${{ github.repository }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ── 5. Post-merge: full deploy -> verify -> teardown -> mark validated ───
   validate-and-publish:
     name: "Validate & Publish (${{ matrix.template }})"
     needs: detect-changes
