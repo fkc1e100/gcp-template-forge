@@ -63,7 +63,7 @@ jobs:
     if: needs.detect-changes.outputs.has_templates == 'true'
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
+      fail-fast: true   # stop linting other templates the moment one fails
       matrix:
         template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
 
@@ -164,14 +164,43 @@ jobs:
             exit 1
           fi
 
+      - name: Report lint failure to PR
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const template = '${{ matrix.template }}';
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: [
+                `### CI Lint failure: \`${template}\``,
+                ``,
+                `One or more lint checks failed — see [run logs](${runUrl}) for the exact error.`,
+                ``,
+                `**Common causes:**`,
+                `- Template directory named \`Terraform_HELM/\` or similar instead of \`terraform-helm/\``,
+                `- \`google_container_cluster\` missing \`deletion_protection = false\``,
+                `- Terraform fmt or validate error`,
+                `- KCC manifest YAML syntax error`,
+                ``,
+                `Please investigate the lint failure, fix the issue, and push a new commit.`,
+              ].join('\n'),
+            });
+
   # ── 3. PR dry-run: terraform plan + KCC server-side dry-run ─────────────
   dry-run:
     name: "Dry Run (${{ matrix.template }})"
     needs: [ detect-changes, lint ]
-    if: github.event_name == 'pull_request' && needs.detect-changes.outputs.has_templates == 'true'
+    if: >-
+      github.event_name == 'pull_request' &&
+      needs.detect-changes.outputs.has_templates == 'true' &&
+      needs.lint.result == 'success'
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
+      fail-fast: true   # stop remaining dry-runs if one fails
       matrix:
         template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
 
@@ -249,19 +278,26 @@ jobs:
             const tfResult = '${{ steps.tf-plan.outcome || 'skipped' }}';
             const helmResult = '${{ steps.helm-dry-run.outcome || 'skipped' }}';
             const kccResult = '${{ steps.kcc-dry-run.outcome || 'skipped' }}';
-            const body = [
+            const failed = [tfResult, helmResult, kccResult].some(r => r === 'failure');
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const summaryLines = [
               `### Dry Run: \`${template}\``,
               `| Path | Result |`,
               `|---|---|`,
               `| Terraform plan | **${tfResult}** |`,
               `| Helm template + server-side dry-run | **${helmResult}** |`,
               `| KCC server-side dry-run | **${kccResult}** |`,
-            ].join('\n');
+            ];
+            if (failed) {
+              summaryLines.push('');
+              summaryLines.push(`One or more dry-run checks failed — see [run logs](${runUrl}) for details.`);
+              summaryLines.push(`Please investigate the failure, fix the issue, and push a new commit.`);
+            }
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body,
+              body: summaryLines.join('\n'),
             });
 
   # ── 4. Auto-merge PR when lint + dry-run both pass ───────────────────────
