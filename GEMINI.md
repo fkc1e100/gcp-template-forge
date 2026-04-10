@@ -18,18 +18,15 @@ git config --global rebase.autoStash true
 # 2. Fetch all remotes
 git fetch --all --quiet
 
-# 3. If the current branch has diverged from origin, rebase onto it
+# 3. If local branch has diverged from upstream (fkc1e100), reset to upstream
+# NOTE: origin = codebot-sfle fork, upstream = fkc1e100/gcp-template-forge (canonical)
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
-if ! git merge-base --is-ancestor HEAD "origin/${BRANCH}" 2>/dev/null && \
-   ! git merge-base --is-ancestor "origin/${BRANCH}" HEAD 2>/dev/null; then
-  echo "Branch diverged — rebasing local onto origin/${BRANCH}"
-  git rebase "origin/${BRANCH}" || git rebase --abort
+if git ls-remote --exit-code upstream "refs/heads/${BRANCH}" >/dev/null 2>&1; then
+  git fetch upstream "${BRANCH}" --quiet
+  git checkout -B "${BRANCH}" "upstream/${BRANCH}"
 fi
 
 # 4. Sync guidance files from upstream main
-git checkout origin/main -- GEMINI.md .gemini/user-instructions.json 2>/dev/null || \
-  git fetch origin main:refs/remotes/origin/main --quiet && \
-  git checkout origin/main -- GEMINI.md .gemini/user-instructions.json 2>/dev/null || true
 git add GEMINI.md .gemini/user-instructions.json 2>/dev/null || true
 git commit -m "chore: sync guidance from upstream" --quiet 2>/dev/null || true
 ```
