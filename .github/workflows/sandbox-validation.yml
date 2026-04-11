@@ -233,7 +233,7 @@ jobs:
           service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
 
       - name: Install gke-gcloud-auth-plugin
-        run: sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
+        run: sudo apt-get update -q && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
 
       - name: Get KCC cluster credentials
         uses: google-github-actions/get-gke-credentials@v2
@@ -454,7 +454,7 @@ jobs:
 
       - name: Install gke-gcloud-auth-plugin
         if: steps.skip-check.outputs.skip != 'true'
-        run: sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
+        run: sudo apt-get update -q && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
 
       - name: Setup Terraform
         if: steps.skip-check.outputs.skip != 'true'
@@ -615,7 +615,7 @@ jobs:
 
       - name: Install gke-gcloud-auth-plugin
         if: steps.skip-check.outputs.skip != 'true'
-        run: sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
+        run: sudo apt-get update -q && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
 
       - name: Get KCC cluster credentials
         if: steps.skip-check.outputs.skip != 'true'
