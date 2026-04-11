@@ -18,7 +18,7 @@ metadata:
   name: enterprise-gke
   namespace: enterprise-gke
   labels:
-    template: 6-enterprise-gke
+    template: enterprise-gke
     app.kubernetes.io/name: enterprise-gke
 spec:
   type: LoadBalancer

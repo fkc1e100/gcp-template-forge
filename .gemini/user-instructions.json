@@ -60,7 +60,7 @@
       "slot_1_enterprise_gke": "primary=10.16.0.0/20, pods=10.20.0.0/14, services=10.24.0.0/20",
       "next_template_pattern": "primary=10.(N×16).0.0/20, pods=10.(N×16+4).0.0/14, services=10.(N×16+8).0.0/20"
     },
-    "naming": "Name VPCs and subnets after the template: <template-name>-vpc, <template-name>-subnet",
+    "naming": "Use path-specific suffixes to avoid GCP-level name collisions between the two CI paths (which run in parallel). Terraform path: <template-name>-tf (cluster), <template-name>-tf-vpc, <template-name>-tf-subnet. Config Connector path: <template-name>-kcc (cluster), <template-name>-kcc-vpc, <template-name>-kcc-subnet. All other Kubernetes-internal names (Deployments, Services, KSAs) need no suffix as they live in separate clusters.",
     "cleanup": "Terraform destroy will remove the per-template VPC. No shared network state to worry about.",
     "private_google_access": "Always enable private_ip_google_access = true on subnets so private clusters can reach Google APIs."
   },
@@ -168,6 +168,32 @@
       "autopilot": "vulnerability_mode = VULNERABILITY_BASIC",
       "standard": "vulnerability_mode = VULNERABILITY_ENTERPRISE"
     }
+  },
+
+  "inference_quickstart": {
+    "description": "For any template that serves pre-trained AI models (LLM inference, embedding serving, image generation), use the GKE Inference Quickstart tool BEFORE writing Terraform or manifests. It generates performance-benchmarked Kubernetes manifests with correct GPU resource requests, model-server flags, and autoscaling config.",
+    "minimum_gcloud_version": "536.0.1",
+    "key_commands": {
+      "list_use_cases": "gcloud container ai profiles use-cases list",
+      "list_benchmarks": "gcloud container ai profiles benchmarks list --filter='modelId:<model> AND acceleratorType:<gpu>'",
+      "generate_manifests": "gcloud container ai profiles manifests create --use-case=<id> --accelerator-type=<gpu> --output-path=./workload/"
+    },
+    "important_flags": {
+      "--accelerator-type": "GPU type, e.g. nvidia-l4, nvidia-tesla-t4, nvidia-h100-80gb",
+      "--target-ttft-milliseconds": "Time to First Token latency target",
+      "--target-ntpot-milliseconds": "Next Token latency threshold",
+      "--model-bucket-uri": "Cloud Storage URI of model weights if self-hosted"
+    },
+    "supported_model_families": "Gemma, Llama, Mistral, DeepSeek, Qwen — run use-cases list for current full list",
+    "model_servers": "vLLM (default single-node) and llm-d (distributed multi-node). Helm registry: oci://us-docker.pkg.dev/ml-serving-discovery/helm",
+    "default_gpu": "Use nvidia-l4 (g2-standard-12) as default for LLM serving — 16 L4 quota available. Do NOT request nvidia-h100-80gb (quota = 0).",
+    "workflow": [
+      "Run 'gcloud container ai profiles use-cases list' to identify the correct use-case ID for the requested model.",
+      "Run 'gcloud container ai profiles manifests create' with the target GPU and latency requirements.",
+      "Use the generated manifests as the baseline for the template's workload/ directory — do not write GPU/model-server configs from scratch.",
+      "Size the node pool (machine type + GPU count) to match the generated manifest's resource requests.",
+      "Reference also: GKE AI Labs repo (https://github.com/ai-on-gke/tutorials-and-examples) for vLLM/Triton examples."
+    ]
   },
 
   "agent_metrics_reporting": {
@@ -289,12 +315,13 @@
     "For every issue, start by identifying which reference_repositories are most relevant to the intent, then FETCH actual files from those repos before writing any code.",
     "Support dual-path IaC generation: Terraform/Helm and Config Connector.",
     "For every issue requiring infrastructure generation, the agent MUST create two distinct folders under templates/<short-name>/: one named config-connector/ for Config Connector manifests, and one named terraform-helm/ for Terraform/Helm files. The directory name is the template identity — do NOT prefix with an issue number.",
-    "All generated cloud resources (clusters, networks, buckets) MUST be named after the template (e.g., enterprise-gke-cluster, enterprise-gke-vpc) to ensure uniqueness and easy cleanup.",
+    "All generated GCP resources MUST use path-specific suffixes: -tf for the Terraform path (e.g., enterprise-gke-tf, enterprise-gke-tf-vpc) and -kcc for the Config Connector path (e.g., enterprise-gke-kcc, enterprise-gke-kcc-vpc). This allows both CI jobs to run in parallel without name collisions in GCP.",
     "Never use hardcoded project IDs. Use the project_id from project_context above (gca-gke-2025). For Terraform: var.project_id defaulting to 'gca-gke-2025'. For KCC: annotate with cnrm.cloud.google.com/project-id.",
     "Every template must include a verification_plan.md with exact commands to deploy, verify, and destroy both the KCC and TF/Helm paths.",
     "Follow the issue_communication_protocol — post comments at each checkpoint.",
     "Ensure templates are security scanned and work out-of-the-box.",
     "Consider and factor in new GKE features if the example architectures could benefit from them.",
+    "For any template serving pre-trained AI models (LLM inference, embeddings, image generation): ALWAYS run the GKE Inference Quickstart tool first (gcloud container ai profiles manifests create) to generate performance-tuned manifests. See inference_quickstart section for full workflow.",
     "When selecting GKE release channels: Use RAPID for templates requiring bleeding-edge features or AI/ML workloads. Use REGULAR or STABLE for standard enterprise templates."
   ],
 

@@ -34,13 +34,13 @@ provider "helm" {
 
 # VPC Network
 resource "google_compute_network" "vpc" {
-  name                    = "enterprise-gke-vpc"
+  name                    = "enterprise-gke-tf-vpc"
   auto_create_subnetworks = false
 }
 
 # Subnet
 resource "google_compute_subnetwork" "subnet" {
-  name                     = "enterprise-gke-subnet"
+  name                     = "enterprise-gke-tf-subnet"
   ip_cidr_range            = "10.100.0.0/20"
   region                   = var.region
   network                  = google_compute_network.vpc.id

@@ -16,7 +16,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   labels:
-    template: 6-enterprise-gke
+    template: enterprise-gke
   name: enterprise-gke-netpol
   namespace: enterprise-gke
 spec:

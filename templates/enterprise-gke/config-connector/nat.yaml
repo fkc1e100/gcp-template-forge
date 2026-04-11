@@ -15,30 +15,30 @@
 apiVersion: compute.cnrm.cloud.google.com/v1beta1
 kind: ComputeRouter
 metadata:
-  name: enterprise-gke-router
+  name: enterprise-gke-kcc-router
   namespace: forge-management
   labels:
-    template: 6-enterprise-gke
+    template: enterprise-gke
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   region: us-central1
   networkRef:
-    name: enterprise-gke-vpc
+    name: enterprise-gke-kcc-vpc
 ---
 apiVersion: compute.cnrm.cloud.google.com/v1beta1
 kind: ComputeRouterNAT
 metadata:
-  name: enterprise-gke-nat
+  name: enterprise-gke-kcc-nat
   namespace: forge-management
   labels:
-    template: 6-enterprise-gke
+    template: enterprise-gke
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   region: us-central1
   routerRef:
-    name: enterprise-gke-router
+    name: enterprise-gke-kcc-router
   natIpAllocateOption: AUTO_ONLY
   sourceSubnetworkIpRangesToNat: ALL_SUBNETWORKS_ALL_IP_RANGES
   logConfig:

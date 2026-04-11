@@ -29,13 +29,13 @@ provider "helm" {
 
 # VPC Network
 resource "google_compute_network" "vpc" {
-  name                    = "basic-gke-vpc"
+  name                    = "basic-gke-tf-vpc"
   auto_create_subnetworks = false
 }
 
 # Subnet with secondary ranges for VPC-native GKE Autopilot
 resource "google_compute_subnetwork" "subnet" {
-  name          = "basic-gke-subnet"
+  name          = "basic-gke-tf-subnet"
   ip_cidr_range = "10.0.0.0/24"
   region        = var.region
   network       = google_compute_network.vpc.id

@@ -15,7 +15,7 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerCluster
 metadata:
-  name: basic-gke
+  name: basic-gke-kcc
   namespace: forge-management
   labels:
     template: basic-gke-hello-world
@@ -25,9 +25,9 @@ spec:
   location: us-central1
   enableAutopilot: true
   networkRef:
-    name: basic-gke-vpc
+    name: basic-gke-kcc-vpc
   subnetworkRef:
-    name: basic-gke-subnet
+    name: basic-gke-kcc-subnet
   ipAllocationPolicy:
     clusterSecondaryRangeName: pods
     servicesSecondaryRangeName: services

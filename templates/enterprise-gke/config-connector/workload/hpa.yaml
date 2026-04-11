@@ -16,7 +16,7 @@ apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   labels:
-    template: 6-enterprise-gke
+    template: enterprise-gke
   name: enterprise-gke-hpa
   namespace: enterprise-gke
 spec:

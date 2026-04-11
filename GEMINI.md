@@ -3,7 +3,7 @@
 ## Guardrails
 
 - **Template scope**: Only modify files within `templates/<your-template-directory>/`. Never touch other template directories or files that don't belong to your task.
-- **Resource naming**: All GCP resource names must be derived from the template directory name (e.g., `enterprise-gke-vpc`, `enterprise-gke-cluster`), NOT from issue numbers (no `issue-6`, `workload-6`, etc.).
+- **Resource naming**: All GCP resource names must be derived from the template directory name. Use a **`-tf` suffix** for Terraform-managed GCP resources and a **`-kcc` suffix** for Config Connector-managed GCP resources so both validation paths can run in parallel without name collisions. Examples: `enterprise-gke-tf` (TF cluster), `enterprise-gke-tf-vpc`, `enterprise-gke-kcc` (KCC cluster), `enterprise-gke-kcc-vpc`. Do NOT use issue numbers (no `issue-6`, `workload-6`, etc.).
 - **No merging other PRs**: Never merge changes from other open PRs or branches into your working branch.
 - **No new workflow files**: Never create `.github/workflows/` files. `sandbox-validation.yml` is the only CI workflow and must not be modified except via explicit instruction.
 
@@ -192,7 +192,7 @@ Create a **dedicated VPC per template** with unique, non-overlapping CIDRs. Chec
 | 2 | `10.32.0.0/20` | `10.36.0.0/14` | `10.40.0.0/20` | *(next template)* |
 | N | `10.(N×16).0.0/20` | `10.(N×16+4).0.0/14` | `10.(N×16+8).0.0/20` | |
 
-Name VPCs and subnets after the template: `<template-name>-vpc`, `<template-name>-subnet`.
+Name VPCs and subnets with path-specific suffixes: `<template-name>-tf-vpc` / `<template-name>-tf-subnet` for the Terraform path, and `<template-name>-kcc-vpc` / `<template-name>-kcc-subnet` for the Config Connector path. This ensures the two CI jobs can run in parallel without GCP-level name collisions.
 
 Always use **VPC-native clusters** (`networking_mode = "VPC_NATIVE"` with `ip_allocation_policy`). Always set `private_ip_google_access = true` on subnets.
 
@@ -241,6 +241,48 @@ Required Kueue resources: `ClusterQueue` → `ResourceFlavor` → `LocalQueue`. 
 Reference: `github.com/GoogleCloudPlatform/accelerated-platforms` — check the DWS examples.
 
 **In `verification_plan.md`**: note that DWS-based templates may take up to 7 days to validate. Document the expected wait and how to monitor queue status: `kubectl get workloads -n <namespace>`.
+
+---
+
+## GKE Inference Quickstart
+
+For templates that serve **pre-trained AI models** (LLM inference, image generation, embedding serving), use the **GKE Inference Quickstart** tool (`gcloud container ai profiles`) to generate performance-tuned cluster and workload designs before writing any Terraform or manifests.
+
+**Why**: The quickstart benchmarks model-hardware combinations and emits validated Kubernetes manifests (Deployment, Service, HPA, PodMonitoring) with correct resource requests, GPU configuration, and model-server flags. Starting from these avoids hours of trial-and-error sizing.
+
+**Key commands** (requires gcloud ≥ 536.0.1):
+
+```bash
+# 1. List supported models and use-cases
+gcloud container ai profiles use-cases list
+
+# 2. View benchmark data for a model+accelerator combination
+gcloud container ai profiles benchmarks list \
+  --filter="modelId:gemma AND acceleratorType:nvidia-l4"
+
+# 3. Generate deployment manifests for a model
+gcloud container ai profiles manifests create \
+  --use-case=<use-case-id> \
+  --accelerator-type=nvidia-l4 \
+  --output-path=./workload/
+```
+
+**Flags of interest**:
+- `--accelerator-type` — GPU type (e.g., `nvidia-l4`, `nvidia-tesla-t4`, `nvidia-h100-80gb`)
+- `--target-ttft-milliseconds` — Time to First Token latency target
+- `--target-ntpot-milliseconds` — Next Token per Output Token latency target
+- `--model-bucket-uri` — Cloud Storage URI of the model weights (if self-hosted)
+
+**Supported model families**: Gemma, Llama, Mistral, DeepSeek, Qwen (check `use-cases list` for the current full list).
+
+**Model servers**: The quickstart generates configs for **vLLM** (default) and **llm-d** (distributed inference across multiple nodes). The Helm registry for the GKE Inference Gateway / vLLM stack is `oci://us-docker.pkg.dev/ml-serving-discovery/helm`.
+
+**Workflow**:
+1. Run `gcloud container ai profiles use-cases list` to find the right use-case for the requested model.
+2. Run `gcloud container ai profiles manifests create` with the target accelerator and latency requirements.
+3. Use the generated manifests as the baseline for the template's `workload/` directory — do not write GPU/model-server configs from scratch.
+4. Size the node pool to match the accelerator and replica count in the generated manifests.
+5. Use L4 (`nvidia-l4`) as the default for LLM serving unless the model or latency requirement demands H100 (quota = 0 here — do not request H100).
 
 ---
 

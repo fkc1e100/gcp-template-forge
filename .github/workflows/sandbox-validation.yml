@@ -654,11 +654,13 @@ jobs:
           retention-days: 1
 
   # ── 4b. Post-merge: independent KCC cluster: apply → wait Ready → delete ─
-  #   Runs after validate-tf-helm completes (same resource names must not
-  #   overlap in GCP simultaneously).
+  #   Runs in parallel with validate-tf-helm. TF resources use -tf suffix
+  #   (e.g. basic-gke-tf, basic-gke-tf-vpc) and KCC resources use -kcc suffix
+  #   (e.g. basic-gke-kcc, basic-gke-kcc-vpc), so there is no GCP-level name
+  #   collision and both jobs can run concurrently.
   validate-kcc:
     name: "Validate KCC (${{ matrix.template }})"
-    needs: [detect-changes, validate-tf-helm]
+    needs: detect-changes
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.detect-changes.outputs.has_templates == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 60

@@ -16,7 +16,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   labels:
-    template: 6-enterprise-gke
+    template: enterprise-gke
   name: enterprise-gke-config
   namespace: enterprise-gke
 data:

@@ -15,16 +15,16 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
 metadata:
-  name: enterprise-gke-pool
+  name: enterprise-gke-kcc-pool
   namespace: forge-management
   labels:
-    template: 6-enterprise-gke
+    template: enterprise-gke
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   location: us-central1
   clusterRef:
-    name: enterprise-gke
+    name: enterprise-gke-kcc
   nodeCount: 1
   nodeConfig:
     spot: true
