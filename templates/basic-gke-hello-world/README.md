@@ -47,3 +47,18 @@ cd terraform-helm && terraform destroy
 # KCC path
 kubectl delete -n <KCC_NAMESPACE> -f config-connector/ --wait=true
 ```
+
+## Validation Record
+
+|  | Terraform + Helm | Config Connector |
+| --- | --- | --- |
+| **Status** | skipped | success |
+| **Date** | 2026-04-11 | 2026-04-11 |
+| **Duration** | n/a | 8m 2s |
+| **Region** | us-central1 | us-central1 (KCC cluster) |
+| **Zones** | us-central1 | forge-management namespace |
+| **Cluster** | -- | krmapihost-kcc-instance |
+| **Agent tokens** | not recorded | (shared session) |
+| **Estimated cost** | - | -- |
+| **Commit** | 7b48e3a8 | 7b48e3a8 |
+
