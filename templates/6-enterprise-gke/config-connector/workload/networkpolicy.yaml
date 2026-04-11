@@ -1,12 +1,14 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: enterprise-workload-netpol
-  namespace: enterprise-workload
+  labels:
+    template: templates/6-enterprise-gke
+  name: workload-6-netpol
+  namespace: workload-6
 spec:
   podSelector:
     matchLabels:
-      app.kubernetes.io/name: enterprise-workload
+      app.kubernetes.io/name: workload-6
   policyTypes:
     - Ingress
     - Egress

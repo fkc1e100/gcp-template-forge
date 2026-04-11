@@ -15,7 +15,7 @@
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMServiceAccount
 metadata:
-  name: enterprise-workload-sa
+  name: workload-sa-6
   namespace: forge-management
   labels:
     template: templates/6-enterprise-gke
@@ -27,16 +27,16 @@ spec:
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPolicyMember
 metadata:
-  name: workload-identity-binding
+  name: wi-binding-6
   namespace: forge-management
   labels:
     template: templates/6-enterprise-gke
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
-  member: "serviceAccount:gca-gke-2025.svc.id.goog[enterprise-workload/enterprise-workload-sa]"
+  member: "serviceAccount:gca-gke-2025.svc.id.goog[workload-6/workload-sa-6]"
   role: roles/iam.workloadIdentityUser
   resourceRef:
     apiVersion: iam.cnrm.cloud.google.com/v1beta1
     kind: IAMServiceAccount
-    name: enterprise-workload-sa
+    name: workload-sa-6

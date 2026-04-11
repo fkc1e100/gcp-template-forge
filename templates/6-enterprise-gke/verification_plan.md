@@ -46,12 +46,12 @@ terraform apply -auto-approve
 2. **Workload Health:**
    ```bash
    gcloud container clusters get-credentials cluster-issue-6 --region us-central1
-   kubectl get pods -n enterprise-workload -l app.kubernetes.io/name=enterprise-workload
+   kubectl get pods -l app.kubernetes.io/name=workload-6 -n workload-6
    ```
 3. **Endpoint Interaction:**
    ```bash
    # Get LoadBalancer IP
-   SERVICE_IP=$(kubectl get svc enterprise-workload -n enterprise-workload -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+   SERVICE_IP=$(kubectl get svc workload-6 -o jsonpath='{.status.loadBalancer.ingress[0].ip}' -n workload-6)
    curl -sf http://${SERVICE_IP}:8080/
    ```
 
@@ -65,7 +65,7 @@ terraform destroy -auto-approve
 ### Deployment
 ```bash
 # Apply KCC manifests to forge-management namespace on management cluster
-kubectl apply -f config-connector/ -n forge-management
+kubectl apply -R -f config-connector/ -n forge-management
 ```
 
 ### Verification
@@ -81,7 +81,7 @@ kubectl apply -f config-connector/ -n forge-management
 
 ### Teardown
 ```bash
-kubectl delete -f config-connector/ -n forge-management
+kubectl delete -R -f config-connector/ -n forge-management
 ```
 
 ## Validation Output

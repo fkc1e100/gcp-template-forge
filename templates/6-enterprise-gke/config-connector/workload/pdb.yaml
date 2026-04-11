@@ -1,10 +1,12 @@
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: enterprise-workload-pdb
-  namespace: enterprise-workload
+  labels:
+    template: templates/6-enterprise-gke
+  name: workload-6-pdb
+  namespace: workload-6
 spec:
   minAvailable: 2
   selector:
     matchLabels:
-      app.kubernetes.io/name: enterprise-workload
+      app.kubernetes.io/name: workload-6

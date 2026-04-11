@@ -1,8 +1,10 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: enterprise-workload-config
-  namespace: enterprise-workload
+  labels:
+    template: templates/6-enterprise-gke
+  name: config-6
+  namespace: workload-6
 data:
   LOG_LEVEL: "info"
   ENVIRONMENT: "production"

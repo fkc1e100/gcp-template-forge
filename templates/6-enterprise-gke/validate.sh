@@ -7,6 +7,7 @@ PROJECT_ID=${PROJECT_ID:-"gca-gke-2025"}
 CLUSTER_NAME="cluster-issue-6-kcc"
 NODE_POOL_NAME="pool-issue-6-kcc"
 NAMESPACE="forge-management"
+NAMESPACE_WORKLOAD="workload-6"
 REGION="us-central1"
 
 # 1. Resource Readiness
@@ -34,16 +35,19 @@ echo "Test 3: Workload Identity Integration..."
 # Get credentials for the newly created cluster
 gcloud container clusters get-credentials ${CLUSTER_NAME} --region ${REGION} --project ${PROJECT_ID}
 
+# Apply namespace first
+kubectl apply -f config-connector/workload/namespace.yaml
+
 cat <<EOF | kubectl apply -f -
 apiVersion: batch/v1
 kind: Job
 metadata:
   name: test-workload-identity
-  namespace: enterprise-workload
+  namespace: ${NAMESPACE_WORKLOAD}
 spec:
   template:
     spec:
-      serviceAccountName: enterprise-workload-sa
+      serviceAccountName: workload-sa-6
       containers:
       - name: gcloud
         image: google/cloud-sdk:slim
@@ -51,19 +55,27 @@ spec:
       restartPolicy: Never
 EOF
 
-kubectl wait --for=condition=complete job/test-workload-identity --timeout=5m -n enterprise-workload
+kubectl wait --for=condition=complete job/test-workload-identity --timeout=5m -n ${NAMESPACE_WORKLOAD}
 # Check logs to see if authentication was successful
-kubectl logs job/test-workload-identity -n enterprise-workload
+kubectl logs job/test-workload-identity -n ${NAMESPACE_WORKLOAD}
 # Clean up job
-kubectl delete job test-workload-identity -n enterprise-workload
+kubectl delete job test-workload-identity -n ${NAMESPACE_WORKLOAD}
 echo "Workload Identity Integration passed."
 
 # 4. Endpoint Interaction
 echo "Test 4: Endpoint Interaction..."
+
+# Apply workload manifests to the target cluster
+echo "Applying workload manifests to target cluster..."
+kubectl apply -R -f config-connector/workload/
+
+# Wait for rollout
+kubectl rollout status deployment/workload-6 -n ${NAMESPACE_WORKLOAD} --timeout=5m
+
 # Wait for LoadBalancer IP
 SERVICE_IP=""
 for i in {1..20}; do
-  SERVICE_IP=$(kubectl get svc enterprise-workload -o jsonpath='{.status.loadBalancer.ingress[0].ip}' -n enterprise-workload || true)
+  SERVICE_IP=$(kubectl get svc workload-6 -o jsonpath='{.status.loadBalancer.ingress[0].ip}' -n ${NAMESPACE_WORKLOAD} || true)
   if [ ! -z "$SERVICE_IP" ]; then
     break
   fi
@@ -93,6 +105,9 @@ done
 
 # 5. Teardown Verification
 echo "Test 5: Teardown Verification..."
+# Delete workload from target cluster
+kubectl delete -R -f config-connector/workload/ --ignore-not-found
+
 # Delete KCC manifests
 kubectl delete -f config-connector/ -n ${NAMESPACE} --ignore-not-found
 echo "Waiting for cluster deletion (sleeping 5m)..."

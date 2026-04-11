@@ -1,10 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: enterprise-workload
-  namespace: enterprise-workload
+  name: workload-6
+  namespace: workload-6
   labels:
-    app.kubernetes.io/name: enterprise-workload
+    template: templates/6-enterprise-gke
+    app.kubernetes.io/name: workload-6
 spec:
   type: LoadBalancer
   ports:
@@ -13,4 +14,4 @@ spec:
       protocol: TCP
       name: http
   selector:
-    app.kubernetes.io/name: enterprise-workload
+    app.kubernetes.io/name: workload-6

@@ -84,6 +84,10 @@ resource "google_container_cluster" "enterprise_cluster" {
   # MANDATORY for CI to be able to destroy
   deletion_protection = false
 
+  resource_labels = {
+    template = "templates/6-enterprise-gke"
+  }
+
   remove_default_node_pool = true
   initial_node_count       = 1
 
@@ -178,7 +182,7 @@ resource "google_container_node_pool" "primary_nodes" {
 
 # Workload Service Account
 resource "google_service_account" "workload_sa" {
-  account_id   = "enterprise-workload-sa"
+  account_id   = "workload-sa-6"
   display_name = "Enterprise Workload Service Account"
 }
 
@@ -186,13 +190,13 @@ resource "google_service_account" "workload_sa" {
 resource "google_service_account_iam_member" "workload_identity_binding" {
   service_account_id = google_service_account.workload_sa.name
   role               = "roles/iam.workloadIdentityUser"
-  member             = "serviceAccount:${var.project_id}.svc.id.goog[enterprise-workload/enterprise-workload-sa]"
+  member             = "serviceAccount:${var.project_id}.svc.id.goog[workload-6/workload-sa-6]"
 }
 
 resource "helm_release" "workload" {
-  name             = "enterprise-workload"
+  name             = "workload-6"
   chart            = "${path.module}/workload"
-  namespace        = "enterprise-workload"
+  namespace        = "workload-6"
   create_namespace = true
   depends_on       = [google_container_node_pool.primary_nodes]
 
