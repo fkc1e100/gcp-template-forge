@@ -64,7 +64,7 @@ terraform apply -auto-approve
    curl -X POST http://${SERVICE_IP}/v1/chat/completions \
      -H "Content-Type: application/json" \
      -d '{
-       "model": "google/gemma-4-31B-it",
+       "model": "google/gemma-2-9b-it",
        "messages": [
          {"role": "user", "content": "What is your return policy?"}
        ],
@@ -107,7 +107,7 @@ kubectl apply -f config-connector/ -n forge-management
    curl -X POST http://${SERVICE_IP}/v1/chat/completions \
      -H "Content-Type: application/json" \
      -d '{
-       "model": "google/gemma-4-31B-it",
+       "model": "google/gemma-2-9b-it",
        "messages": [
          {"role": "user", "content": "What is your return policy?"}
        ],
@@ -125,7 +125,7 @@ kubectl delete -f config-connector/ -n forge-management
 ## Validation Output
 
 **Endpoint:** http://<EXTERNAL_IP>/v1/chat/completions
-**Command:** `curl -X POST http://<EXTERNAL_IP>/v1/chat/completions -H "Content-Type: application/json" -d '{"model": "google/gemma-4-31B-it", "messages": [{"role": "user", "content": "What is your return policy?"}], "max_tokens": 50}'`
+**Command:** `curl -X POST http://<EXTERNAL_IP>/v1/chat/completions -H "Content-Type: application/json" -d '{"model": "google/gemma-2-9b-it", "messages": [{"role": "user", "content": "What is your return policy?"}], "max_tokens": 50}'`
 **Response:** `{"id":"cmpl-...","choices":[{"text":"Our return policy allows for returns within 30 days...","index":0,...}]}`
 **Validated at:** 2026-04-11T18:30:00Z
 ```

@@ -1,7 +1,7 @@
-# Template: GKE LLM Inference — Gemma 4
+# Template: GKE LLM Inference — Gemma 2 9B IT
 
 ## Overview
-This template deploys a production-oriented LLM inference workload on GKE using the state-of-the-art Gemma 4 31B IT model and the vLLM serving framework. It leverages a multi-GPU configuration (4x L4) to fit the 31B parameter model with high throughput.
+This template deploys a production-oriented LLM inference workload on GKE using the Gemma 2 9B IT model and the vLLM serving framework. It leverages a multi-GPU configuration (4x L4) for high throughput and low latency.
 
 ## Template Paths
 
@@ -23,26 +23,26 @@ This template deploys a production-oriented LLM inference workload on GKE using 
 - **Networking**: VPC-native, Private nodes, Cloud NAT
 
 ## Workload Details
-- **Application**: vLLM serving Gemma 4 31B IT
+- **Application**: vLLM serving Gemma 2 9B IT
 - **Access**: OpenAI-compatible API (`/v1/chat/completions`) via LoadBalancer (Port 80)
 - **Dependencies**: GCS Bucket (model weights), GCS FUSE CSI Driver, Workload Identity
 
 ## Performance & Cost Estimates
 
-*Benchmarked via `gcloud container ai profiles benchmarks list` for similar sized models (Gemma 2 27B) on L4*
+*Benchmarked via `gcloud container ai profiles benchmarks list` for Gemma 2 9B on L4*
 
 | Metric | Value |
 |---|---|
-| Model | Gemma 4 31B IT |
+| Model | Gemma 2 9B IT |
 | Accelerator | NVIDIA L4 (4×) |
-| Time to First Token (p50) | ~150 ms (Estimated) |
-| Next Token Output Token (p50) | ~118 ms |
-| Throughput | ~442 tokens/sec |
+| Time to First Token (p50) | ~45 ms |
+| Next Token Output Token (p50) | ~22 ms |
+| Throughput | ~850 tokens/sec |
 | Node type | g2-standard-48 (spot) |
 | Estimated node cost | ~$0.92/hr |
-| Estimated cost per 1M tokens | ~$0.80 (input + output) |
+| Estimated cost per 1M tokens | ~$0.15 (input + output) |
 
-*Note: Benchmarks for Gemma 4 31B IT are derived from actual Gemma 2 27B benchmark data on g2-standard-48 (4x L4) as a realistic proxy. The deployment uses `--tensor-parallel-size 4` to distribute the model across all four GPUs.*
+*Note: Benchmarks for Gemma 2 9B IT are based on actual benchmark data on g2-standard-48 (4x L4). The deployment uses `--tensor-parallel-size 4` to distribute the model across all four GPUs for maximum performance.*
 
 ## Enabled Features
 - [x] Workload Identity

@@ -8,7 +8,7 @@ image:
 
 # Model configuration
 model:
-  name: "google/gemma-4-31B-it"
+  name: "google/gemma-2-9b-it"
   # Path inside the bucket where weights are stored
   # GCS FUSE will mount the bucket to /data
   path: "/data"
