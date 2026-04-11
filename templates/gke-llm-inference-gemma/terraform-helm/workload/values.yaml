@@ -17,7 +17,7 @@ model:
 vllm:
   maxModelLen: 4096
   gpuMemoryUtilization: 0.9
-  tensorParallelSize: 4
+  tensorParallelSize: 1
 
 bucketName: "" # Provided by Terraform
 
@@ -31,9 +31,9 @@ service:
 
 resources:
   limits:
-    nvidia.com/gpu: 4
+    nvidia.com/gpu: 1
   requests:
-    nvidia.com/gpu: 4
+    nvidia.com/gpu: 1
 
 nodeSelector:
   nvidia.com/gpu: "present"
