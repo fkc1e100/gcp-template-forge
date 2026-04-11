@@ -18,7 +18,7 @@ metadata:
   name: workload-6
   namespace: workload-6
   labels:
-    template: templates/6-enterprise-gke
+    template: 6-enterprise-gke
     app.kubernetes.io/name: workload-6
 spec:
   type: LoadBalancer

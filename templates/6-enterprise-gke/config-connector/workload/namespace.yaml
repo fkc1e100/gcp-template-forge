@@ -17,4 +17,4 @@ kind: Namespace
 metadata:
   name: workload-6
   labels:
-    template: templates/6-enterprise-gke
+    template: 6-enterprise-gke

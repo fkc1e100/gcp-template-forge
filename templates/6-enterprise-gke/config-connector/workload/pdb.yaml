@@ -16,7 +16,7 @@ apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   labels:
-    template: templates/6-enterprise-gke
+    template: 6-enterprise-gke
   name: workload-6-pdb
   namespace: workload-6
 spec:

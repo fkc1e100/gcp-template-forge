@@ -18,7 +18,7 @@ metadata:
   name: workload-sa-6
   namespace: forge-management
   labels:
-    template: templates/6-enterprise-gke
+    template: 6-enterprise-gke
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
@@ -30,7 +30,7 @@ metadata:
   name: wi-binding-6
   namespace: forge-management
   labels:
-    template: templates/6-enterprise-gke
+    template: 6-enterprise-gke
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:

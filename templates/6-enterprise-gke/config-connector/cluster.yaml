@@ -18,13 +18,13 @@ metadata:
   name: cluster-issue-6-kcc
   namespace: forge-management
   labels:
-    template: templates/6-enterprise-gke
+    template: 6-enterprise-gke
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
+    cnrm.cloud.google.com/remove-default-node-pool: "true"
 spec:
   location: us-central1
   initialNodeCount: 1
-  removeDefaultNodePool: true
   networkingMode: VPC_NATIVE
   networkRef:
     name: vpc-issue-6-kcc
@@ -56,7 +56,5 @@ spec:
   securityPostureConfig:
     mode: BASIC
     vulnerabilityMode: VULNERABILITY_ENTERPRISE
-  secretManagerConfig:
-    enabled: true
   releaseChannel:
     channel: REGULAR
