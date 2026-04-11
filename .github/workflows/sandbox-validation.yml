@@ -232,9 +232,6 @@ jobs:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
 
-      - name: Install gke-gcloud-auth-plugin
-        run: sudo apt-get update -q && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
-
       - name: Get KCC cluster credentials
         uses: google-github-actions/get-gke-credentials@v2
         with:
@@ -268,19 +265,27 @@ jobs:
           echo "tf_cluster=${CLUSTER}" >> $GITHUB_OUTPUT
           echo "tf_location=${LOCATION}" >> $GITHUB_OUTPUT
 
+      # Use the action (direct token auth) so kubectl works without gke-gcloud-auth-plugin
+      - name: Get TF cluster credentials
+        id: tf-creds
+        if: >-
+          steps.tf-outputs.outcome == 'success' &&
+          steps.tf-outputs.outputs.tf_cluster != ''
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ steps.tf-outputs.outputs.tf_cluster }}
+          location: ${{ steps.tf-outputs.outputs.tf_location }}
+          project_id: ${{ env.PROJECT_ID }}
+
       - name: Verify Terraform cluster is RUNNING
         id: tf-verify
-        if: steps.tf-outputs.outcome == 'success'
-        working-directory: ${{ matrix.template }}/terraform-helm
+        if: steps.tf-creds.outcome == 'success'
         run: |
           CLUSTER="${{ steps.tf-outputs.outputs.tf_cluster }}"
           LOCATION="${{ steps.tf-outputs.outputs.tf_location }}"
-          if [ -n "$CLUSTER" ] && [ -n "$LOCATION" ]; then
-            gcloud container clusters get-credentials "$CLUSTER" --location="$LOCATION"
-            kubectl get nodes
-            gcloud container clusters describe "$CLUSTER" --location="$LOCATION" \
-              --format="value(status)" | grep -q RUNNING
-          fi
+          kubectl get nodes
+          gcloud container clusters describe "$CLUSTER" --location="$LOCATION" \
+            --format="value(status)" | grep -q RUNNING
 
       - name: Set up Helm
         uses: azure/setup-helm@v4
@@ -452,10 +457,6 @@ jobs:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
 
-      - name: Install gke-gcloud-auth-plugin
-        if: steps.skip-check.outputs.skip != 'true'
-        run: sudo apt-get update -q && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
-
       - name: Setup Terraform
         if: steps.skip-check.outputs.skip != 'true'
         uses: hashicorp/setup-terraform@v3
@@ -490,19 +491,27 @@ jobs:
             echo "tf_zones=${ZONES}" >> $GITHUB_OUTPUT
           fi
 
+      # Use the action (direct token auth) so kubectl works without gke-gcloud-auth-plugin
+      - name: Get TF cluster credentials
+        id: tf-creds
+        if: >-
+          steps.tf-outputs.outcome == 'success' &&
+          steps.tf-outputs.outputs.tf_cluster != ''
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ steps.tf-outputs.outputs.tf_cluster }}
+          location: ${{ steps.tf-outputs.outputs.tf_location }}
+          project_id: ${{ env.PROJECT_ID }}
+
       - name: Verify Terraform cluster is RUNNING
         id: tf-verify
-        if: steps.tf-outputs.outcome == 'success'
-        working-directory: ${{ matrix.template }}/terraform-helm
+        if: steps.tf-creds.outcome == 'success'
         run: |
           CLUSTER="${{ steps.tf-outputs.outputs.tf_cluster }}"
           LOCATION="${{ steps.tf-outputs.outputs.tf_location }}"
-          if [ -n "$CLUSTER" ] && [ -n "$LOCATION" ]; then
-            gcloud container clusters get-credentials $CLUSTER --location=$LOCATION
-            kubectl get nodes
-            gcloud container clusters describe $CLUSTER --location=$LOCATION \
-              --format="value(status)" | grep -q RUNNING
-          fi
+          kubectl get nodes
+          gcloud container clusters describe $CLUSTER --location=$LOCATION \
+            --format="value(status)" | grep -q RUNNING
 
       - name: Security scan — Trivy (workload images)
         id: security-scan
@@ -612,10 +621,6 @@ jobs:
         with:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
-
-      - name: Install gke-gcloud-auth-plugin
-        if: steps.skip-check.outputs.skip != 'true'
-        run: sudo apt-get update -q && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
 
       - name: Get KCC cluster credentials
         if: steps.skip-check.outputs.skip != 'true'
