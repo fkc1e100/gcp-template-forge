@@ -71,6 +71,53 @@ Never use `YOUR_PROJECT_ID` or placeholder values. Use `gca-gke-2025` directly a
 
 ---
 
+## Issue Gating: the `hold` Label
+
+File an issue before the required GCP resources (quota, reservations, service accounts, APIs) are confirmed as available. Use the `hold` label to freeze it in place until you're ready.
+
+### How the two-component gate works
+
+| Component | Trigger | Blocked by |
+|---|---|---|
+| **Overseer** | `overseer` label on issue | Not adding `overseer` label |
+| **PR Review / RepoWatch** | RepoWatch controller in `fkc1e100` namespace | `excludeLabels: ["hold"]` — any issue with `hold` label is skipped |
+
+Both components independently check for `hold`. You must clear **both** gates to start agent work.
+
+### Issue lifecycle
+
+```
+1. File issue with labels: ["hold"]        ← system ignores it entirely
+   └── Document prerequisites in the issue body:
+       - Which quota/machine types are needed (e.g. "L4 quota confirmed 16 available")
+       - Which GCP APIs must be enabled
+       - Any reservations or DWS flex-start configs required
+
+2. Confirm prerequisites are in place:
+   ├── gcloud quotas info / quota list
+   ├── gcloud iam service-accounts list
+   └── gcloud services list --enabled
+
+3. When ready to start work:
+   └── Remove label: "hold"
+   └── Add label:    "overseer"            ← Overseer picks up the issue
+       └── RepoWatch creates fix sandbox   ← PR Review dashboard shows it
+```
+
+### What `hold` prevents
+
+- **Overseer** only fires on issues with the `overseer` label — not adding it keeps overseer away entirely.
+- **RepoWatch** (`fkc1e100/gcp-template-forge`) has `excludeLabels: ["hold"]` on its fix handler — even if a sandbox already exists, no new fix sandboxes are created for issues carrying `hold`.
+
+### When to use `hold`
+
+- Template requires GPU quota (e.g. A100, L4) not yet confirmed
+- Template uses DWS / flex-start reservations that need advance setup
+- Template requires a dedicated GCP service account to be created first
+- Template calls an API (e.g. `gkerecommender.googleapis.com`) that must be enabled before CI runs
+
+---
+
 ## Template Structure
 
 ```
