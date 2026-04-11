@@ -29,5 +29,4 @@ terraform {
     }
   }
 }
-# Sat Apr 11 12:27:35 UTC 2026
-# 1775911827
+# required_version = ">= 1.5"
