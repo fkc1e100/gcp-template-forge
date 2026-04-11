@@ -37,3 +37,18 @@ This template provides an enterprise-grade Google Kubernetes Engine (GKE) archit
 - [ ] DWS + Kueue (accelerator templates)
 - [ ] GPU node pool with driver auto-install
 - [x] Config Connector resources: ContainerCluster, ContainerNodePool, ComputeNetwork, ComputeSubnetwork, IAMServiceAccount, IAMPolicyMember, ComputeRouter, ComputeRouterNAT
+
+## Performance & Cost Estimates
+
+*Estimated from GCP pricing (us-central1, spot pricing where applicable)*
+
+| Resource | Config | Estimated cost |
+|---|---|---|
+| Node pool | e2-standard-4 × 1 node, spot | ~$0.04/hr (~$29/mo) |
+| Boot disk | 50 GB pd-standard per node | ~$0.004/hr (~$3/mo) |
+| Load balancer | 1× regional external LB | ~$0.025/hr (~$18/mo) |
+| Cloud NAT | per-gateway fee + data processing | ~$0.004/hr (~$3/mo) |
+| **Total (idle cluster, spot)** | | **~$0.07/hr (~$53/mo)** |
+| **Total (on-demand nodes)** | e2-standard-4 on-demand | ~$0.14/hr (~$100/mo) |
+
+Spot node interruptions are expected during validation; the workload is stateless (Nginx) so restarts are safe. Use on-demand nodes for production.
