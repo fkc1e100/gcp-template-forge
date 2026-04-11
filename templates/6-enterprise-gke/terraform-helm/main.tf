@@ -201,6 +201,6 @@ resource "helm_release" "workload" {
   depends_on       = [google_container_node_pool.primary_nodes]
 
   values = [
-    file("${path.module}/values.yaml")
+    file("${path.module}/workload/values.yaml")
   ]
 }

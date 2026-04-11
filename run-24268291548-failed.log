@@ -1,0 +1,257 @@
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	﻿2026-04-10T23:09:45.1949647Z Current runner version: '2.333.1'
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:45.1972705Z ##[group]Runner Image Provisioner
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:45.1973576Z Hosted Compute Agent
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:45.1974112Z Version: 20260213.493
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:45.1974766Z Commit: 5c115507f6dd24b8de37d8bbe0bb4509d0cc0fa3
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:45.1975505Z Build Date: 2026-02-13T00:28:41Z
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:45.1976131Z Worker ID: {d52e88a1-c6f9-4afe-87cd-2b27e59b3fa2}
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:45.1976824Z Azure Region: westcentralus
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:45.1977347Z ##[endgroup]
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:45.1978796Z ##[group]Operating System
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:45.1979381Z Ubuntu
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:45.1979819Z 24.04.4
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:45.1980313Z LTS
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:45.1980758Z ##[endgroup]
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:45.1981223Z ##[group]Runner Image
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:45.1981825Z Image: ubuntu-24.04
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:45.1982559Z Version: 20260406.80.1
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:45.1983755Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260406.80/images/ubuntu/Ubuntu2404-Readme.md
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:45.1985211Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260406.80
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:45.1986086Z ##[endgroup]
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:45.1987248Z ##[group]GITHUB_TOKEN Permissions
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:45.1989015Z Contents: write
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:45.1989590Z Metadata: read
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:45.1990118Z PullRequests: write
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:45.1990583Z ##[endgroup]
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:45.1993091Z Secret source: Actions
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:45.1993854Z Prepare workflow directory
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:45.2430553Z Prepare all required actions
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:45.2468173Z Getting action download info
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:45.6578205Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:45.7695355Z Download action repository 'hashicorp/setup-terraform@v3' (SHA:b9cd54a3c349d3f38e8881555d616ced269862dd)
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:46.5707565Z Download action repository 'azure/setup-helm@v4' (SHA:1a275c3b69536ee54be43f2070a358922e12c8d4)
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:47.2051544Z Download action repository 'actions/github-script@v7' (SHA:f28e40c7f34bde8b3046d885e986cb6290c5673b)
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:47.9732589Z Complete job name: Lint (templates/6-enterprise-gke)
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.0392497Z ##[group]Run actions/checkout@v4
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.0393092Z with:
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.0393315Z   repository: fkc1e100/gcp-template-forge
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.0393741Z   token: ***
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.0393923Z   ssh-strict: true
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.0394113Z   ssh-user: git
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.0394306Z   persist-credentials: true
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.0394533Z   clean: true
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.0394726Z   sparse-checkout-cone-mode: true
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.0394969Z   fetch-depth: 1
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.0395163Z   fetch-tags: false
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.0395363Z   show-progress: true
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.0395564Z   lfs: false
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.0395736Z   submodules: false
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.0395932Z   set-safe-directory: true
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.0396319Z env:
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.0396501Z   PROJECT_ID: gca-gke-2025
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.0396754Z   KCC_CLUSTER: krmapihost-kcc-instance
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.0397011Z   KCC_REGION: us-central1
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.0397259Z   KCC_NAMESPACE: forge-management
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.0397765Z   WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.0398395Z   WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.0398788Z   TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.0399041Z ##[endgroup]
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.1446792Z Syncing repository: fkc1e100/gcp-template-forge
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.1448101Z ##[group]Getting Git version info
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.1448586Z Working directory is '/home/runner/work/gcp-template-forge/gcp-template-forge'
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.1449226Z [command]/usr/bin/git version
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.1491261Z git version 2.53.0
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.1517845Z ##[endgroup]
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.1533492Z Temporarily overriding HOME='/home/runner/work/_temp/89c2bba6-777e-4e31-b7c4-12a560418973' before making global git config changes
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.1535310Z Adding repository directory to the temporary git global config as a safe directory
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.1540146Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/gcp-template-forge/gcp-template-forge
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.1572555Z Deleting the contents of '/home/runner/work/gcp-template-forge/gcp-template-forge'
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.1576504Z ##[group]Initializing the repository
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.1581092Z [command]/usr/bin/git init /home/runner/work/gcp-template-forge/gcp-template-forge
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.1672728Z hint: Using 'master' as the name for the initial branch. This default branch name
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.1674017Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.1675436Z hint: to use in all of your new repositories, which will suppress this warning,
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.1676470Z hint: call:
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.1676860Z hint:
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.1677360Z hint: 	git config --global init.defaultBranch <name>
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.1677967Z hint:
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.1678555Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.1679549Z hint: 'development'. The just-created branch can be renamed via this command:
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.1680350Z hint:
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.1680720Z hint: 	git branch -m <name>
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.1681149Z hint:
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.1681754Z hint: Disable this message with "git config set advice.defaultBranchName false"
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.1683312Z Initialized empty Git repository in /home/runner/work/gcp-template-forge/gcp-template-forge/.git/
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.1688949Z [command]/usr/bin/git remote add origin https://github.com/fkc1e100/gcp-template-forge
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.1721218Z ##[endgroup]
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.1721653Z ##[group]Disabling automatic garbage collection
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.1727760Z [command]/usr/bin/git config --local gc.auto 0
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.1760136Z ##[endgroup]
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.1760756Z ##[group]Setting up auth
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.1770548Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.1806141Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.2083402Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.2112898Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.2334100Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.2366489Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.2598226Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.2637470Z ##[endgroup]
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.2638344Z ##[group]Fetching the repository
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.2650194Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +b789844b9e75dcf770f5db4189596642417def92:refs/remotes/pull/8/merge
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.6621774Z From https://github.com/fkc1e100/gcp-template-forge
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.6623343Z  * [new ref]         b789844b9e75dcf770f5db4189596642417def92 -> pull/8/merge
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.6651998Z ##[endgroup]
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.6652918Z ##[group]Determining the checkout info
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.6655162Z ##[endgroup]
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.6663176Z [command]/usr/bin/git sparse-checkout disable
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.6702630Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.6728873Z ##[group]Checking out the ref
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.6733171Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/8/merge
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.6802477Z Note: switching to 'refs/remotes/pull/8/merge'.
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.6803152Z 
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.6803758Z You are in 'detached HEAD' state. You can look around, make experimental
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.6804991Z changes and commit them, and you can discard any commits you make in this
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.6806189Z state without impacting any branches by switching back to a branch.
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.6807014Z 
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.6807557Z If you want to create a new branch to retain commits you create, you may
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.6808663Z do so (now or later) by using -c with the switch command. Example:
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.6809452Z 
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.6809832Z   git switch -c <new-branch-name>
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.6810326Z 
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.6810657Z Or undo this operation with:
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.6811127Z 
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.6811449Z   git switch -
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.6811913Z 
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.6812800Z Turn off this advice by setting config variable advice.detachedHead to false
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.6813682Z 
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.6814560Z HEAD is now at b789844 Merge 0b587efbe5ea535a566706da1dadf2da604a9ad7 into 9ddff020458adfe24240d9887c44b836af5fe36e
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.6817361Z ##[endgroup]
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.6848023Z [command]/usr/bin/git log -1 --format=%H
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.6872115Z b789844b9e75dcf770f5db4189596642417def92
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.7063170Z ##[group]Run hashicorp/setup-terraform@v3
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.7063484Z with:
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.7063712Z   cli_config_credentials_hostname: app.terraform.io
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.7064013Z   terraform_version: latest
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.7064232Z   terraform_wrapper: true
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.7064434Z env:
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.7064597Z   PROJECT_ID: gca-gke-2025
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.7064829Z   KCC_CLUSTER: krmapihost-kcc-instance
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.7065074Z   KCC_REGION: us-central1
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.7065307Z   KCC_NAMESPACE: forge-management
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.7065785Z   WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.7066393Z   WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.7066779Z   TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:48.7067031Z ##[endgroup]
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:49.5099799Z [command]/usr/bin/unzip -o -q /home/runner/work/_temp/ac0396a7-8692-440c-9aa1-4579f1f6c61e
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:50.1654821Z ##[group]Run azure/setup-helm@v4
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:50.1655099Z with:
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:50.1655270Z   version: latest
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:50.1655578Z   token: ***
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:50.1655779Z   downloadBaseURL: https://get.helm.sh
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:50.1656036Z env:
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:50.1656210Z   PROJECT_ID: gca-gke-2025
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:50.1656448Z   KCC_CLUSTER: krmapihost-kcc-instance
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:50.1656698Z   KCC_REGION: us-central1
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:50.1656945Z   KCC_NAMESPACE: forge-management
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:50.1657433Z   WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:50.1658032Z   WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:50.1658415Z   TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:50.1658812Z   TERRAFORM_CLI_PATH: /home/runner/work/_temp/69bb6401-5229-4869-868f-805c3a80a196
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:50.1659191Z ##[endgroup]
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:50.3505790Z ##[group]Installing v4.1.3
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:50.3515540Z Downloading 'v4.1.3' from 'https://get.helm.sh'
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:50.5602040Z [command]/usr/bin/tar xz --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/5c7343b4-8b55-4a21-9ec5-0c8b1b96883c -f /home/runner/work/_temp/340ea6c6-cdda-4f4b-9094-c56fdea7c84b
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:51.0115059Z ##[endgroup]
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:51.0118895Z Helm tool version 'v4.1.3' has been cached at /opt/hostedtoolcache/helm/4.1.3/x64/linux-amd64/helm
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:51.0841434Z ##[group]Run terraform init -backend=false -input=false
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:51.0841916Z [36;1mterraform init -backend=false -input=false[0m
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:51.0842608Z [36;1mterraform fmt -check -recursive[0m
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:51.0842886Z [36;1mterraform validate[0m
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:51.0866334Z shell: /usr/bin/bash -e {0}
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:51.0866592Z env:
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:51.0866769Z   PROJECT_ID: gca-gke-2025
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:51.0867013Z   KCC_CLUSTER: krmapihost-kcc-instance
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:51.0867302Z   KCC_REGION: us-central1
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:51.0867558Z   KCC_NAMESPACE: forge-management
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:51.0868046Z   WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:51.0868655Z   WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:51.0869045Z   TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:51.0869467Z   TERRAFORM_CLI_PATH: /home/runner/work/_temp/69bb6401-5229-4869-868f-805c3a80a196
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:51.0869833Z ##[endgroup]
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:51.4497393Z [0m[1mInitializing provider plugins...[0m
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:51.4501345Z - Reusing previous version of hashicorp/google from the dependency lock file
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:51.4501949Z - Finding hashicorp/google-beta versions matching "~> 6.0"...
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:51.6640837Z - Finding hashicorp/helm versions matching "~> 2.10"...
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:52.0702876Z - Installing hashicorp/google-beta v6.50.0...
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:53.2259868Z - Installed hashicorp/google-beta v6.50.0 (signed by HashiCorp)
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:53.4966709Z - Installing hashicorp/helm v2.17.0...
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:54.2358685Z - Installed hashicorp/helm v2.17.0 (signed by HashiCorp)
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:54.2362055Z [31m╷[0m[0m
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:54.2363291Z [31m│[0m [0m[1m[31mError: [0m[0m[1mFailed to query available provider packages[0m
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:54.2364002Z [31m│[0m [0m
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:54.2364640Z [31m│[0m [0m[0mCould not retrieve the list of available versions for provider
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:54.2365745Z [31m│[0m [0mhashicorp/google: locked provider registry.terraform.io/hashicorp/google
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:54.2366756Z [31m│[0m [0m7.26.0 does not match configured version constraint ~> 6.0; must use
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:54.2367326Z [31m│[0m [0mterraform init -upgrade to allow selection of new versions
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:54.2367681Z [31m│[0m [0m
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:54.2368058Z [31m│[0m [0mTo see which modules are currently depending on hashicorp/google and what
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:54.2368568Z [31m│[0m [0mversions are specified, run the following command:
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:54.2368936Z [31m│[0m [0m    terraform providers
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:54.2369188Z [31m╵[0m[0m
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:54.2418746Z ##[error]Terraform exited with code 1.
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:54.2448797Z ##[error]Process completed with exit code 1.
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:54.2550121Z ##[group]Run actions/github-script@v7
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:54.2550385Z with:
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:54.2553432Z   script: const template = 'templates/6-enterprise-gke';
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	github.rest.issues.createComment({
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	  issue_number: context.issue.number,
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	  owner: context.repo.owner,
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	  repo: context.repo.repo,
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	  body: [
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	    `### CI Lint failure: \`${template}\``,
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	    ``,
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	    `One or more lint checks failed — see [run logs](${runUrl}) for the exact error.`,
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	    ``,
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	    `**Common causes:**`,
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	    `- Template directory named \`Terraform_HELM/\` or similar instead of \`terraform-helm/\``,
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	    `- \`google_container_cluster\` missing \`deletion_protection = false\``,
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	    `- Terraform fmt or validate error`,
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	    `- KCC manifest YAML syntax error`,
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	    ``,
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	    `Please investigate the lint failure, fix the issue, and push a new commit.`,
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	  ].join('\n'),
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	});
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:54.2556320Z   github-token: ***
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:54.2556508Z   debug: false
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:54.2556703Z   user-agent: actions/github-script
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:54.2557122Z   result-encoding: json
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:54.2557316Z   retries: 0
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:54.2557521Z   retry-exempt-status-codes: 400,401,403,404,422
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:54.2557782Z env:
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:54.2557948Z   PROJECT_ID: gca-gke-2025
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:54.2558169Z   KCC_CLUSTER: krmapihost-kcc-instance
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:54.2558415Z   KCC_REGION: us-central1
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:54.2558624Z   KCC_NAMESPACE: forge-management
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:54.2559113Z   WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:54.2559711Z   WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:54.2560089Z   TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:54.2560472Z   TERRAFORM_CLI_PATH: /home/runner/work/_temp/69bb6401-5229-4869-868f-805c3a80a196
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:54.2560830Z ##[endgroup]
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:55.0772053Z Post job cleanup.
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:55.1700571Z [command]/usr/bin/git version
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:55.1736236Z git version 2.53.0
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:55.1786856Z Temporarily overriding HOME='/home/runner/work/_temp/0f1ecaed-caf5-4d6c-a51d-1dcd3e82fce4' before making global git config changes
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:55.1788107Z Adding repository directory to the temporary git global config as a safe directory
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:55.1792008Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/gcp-template-forge/gcp-template-forge
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:55.1825866Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:55.1856658Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:55.2073783Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:55.2093161Z http.https://github.com/.extraheader
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:55.2105370Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:55.2135865Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:55.2348206Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:55.2377592Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:55.2697472Z Cleaning up orphan processes
+Lint (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-10T23:09:55.2946580Z ##[warning]Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/checkout@v4, actions/github-script@v7, azure/setup-helm@v4, hashicorp/setup-terraform@v3. Actions will be forced to run with Node.js 24 by default starting June 2nd, 2026. Node.js 20 will be removed from the runner on September 16th, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

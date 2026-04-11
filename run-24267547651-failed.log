@@ -1,0 +1,170 @@
+kcc-validation	UNKNOWN STEP	﻿2026-04-10T22:44:00.6784007Z Current runner version: '2.333.1'
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:00.6811101Z ##[group]Runner Image Provisioner
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:00.6812175Z Hosted Compute Agent
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:00.6813343Z Version: 20260213.493
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:00.6814224Z Commit: 5c115507f6dd24b8de37d8bbe0bb4509d0cc0fa3
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:00.6815177Z Build Date: 2026-02-13T00:28:41Z
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:00.6816178Z Worker ID: ***ef746b29-46c4-4755-9b05-53ffaafeea29***
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:00.6817289Z Azure Region: eastus
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:00.6818107Z ##[endgroup]
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:00.6820261Z ##[group]Operating System
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:00.6821118Z Ubuntu
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:00.6821922Z 24.04.4
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:00.6822624Z LTS
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:00.6823378Z ##[endgroup]
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:00.6824252Z ##[group]Runner Image
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:00.6825082Z Image: ubuntu-24.04
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:00.6825836Z Version: 20260406.80.1
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:00.6827381Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260406.80/images/ubuntu/Ubuntu2404-Readme.md
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:00.6829213Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260406.80
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:00.6830727Z ##[endgroup]
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:00.6832359Z ##[group]GITHUB_TOKEN Permissions
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:00.6834793Z Contents: read
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:00.6835581Z Metadata: read
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:00.6836368Z Packages: read
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:00.6837097Z ##[endgroup]
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:00.6839688Z Secret source: Actions
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:00.6840951Z Prepare workflow directory
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:00.7184413Z Prepare all required actions
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:00.7223132Z Getting action download info
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.0494411Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.1955045Z Download action repository 'google-github-actions/auth@v2' (SHA:c200f3691d83b41bf9bbd8638997a462592937ed)
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.3467991Z Download action repository 'google-github-actions/get-gke-credentials@v2' (SHA:64bc7249bbcf78056bb92f14d3cedc2da193946c)
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.7055525Z Complete job name: kcc-validation
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.7913506Z ##[group]Run actions/checkout@v4
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.7915020Z with:
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.7916022Z   repository: fkc1e100/gcp-template-forge
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.7917536Z   token: ***
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.7918485Z   ssh-strict: true
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.7919662Z   ssh-user: git
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.7920666Z   persist-credentials: true
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.7921752Z   clean: true
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.7922756Z   sparse-checkout-cone-mode: true
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.7923913Z   fetch-depth: 1
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.7924883Z   fetch-tags: false
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.7925882Z   show-progress: true
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.7926879Z   lfs: false
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.7927817Z   submodules: false
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.7928825Z   set-safe-directory: true
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.7930403Z ##[endgroup]
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9111967Z Syncing repository: fkc1e100/gcp-template-forge
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9115540Z ##[group]Getting Git version info
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9117342Z Working directory is '/home/runner/work/gcp-template-forge/gcp-template-forge'
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9120224Z [command]/usr/bin/git version
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9121413Z git version 2.53.0
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9126592Z ##[endgroup]
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9134462Z Temporarily overriding HOME='/home/runner/work/_temp/a9c792f1-cdd3-4c05-82be-1978a910c0c5' before making global git config changes
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9137561Z Adding repository directory to the temporary git global config as a safe directory
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9140462Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/gcp-template-forge/gcp-template-forge
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9165051Z Deleting the contents of '/home/runner/work/gcp-template-forge/gcp-template-forge'
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9168571Z ##[group]Initializing the repository
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9172532Z [command]/usr/bin/git init /home/runner/work/gcp-template-forge/gcp-template-forge
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9278479Z hint: Using 'master' as the name for the initial branch. This default branch name
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9282880Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9286613Z hint: to use in all of your new repositories, which will suppress this warning,
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9289376Z hint: call:
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9291421Z hint:
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9293452Z hint: 	git config --global init.defaultBranch <name>
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9295824Z hint:
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9297893Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9301093Z hint: 'development'. The just-created branch can be renamed via this command:
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9302772Z hint:
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9303753Z hint: 	git branch -m <name>
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9304865Z hint:
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9307094Z hint: Disable this message with "git config set advice.defaultBranchName false"
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9311162Z Initialized empty Git repository in /home/runner/work/gcp-template-forge/gcp-template-forge/.git/
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9315711Z [command]/usr/bin/git remote add origin https://github.com/fkc1e100/gcp-template-forge
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9328792Z ##[endgroup]
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9331366Z ##[group]Disabling automatic garbage collection
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9333272Z [command]/usr/bin/git config --local gc.auto 0
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9366097Z ##[endgroup]
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9368157Z ##[group]Setting up auth
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9371974Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9403605Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9685329Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9718149Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9938962Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:01.9971835Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.0193013Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.0228191Z ##[endgroup]
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.0231224Z ##[group]Fetching the repository
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.0240672Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +818b83d31f927fef6137c91b9966bdf35ad7bc05:refs/remotes/pull/8/merge
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.1961050Z From https://github.com/fkc1e100/gcp-template-forge
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.1963049Z  * [new ref]         818b83d31f927fef6137c91b9966bdf35ad7bc05 -> pull/8/merge
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.1992311Z ##[endgroup]
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.1995268Z ##[group]Determining the checkout info
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.1998649Z ##[endgroup]
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.2000961Z [command]/usr/bin/git sparse-checkout disable
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.2035767Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.2060916Z ##[group]Checking out the ref
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.2063158Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/8/merge
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.2146553Z Note: switching to 'refs/remotes/pull/8/merge'.
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.2147775Z 
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.2148682Z You are in 'detached HEAD' state. You can look around, make experimental
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.2152231Z changes and commit them, and you can discard any commits you make in this
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.2155983Z state without impacting any branches by switching back to a branch.
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.2158142Z 
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.2159929Z If you want to create a new branch to retain commits you create, you may
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.2163377Z do so (now or later) by using -c with the switch command. Example:
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.2165791Z 
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.2166383Z   git switch -c <new-branch-name>
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.2167247Z 
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.2167835Z Or undo this operation with:
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.2168619Z 
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.2169129Z   git switch -
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.2170275Z 
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.2171900Z Turn off this advice by setting config variable advice.detachedHead to false
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.2173923Z 
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.2175368Z HEAD is now at 818b83d Merge 6f53aa92016ee63d90cf32d86b68c08362f55b28 into 483c3df90aef125264596814bf9275a9d336e097
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.2180090Z ##[endgroup]
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.2190843Z [command]/usr/bin/git log -1 --format=%H
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.2212348Z 818b83d31f927fef6137c91b9966bdf35ad7bc05
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.2610782Z ##[group]Run google-github-actions/auth@v2
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.2612200Z with:
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.2646124Z   credentials_json: ***
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.2647342Z   create_credentials_file: true
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.2648655Z   export_environment_variables: true
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.2650166Z   universe: googleapis.com
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.2651383Z   cleanup_credentials: true
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.2652616Z   access_token_lifetime: 3600s
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.2654242Z   access_token_scopes: https://www.googleapis.com/auth/cloud-platform
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.2655968Z   id_token_include_email: false
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.2657181Z ##[endgroup]
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.3641921Z Created credentials file at "/home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-fcbb9fabb4243df1.json"
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.3895423Z ##[group]Run google-github-actions/get-gke-credentials@v2
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.3896942Z with:
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.3897993Z   cluster_name: ***
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.3899093Z   location: ***
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.3900360Z   use_auth_provider: false
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.3901524Z   use_internal_ip: false
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.3902681Z   use_connect_gateway: false
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.3903881Z   use_dns_based_endpoint: false
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.3905072Z env:
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.3907151Z   CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-fcbb9fabb4243df1.json
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.3910858Z   GOOGLE_APPLICATION_CREDENTIALS: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-fcbb9fabb4243df1.json
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.3914032Z   GOOGLE_GHA_CREDS_PATH: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-fcbb9fabb4243df1.json
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.3916250Z   CLOUDSDK_CORE_PROJECT: gca-gke-2025
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.3917590Z   CLOUDSDK_PROJECT: gca-gke-2025
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.3918822Z   GCLOUD_PROJECT: gca-gke-2025
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.3920172Z   GCP_PROJECT: gca-gke-2025
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.3921399Z   GOOGLE_CLOUD_PROJECT: gca-gke-2025
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.3922671Z ##[endgroup]
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.8315787Z ##[error]google-github-actions/get-gke-credentials failed with: not found: projects/gca-gke-2025/locations/***/clusters/***.
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.8629334Z Post job cleanup.
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.9527824Z Removed exported credentials at "/home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-fcbb9fabb4243df1.json".
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:02.9779055Z Post job cleanup.
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:03.0776002Z [command]/usr/bin/git version
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:03.0812806Z git version 2.53.0
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:03.0868345Z Temporarily overriding HOME='/home/runner/work/_temp/4bc00d88-6aaa-452d-83d3-1f01abb5b1cb' before making global git config changes
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:03.0873831Z Adding repository directory to the temporary git global config as a safe directory
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:03.0878448Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/gcp-template-forge/gcp-template-forge
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:03.0913503Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:03.0950529Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:03.1176116Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:03.1198331Z http.https://github.com/.extraheader
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:03.1214052Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:03.1250953Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:03.1470964Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:03.1506536Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:03.1924031Z Cleaning up orphan processes
+kcc-validation	UNKNOWN STEP	2026-04-10T22:44:03.2349893Z ##[warning]Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/checkout@v4, google-github-actions/auth@v2, google-github-actions/get-gke-credentials@v2. Actions will be forced to run with Node.js 24 by default starting June 2nd, 2026. Node.js 20 will be removed from the runner on September 16th, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

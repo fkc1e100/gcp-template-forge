@@ -1,0 +1,738 @@
+kcc-validation	UNKNOWN STEP	﻿2026-04-10T22:46:22.7932182Z Current runner version: '2.333.1'
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:22.7957251Z ##[group]Runner Image Provisioner
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:22.7958339Z Hosted Compute Agent
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:22.7959119Z Version: 20260213.493
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:22.7960137Z Commit: 5c115507f6dd24b8de37d8bbe0bb4509d0cc0fa3
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:22.7961099Z Build Date: 2026-02-13T00:28:41Z
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:22.7962092Z Worker ID: ***b5cfa1fe-66ba-4850-b0db-5d59343ce0dc***
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:22.7963209Z Azure Region: westus2
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:22.7964096Z ##[endgroup]
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:22.7965711Z ##[group]Operating System
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:22.7966640Z Ubuntu
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:22.7967310Z 24.04.4
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:22.7968043Z LTS
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:22.7968691Z ##[endgroup]
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:22.7969492Z ##[group]Runner Image
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:22.7970282Z Image: ubuntu-24.04
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:22.7971069Z Version: 20260406.80.1
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:22.7972536Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260406.80/images/ubuntu/Ubuntu2404-Readme.md
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:22.7974631Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260406.80
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:22.7975800Z ##[endgroup]
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:22.7977324Z ##[group]GITHUB_TOKEN Permissions
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:22.7979396Z Contents: read
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:22.7980323Z Metadata: read
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:22.7981042Z Packages: read
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:22.7981762Z ##[endgroup]
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:22.7984340Z Secret source: Actions
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:22.7985364Z Prepare workflow directory
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:22.8375868Z Prepare all required actions
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:22.8414153Z Getting action download info
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:23.2751008Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:23.4210851Z Download action repository 'google-github-actions/auth@v2' (SHA:c200f3691d83b41bf9bbd8638997a462592937ed)
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:23.7673303Z Download action repository 'google-github-actions/get-gke-credentials@v2' (SHA:64bc7249bbcf78056bb92f14d3cedc2da193946c)
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.3228711Z Complete job name: kcc-validation
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.4120300Z ##[group]Run actions/checkout@v4
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.4121949Z with:
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.4123296Z   repository: fkc1e100/gcp-template-forge
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.4125010Z   token: ***
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.4126092Z   ssh-strict: true
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.4127195Z   ssh-user: git
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.4128332Z   persist-credentials: true
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.4129594Z   clean: true
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.4130748Z   sparse-checkout-cone-mode: true
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.4132084Z   fetch-depth: 1
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.4133528Z   fetch-tags: false
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.4134732Z   show-progress: true
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.4135884Z   lfs: false
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.4136960Z   submodules: false
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.4138127Z   set-safe-directory: true
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.4139677Z ##[endgroup]
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.5337832Z Syncing repository: fkc1e100/gcp-template-forge
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.5340990Z ##[group]Getting Git version info
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.5343219Z Working directory is '/home/runner/work/gcp-template-forge/gcp-template-forge'
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.5345947Z [command]/usr/bin/git version
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.5347209Z git version 2.53.0
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.5351497Z ##[endgroup]
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.5360011Z Temporarily overriding HOME='/home/runner/work/_temp/c5e1c1f5-9ccf-49e9-bcbc-4e62b2e18741' before making global git config changes
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.5364955Z Adding repository directory to the temporary git global config as a safe directory
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.5368043Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/gcp-template-forge/gcp-template-forge
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.5372858Z Deleting the contents of '/home/runner/work/gcp-template-forge/gcp-template-forge'
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.5375936Z ##[group]Initializing the repository
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.5377822Z [command]/usr/bin/git init /home/runner/work/gcp-template-forge/gcp-template-forge
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.5443518Z hint: Using 'master' as the name for the initial branch. This default branch name
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.5447874Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.5450962Z hint: to use in all of your new repositories, which will suppress this warning,
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.5452733Z hint: call:
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.5454076Z hint:
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.5456393Z hint: 	git config --global init.defaultBranch <name>
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.5458630Z hint:
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.5460271Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.5462452Z hint: 'development'. The just-created branch can be renamed via this command:
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.5464361Z hint:
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.5465432Z hint: 	git branch -m <name>
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.5466622Z hint:
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.5468142Z hint: Disable this message with "git config set advice.defaultBranchName false"
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.5470749Z Initialized empty Git repository in /home/runner/work/gcp-template-forge/gcp-template-forge/.git/
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.5475149Z [command]/usr/bin/git remote add origin https://github.com/fkc1e100/gcp-template-forge
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.5487386Z ##[endgroup]
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.5489679Z ##[group]Disabling automatic garbage collection
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.5491712Z [command]/usr/bin/git config --local gc.auto 0
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.5518770Z ##[endgroup]
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.5520555Z ##[group]Setting up auth
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.5526057Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.5554479Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.5834242Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.5867777Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.6081344Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.6121820Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.6345242Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.6380173Z ##[endgroup]
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.6382045Z ##[group]Fetching the repository
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.6389471Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +34fa16b15da69348e947a58e4c78a69c53761dd3:refs/remotes/pull/8/merge
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.9645818Z From https://github.com/fkc1e100/gcp-template-forge
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.9647934Z  * [new ref]         34fa16b15da69348e947a58e4c78a69c53761dd3 -> pull/8/merge
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.9677452Z ##[endgroup]
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.9680720Z ##[group]Determining the checkout info
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.9684506Z ##[endgroup]
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.9686678Z [command]/usr/bin/git sparse-checkout disable
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.9723623Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.9751023Z ##[group]Checking out the ref
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.9754330Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/8/merge
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.9839252Z Note: switching to 'refs/remotes/pull/8/merge'.
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.9840309Z 
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.9841243Z You are in 'detached HEAD' state. You can look around, make experimental
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.9845082Z changes and commit them, and you can discard any commits you make in this
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.9848770Z state without impacting any branches by switching back to a branch.
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.9850912Z 
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.9852476Z If you want to create a new branch to retain commits you create, you may
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.9856172Z do so (now or later) by using -c with the switch command. Example:
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.9858650Z 
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.9859378Z   git switch -c <new-branch-name>
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.9860228Z 
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.9860763Z Or undo this operation with:
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.9861537Z 
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.9862018Z   git switch -
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.9862626Z 
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.9863862Z Turn off this advice by setting config variable advice.detachedHead to false
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.9866122Z 
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.9868299Z HEAD is now at 34fa16b Merge 1c4cdcebc0ed46d78fcebd918df6f53555ea0930 into b45091f2ca991f8ed2965868aa543c7be79b868f
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.9873287Z ##[endgroup]
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.9885964Z [command]/usr/bin/git log -1 --format=%H
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:24.9908157Z 34fa16b15da69348e947a58e4c78a69c53761dd3
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:25.0292496Z ##[group]Run google-github-actions/auth@v2
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:25.0294081Z with:
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:25.0328250Z   credentials_json: ***
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:25.0329490Z   create_credentials_file: true
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:25.0330810Z   export_environment_variables: true
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:25.0332147Z   universe: googleapis.com
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:25.0333506Z   cleanup_credentials: true
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:25.0334763Z   access_token_lifetime: 3600s
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:25.0336356Z   access_token_scopes: https://www.googleapis.com/auth/cloud-platform
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:25.0338073Z   id_token_include_email: false
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:25.0339282Z ##[endgroup]
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:25.1308933Z Created credentials file at "/home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-8ab28c79847d212f.json"
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:25.1567495Z ##[group]Run google-github-actions/get-gke-credentials@v2
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:25.1569034Z with:
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:25.1570146Z   cluster_name: ***
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:25.1571266Z   location: ***
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:25.1572343Z   use_auth_provider: false
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:25.1573690Z   use_internal_ip: false
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:25.1574869Z   use_connect_gateway: false
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:25.1576091Z   use_dns_based_endpoint: false
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:25.1577306Z env:
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:25.1579391Z   CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-8ab28c79847d212f.json
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:25.1582802Z   GOOGLE_APPLICATION_CREDENTIALS: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-8ab28c79847d212f.json
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:25.1586078Z   GOOGLE_GHA_CREDS_PATH: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-8ab28c79847d212f.json
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:25.1588279Z   CLOUDSDK_CORE_PROJECT: gca-gke-2025
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:25.1589632Z   CLOUDSDK_PROJECT: gca-gke-2025
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:25.1590887Z   GCLOUD_PROJECT: gca-gke-2025
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:25.1592117Z   GCP_PROJECT: gca-gke-2025
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:25.1593522Z   GOOGLE_CLOUD_PROJECT: gca-gke-2025
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:25.1594799Z ##[endgroup]
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:25.7678248Z ##[error]google-github-actions/get-gke-credentials failed with: not found: projects/gca-gke-2025/locations/***/clusters/***.
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:25.8004539Z Post job cleanup.
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:25.8905619Z Removed exported credentials at "/home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-8ab28c79847d212f.json".
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:25.9151540Z Post job cleanup.
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:26.0106154Z [command]/usr/bin/git version
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:26.0146799Z git version 2.53.0
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:26.0194564Z Temporarily overriding HOME='/home/runner/work/_temp/209bcbdc-5964-4605-9148-58a27e50c8f8' before making global git config changes
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:26.0199631Z Adding repository directory to the temporary git global config as a safe directory
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:26.0212208Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/gcp-template-forge/gcp-template-forge
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:26.0348819Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:26.0400356Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:26.0680705Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:26.0703858Z http.https://github.com/.extraheader
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:26.0716177Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:26.0814936Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:26.1051619Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:26.1080940Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:26.1438111Z Cleaning up orphan processes
+kcc-validation	UNKNOWN STEP	2026-04-10T22:46:26.1793813Z ##[warning]Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/checkout@v4, google-github-actions/auth@v2, google-github-actions/get-gke-credentials@v2. Actions will be forced to run with Node.js 24 by default starting June 2nd, 2026. Node.js 20 will be removed from the runner on September 16th, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+live-deploy-and-test	UNKNOWN STEP	﻿2026-04-10T22:46:59.7780109Z Current runner version: '2.333.1'
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:46:59.7804828Z ##[group]Runner Image Provisioner
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:46:59.7806279Z Hosted Compute Agent
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:46:59.7807058Z Version: 20260213.493
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:46:59.7807925Z Commit: 5c115507f6dd24b8de37d8bbe0bb4509d0cc0fa3
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:46:59.7808882Z Build Date: 2026-02-13T00:28:41Z
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:46:59.7809933Z Worker ID: ***8a4b927f-4917-4d46-a271-ff88d4bc0ae6***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:46:59.7810849Z Azure Region: westus2
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:46:59.7811668Z ##[endgroup]
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:46:59.7813302Z ##[group]Operating System
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:46:59.7814254Z Ubuntu
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:46:59.7814923Z 24.04.4
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:46:59.7816068Z LTS
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:46:59.7816740Z ##[endgroup]
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:46:59.7817518Z ##[group]Runner Image
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:46:59.7818286Z Image: ubuntu-24.04
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:46:59.7819027Z Version: 20260406.80.1
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:46:59.7820444Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260406.80/images/ubuntu/Ubuntu2404-Readme.md
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:46:59.7822223Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260406.80
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:46:59.7823362Z ##[endgroup]
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:46:59.7824891Z ##[group]GITHUB_TOKEN Permissions
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:46:59.7827166Z Contents: read
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:46:59.7827878Z Metadata: read
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:46:59.7828671Z Packages: read
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:46:59.7829372Z ##[endgroup]
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:46:59.7831872Z Secret source: Actions
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:46:59.7832753Z Prepare workflow directory
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:46:59.8221100Z Prepare all required actions
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:46:59.8268305Z Getting action download info
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:00.3417685Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:00.4702843Z Download action repository 'hashicorp/setup-terraform@v3' (SHA:b9cd54a3c349d3f38e8881555d616ced269862dd)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:00.8286056Z Download action repository 'azure/setup-helm@v4' (SHA:1a275c3b69536ee54be43f2070a358922e12c8d4)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:01.1320606Z Download action repository 'google-github-actions/auth@v2' (SHA:c200f3691d83b41bf9bbd8638997a462592937ed)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:01.4722771Z Download action repository 'google-github-actions/get-gke-credentials@v2' (SHA:64bc7249bbcf78056bb92f14d3cedc2da193946c)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:01.9635789Z Complete job name: live-deploy-and-test
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.0644388Z ##[group]Run actions/checkout@v4
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.0646205Z with:
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.0647301Z   repository: fkc1e100/gcp-template-forge
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.0648909Z   token: ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.0649917Z   ssh-strict: true
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.0650949Z   ssh-user: git
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.0652007Z   persist-credentials: true
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.0653157Z   clean: true
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.0654227Z   sparse-checkout-cone-mode: true
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.0655884Z   fetch-depth: 1
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.0656939Z   fetch-tags: false
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.0657984Z   show-progress: true
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.0659072Z   lfs: false
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.0660077Z   submodules: false
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.0661173Z   set-safe-directory: true
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.0662645Z ##[endgroup]
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.1759894Z Syncing repository: fkc1e100/gcp-template-forge
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.1763234Z ##[group]Getting Git version info
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.1765547Z Working directory is '/home/runner/work/gcp-template-forge/gcp-template-forge'
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.1768095Z [command]/usr/bin/git version
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.1793464Z git version 2.53.0
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.1820170Z ##[endgroup]
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.1834685Z Temporarily overriding HOME='/home/runner/work/_temp/29d060fb-580f-407f-891d-09b8502a9452' before making global git config changes
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.1838022Z Adding repository directory to the temporary git global config as a safe directory
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.1841362Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/gcp-template-forge/gcp-template-forge
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.1873785Z Deleting the contents of '/home/runner/work/gcp-template-forge/gcp-template-forge'
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.1877554Z ##[group]Initializing the repository
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.1881667Z [command]/usr/bin/git init /home/runner/work/gcp-template-forge/gcp-template-forge
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.1984168Z hint: Using 'master' as the name for the initial branch. This default branch name
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.1987230Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.1989335Z hint: to use in all of your new repositories, which will suppress this warning,
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.1991536Z hint: call:
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.1992512Z hint:
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.1993725Z hint: 	git config --global init.defaultBranch <name>
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.1995388Z hint:
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.1997218Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.1999306Z hint: 'development'. The just-created branch can be renamed via this command:
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.2001079Z hint:
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.2002171Z hint: 	git branch -m <name>
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.2003311Z hint:
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.2004746Z hint: Disable this message with "git config set advice.defaultBranchName false"
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.2007558Z Initialized empty Git repository in /home/runner/work/gcp-template-forge/gcp-template-forge/.git/
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.2011609Z [command]/usr/bin/git remote add origin https://github.com/fkc1e100/gcp-template-forge
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.2029923Z ##[endgroup]
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.2031695Z ##[group]Disabling automatic garbage collection
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.2033720Z [command]/usr/bin/git config --local gc.auto 0
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.2061930Z ##[endgroup]
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.2063617Z ##[group]Setting up auth
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.2068200Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.2097748Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.2392985Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.2423606Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.2643927Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.2674561Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.2898444Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.2933170Z ##[endgroup]
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.2936524Z ##[group]Fetching the repository
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.2945905Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +34fa16b15da69348e947a58e4c78a69c53761dd3:refs/remotes/pull/8/merge
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.6543637Z From https://github.com/fkc1e100/gcp-template-forge
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.6544324Z  * [new ref]         34fa16b15da69348e947a58e4c78a69c53761dd3 -> pull/8/merge
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.6571932Z ##[endgroup]
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.6572832Z ##[group]Determining the checkout info
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.6575470Z ##[endgroup]
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.6580187Z [command]/usr/bin/git sparse-checkout disable
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.6616155Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.6641029Z ##[group]Checking out the ref
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.6644546Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/8/merge
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.6729203Z Note: switching to 'refs/remotes/pull/8/merge'.
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.6730080Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.6730499Z You are in 'detached HEAD' state. You can look around, make experimental
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.6731148Z changes and commit them, and you can discard any commits you make in this
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.6732032Z state without impacting any branches by switching back to a branch.
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.6732402Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.6732675Z If you want to create a new branch to retain commits you create, you may
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.6733785Z do so (now or later) by using -c with the switch command. Example:
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.6734446Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.6734758Z   git switch -c <new-branch-name>
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.6735484Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.6735780Z Or undo this operation with:
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.6736192Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.6736456Z   git switch -
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.6736837Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.6737347Z Turn off this advice by setting config variable advice.detachedHead to false
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.6738067Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.6738844Z HEAD is now at 34fa16b Merge 1c4cdcebc0ed46d78fcebd918df6f53555ea0930 into b45091f2ca991f8ed2965868aa543c7be79b868f
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.6741076Z ##[endgroup]
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.6773107Z [command]/usr/bin/git log -1 --format=%H
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.6793980Z 34fa16b15da69348e947a58e4c78a69c53761dd3
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.6982180Z ##[group]Run hashicorp/setup-terraform@v3
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.6982624Z with:
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.6982982Z   cli_config_credentials_hostname: app.terraform.io
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.6983411Z   terraform_version: latest
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.6983810Z   terraform_wrapper: true
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:02.6984135Z ##[endgroup]
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:03.3248792Z [command]/usr/bin/unzip -o -q /home/runner/work/_temp/1f718b42-8a15-493f-9e04-d3442f23eeb2
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:03.9948193Z ##[group]Run azure/setup-helm@v4
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:03.9948535Z with:
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:03.9948761Z   version: latest
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:03.9949133Z   token: ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:03.9949410Z   downloadBaseURL: https://get.helm.sh
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:03.9949724Z env:
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:03.9950095Z   TERRAFORM_CLI_PATH: /home/runner/work/_temp/a306c809-546a-4f07-bf94-ca29fa857a53
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:03.9950534Z ##[endgroup]
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:04.1495786Z ##[group]Installing v4.1.4
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:04.1504791Z Downloading 'v4.1.4' from 'https://get.helm.sh'
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:04.3837296Z [command]/usr/bin/tar xz --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/9dc08ed6-f6ec-4665-9d04-84a428bfb988 -f /home/runner/work/_temp/5a03cae0-84de-45ed-8dab-05ead6f5d2e2
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:04.8192507Z ##[endgroup]
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:04.8195068Z Helm tool version 'v4.1.4' has been cached at /opt/hostedtoolcache/helm/4.1.4/x64/linux-amd64/helm
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:04.8407611Z ##[group]Run google-github-actions/auth@v2
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:04.8407986Z with:
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:04.8417570Z   credentials_json: ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:04.8417871Z   create_credentials_file: true
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:04.8418187Z   export_environment_variables: true
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:04.8418499Z   universe: googleapis.com
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:04.8418787Z   cleanup_credentials: true
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:04.8419067Z   access_token_lifetime: 3600s
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:04.8419459Z   access_token_scopes: https://www.googleapis.com/auth/cloud-platform
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:04.8419909Z   id_token_include_email: false
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:04.8420184Z env:
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:04.8420554Z   TERRAFORM_CLI_PATH: /home/runner/work/_temp/a306c809-546a-4f07-bf94-ca29fa857a53
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:04.8420998Z ##[endgroup]
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:04.9374803Z Created credentials file at "/home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-69664701ff8824d9.json"
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:04.9506490Z ##[group]Run gcloud container clusters update enterprise-cluster --region us-central1 --no-enable-deletion-protection || true
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:04.9507540Z [36;1mgcloud container clusters update enterprise-cluster --region us-central1 --no-enable-deletion-protection || true[0m
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:04.9508370Z [36;1mgcloud container clusters delete enterprise-cluster --region us-central1 --quiet || true[0m
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:04.9532328Z shell: /usr/bin/bash -e ***0***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:04.9532666Z env:
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:04.9533049Z   TERRAFORM_CLI_PATH: /home/runner/work/_temp/a306c809-546a-4f07-bf94-ca29fa857a53
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:04.9534012Z   CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-69664701ff8824d9.json
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:04.9534941Z   GOOGLE_APPLICATION_CREDENTIALS: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-69664701ff8824d9.json
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:04.9536205Z   GOOGLE_GHA_CREDS_PATH: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-69664701ff8824d9.json
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:04.9536812Z   CLOUDSDK_CORE_PROJECT: gca-gke-2025
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:04.9537149Z   CLOUDSDK_PROJECT: gca-gke-2025
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:04.9537454Z   GCLOUD_PROJECT: gca-gke-2025
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:04.9537758Z   GCP_PROJECT: gca-gke-2025
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:04.9538086Z   GOOGLE_CLOUD_PROJECT: gca-gke-2025
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:04.9538392Z ##[endgroup]
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:08.8816067Z ERROR: (gcloud.container.clusters.update) unrecognized arguments: --no-enable-deletion-protection (did you mean '--enable-autoprovisioning'?) 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:08.8817356Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:08.8817709Z To search the help text of gcloud commands, run:
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:08.8818429Z   gcloud help -- SEARCH_TERMS
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:10.3912293Z ERROR: (gcloud.container.clusters.delete) Some requests did not succeed:
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:10.3914009Z  - ResponseError: code=400, message=Cluster is running incompatible operation operation-1775861075665-a36a8802-2e8b-4d45-a8f1-c329c5d786cc.
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:10.3916980Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:10.5137835Z ##[group]Run cd templates/6-enterprise-gke/Terraform_HELM/terraform
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:10.5138399Z [36;1mcd templates/6-enterprise-gke/Terraform_HELM/terraform[0m
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:10.5138807Z [36;1mterraform init -backend=false[0m
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:10.5159187Z shell: /usr/bin/bash -e ***0***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:10.5159488Z env:
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:10.5159863Z   TERRAFORM_CLI_PATH: /home/runner/work/_temp/a306c809-546a-4f07-bf94-ca29fa857a53
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:10.5160643Z   CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-69664701ff8824d9.json
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:10.5161565Z   GOOGLE_APPLICATION_CREDENTIALS: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-69664701ff8824d9.json
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:10.5162379Z   GOOGLE_GHA_CREDS_PATH: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-69664701ff8824d9.json
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:10.5162933Z   CLOUDSDK_CORE_PROJECT: gca-gke-2025
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:10.5163274Z   CLOUDSDK_PROJECT: gca-gke-2025
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:10.5163562Z   GCLOUD_PROJECT: gca-gke-2025
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:10.5163836Z   GCP_PROJECT: gca-gke-2025
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:10.5164112Z   GOOGLE_CLOUD_PROJECT: gca-gke-2025
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:10.5164395Z ##[endgroup]
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:10.6801528Z [0m[1mInitializing provider plugins...[0m
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:10.6806201Z - Reusing previous version of hashicorp/google from the dependency lock file
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:10.8965286Z - Installing hashicorp/google v7.26.0...
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:12.6488573Z - Installed hashicorp/google v7.26.0 (signed by HashiCorp)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:12.6489195Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:12.6490003Z [0m[1m[32mTerraform has been successfully initialized![0m[32m[0m
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:12.6490811Z [0m[32m
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:12.6491493Z You may now begin working with Terraform. Try running "terraform plan" to see
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:12.6492658Z any changes that are required for your infrastructure. All Terraform commands
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:12.6493540Z should now work.
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:12.6493866Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:12.6494327Z If you ever set or change modules or backend configuration for Terraform,
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:12.6495870Z rerun this command to reinitialize your working directory. If you forget, other
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:12.6497190Z commands will detect it and remind you to do so if necessary.[0m
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:12.6608307Z ##[group]Run cd templates/6-enterprise-gke/Terraform_HELM/terraform
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:12.6608847Z [36;1mcd templates/6-enterprise-gke/Terraform_HELM/terraform[0m
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:12.6609634Z [36;1mterraform apply -auto-approve -var="project_id=gca-gke-2025" -var="service_account=template-forge-validator@gca-gke-2025.iam.gserviceaccount.com"[0m
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:12.6631253Z shell: /usr/bin/bash -e ***0***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:12.6631562Z env:
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:12.6631929Z   TERRAFORM_CLI_PATH: /home/runner/work/_temp/a306c809-546a-4f07-bf94-ca29fa857a53
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:12.6632691Z   CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-69664701ff8824d9.json
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:12.6633589Z   GOOGLE_APPLICATION_CREDENTIALS: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-69664701ff8824d9.json
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:12.6634439Z   GOOGLE_GHA_CREDS_PATH: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-69664701ff8824d9.json
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:12.6635299Z   CLOUDSDK_CORE_PROJECT: gca-gke-2025
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:12.6635647Z   CLOUDSDK_PROJECT: gca-gke-2025
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:12.6635943Z   GCLOUD_PROJECT: gca-gke-2025
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:12.6636222Z   GCP_PROJECT: gca-gke-2025
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:12.6636515Z   GOOGLE_CLOUD_PROJECT: gca-gke-2025
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:12.6636807Z ##[endgroup]
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5622635Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5623374Z Terraform used the selected providers to generate the following execution
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5624294Z plan. Resource actions are indicated with the following symbols:
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5625449Z   [32m+[0m create[0m
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5625751Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5625983Z Terraform will perform the following actions:
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5627415Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5627935Z [1m  # google_container_cluster.enterprise_cluster[0m will be created
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5629026Z [0m  [32m+[0m[0m resource "google_container_cluster" "enterprise_cluster" ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5630036Z       [32m+[0m[0m cluster_ipv4_cidr                        = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5631020Z       [32m+[0m[0m datapath_provider                        = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5632004Z       [32m+[0m[0m default_max_pods_per_node                = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5632993Z       [32m+[0m[0m deletion_protection                      = false
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5633856Z       [32m+[0m[0m disable_l4_lb_firewall_reconciliation    = false
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5634733Z       [32m+[0m[0m effective_labels                         = ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5635803Z           [32m+[0m[0m "goog-terraform-provisioned" = "true"
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5636392Z         ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5637000Z       [32m+[0m[0m enable_cilium_clusterwide_network_policy = false
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5637815Z       [32m+[0m[0m enable_fqdn_network_policy               = false
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5638731Z       [32m+[0m[0m enable_intranode_visibility              = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5639835Z       [32m+[0m[0m enable_kubernetes_alpha                  = false
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5640798Z       [32m+[0m[0m enable_l4_ilb_subsetting                 = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5641693Z       [32m+[0m[0m enable_legacy_abac                       = false
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5642519Z       [32m+[0m[0m enable_multi_networking                  = false
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5643309Z       [32m+[0m[0m enable_shielded_nodes                    = true
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5644183Z       [32m+[0m[0m endpoint                                 = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5645471Z       [32m+[0m[0m id                                       = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5646616Z       [32m+[0m[0m initial_node_count                       = 1
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5647775Z       [32m+[0m[0m label_fingerprint                        = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5649368Z       [32m+[0m[0m location                                 = "us-central1"
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5650575Z       [32m+[0m[0m logging_service                          = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5651748Z       [32m+[0m[0m master_version                           = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5653091Z       [32m+[0m[0m monitoring_service                       = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5654344Z       [32m+[0m[0m name                                     = "enterprise-cluster"
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5655616Z       [32m+[0m[0m network                                  = "default"
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5656702Z       [32m+[0m[0m networking_mode                          = "VPC_NATIVE"
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5657821Z       [32m+[0m[0m node_locations                           = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5659024Z       [32m+[0m[0m node_version                             = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5660167Z       [32m+[0m[0m operation                                = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5679246Z       [32m+[0m[0m private_ipv6_google_access               = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5680471Z       [32m+[0m[0m project                                  = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5681402Z       [32m+[0m[0m remove_default_node_pool                 = true
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5682300Z       [32m+[0m[0m self_link                                = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5683271Z       [32m+[0m[0m services_ipv4_cidr                       = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5684205Z       [32m+[0m[0m subnetwork                               = "default"
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5685267Z       [32m+[0m[0m terraform_labels                         = ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5686091Z           [32m+[0m[0m "goog-terraform-provisioned" = "true"
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5686680Z         ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5687356Z       [32m+[0m[0m tpu_ipv4_cidr_block                      = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5687878Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5688211Z       [32m+[0m[0m addons_config (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5688604Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5689028Z       [32m+[0m[0m anonymous_authentication_config (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5689516Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5689916Z       [32m+[0m[0m authenticator_groups_config (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5690378Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5690668Z       [32m+[0m[0m binary_authorization ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5691462Z           [32m+[0m[0m evaluation_mode = "PROJECT_SINGLETON_POLICY_ENFORCE"
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5692115Z         ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5692324Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5692680Z       [32m+[0m[0m cluster_autoscaling (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5693098Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5693446Z       [32m+[0m[0m confidential_nodes (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5693855Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5694268Z       [32m+[0m[0m control_plane_endpoints_config (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5694739Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5695286Z       [32m+[0m[0m cost_management_config (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5695724Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5696082Z       [32m+[0m[0m database_encryption (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5696494Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5696845Z       [32m+[0m[0m default_snat_status (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5697249Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5697587Z       [32m+[0m[0m enterprise_config (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5697991Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5698331Z       [32m+[0m[0m gateway_api_config (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5698737Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5699111Z       [32m+[0m[0m gke_auto_upgrade_config (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5699543Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5699913Z       [32m+[0m[0m identity_service_config (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5700343Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5700743Z       [32m+[0m[0m ip_allocation_policy ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5701450Z           [32m+[0m[0m cluster_ipv4_cidr_block       = "/14"
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5702527Z           [32m+[0m[0m cluster_secondary_range_name  = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5703461Z           [32m+[0m[0m services_ipv4_cidr_block      = "/20"
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5704323Z           [32m+[0m[0m services_secondary_range_name = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5705532Z           [32m+[0m[0m stack_type                    = "IPV4"
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5705946Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5706300Z           [32m+[0m[0m auto_ipam_config (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5706711Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5707073Z           [32m+[0m[0m network_tier_config (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5707498Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5707923Z           [32m+[0m[0m pod_cidr_overprovision_config (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5708570Z         ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5708782Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5709052Z       [32m+[0m[0m logging_config ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5709682Z           [32m+[0m[0m enable_components = [
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5710337Z               [32m+[0m[0m "SYSTEM_COMPONENTS",
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5710957Z               [32m+[0m[0m "WORKLOADS",
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5711441Z             ]
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5711807Z         ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5712079Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5712398Z       [32m+[0m[0m master_auth (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5712786Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5713206Z       [32m+[0m[0m master_authorized_networks_config (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5713687Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5714018Z       [32m+[0m[0m mesh_certificates (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5714412Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5714691Z       [32m+[0m[0m monitoring_config ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5715559Z           [32m+[0m[0m enable_components = [
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5716211Z               [32m+[0m[0m "SYSTEM_COMPONENTS",
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5716727Z             ]
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5716939Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5717433Z           [32m+[0m[0m advanced_datapath_observability_config (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5717981Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5718280Z           [32m+[0m[0m managed_prometheus ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5718900Z               [32m+[0m[0m enabled = true
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5719238Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5719628Z               [32m+[0m[0m auto_monitoring_config (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5720239Z             ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5720617Z         ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5720816Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5721080Z       [32m+[0m[0m network_policy ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5721658Z           [32m+[0m[0m enabled  = true
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5722429Z           [32m+[0m[0m provider = "CALICO"
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5722930Z         ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5723132Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5723378Z       [32m+[0m[0m node_config ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5724025Z           [32m+[0m[0m disk_size_gb     = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5724761Z           [32m+[0m[0m disk_type        = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5725701Z           [32m+[0m[0m effective_taints = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5726443Z           [32m+[0m[0m image_type       = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5726927Z           [32m+[0m[0m labels           = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5727390Z           [32m+[0m[0m local_ssd_count  = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5728134Z           [32m+[0m[0m logging_variant  = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5728780Z           [32m+[0m[0m machine_type     = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5729227Z           [32m+[0m[0m metadata         = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5729663Z           [32m+[0m[0m min_cpu_platform = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5730093Z           [32m+[0m[0m oauth_scopes     = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5730502Z           [32m+[0m[0m preemptible      = false
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5731119Z           [32m+[0m[0m service_account  = "template-forge-validator@gca-gke-2025.iam.gserviceaccount.com"
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5731896Z           [32m+[0m[0m spot             = false
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5732125Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5732321Z           [32m+[0m[0m boot_disk (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5732553Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5732764Z           [32m+[0m[0m confidential_nodes (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5733159Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5733370Z           [32m+[0m[0m containerd_config (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5733606Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5733801Z           [32m+[0m[0m gcfs_config (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5734030Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5734233Z           [32m+[0m[0m guest_accelerator (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5734466Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5734660Z           [32m+[0m[0m kubelet_config (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5734891Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5735428Z           [32m+[0m[0m linux_node_config (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5735688Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5735934Z           [32m+[0m[0m shielded_instance_config (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5736205Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5736432Z           [32m+[0m[0m windows_node_config (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5736679Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5736907Z           [32m+[0m[0m workload_metadata_config (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5737273Z         ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5737402Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5737587Z       [32m+[0m[0m node_pool (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5737810Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5738034Z       [32m+[0m[0m node_pool_auto_config (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5738282Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5738485Z       [32m+[0m[0m node_pool_defaults (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5738722Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5738931Z       [32m+[0m[0m notification_config (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5739172Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5739371Z       [32m+[0m[0m pod_autoscaling (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5739599Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5739786Z       [32m+[0m[0m private_cluster_config ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5740199Z           [32m+[0m[0m enable_private_nodes   = true
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5740645Z           [32m+[0m[0m master_ipv4_cidr_block = "172.16.0.0/28"
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5741112Z           [32m+[0m[0m peering_name           = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5741583Z           [32m+[0m[0m private_endpoint       = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5742052Z           [32m+[0m[0m public_endpoint        = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5742299Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5742536Z           [32m+[0m[0m master_global_access_config (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5742898Z         ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5743024Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5743234Z       [32m+[0m[0m rbac_binding_config (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5743469Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5743630Z       [32m+[0m[0m release_channel ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5744004Z           [32m+[0m[0m channel = "REGULAR"
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5744301Z         ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5744434Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5744602Z       [32m+[0m[0m secret_manager_config ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5745228Z           [32m+[0m[0m enabled = true
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5745455Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5745678Z           [32m+[0m[0m rotation_config (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5746022Z         ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5746152Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5746343Z       [32m+[0m[0m security_posture_config ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5746743Z           [32m+[0m[0m mode               = "BASIC"
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5747205Z           [32m+[0m[0m vulnerability_mode = "VULNERABILITY_ENTERPRISE"
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5747580Z         ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5747708Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5747945Z       [32m+[0m[0m service_external_ips_config (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5748213Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5748439Z       [32m+[0m[0m vertical_pod_autoscaling (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5748694Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5748879Z       [32m+[0m[0m workload_identity_config ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5749673Z           [32m+[0m[0m workload_pool = "gca-gke-2025.svc.id.goog"
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5750493Z         ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5750904Z     ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5751104Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5751572Z [1m  # google_container_node_pool.primary_nodes[0m will be created
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5752613Z [0m  [32m+[0m[0m resource "google_container_node_pool" "primary_nodes" ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5753762Z       [32m+[0m[0m cluster                     = "enterprise-cluster"
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5754610Z       [32m+[0m[0m id                          = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5755703Z       [32m+[0m[0m initial_node_count          = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5756584Z       [32m+[0m[0m instance_group_urls         = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5757402Z       [32m+[0m[0m location                    = "us-central1"
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5758212Z       [32m+[0m[0m managed_instance_group_urls = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5759070Z       [32m+[0m[0m max_pods_per_node           = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5759921Z       [32m+[0m[0m name                        = "primary-node-pool"
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5760727Z       [32m+[0m[0m name_prefix                 = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5761482Z       [32m+[0m[0m node_count                  = 3
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5762258Z       [32m+[0m[0m node_locations              = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5763113Z       [32m+[0m[0m operation                   = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5763968Z       [32m+[0m[0m project                     = "gca-gke-2025"
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5764784Z       [32m+[0m[0m version                     = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5765465Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5765802Z       [32m+[0m[0m management (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5766192Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5766546Z       [32m+[0m[0m network_config (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5766962Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5767258Z       [32m+[0m[0m node_config ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5767910Z           [32m+[0m[0m disk_size_gb     = 100
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5768603Z           [32m+[0m[0m disk_type        = "pd-standard"
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5769384Z           [32m+[0m[0m effective_taints = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5770144Z           [32m+[0m[0m image_type       = "COS_CONTAINERD"
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5770901Z           [32m+[0m[0m labels           = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5771649Z           [32m+[0m[0m local_ssd_count  = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5772407Z           [32m+[0m[0m logging_variant  = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5773136Z           [32m+[0m[0m machine_type     = "e2-standard-4"
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5773877Z           [32m+[0m[0m metadata         = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5774621Z           [32m+[0m[0m min_cpu_platform = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5775540Z           [32m+[0m[0m oauth_scopes     = [
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5776365Z               [32m+[0m[0m "https://www.googleapis.com/auth/cloud-platform",
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5777032Z             ]
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5777569Z           [32m+[0m[0m preemptible      = false
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5778662Z           [32m+[0m[0m service_account  = "template-forge-validator@gca-gke-2025.iam.gserviceaccount.com"
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5779685Z           [32m+[0m[0m spot             = false
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5780058Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5780390Z           [32m+[0m[0m boot_disk (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5780787Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5781168Z           [32m+[0m[0m confidential_nodes (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5781600Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5781966Z           [32m+[0m[0m containerd_config (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5782391Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5782755Z           [32m+[0m[0m gcfs_config (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5783160Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5783558Z           [32m+[0m[0m guest_accelerator (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5783992Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5784568Z           [32m+[0m[0m kubelet_config (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5785275Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5785707Z           [32m+[0m[0m linux_node_config (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5786162Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5786547Z           [32m+[0m[0m shielded_instance_config ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5787574Z               [32m+[0m[0m enable_integrity_monitoring = true
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5788383Z               [32m+[0m[0m enable_secure_boot          = true
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5788985Z             ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5789235Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5789633Z           [32m+[0m[0m windows_node_config (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5790079Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5790436Z           [32m+[0m[0m workload_metadata_config ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5791141Z               [32m+[0m[0m mode = "GKE_METADATA"
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5791693Z             ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5792097Z         ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5792316Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5792708Z       [32m+[0m[0m node_drain_config (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5793134Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5793496Z       [32m+[0m[0m upgrade_settings (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5794082Z     ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5794289Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5794643Z [1mPlan:[0m [0m2 to add, 0 to change, 0 to destroy.
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5795288Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5795479Z Changes to Outputs:
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5796136Z   [32m+[0m[0m cluster_ca_certificate = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5796979Z   [32m+[0m[0m cluster_endpoint       = (known after apply)
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.5797812Z   [32m+[0m[0m cluster_name           = "enterprise-cluster"
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:13.8297960Z [0m[1mgoogle_container_cluster.enterprise_cluster: Creating...[0m[0m
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:14.3636526Z [31m╷[0m[0m
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:14.3637929Z [31m│[0m [0m[1m[31mError: [0m[0m[1mgoogleapi: Error 409: Already exists: projects/gca-gke-2025/locations/us-central1/clusters/enterprise-cluster.
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:14.3639113Z [31m│[0m [0mDetails:
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:14.3639605Z [31m│[0m [0m[
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:14.3640096Z [31m│[0m [0m  ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:14.3640787Z [31m│[0m [0m    "@type": "type.googleapis.com/google.rpc.RequestInfo",
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:14.3641585Z [31m│[0m [0m    "requestId": "0x9ef6afe6c3cb81b8"
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:14.3642175Z [31m│[0m [0m  ***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:14.3642597Z [31m│[0m [0m]
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:14.3643040Z [31m│[0m [0m, alreadyExists[0m
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:14.3643508Z [31m│[0m [0m
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:14.3644137Z [31m│[0m [0m[0m  with google_container_cluster.enterprise_cluster,
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:14.3645459Z [31m│[0m [0m  on main.tf line 1, in resource "google_container_cluster" "enterprise_cluster":
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:14.3646646Z [31m│[0m [0m   1: resource "google_container_cluster" "enterprise_cluster" [4m***[0m[0m
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:14.3647441Z [31m│[0m [0m
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:14.3647862Z [31m╵[0m[0m
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:14.3718160Z ##[error]Terraform exited with code 1.
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:14.3752567Z ##[error]Process completed with exit code 1.
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:14.3806870Z ##[group]Run cd templates/6-enterprise-gke/Terraform_HELM/terraform
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:14.3807402Z [36;1mcd templates/6-enterprise-gke/Terraform_HELM/terraform[0m
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:14.3808203Z [36;1mterraform destroy -auto-approve -var="project_id=gca-gke-2025" -var="service_account=template-forge-validator@gca-gke-2025.iam.gserviceaccount.com"[0m
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:14.3829912Z shell: /usr/bin/bash -e ***0***
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:14.3830205Z env:
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:14.3830574Z   TERRAFORM_CLI_PATH: /home/runner/work/_temp/a306c809-546a-4f07-bf94-ca29fa857a53
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:14.3831329Z   CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-69664701ff8824d9.json
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:14.3832239Z   GOOGLE_APPLICATION_CREDENTIALS: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-69664701ff8824d9.json
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:14.3833086Z   GOOGLE_GHA_CREDS_PATH: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-69664701ff8824d9.json
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:14.3833649Z   CLOUDSDK_CORE_PROJECT: gca-gke-2025
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:14.3833952Z   CLOUDSDK_PROJECT: gca-gke-2025
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:14.3834238Z   GCLOUD_PROJECT: gca-gke-2025
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:14.3834513Z   GCP_PROJECT: gca-gke-2025
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:14.3835260Z   GOOGLE_CLOUD_PROJECT: gca-gke-2025
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:14.3835613Z ##[endgroup]
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:15.2563768Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:15.2564338Z Changes to Outputs:
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:15.2565509Z   [31m-[0m[0m cluster_name = "enterprise-cluster" [90m-> null[0m[0m
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:15.2565968Z 
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:15.2566301Z You can apply this plan to save these new output values to the Terraform
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:15.2567035Z state, without changing any real infrastructure.
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:15.2576973Z [0m[1m[32m
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:15.2577567Z Destroy complete! Resources: 0 destroyed.[0m
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:15.2786214Z Post job cleanup.
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:15.3657505Z Removed exported credentials at "/home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-69664701ff8824d9.json".
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:15.3785867Z Post job cleanup.
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:15.4726249Z [command]/usr/bin/git version
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:15.4766832Z git version 2.53.0
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:15.4840800Z Temporarily overriding HOME='/home/runner/work/_temp/3f65fce5-b7a1-4093-a182-81c3d188119f' before making global git config changes
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:15.4842173Z Adding repository directory to the temporary git global config as a safe directory
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:15.4848353Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/gcp-template-forge/gcp-template-forge
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:15.4891182Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:15.4930167Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:15.5184015Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:15.5206728Z http.https://github.com/.extraheader
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:15.5224297Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:15.5259247Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:15.5481564Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:15.5510998Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:15.5839878Z Cleaning up orphan processes
+live-deploy-and-test	UNKNOWN STEP	2026-04-10T22:47:15.6103876Z ##[warning]Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/checkout@v4, azure/setup-helm@v4, google-github-actions/auth@v2, hashicorp/setup-terraform@v3. Actions will be forced to run with Node.js 24 by default starting June 2nd, 2026. Node.js 20 will be removed from the runner on September 16th, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
