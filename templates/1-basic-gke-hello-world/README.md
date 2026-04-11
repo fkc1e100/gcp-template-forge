@@ -1,44 +1,49 @@
-# Basic GKE Cluster with Hello World Deployment
+# Basic GKE Hello World
 
-This template provisions a basic GKE Autopilot cluster and deploys a "Hello World" application.
+A minimal GKE Autopilot cluster with a Hello World workload, deployable via Terraform + Helm or Config Connector.
 
 ## Architecture
-- **VPC & Subnet:** Isolated networking for the cluster.
-- **GKE Autopilot:** A fully managed GKE cluster for reduced operational overhead.
-- **Workload:** A simple `hello-app` deployment exposed via a LoadBalancer.
 
-## Prerequisites
-- Google Cloud SDK (`gcloud`)
-- Terraform (>= 1.0)
-- `kubectl`
+- **VPC + Subnet** — isolated VPC with secondary CIDR ranges for pods and services (`basic-gke-vpc`, `basic-gke-subnet`)
+- **GKE Autopilot** — fully managed cluster (`basic-gke`); no node pool configuration required
+- **Hello World workload** — Google's `hello-app` container, 3 replicas, exposed via LoadBalancer on port 80
 
-## Deployment
+## Deployment Paths
 
-### 1. Provision Infrastructure
+### Terraform + Helm (`terraform-helm/`)
+
 ```bash
-cd terraform
-terraform init
-terraform apply -var="project_id=YOUR_PROJECT_ID"
+cd terraform-helm
+terraform init \
+  -backend-config="bucket=<TF_STATE_BUCKET>" \
+  -backend-config="prefix=templates/1-basic-gke-hello-world/terraform-helm"
+terraform apply -var="project_id=<PROJECT_ID>"
 ```
 
-### 2. Deploy Application
-```bash
-# Get credentials for kubectl
-gcloud container clusters get-credentials basic-gke-cluster --region us-central1 --project YOUR_PROJECT_ID
+Provisions VPC + subnet + GKE Autopilot, then deploys the `hello-world` Helm chart into the `hello-world` namespace.
 
-# Apply manifests
-kubectl apply -f ../manifests/hello-world.yaml
+### Config Connector (`config-connector/`)
+
+```bash
+kubectl apply -n <KCC_NAMESPACE> -f config-connector/
 ```
 
-## Validation
-You can use the provided validation script to verify the deployment:
-```bash
-./scripts/validate.sh YOUR_PROJECT_ID us-central1 basic-gke-cluster
-```
+Creates `ComputeNetwork`, `ComputeSubnetwork`, and `ContainerCluster` (Autopilot mode) as KCC resources managed by the Config Connector operator.
+
+## Resource Naming
+
+| Resource | Name |
+|---|---|
+| VPC | `basic-gke-vpc` |
+| Subnet | `basic-gke-subnet` |
+| GKE cluster | `basic-gke` |
 
 ## Cleanup
-To destroy the resources:
+
 ```bash
-cd terraform
-terraform destroy -var="project_id=YOUR_PROJECT_ID"
+# Terraform path
+cd terraform-helm && terraform destroy
+
+# KCC path
+kubectl delete -n <KCC_NAMESPACE> -f config-connector/ --wait=true
 ```
