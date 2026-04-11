@@ -52,3 +52,18 @@ This template provides an enterprise-grade Google Kubernetes Engine (GKE) archit
 | **Total (on-demand nodes)** | e2-standard-4 on-demand | ~$0.14/hr (~$100/mo) |
 
 Spot node interruptions are expected during validation; the workload is stateless (Nginx) so restarts are safe. Use on-demand nodes for production.
+
+## Validation Record
+
+|  | Terraform + Helm | Config Connector |
+| --- | --- | --- |
+| **Status** | success | skipped |
+| **Date** | 2026-04-11 | 2026-04-11 |
+| **Duration** | 9m 39s | n/a |
+| **Region** | us-central1 | us-central1 (KCC cluster) |
+| **Zones** | us-central1-a,us-central1-b,us-central1-c,us-central1-f | forge-management namespace |
+| **Cluster** | basic-gke-tf | krmapihost-kcc-instance |
+| **Agent tokens** | 120,000 in / 15,000 out (1 session) | (shared session) |
+| **Estimated cost** | $0.18 | -- |
+| **Commit** | 2c375256 | 2c375256 |
+
