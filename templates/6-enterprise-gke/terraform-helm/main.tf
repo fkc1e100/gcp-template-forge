@@ -66,7 +66,7 @@ resource "google_compute_router_nat" "nat" {
 resource "google_container_cluster" "enterprise_cluster" {
   name     = var.cluster_name
   location = var.region
-  
+
   # MANDATORY for CI to be able to destroy
   deletion_protection = false
 
@@ -135,7 +135,7 @@ resource "google_container_node_pool" "primary_nodes" {
   node_config {
     # Use spot/preemptible for sandbox
     spot = true
-    
+
     machine_type = "e2-standard-4"
     disk_size_gb = 50
     disk_type    = "pd-standard"
