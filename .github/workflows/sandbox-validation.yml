@@ -233,7 +233,7 @@ jobs:
           service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
 
       - name: Install gke-gcloud-auth-plugin
-        run: gcloud components install gke-gcloud-auth-plugin --quiet
+        run: sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
 
       - name: Get KCC cluster credentials
         uses: google-github-actions/get-gke-credentials@v2
@@ -297,6 +297,40 @@ jobs:
             echo "=== Helm deploy: $chart ==="
             helm upgrade --install release "$chart" --wait --timeout=10m
           done
+
+      - name: Security scan — Trivy (workload images)
+        id: security-scan
+        continue-on-error: true
+        if: steps.tf-verify.outcome == 'success'
+        run: |
+          # Install Trivy
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
+            | sh -s -- -b /usr/local/bin
+          echo "Trivy $(trivy --version | head -1)"
+
+          # Authenticate Docker for private registries (GAR, GCR)
+          gcloud auth configure-docker us-docker.pkg.dev,gcr.io --quiet 2>/dev/null || true
+
+          # Scan cluster workloads — exclude GKE system namespaces
+          echo "=== Trivy: scanning cluster workload images (HIGH + CRITICAL) ==="
+          trivy k8s \
+            --severity HIGH,CRITICAL \
+            --report summary \
+            --format table \
+            --timeout 10m \
+            --exclude-namespaces kube-system,kube-public,kube-node-lease,gke-gmp-system,gke-managed-metrics-server,config-management-system \
+            cluster 2>&1 && TRIVY_EXIT=0 || TRIVY_EXIT=$?
+
+          # GKE Security Posture config
+          CLUSTER="${{ steps.tf-outputs.outputs.tf_cluster }}"
+          LOCATION="${{ steps.tf-outputs.outputs.tf_location }}"
+          if [ -n "$CLUSTER" ] && [ -n "$LOCATION" ]; then
+            echo "=== GKE Security Posture configuration ==="
+            gcloud container clusters describe "$CLUSTER" --location="$LOCATION" \
+              --format="yaml(securityPostureConfig,workloadVulnerabilityMode)" 2>/dev/null || true
+          fi
+
+          [ "$TRIVY_EXIT" -eq 0 ] || echo "::warning::HIGH/CRITICAL vulnerabilities found — review Trivy output above"
 
       - name: Terraform destroy
         if: always() && steps.tf-apply.outcome != 'skipped'
@@ -420,7 +454,7 @@ jobs:
 
       - name: Install gke-gcloud-auth-plugin
         if: steps.skip-check.outputs.skip != 'true'
-        run: gcloud components install gke-gcloud-auth-plugin --quiet
+        run: sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
 
       - name: Setup Terraform
         if: steps.skip-check.outputs.skip != 'true'
@@ -469,6 +503,40 @@ jobs:
             gcloud container clusters describe $CLUSTER --location=$LOCATION \
               --format="value(status)" | grep -q RUNNING
           fi
+
+      - name: Security scan — Trivy (workload images)
+        id: security-scan
+        continue-on-error: true
+        if: steps.tf-verify.outcome == 'success'
+        run: |
+          # Install Trivy
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
+            | sh -s -- -b /usr/local/bin
+          echo "Trivy $(trivy --version | head -1)"
+
+          # Authenticate Docker for private registries (GAR, GCR)
+          gcloud auth configure-docker us-docker.pkg.dev,gcr.io --quiet 2>/dev/null || true
+
+          # Scan cluster workloads — exclude GKE system namespaces
+          echo "=== Trivy: scanning cluster workload images (HIGH + CRITICAL) ==="
+          trivy k8s \
+            --severity HIGH,CRITICAL \
+            --report summary \
+            --format table \
+            --timeout 10m \
+            --exclude-namespaces kube-system,kube-public,kube-node-lease,gke-gmp-system,gke-managed-metrics-server,config-management-system \
+            cluster 2>&1 && TRIVY_EXIT=0 || TRIVY_EXIT=$?
+
+          # GKE Security Posture config
+          CLUSTER="${{ steps.tf-outputs.outputs.tf_cluster }}"
+          LOCATION="${{ steps.tf-outputs.outputs.tf_location }}"
+          if [ -n "$CLUSTER" ] && [ -n "$LOCATION" ]; then
+            echo "=== GKE Security Posture configuration ==="
+            gcloud container clusters describe "$CLUSTER" --location="$LOCATION" \
+              --format="yaml(securityPostureConfig,workloadVulnerabilityMode)" 2>/dev/null || true
+          fi
+
+          [ "$TRIVY_EXIT" -eq 0 ] || echo "::warning::HIGH/CRITICAL vulnerabilities found — review Trivy output above"
 
       - name: Terraform destroy
         if: always() && steps.tf-apply.outcome != 'skipped'
@@ -547,7 +615,7 @@ jobs:
 
       - name: Install gke-gcloud-auth-plugin
         if: steps.skip-check.outputs.skip != 'true'
-        run: gcloud components install gke-gcloud-auth-plugin --quiet
+        run: sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
 
       - name: Get KCC cluster credentials
         if: steps.skip-check.outputs.skip != 'true'
