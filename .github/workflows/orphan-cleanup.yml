@@ -1,0 +1,160 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Orphan Cleanup
+
+on:
+  schedule:
+    - cron: '0 4 * * *'   # 04:00 UTC daily
+  workflow_dispatch:       # allow manual trigger
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  PROJECT_ID: gca-gke-2025
+  KCC_CLUSTER: krmapihost-kcc-instance
+  KCC_REGION: us-central1
+  KCC_NAMESPACE: forge-management
+  WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+  WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+  TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
+
+jobs:
+  cleanup-gke-clusters:
+    name: Delete orphaned GKE clusters
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+
+      - name: Delete GKE clusters tagged template:* older than 2h
+        run: |
+          NOW=$(date -u +%s)
+          THRESHOLD=$(( NOW - 7200 ))   # 2 hours ago
+
+          echo "=== Scanning for orphaned GKE clusters (template label, age > 2h) ==="
+
+          gcloud container clusters list \
+            --project="${{ env.PROJECT_ID }}" \
+            --filter="resourceLabels.template:*" \
+            --format="csv[no-heading](name,location,createTime)" \
+          | while IFS=, read -r NAME LOCATION CREATE_TIME; do
+              CREATE_EPOCH=$(date -d "${CREATE_TIME}" +%s 2>/dev/null || echo 0)
+              AGE_S=$(( NOW - CREATE_EPOCH ))
+              AGE_H=$(( AGE_S / 3600 ))
+              if [ "$CREATE_EPOCH" -lt "$THRESHOLD" ]; then
+                echo "  DELETING: $NAME ($LOCATION, age ${AGE_H}h)"
+                gcloud container clusters update "$NAME" --location="$LOCATION" \
+                  --project="${{ env.PROJECT_ID }}" \
+                  --no-enable-deletion-protection --quiet 2>/dev/null || true
+                gcloud container clusters delete "$NAME" \
+                  --location="$LOCATION" \
+                  --project="${{ env.PROJECT_ID }}" \
+                  --quiet --async || true
+              else
+                echo "  OK:      $NAME ($LOCATION, age ${AGE_H}h)"
+              fi
+            done
+
+          echo "=== GKE cluster scan complete ==="
+
+  cleanup-tf-state-locks:
+    name: Remove stale TF state locks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+
+      - name: Remove .tflock files older than 2h
+        run: |
+          echo "=== Scanning for stale TF state locks ==="
+
+          gsutil ls -r "gs://${{ env.TF_STATE_BUCKET }}/**" 2>/dev/null \
+            | grep '\.tflock$' \
+            | while read -r LOCK_PATH; do
+                # Get object creation time
+                CREATE_TIME=$(gsutil stat "$LOCK_PATH" 2>/dev/null \
+                  | grep 'Creation time:' | sed 's/Creation time:\s*//' || echo "")
+                if [ -n "$CREATE_TIME" ]; then
+                  CREATE_EPOCH=$(date -d "$CREATE_TIME" +%s 2>/dev/null || echo 0)
+                  NOW=$(date -u +%s)
+                  AGE_S=$(( NOW - CREATE_EPOCH ))
+                  if [ "$AGE_S" -gt 7200 ]; then
+                    echo "  REMOVING stale lock: $LOCK_PATH (age ${AGE_S}s)"
+                    gsutil rm "$LOCK_PATH" || true
+                  else
+                    echo "  OK: $LOCK_PATH (age ${AGE_S}s — recent, leaving)"
+                  fi
+                fi
+              done
+
+          echo "=== TF lock scan complete ==="
+
+  cleanup-kcc-orphans:
+    name: Delete orphaned KCC resources
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+
+      - name: Get KCC cluster credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ env.KCC_CLUSTER }}
+          location: ${{ env.KCC_REGION }}
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Delete KCC resources whose template no longer exists in the repo
+        run: |
+          echo "=== KCC orphan check ==="
+          # List ContainerCluster resources in forge-management that still exist
+          # These are managed by KCC — if their template dir was removed from the repo
+          # they should have been deleted by CI but may have been left behind.
+          # We list them and note any that are > 4h old (well past any CI run).
+          NOW=$(date -u +%s)
+          THRESHOLD=$(( NOW - 14400 ))  # 4 hours
+
+          kubectl get containerclusters.container.cnrm.cloud.google.com \
+            -n "${{ env.KCC_NAMESPACE }}" \
+            -o json 2>/dev/null \
+          | jq -r '.items[] | "\(.metadata.name) \(.metadata.creationTimestamp)"' \
+          | while read -r NAME CREATE_TIME; do
+              CREATE_EPOCH=$(date -d "${CREATE_TIME}" +%s 2>/dev/null || echo 0)
+              AGE_H=$(( ( NOW - CREATE_EPOCH ) / 3600 ))
+              if [ "$CREATE_EPOCH" -lt "$THRESHOLD" ]; then
+                echo "  WARNING: KCC ContainerCluster $NAME is ${AGE_H}h old — possible orphan"
+                echo "  To clean up: kubectl delete containerclusters.container.cnrm.cloud.google.com $NAME -n ${{ env.KCC_NAMESPACE }}"
+              else
+                echo "  OK: $NAME (${AGE_H}h old)"
+              fi
+            done
+
+          echo "=== KCC orphan check complete ==="
