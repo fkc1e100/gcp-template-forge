@@ -62,6 +62,21 @@ graph TD
 | **AgentSandboxes** | Kubernetes Jobs that spin up an isolated Gemini CLI session per template; the agent authors all IaC files and commits them | same |
 | **forge-builder SA** | GCP service account used by GitHub Actions CI to authenticate and run Terraform/Helm/KCC against the sandbox project | `agent-infra/` |
 
+### Repository Layout
+
+```
+.github/
+  workflows/
+    sandbox-validation.yml  ← lint · deploy-and-test (PR) · validate-tf-helm · validate-kcc · publish-validated (push)
+  ISSUE_TEMPLATE/           ← template request form
+agent-infra/
+  terraform/                ← control-plane GKE cluster + forge-builder SA
+  manifests/                ← Overseer + Repo-Agent + AgentSandboxes deployments
+templates/                  ← validated template library (see Templates section below)
+GEMINI.md                   ← guardrails and instructions for the Gemini CLI agent
+GUIDANCE.md                 ← manual setup steps (identity, Secret Manager)
+```
+
 ---
 
 ## CI Pipeline
@@ -173,25 +188,6 @@ templates/<name>/
 |---|---|---|---|---|
 | 1 | [basic-gke-hello-world](templates/1-basic-gke-hello-world/) | GKE Autopilot + hello-world | GKE Autopilot | — |
 | 6 | [enterprise-gke](templates/6-enterprise-gke/) | GKE Standard + security stack + Helm workload | GKE Standard + networking | — |
-
----
-
-## Repository Structure
-
-```
-.github/
-  workflows/
-    sandbox-validation.yml  ← lint · deploy-and-test (PR) · validate-and-publish (push)
-  ISSUE_TEMPLATE/           ← template request form
-agent-infra/
-  terraform/                ← control-plane GKE cluster + forge-builder SA
-  manifests/                ← Overseer + Repo-Agent + AgentSandboxes deployments
-templates/
-  1-basic-gke-hello-world/
-  6-enterprise-gke/
-GEMINI.md                   ← guardrails and instructions for the Gemini CLI agent
-GUIDANCE.md                 ← manual setup steps (identity, Secret Manager)
-```
 
 ---
 
