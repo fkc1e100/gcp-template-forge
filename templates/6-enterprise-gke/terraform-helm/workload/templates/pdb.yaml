@@ -1,4 +1,4 @@
-{{- if .Values.pdb.enabled }}
+{{- if and .Values.pdb .Values.pdb.enabled }}
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
@@ -7,7 +7,7 @@ metadata:
     app.kubernetes.io/name: {{ include "enterprise-workload.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
-  minAvailable: {{ .Values.pdb.minAvailable }}
+  minAvailable: {{ .Values.pdb.minAvailable | default 2 }}
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ include "enterprise-workload.name" . }}

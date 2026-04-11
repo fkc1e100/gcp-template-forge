@@ -6,8 +6,8 @@ metadata:
     app.kubernetes.io/name: {{ include "enterprise-workload.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
-  {{- if not .Values.autoscaling.enabled }}
-  replicas: {{ .Values.replicaCount }}
+  {{- if and .Values.autoscaling (not .Values.autoscaling.enabled) }}
+  replicas: {{ .Values.replicaCount | default 3 }}
   {{- end }}
   selector:
     matchLabels:
@@ -77,7 +77,7 @@ spec:
               mountPath: /var/run
             - name: cache
               mountPath: /var/cache/nginx
-            {{- if .Values.secrets.enabled }}
+            {{- if and .Values.secrets .Values.secrets.enabled }}
             - name: secrets-volume
               mountPath: "/mnt/secrets"
               readOnly: true
@@ -89,7 +89,7 @@ spec:
           emptyDir: {}
         - name: cache
           emptyDir: {}
-        {{- if .Values.secrets.enabled }}
+        {{- if and .Values.secrets .Values.secrets.enabled }}
         - name: secrets-volume
           csi:
             driver: secrets-store.csi.k8s.io
