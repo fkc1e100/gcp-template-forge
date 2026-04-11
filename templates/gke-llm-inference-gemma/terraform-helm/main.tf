@@ -163,7 +163,7 @@ resource "google_container_node_pool" "gpu_pool" {
     }
 
     labels = {
-      template         = "gke-llm-inference-gemma"
+      template = "gke-llm-inference-gemma"
       "nvidia.com/gpu" = "present"
     }
 
