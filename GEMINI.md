@@ -54,7 +54,7 @@ This ensures you always have the latest project rules and a clean working tree b
 | **KCC Namespace** | `forge-management` |
 | **CI Service Account** | `forge-builder@gca-gke-2025.iam.gserviceaccount.com` |
 
-Never use `YOUR_PROJECT_ID` or placeholder values. Use `gca-gke-2025` directly as the default for `var.project_id`.
+**Do not hardcode `gca-gke-2025` or any project-specific value as a `default` in `variables.tf`.** Leave `project_id` and `service_account` with no default (required variables) — CI injects them via `TF_VAR_project_id` and `TF_VAR_service_account` environment variables set in the workflow. Templates are published for external use; a hardcoded sandbox default leaks into every downstream deployment.
 
 ---
 
@@ -68,6 +68,53 @@ Never use `YOUR_PROJECT_ID` or placeholder values. Use `gca-gke-2025` directly a
 6. CI deploys, validates, tears down, commits `.validated` on success.
 
 **Post progress comments throughout** — see Issue Communication below.
+
+---
+
+## Issue Gating: the `hold` Label
+
+File an issue before the required GCP resources (quota, reservations, service accounts, APIs) are confirmed as available. Use the `hold` label to freeze it in place until you're ready.
+
+### How the two-component gate works
+
+| Component | Trigger | Blocked by |
+|---|---|---|
+| **Overseer** | `overseer` label on issue | Not adding `overseer` label |
+| **PR Review / RepoWatch** | RepoWatch controller in `fkc1e100` namespace | `excludeLabels: ["hold"]` — any issue with `hold` label is skipped |
+
+Both components independently check for `hold`. You must clear **both** gates to start agent work.
+
+### Issue lifecycle
+
+```
+1. File issue with labels: ["hold"]        ← system ignores it entirely
+   └── Document prerequisites in the issue body:
+       - Which quota/machine types are needed (e.g. "L4 quota confirmed 16 available")
+       - Which GCP APIs must be enabled
+       - Any reservations or DWS flex-start configs required
+
+2. Confirm prerequisites are in place:
+   ├── gcloud quotas info / quota list
+   ├── gcloud iam service-accounts list
+   └── gcloud services list --enabled
+
+3. When ready to start work:
+   └── Remove label: "hold"
+   └── Add label:    "overseer"            ← Overseer picks up the issue
+       └── RepoWatch creates fix sandbox   ← PR Review dashboard shows it
+```
+
+### What `hold` prevents
+
+- **Overseer** only fires on issues with the `overseer` label — not adding it keeps overseer away entirely.
+- **RepoWatch** (`fkc1e100/gcp-template-forge`) has `excludeLabels: ["hold"]` on its fix handler — even if a sandbox already exists, no new fix sandboxes are created for issues carrying `hold`.
+
+### When to use `hold`
+
+- Template requires GPU quota (e.g. A100, L4) not yet confirmed
+- Template uses DWS / flex-start reservations that need advance setup
+- Template requires a dedicated GCP service account to be created first
+- Template calls an API (e.g. `gkerecommender.googleapis.com`) that must be enabled before CI runs
 
 ---
 
@@ -250,7 +297,9 @@ For templates that serve **pre-trained AI models** (LLM inference, image generat
 
 **Why**: The quickstart benchmarks model-hardware combinations and emits validated Kubernetes manifests (Deployment, Service, HPA, PodMonitoring) with correct resource requests, GPU configuration, and model-server flags. Starting from these avoids hours of trial-and-error sizing.
 
-**Key commands** (requires gcloud ≥ 536.0.1):
+**Available in the sandbox**: `gcloud` (≥ 536.0.1) with the `gke-gke-extension` is pre-installed in the agent sandbox and authenticated via Workload Identity — no setup required. Run the commands below directly.
+
+**Key commands**:
 
 ```bash
 # 1. List supported models and use-cases
@@ -279,10 +328,73 @@ gcloud container ai profiles manifests create \
 
 **Workflow**:
 1. Run `gcloud container ai profiles use-cases list` to find the right use-case for the requested model.
-2. Run `gcloud container ai profiles manifests create` with the target accelerator and latency requirements.
-3. Use the generated manifests as the baseline for the template's `workload/` directory — do not write GPU/model-server configs from scratch.
-4. Size the node pool to match the accelerator and replica count in the generated manifests.
-5. Use L4 (`nvidia-l4`) as the default for LLM serving unless the model or latency requirement demands H100 (quota = 0 here — do not request H100).
+2. Run `gcloud container ai profiles benchmarks list --filter="modelId:<model>"` to get benchmark data (throughput, TTFT, NTPOT, cost) for your chosen accelerator.
+3. Run `gcloud container ai profiles manifests create` with the target accelerator and latency requirements.
+4. Use the generated manifests as the baseline for the template's `workload/` directory — **do not write GPU/model-server configs from scratch**. The tool produces benchmark-validated resource requests and model-server flags.
+5. Size the node pool to match the accelerator and replica count in the generated manifests.
+6. Use L4 (`nvidia-l4`) as the default for LLM serving unless the model or latency requirement demands H100 (quota = 0 here — do not request H100).
+
+**Required README section for inference templates**: Every inference template README must include a `## Performance & Cost Estimates` section populated from the benchmark output:
+
+```markdown
+## Performance & Cost Estimates
+
+*Generated from `gcloud container ai profiles benchmarks list`*
+
+| Metric | Value |
+|---|---|
+| Model | Gemma 2 9B IT |
+| Accelerator | NVIDIA L4 (1×) |
+| Time to First Token (p50) | ~XXX ms |
+| Next Token Output Token (p50) | ~XX ms |
+| Throughput | ~XXX tokens/sec |
+| Node type | g2-standard-12 (spot) |
+| Estimated node cost | ~$X.XX/hr |
+| Estimated cost per 1M tokens | ~$X.XX |
+```
+
+Do not fabricate these numbers. Run the benchmarks command and use the actual output.
+
+---
+
+## Required README Section: Performance & Cost Estimates (All Templates)
+
+**Every template README** must include a `## Performance & Cost Estimates` section. This applies to all template types — not just inference.
+
+For **inference templates**, populate from `gcloud container ai profiles benchmarks list` (see above).
+
+For **all other templates**, estimate from GCP pricing using the resources the template provisions:
+
+```bash
+# List machine type pricing in the deployment region
+gcloud compute machine-types describe <machine-type> --zone=us-central1-a --format="value(description)"
+
+# Use gcloud billing to check current SKU prices if needed
+gcloud billing catalogs list-skus --service=services/6F81-5844-456A  # GKE service ID
+```
+
+The section must cover at minimum:
+- Node pool machine type and count, with hourly cost
+- Whether spot/preemptible is used and the discount applied
+- Any persistent storage costs (PD, Filestore, GCS)
+- Estimated **monthly cost at idle** and **monthly cost under load**
+
+Example for a standard GKE template:
+
+```markdown
+## Performance & Cost Estimates
+
+| Resource | Spec | Est. Cost |
+|---|---|---|
+| Control plane | GKE Autopilot / Standard | ~$0.10/hr |
+| Node pool | e2-standard-4 × 2 (spot) | ~$0.08/hr per node |
+| Boot disk | 100 GB pd-balanced × 2 | ~$0.02/hr |
+| **Total (idle, 2 nodes)** | | **~$0.28/hr (~$200/mo)** |
+```
+
+Do not fabricate costs. Use `gcloud` or the [GCP Pricing Calculator](https://cloud.google.com/products/calculator) and cite the source.
+
+> **Note**: `gcloud container ai profiles manifests create` calls `gkerecommender.googleapis.com` and requires authentication. The sandbox WIF credentials cover this automatically — the SA is `forge-sandbox@gca-gke-2025.iam.gserviceaccount.com`.
 
 ---
 
@@ -505,4 +617,19 @@ Do not open a PR or comment success until this is captured. Do not mark an issue
 | Empty `backend "gcs" {}` block | CI injects state location; hardcoding causes conflicts |
 | Issue comments at every checkpoint | Visibility for human reviewers; catch problems early |
 | **Never create `.github/workflows/` files** | `sandbox-validation.yml` is the only CI workflow — do not add `ci.yaml` or any other workflow. Extra workflows break CI with missing-secret errors (`GCP_SA_KEY`, `GKE_CLUSTER_NAME` do not exist; auth is WIF-only). |
+| No hardcoded project/SA defaults in `variables.tf` | Templates are published for external use; CI injects values via `TF_VAR_project_id` and `TF_VAR_service_account` — leave both as required variables with no default |
+| **Update `## Agent-Discovered Fixes` for non-obvious errors** | Append one bullet when you fix a quota, IAM, machine-sizing, or API auth issue not already documented — prevents the next agent hitting the same wall |
 
+---
+
+## Agent-Discovered Fixes
+
+**Append here when you fix a non-obvious error not already documented above.** One bullet per issue. Include the symptom, the fix, and why it happened so future agents can recognise the pattern.
+
+Format: `- **[area]** symptom → fix. (root cause)`
+
+---
+
+- **GPU node pools (L4)** `g2-standard-48` with 4×L4 enters ERROR state after ~45 min → use `g2-standard-12` with 1×L4 and set `tensorParallelSize: 1` in values.yaml. (Spot availability and quota for large multi-GPU machines is thin in us-central1; 1×L4 on g2-standard-12 is sufficient for 9B-parameter models and provisions reliably.)
+
+- **WIF binding via Terraform** `google_service_account_iam_member` targeting the CI service account returns 403 during `terraform apply` → remove the resource entirely; do not attempt to set Workload Identity bindings on the CI SA from within the template. (The `forge-builder` SA lacks `iam.serviceAccounts.getIamPolicy` on itself; the binding already exists in the project and re-applying it via Terraform is both unnecessary and unauthorised.)

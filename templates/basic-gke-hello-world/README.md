@@ -38,6 +38,19 @@ Creates `ComputeNetwork`, `ComputeSubnetwork`, and `ContainerCluster` (Autopilot
 | Subnet | `basic-gke-subnet` |
 | GKE cluster | `basic-gke` |
 
+## Performance & Cost Estimates
+
+*Estimated from GCP pricing (us-central1, Autopilot pricing)*
+
+| Resource | Config | Estimated cost |
+|---|---|---|
+| Autopilot cluster (idle) | 0 user pods scheduled | ~$0.10/hr cluster fee (~$73/mo) |
+| Autopilot workload (hello-world) | 0.25 vCPU + 128 Mi per pod | ~$0.01/hr per pod |
+| Cloud NAT | per-gateway fee + data processing | ~$0.004/hr (~$3/mo) |
+| **Total (1 pod running)** | | **~$0.11/hr (~$80/mo)** |
+
+Autopilot billing is per-pod resource request, not per node — there is no idle node cost. The cluster management fee (~$0.10/hr) applies whenever the cluster exists regardless of workload scale. Scale to zero pods to stop workload billing.
+
 ## Cleanup
 
 ```bash

@@ -15,7 +15,6 @@
 variable "project_id" {
   description = "The GCP project ID"
   type        = string
-  default     = "gca-gke-2025"
 }
 
 variable "region" {
@@ -31,7 +30,6 @@ variable "cluster_name" {
 }
 
 variable "service_account" {
-  description = "The service account to use for the node pool"
+  description = "The service account email to use for the node pool"
   type        = string
-  default     = "forge-builder@gca-gke-2025.iam.gserviceaccount.com"
 }
