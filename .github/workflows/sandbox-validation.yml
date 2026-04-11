@@ -295,9 +295,19 @@ jobs:
           done
 
       - name: Terraform destroy
-        if: always() && steps.tf-apply.outcome == 'success'
+        if: always() && steps.tf-apply.outcome != 'skipped'
         working-directory: ${{ matrix.template }}/terraform-helm
         run: terraform destroy -auto-approve -input=false
+
+      # Restore KCC cluster credentials — Verify Terraform cluster overwrites
+      # the kubeconfig context; we must switch back before kubectl apply.
+      - name: Restore KCC cluster credentials
+        if: "hashFiles(format('{0}/config-connector', matrix.template)) != ''"
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ env.KCC_CLUSTER }}
+          location: ${{ env.KCC_REGION }}
+          project_id: ${{ env.PROJECT_ID }}
 
       - name: Apply KCC manifests
         id: kcc-apply
@@ -354,12 +364,13 @@ jobs:
               body,
             });
 
-  # ── 4. Post-merge: full deploy -> verify -> teardown -> mark validated ───
-  validate-and-publish:
-    name: "Validate & Publish (${{ matrix.template }})"
+  # ── 4a. Post-merge: independent TF+Helm cluster: apply → verify → destroy ─
+  validate-tf-helm:
+    name: "Validate TF+Helm (${{ matrix.template }})"
     needs: detect-changes
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.detect-changes.outputs.has_templates == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
@@ -367,6 +378,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Skip if already validated (and unchanged since)
         id: skip-check
@@ -401,19 +414,10 @@ jobs:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
 
-      - name: Get KCC cluster credentials
-        if: steps.skip-check.outputs.skip != 'true'
-        uses: google-github-actions/get-gke-credentials@v2
-        with:
-          cluster_name: ${{ env.KCC_CLUSTER }}
-          location: ${{ env.KCC_REGION }}
-          project_id: ${{ env.PROJECT_ID }}
-
       - name: Setup Terraform
         if: steps.skip-check.outputs.skip != 'true'
         uses: hashicorp/setup-terraform@v3
 
-      # TF+Helm: deploy
       - name: Terraform apply
         id: tf-apply
         if: >-
@@ -444,8 +448,7 @@ jobs:
             echo "tf_zones=${ZONES}" >> $GITHUB_OUTPUT
           fi
 
-      # TF+Helm: verify cluster is RUNNING
-      - name: Verify Terraform cluster
+      - name: Verify Terraform cluster is RUNNING
         id: tf-verify
         if: steps.tf-outputs.outcome == 'success'
         working-directory: ${{ matrix.template }}/terraform-helm
@@ -459,13 +462,89 @@ jobs:
               --format="value(status)" | grep -q RUNNING
           fi
 
-      # TF+Helm: tear down
       - name: Terraform destroy
-        if: always() && steps.tf-apply.outcome == 'success'
+        if: always() && steps.tf-apply.outcome != 'skipped'
         working-directory: ${{ matrix.template }}/terraform-helm
         run: terraform destroy -auto-approve -input=false
 
-      # KCC: deploy
+      # Save per-template results to artifact for publish-validated job
+      - name: Save TF results
+        if: always() && steps.skip-check.outputs.skip != 'true'
+        run: |
+          mkdir -p /tmp/tf-results
+          cat > /tmp/tf-results/result.json << 'EOF'
+          {
+            "status":   "${{ steps.tf-verify.outcome   || 'skipped' }}",
+            "duration": "${{ steps.tf-outputs.outputs.tf_duration || '' }}",
+            "cluster":  "${{ steps.tf-outputs.outputs.tf_cluster  || '' }}",
+            "location": "${{ steps.tf-outputs.outputs.tf_location || '' }}",
+            "zones":    "${{ steps.tf-outputs.outputs.tf_zones    || '' }}"
+          }
+          EOF
+
+      - name: Upload TF results artifact
+        if: always() && steps.skip-check.outputs.skip != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: tf-results-${{ github.run_id }}-${{ strategy.job-index }}
+          path: /tmp/tf-results/result.json
+          retention-days: 1
+
+  # ── 4b. Post-merge: independent KCC cluster: apply → wait Ready → delete ─
+  #   Runs after validate-tf-helm completes (same resource names must not
+  #   overlap in GCP simultaneously).
+  validate-kcc:
+    name: "Validate KCC (${{ matrix.template }})"
+    needs: [detect-changes, validate-tf-helm]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.detect-changes.outputs.has_templates == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Skip if already validated (and unchanged since)
+        id: skip-check
+        run: |
+          TEMPLATE="${{ matrix.template }}"
+          if [ ! -f "${TEMPLATE}/.validated" ]; then
+            echo "skip=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          VALIDATED_COMMIT=$(grep '^commit:' "${TEMPLATE}/.validated" | awk '{print $2}' || true)
+          if [ -z "$VALIDATED_COMMIT" ]; then
+            echo "skip=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          CHANGED=$(git diff --name-only "$VALIDATED_COMMIT" HEAD -- "${TEMPLATE}/" \
+            | grep -v '\.validated$' | grep -v 'README\.md$' || true)
+          if [ -n "$CHANGED" ]; then
+            echo "skip=false" >> $GITHUB_OUTPUT
+          else
+            echo "skip=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Authenticate to GCP
+        if: steps.skip-check.outputs.skip != 'true'
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+
+      - name: Get KCC cluster credentials
+        if: steps.skip-check.outputs.skip != 'true'
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ env.KCC_CLUSTER }}
+          location: ${{ env.KCC_REGION }}
+          project_id: ${{ env.PROJECT_ID }}
+
       - name: Apply KCC manifests
         id: kcc-apply
         if: >-
@@ -476,7 +555,6 @@ jobs:
           kubectl apply -n $KCC_NAMESPACE \
             -f ${{ matrix.template }}/config-connector/
 
-      # KCC: wait for all resources Ready
       - name: Wait for KCC resources Ready
         id: kcc-wait
         if: steps.kcc-apply.outcome == 'success'
@@ -490,12 +568,10 @@ jobs:
           KCC_DURATION=$(( $(date -u +%s) - ${KCC_START} ))
           echo "kcc_duration=${KCC_DURATION}" >> $GITHUB_OUTPUT
 
-      # KCC: drift test
       - name: KCC drift and revert test
         if: steps.kcc-wait.outcome == 'success'
         run: echo "Drift test placeholder -- template-specific tests go here."
 
-      # KCC: tear down and verify GCP resources are gone
       - name: Delete KCC resources
         id: kcc-delete
         if: always() && steps.kcc-apply.outcome == 'success'
@@ -505,25 +581,90 @@ jobs:
             -f ${{ matrix.template }}/config-connector/ \
             --wait=true --timeout=300s || true
 
-      # Mark validated and update README
+      # Save per-template results to artifact for publish-validated job
+      - name: Save KCC results
+        if: always() && steps.skip-check.outputs.skip != 'true'
+        run: |
+          mkdir -p /tmp/kcc-results
+          cat > /tmp/kcc-results/result.json << 'EOF'
+          {
+            "status":   "${{ steps.kcc-wait.outcome   || 'skipped' }}",
+            "duration": "${{ steps.kcc-wait.outputs.kcc_duration || '' }}"
+          }
+          EOF
+
+      - name: Upload KCC results artifact
+        if: always() && steps.skip-check.outputs.skip != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: kcc-results-${{ github.run_id }}-${{ strategy.job-index }}
+          path: /tmp/kcc-results/result.json
+          retention-days: 1
+
+  # ── 4c. Post-merge: update README + write .validated (needs both above) ──
+  publish-validated:
+    name: "Publish (${{ matrix.template }})"
+    needs: [detect-changes, validate-tf-helm, validate-kcc]
+    if: >-
+      github.event_name == 'push' && github.ref == 'refs/heads/main' &&
+      needs.detect-changes.outputs.has_templates == 'true' &&
+      !cancelled()
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download TF results artifact
+        uses: actions/download-artifact@v4
+        with:
+          pattern: tf-results-${{ github.run_id }}-*
+          merge-multiple: true
+          path: /tmp/tf-artifacts/
+        continue-on-error: true
+
+      - name: Download KCC results artifact
+        uses: actions/download-artifact@v4
+        with:
+          pattern: kcc-results-${{ github.run_id }}-*
+          merge-multiple: true
+          path: /tmp/kcc-artifacts/
+        continue-on-error: true
+
       - name: Update README and mark validated
-        if: >-
-          steps.skip-check.outputs.skip != 'true' &&
-          (steps.tf-verify.outcome == 'success' || steps.kcc-wait.outcome == 'success')
         env:
-          TF_STATUS: ${{ steps.tf-verify.outcome || 'skipped' }}
-          KCC_STATUS: ${{ steps.kcc-wait.outcome || 'skipped' }}
-          TF_DURATION: ${{ steps.tf-outputs.outputs.tf_duration || '' }}
-          KCC_DURATION: ${{ steps.kcc-wait.outputs.kcc_duration || '' }}
-          TF_CLUSTER: ${{ steps.tf-outputs.outputs.tf_cluster || '' }}
-          TF_LOCATION: ${{ steps.tf-outputs.outputs.tf_location || '' }}
-          TF_ZONES: ${{ steps.tf-outputs.outputs.tf_zones || '' }}
+          TF_JOB_RESULT:  ${{ needs.validate-tf-helm.result }}
+          KCC_JOB_RESULT: ${{ needs.validate-kcc.result }}
         run: |
           set -e
           TEMPLATE="${{ matrix.template }}"
           TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
           DATE=$(date -u +"%Y-%m-%d")
           COMMIT=${{ github.sha }}
+
+          # Parse per-template artifact results (fall back to job-level result)
+          TF_RESULT_FILE=$(ls /tmp/tf-artifacts/result.json 2>/dev/null | head -1 || true)
+          KCC_RESULT_FILE=$(ls /tmp/kcc-artifacts/result.json 2>/dev/null | head -1 || true)
+
+          if [ -n "$TF_RESULT_FILE" ]; then
+            TF_STATUS=$(python3  -c "import json; d=json.load(open('$TF_RESULT_FILE')); print(d.get('status',''))")
+            TF_DURATION=$(python3 -c "import json; d=json.load(open('$TF_RESULT_FILE')); print(d.get('duration',''))")
+            TF_CLUSTER=$(python3  -c "import json; d=json.load(open('$TF_RESULT_FILE')); print(d.get('cluster',''))")
+            TF_LOCATION=$(python3 -c "import json; d=json.load(open('$TF_RESULT_FILE')); print(d.get('location',''))")
+            TF_ZONES=$(python3    -c "import json; d=json.load(open('$TF_RESULT_FILE')); print(d.get('zones',''))")
+          else
+            TF_STATUS="$TF_JOB_RESULT"; TF_DURATION=""; TF_CLUSTER=""; TF_LOCATION=""; TF_ZONES=""
+          fi
+
+          if [ -n "$KCC_RESULT_FILE" ]; then
+            KCC_STATUS=$(python3   -c "import json; d=json.load(open('$KCC_RESULT_FILE')); print(d.get('status',''))")
+            KCC_DURATION=$(python3 -c "import json; d=json.load(open('$KCC_RESULT_FILE')); print(d.get('duration',''))")
+          else
+            KCC_STATUS="$KCC_JOB_RESULT"; KCC_DURATION=""
+          fi
 
           fmt_duration() { local s=$1; [ -z "$s" ] && echo "n/a" || echo "$((s/60))m $((s%60))s"; }
           TF_DUR=$(fmt_duration "$TF_DURATION")
@@ -548,16 +689,15 @@ jobs:
           METRICS="${TEMPLATE}/.agent-metrics"
           INPUT_TOKENS=""; OUTPUT_TOKENS=""; AGENT_COST=""
           if [ -f "$METRICS" ]; then
-            INPUT_TOKENS=$(python3 -c "import json; d=json.load(open('$METRICS')); print(d.get('input_tokens',''))" 2>/dev/null || true)
+            INPUT_TOKENS=$(python3 -c "import json; d=json.load(open('$METRICS')); print(d.get('input_tokens',''))"  2>/dev/null || true)
             OUTPUT_TOKENS=$(python3 -c "import json; d=json.load(open('$METRICS')); print(d.get('output_tokens',''))" 2>/dev/null || true)
-            AGENT_COST=$(python3 -c "import json; d=json.load(open('$METRICS')); print(d.get('estimated_cost_usd',''))" 2>/dev/null || true)
+            AGENT_COST=$(python3   -c "import json; d=json.load(open('$METRICS')); print(d.get('estimated_cost_usd',''))" 2>/dev/null || true)
           fi
           TOKEN_STR="${INPUT_TOKENS:+${INPUT_TOKENS} in / ${OUTPUT_TOKENS} out}"
           TOKEN_STR="${TOKEN_STR:-not recorded}"
           COST_STR="${AGENT_COST:+\$${AGENT_COST}}"
           COST_STR="${COST_STR:--}"
 
-          # Append validation record using Python (avoids | and --- in YAML block scalars)
           python3 - "$README" "$DATE" "$TF_STATUS" "$KCC_STATUS" "$TF_DUR" "$KCC_DUR" \
               "$REGION" "$ZONES" "${TF_CLUSTER:---}" "${COMMIT:0:8}" \
               "$TOKEN_STR" "$COST_STR" << 'PYEOF'
@@ -585,7 +725,6 @@ jobs:
               f.write("\n".join(lines) + "\n")
           PYEOF
 
-          # Write .validated marker
           printf "validated_at: %s\ncommit: %s\ntf_helm: %s\nkcc: %s\n" \
             "$TIMESTAMP" "$COMMIT" "$TF_STATUS" "$KCC_STATUS" \
             > "${TEMPLATE}/.validated"
