@@ -54,7 +54,7 @@ This ensures you always have the latest project rules and a clean working tree b
 | **KCC Namespace** | `forge-management` |
 | **CI Service Account** | `forge-builder@gca-gke-2025.iam.gserviceaccount.com` |
 
-Never use `YOUR_PROJECT_ID` or placeholder values. Use `gca-gke-2025` directly as the default for `var.project_id`.
+**Do not hardcode `gca-gke-2025` or any project-specific value as a `default` in `variables.tf`.** Leave `project_id` and `service_account` with no default (required variables) — CI injects them via `TF_VAR_project_id` and `TF_VAR_service_account` environment variables set in the workflow. Templates are published for external use; a hardcoded sandbox default leaks into every downstream deployment.
 
 ---
 
@@ -617,4 +617,19 @@ Do not open a PR or comment success until this is captured. Do not mark an issue
 | Empty `backend "gcs" {}` block | CI injects state location; hardcoding causes conflicts |
 | Issue comments at every checkpoint | Visibility for human reviewers; catch problems early |
 | **Never create `.github/workflows/` files** | `sandbox-validation.yml` is the only CI workflow — do not add `ci.yaml` or any other workflow. Extra workflows break CI with missing-secret errors (`GCP_SA_KEY`, `GKE_CLUSTER_NAME` do not exist; auth is WIF-only). |
+| No hardcoded project/SA defaults in `variables.tf` | Templates are published for external use; CI injects values via `TF_VAR_project_id` and `TF_VAR_service_account` — leave both as required variables with no default |
+| **Update `## Agent-Discovered Fixes` for non-obvious errors** | Append one bullet when you fix a quota, IAM, machine-sizing, or API auth issue not already documented — prevents the next agent hitting the same wall |
 
+---
+
+## Agent-Discovered Fixes
+
+**Append here when you fix a non-obvious error not already documented above.** One bullet per issue. Include the symptom, the fix, and why it happened so future agents can recognise the pattern.
+
+Format: `- **[area]** symptom → fix. (root cause)`
+
+---
+
+- **GPU node pools (L4)** `g2-standard-48` with 4×L4 enters ERROR state after ~45 min → use `g2-standard-12` with 1×L4 and set `tensorParallelSize: 1` in values.yaml. (Spot availability and quota for large multi-GPU machines is thin in us-central1; 1×L4 on g2-standard-12 is sufficient for 9B-parameter models and provisions reliably.)
+
+- **WIF binding via Terraform** `google_service_account_iam_member` targeting the CI service account returns 403 during `terraform apply` → remove the resource entirely; do not attempt to set Workload Identity bindings on the CI SA from within the template. (The `forge-builder` SA lacks `iam.serviceAccounts.getIamPolicy` on itself; the binding already exists in the project and re-applying it via Terraform is both unnecessary and unauthorised.)

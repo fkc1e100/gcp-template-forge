@@ -30,6 +30,9 @@ env:
   WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
   TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
   USE_GKE_GCLOUD_AUTH_PLUGIN: "True"
+  # Inject project-specific values so variables.tf has no hardcoded defaults
+  TF_VAR_project_id: gca-gke-2025
+  TF_VAR_service_account: forge-builder@gca-gke-2025.iam.gserviceaccount.com
 
 jobs:
   # ── 1. Detect which templates changed ────────────────────────────────────
