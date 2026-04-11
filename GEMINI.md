@@ -308,6 +308,45 @@ gcloud container ai profiles manifests create \
 
 Do not fabricate these numbers. Run the benchmarks command and use the actual output.
 
+---
+
+## Required README Section: Performance & Cost Estimates (All Templates)
+
+**Every template README** must include a `## Performance & Cost Estimates` section. This applies to all template types — not just inference.
+
+For **inference templates**, populate from `gcloud container ai profiles benchmarks list` (see above).
+
+For **all other templates**, estimate from GCP pricing using the resources the template provisions:
+
+```bash
+# List machine type pricing in the deployment region
+gcloud compute machine-types describe <machine-type> --zone=us-central1-a --format="value(description)"
+
+# Use gcloud billing to check current SKU prices if needed
+gcloud billing catalogs list-skus --service=services/6F81-5844-456A  # GKE service ID
+```
+
+The section must cover at minimum:
+- Node pool machine type and count, with hourly cost
+- Whether spot/preemptible is used and the discount applied
+- Any persistent storage costs (PD, Filestore, GCS)
+- Estimated **monthly cost at idle** and **monthly cost under load**
+
+Example for a standard GKE template:
+
+```markdown
+## Performance & Cost Estimates
+
+| Resource | Spec | Est. Cost |
+|---|---|---|
+| Control plane | GKE Autopilot / Standard | ~$0.10/hr |
+| Node pool | e2-standard-4 × 2 (spot) | ~$0.08/hr per node |
+| Boot disk | 100 GB pd-balanced × 2 | ~$0.02/hr |
+| **Total (idle, 2 nodes)** | | **~$0.28/hr (~$200/mo)** |
+```
+
+Do not fabricate costs. Use `gcloud` or the [GCP Pricing Calculator](https://cloud.google.com/products/calculator) and cite the source.
+
 > **Note**: `gcloud container ai profiles manifests create` calls `gkerecommender.googleapis.com` and requires authentication. The sandbox WIF credentials cover this automatically — the SA is `forge-sandbox@gca-gke-2025.iam.gserviceaccount.com`.
 
 ---
