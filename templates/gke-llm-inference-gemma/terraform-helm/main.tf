@@ -145,15 +145,11 @@ resource "google_container_node_pool" "gpu_pool" {
 
   node_config {
     spot         = true
-    machine_type = "g2-standard-48"
+    machine_type = "g2-standard-12"
 
     guest_accelerator {
       type  = "nvidia-l4"
-      count = 4
-      gpu_sharing_config {
-        gpu_sharing_strategy       = "TIME_SHARING"
-        max_shared_clients_per_gpu = 2
-      }
+      count = 1
     }
 
     service_account = var.service_account
@@ -181,12 +177,6 @@ resource "google_storage_bucket_iam_member" "weights_viewer" {
   bucket = google_storage_bucket.weights.name
   role   = "roles/storage.objectViewer"
   member = "serviceAccount:${var.service_account}"
-}
-
-resource "google_service_account_iam_member" "gemma_sa_wi" {
-  service_account_id = "projects/${var.project_id}/serviceAccounts/${var.service_account}"
-  role               = "roles/iam.workloadIdentityUser"
-  member             = "serviceAccount:${var.project_id}.svc.id.goog[gemma/gemma-sa]"
 }
 
 # Helm Release
