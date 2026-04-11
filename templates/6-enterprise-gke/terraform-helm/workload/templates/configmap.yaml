@@ -6,10 +6,6 @@ metadata:
     app.kubernetes.io/name: {{ include "enterprise-workload.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
 data:
-  {{- if .Values.config }}
   {{- range $key, $val := .Values.config }}
   {{ $key }}: {{ $val | quote }}
-  {{- end }}
-  {{- else }}
-  LOG_LEVEL: "info"
   {{- end }}

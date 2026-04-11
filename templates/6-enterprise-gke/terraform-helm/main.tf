@@ -203,4 +203,9 @@ resource "helm_release" "workload" {
   values = [
     file("${path.module}/workload/values.yaml")
   ]
+
+  set {
+    name  = "secrets.enabled"
+    value = "true"
+  }
 }

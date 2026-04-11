@@ -55,7 +55,7 @@ config:
   ENVIRONMENT: "production"
 
 secrets:
-  enabled: true
+  enabled: false
   providerClass: "secrets-6"
   gcpProjectId: "gca-gke-2025"
   secretName: "workload-6-secret"
