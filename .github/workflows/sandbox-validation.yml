@@ -963,7 +963,18 @@ jobs:
 
           git config user.name "codebot-sfle"
           git config user.email "codebot-sfle@users.noreply.github.com"
-          git pull --rebase origin main
+          # Reset to tip of main AFTER generating files so git has no unstaged
+          # changes when rebasing. Save generated files, reset, restore them.
+          cp "${TEMPLATE}/README.md" /tmp/ci-readme.md
+          cp "${TEMPLATE}/.validated" /tmp/ci-validated.md
+          [ -f "${TEMPLATE}/.agent-metrics-cumulative" ] && \
+            cp "${TEMPLATE}/.agent-metrics-cumulative" /tmp/ci-metrics-cumulative.json || true
+          git fetch origin main
+          git reset --hard origin/main
+          cp /tmp/ci-readme.md "${TEMPLATE}/README.md"
+          cp /tmp/ci-validated.md "${TEMPLATE}/.validated"
+          [ -f /tmp/ci-metrics-cumulative.json ] && \
+            cp /tmp/ci-metrics-cumulative.json "${TEMPLATE}/.agent-metrics-cumulative" || true
           git add "${TEMPLATE}/README.md" "${TEMPLATE}/.validated"
           [ -f "${TEMPLATE}/.agent-metrics-cumulative" ] && \
             git add "${TEMPLATE}/.agent-metrics-cumulative"
