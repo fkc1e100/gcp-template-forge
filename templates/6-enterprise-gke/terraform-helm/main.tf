@@ -53,7 +53,7 @@ resource "google_compute_subnetwork" "subnet" {
 
   secondary_ip_range {
     range_name    = "services"
-    ip_cidr_range = "172.16.100.0/20"
+    ip_cidr_range = "172.16.96.0/20"
   }
 }
 
@@ -178,19 +178,6 @@ resource "google_container_node_pool" "primary_nodes" {
       template = "6-enterprise-gke"
     }
   }
-}
-
-# Workload Service Account
-resource "google_service_account" "workload_sa" {
-  account_id   = "enterprise-gke-sa"
-  display_name = "Enterprise Workload Service Account"
-}
-
-# Workload Identity Binding
-resource "google_service_account_iam_member" "workload_identity_binding" {
-  service_account_id = google_service_account.workload_sa.name
-  role               = "roles/iam.workloadIdentityUser"
-  member             = "serviceAccount:${var.project_id}.svc.id.goog[enterprise-gke/enterprise-gke-sa]"
 }
 
 resource "helm_release" "workload" {

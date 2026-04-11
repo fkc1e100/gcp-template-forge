@@ -91,13 +91,24 @@ jobs:
           terraform fmt -check -recursive
           terraform validate
 
-      - name: Enforce terraform-helm/ directory structure
+      - name: Enforce both terraform-helm/ and config-connector/ exist
         run: |
           TEMPLATE="${{ matrix.template }}"
+          MISSING=""
+          [ ! -d "${TEMPLATE}/terraform-helm" ] && MISSING="${MISSING} terraform-helm/"
+          [ ! -d "${TEMPLATE}/config-connector" ] && MISSING="${MISSING} config-connector/"
+          if [ -n "$MISSING" ]; then
+            echo "ERROR: Template '${TEMPLATE}' is missing required directories:${MISSING}"
+            echo "Every template must provide both deployment paths:"
+            echo "  terraform-helm/   (Terraform + Helm)"
+            echo "  config-connector/ (Config Connector / KCC)"
+            exit 1
+          fi
+          echo "Both deployment paths present: terraform-helm/ ✓  config-connector/ ✓"
           # Fail if non-standard Helm/TF directories exist (agents sometimes use wrong names)
-          for bad in Terraform_HELM terraform_helm terraform-HELM helm Helm; do
+          for bad in Terraform_HELM terraform_helm terraform-HELM helm Helm terraform manifests; do
             if [ -d "${TEMPLATE}/${bad}" ]; then
-              echo "ERROR: Found '${bad}/' -- must be 'terraform-helm/' per template spec"
+              echo "ERROR: Found non-standard directory '${bad}/' -- use 'terraform-helm/' and 'config-connector/' per template spec"
               exit 1
             fi
           done
@@ -357,13 +368,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Skip if already validated
+      - name: Skip if already validated (and unchanged since)
         id: skip-check
         run: |
-          if [ -f "${{ matrix.template }}/.validated" ]; then
-            echo "skip=true" >> $GITHUB_OUTPUT
-          else
+          TEMPLATE="${{ matrix.template }}"
+          if [ ! -f "${TEMPLATE}/.validated" ]; then
+            echo "No .validated marker — running validation"
             echo "skip=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          VALIDATED_COMMIT=$(grep '^commit:' "${TEMPLATE}/.validated" | awk '{print $2}' || true)
+          if [ -z "$VALIDATED_COMMIT" ]; then
+            echo "No commit recorded in .validated — re-validating"
+            echo "skip=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          CHANGED=$(git diff --name-only "$VALIDATED_COMMIT" HEAD -- "${TEMPLATE}/" \
+            | grep -v '\.validated$' | grep -v 'README\.md$' || true)
+          if [ -n "$CHANGED" ]; then
+            echo "Template changed since last validation (${VALIDATED_COMMIT}):"
+            echo "$CHANGED"
+            echo "skip=false" >> $GITHUB_OUTPUT
+          else
+            echo "Template unchanged since last validation (${VALIDATED_COMMIT}) — skipping"
+            echo "skip=true" >> $GITHUB_OUTPUT
           fi
 
       - name: Authenticate to GCP

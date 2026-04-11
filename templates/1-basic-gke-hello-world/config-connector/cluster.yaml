@@ -12,35 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: compute.cnrm.cloud.google.com/v1beta1
-kind: ComputeNetwork
+apiVersion: container.cnrm.cloud.google.com/v1beta1
+kind: ContainerCluster
 metadata:
-  name: enterprise-gke-vpc
+  name: basic-gke
   namespace: forge-management
   labels:
-    template: 6-enterprise-gke
+    template: 1-basic-gke-hello-world
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
-  autoCreateSubnetworks: false
----
-apiVersion: compute.cnrm.cloud.google.com/v1beta1
-kind: ComputeSubnetwork
-metadata:
-  name: enterprise-gke-subnet
-  namespace: forge-management
-  labels:
-    template: 6-enterprise-gke
-  annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025
-spec:
-  ipCidrRange: 10.6.0.0/20
-  region: us-central1
+  location: us-central1
+  enableAutopilot: true
   networkRef:
-    name: enterprise-gke-vpc
-  privateIpGoogleAccess: true
-  secondaryIpRange:
-    - rangeName: pods
-      ipCidrRange: 10.16.0.0/16
-    - rangeName: services
-      ipCidrRange: 172.16.0.0/20
+    name: basic-gke-vpc
+  subnetworkRef:
+    name: basic-gke-subnet
+  ipAllocationPolicy:
+    clusterSecondaryRangeName: pods
+    servicesSecondaryRangeName: services
+  releaseChannel:
+    channel: REGULAR
+  deletionProtection: false
