@@ -74,9 +74,9 @@ resource "google_compute_router_nat" "nat" {
 
 # GCS Bucket for model weights
 resource "google_storage_bucket" "weights" {
-  name     = "${var.project_id}-gemma-weights-tf"
-  location = var.region
-  force_destroy = true
+  name                        = "${var.project_id}-gemma-weights-tf"
+  location                    = var.region
+  force_destroy               = true
   uniform_bucket_level_access = true
 }
 
@@ -143,20 +143,20 @@ resource "google_container_node_pool" "gpu_pool" {
   node_count = 1
 
   node_config {
-    spot = true
+    spot         = true
     machine_type = "g2-standard-12"
 
     guest_accelerator {
       type  = "nvidia-l4"
       count = 1
       gpu_sharing_config {
-        gpu_sharing_strategy = "TIME_SHARING"
+        gpu_sharing_strategy       = "TIME_SHARING"
         max_shared_clients_per_gpu = 1
       }
     }
 
     service_account = var.service_account
-    oauth_scopes = ["https://www.googleapis.com/auth/cloud-platform"]
+    oauth_scopes    = ["https://www.googleapis.com/auth/cloud-platform"]
 
     workload_metadata_config {
       mode = "GKE_METADATA"
