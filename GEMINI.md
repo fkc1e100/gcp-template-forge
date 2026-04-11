@@ -289,6 +289,34 @@ Always configure **Workload Identity** — never mount service account key files
 
 Release channels: `RAPID` for AI/ML or bleeding-edge, `REGULAR` for standard production, `STABLE` for enterprise.
 
+### GKE Security Posture
+
+All clusters must include a `security_posture_config` block. Use `VULNERABILITY_BASIC` for Autopilot, `VULNERABILITY_ENTERPRISE` for Standard:
+
+```hcl
+security_posture_config {
+  mode               = "BASIC"
+  vulnerability_mode = "VULNERABILITY_BASIC"   # or VULNERABILITY_ENTERPRISE for Standard clusters
+}
+```
+
+For KCC manifests, the equivalent is:
+
+```yaml
+securityPostureConfig:
+  mode: BASIC
+  vulnerabilityMode: VULNERABILITY_BASIC
+```
+
+### ⚠️ Helm Chart CRDs — Must go in `crds/` not `templates/`
+
+If your Helm workload chart includes CRD definitions, place them in the chart's `crds/` subdirectory, **not** in `templates/`. Helm treats `crds/` differently:
+
+- CRDs in `crds/` are installed before templates and **skipped without error if they already exist**
+- CRDs in `templates/` are tracked with ownership annotations — if GKE installed the same CRD natively (e.g. via `secret_manager_config { enabled = true }` which auto-installs the Secrets Store CSI driver), Helm will fail with an ownership conflict
+
+Files in `crds/` are raw YAML, not Go templates — no `{{- if ... }}` conditionals.
+
 ---
 
 ## Terraform Backend

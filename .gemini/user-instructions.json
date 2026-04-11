@@ -156,7 +156,18 @@
       "Use helm_release Terraform resource for Helm deployments within the terraform-helm/ path.",
       "Include a values.yaml file alongside the Terraform so the chart configuration is visible and reviewable.",
       "After helm install, verify pods are Running with a null_resource / local-exec terraform block or document the verification command in verification_plan.md."
-    ]
+    ],
+    "crd_placement_rule": {
+      "rule": "CRDs in Helm charts MUST go in the chart's crds/ subdirectory, NOT in templates/.",
+      "why": "CRDs in templates/ are tracked with Helm ownership annotations. If GKE has already installed the same CRD natively (e.g. secret_manager_config installs the Secrets Store CSI driver CRD), Helm will fail with 'cannot be imported into the current release: invalid ownership metadata'. CRDs in crds/ are installed idempotently — Helm skips them silently if they already exist.",
+      "gke_native_crds": "Enabling secret_manager_config { enabled = true } on a GKE cluster automatically installs secretproviderclasses.secrets-store.csi.x-k8s.io. Do NOT include this CRD in templates/ of any Helm chart deployed to such a cluster.",
+      "crds_dir_note": "Files in crds/ are raw YAML, not Go templates — do not use {{ }} template syntax in crds/ files."
+    },
+    "security_posture_config": {
+      "rule": "All GKE clusters must include a security_posture_config block (Terraform) or securityPostureConfig (KCC).",
+      "autopilot": "vulnerability_mode = VULNERABILITY_BASIC",
+      "standard": "vulnerability_mode = VULNERABILITY_ENTERPRISE"
+    }
   },
 
   "agent_metrics_reporting": {
