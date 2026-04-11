@@ -29,6 +29,7 @@ env:
   WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
   WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
   TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
+  USE_GKE_GCLOUD_AUTH_PLUGIN: "True"
 
 jobs:
   # ── 1. Detect which templates changed ────────────────────────────────────
@@ -231,6 +232,9 @@ jobs:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
 
+      - name: Install gke-gcloud-auth-plugin
+        run: gcloud components install gke-gcloud-auth-plugin --quiet
+
       - name: Get KCC cluster credentials
         uses: google-github-actions/get-gke-credentials@v2
         with:
@@ -414,6 +418,10 @@ jobs:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
 
+      - name: Install gke-gcloud-auth-plugin
+        if: steps.skip-check.outputs.skip != 'true'
+        run: gcloud components install gke-gcloud-auth-plugin --quiet
+
       - name: Setup Terraform
         if: steps.skip-check.outputs.skip != 'true'
         uses: hashicorp/setup-terraform@v3
@@ -536,6 +544,10 @@ jobs:
         with:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+
+      - name: Install gke-gcloud-auth-plugin
+        if: steps.skip-check.outputs.skip != 'true'
+        run: gcloud components install gke-gcloud-auth-plugin --quiet
 
       - name: Get KCC cluster credentials
         if: steps.skip-check.outputs.skip != 'true'

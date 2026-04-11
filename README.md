@@ -184,10 +184,10 @@ templates/<name>/
 
 ## Templates
 
-| # | Template | TF+Helm | KCC | Validated |
-|---|---|---|---|---|
-| 1 | [basic-gke-hello-world](templates/1-basic-gke-hello-world/) | GKE Autopilot + hello-world | GKE Autopilot | — |
-| 6 | [enterprise-gke](templates/6-enterprise-gke/) | GKE Standard + security stack + Helm workload | GKE Standard + networking | — |
+| Template | TF+Helm | KCC | Validated |
+|---|---|---|---|
+| [basic-gke-hello-world](templates/basic-gke-hello-world/) | GKE Autopilot + hello-world | GKE Autopilot | — |
+| [enterprise-gke](templates/enterprise-gke/) | GKE Standard + security stack + Helm workload | GKE Standard + networking | — |
 
 ---
 

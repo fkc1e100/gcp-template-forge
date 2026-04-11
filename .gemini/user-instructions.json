@@ -53,15 +53,15 @@
   },
 
   "networking": {
-    "strategy": "Create a dedicated VPC per template issue. Do NOT reuse forge-network for GKE clusters — it has no secondary IP ranges and its /24 subnet (10.0.0.0/24) cannot fit the pod and service CIDRs required for VPC-native GKE.",
-    "per_issue_vpc_pattern": {
-      "primary_cidr": "10.<issue_number>.0.0/20",
-      "pods_cidr": "10.1<issue_number>.0.0/16",
-      "services_cidr": "172.16.<issue_number>.0/20",
-      "example_issue_6": "primary=10.6.0.0/20, pods=10.160.0.0/16, services=172.16.6.0/20"
+    "strategy": "Create a dedicated VPC per template. Do NOT reuse forge-network for GKE clusters — it has no secondary IP ranges and its /24 subnet (10.0.0.0/24) cannot fit the pod and service CIDRs required for VPC-native GKE.",
+    "per_template_vpc_pattern": {
+      "description": "Allocate CIDRs in increments of 16 through the 10.0.0.0/8 space. Check existing templates to avoid conflicts.",
+      "slot_0_basic_gke_hello_world": "primary=10.0.0.0/20, pods=10.4.0.0/14, services=10.8.0.0/20",
+      "slot_1_enterprise_gke": "primary=10.16.0.0/20, pods=10.20.0.0/14, services=10.24.0.0/20",
+      "next_template_pattern": "primary=10.(N×16).0.0/20, pods=10.(N×16+4).0.0/14, services=10.(N×16+8).0.0/20"
     },
-    "naming": "Name VPCs and subnets with the issue number: vpc-issue-6, subnet-issue-6",
-    "cleanup": "Terraform destroy will remove the per-issue VPC. No shared network state to worry about.",
+    "naming": "Name VPCs and subnets after the template: <template-name>-vpc, <template-name>-subnet",
+    "cleanup": "Terraform destroy will remove the per-template VPC. No shared network state to worry about.",
     "private_google_access": "Always enable private_ip_google_access = true on subnets so private clusters can reach Google APIs."
   },
 
@@ -161,7 +161,7 @@
 
   "agent_metrics_reporting": {
     "description": "At the end of your work on an issue (just before opening the PR), write a .agent-metrics file to the template root directory. The CI reads this to populate the Validation Record in README.md. If you cannot determine exact token counts, omit the file — the CI will record 'not recorded'.",
-    "file_path": "templates/<issue_number>-<name>/.agent-metrics",
+    "file_path": "templates/<name>/.agent-metrics",
     "format": {
       "input_tokens": "total input tokens consumed across the entire session for this issue",
       "output_tokens": "total output tokens generated across the entire session for this issue",
@@ -277,8 +277,8 @@
   "guidelines": [
     "For every issue, start by identifying which reference_repositories are most relevant to the intent, then FETCH actual files from those repos before writing any code.",
     "Support dual-path IaC generation: Terraform/Helm and Config Connector.",
-    "For every issue requiring infrastructure generation, the agent MUST create two distinct folders under templates/<issue_number>-<description>/: one named config-connector/ for Config Connector manifests, and one named terraform-helm/ for Terraform/Helm files.",
-    "All generated cloud resources (clusters, networks, buckets) MUST include the issue number in their name (e.g., cluster-issue-6 or bucket-issue-6) to ensure uniqueness and easy cleanup.",
+    "For every issue requiring infrastructure generation, the agent MUST create two distinct folders under templates/<short-name>/: one named config-connector/ for Config Connector manifests, and one named terraform-helm/ for Terraform/Helm files. The directory name is the template identity — do NOT prefix with an issue number.",
+    "All generated cloud resources (clusters, networks, buckets) MUST be named after the template (e.g., enterprise-gke-cluster, enterprise-gke-vpc) to ensure uniqueness and easy cleanup.",
     "Never use hardcoded project IDs. Use the project_id from project_context above (gca-gke-2025). For Terraform: var.project_id defaulting to 'gca-gke-2025'. For KCC: annotate with cnrm.cloud.google.com/project-id.",
     "Every template must include a verification_plan.md with exact commands to deploy, verify, and destroy both the KCC and TF/Helm paths.",
     "Follow the issue_communication_protocol — post comments at each checkpoint.",
@@ -298,7 +298,7 @@
       "MANDATORY: Do NOT add the annotation cnrm.cloud.google.com/deletion-policy: abandon to any KCC resource.",
       "MANDATORY: Apply all KCC resources with the label template: <template-dir-name> so the CI can target them precisely.",
       "MANDATORY: Do NOT set spec.deletionPolicy: Retain on any KCC resource.",
-      "RECOMMENDED: Set spec.resourceID explicitly using the issue number as a suffix (e.g., cluster-issue-6)."
+      "RECOMMENDED: Set spec.resourceID explicitly using the template name as a suffix (e.g., enterprise-gke-cluster)."
     ],
     "terraform_backend": [
       "MANDATORY: Every terraform-helm/ directory must include an empty backend 'gcs' block — the CI injects bucket and prefix at runtime. Do not hardcode these values.",

@@ -74,18 +74,21 @@ Never use `YOUR_PROJECT_ID` or placeholder values. Use `gca-gke-2025` directly a
 ## Template Structure
 
 ```
-templates/<issue_number>-<short-name>/
+templates/<short-name>/
 ├── terraform-helm/
 │   ├── main.tf           # resources + empty backend "gcs" {} block
 │   ├── variables.tf
 │   ├── outputs.tf        # MUST include cluster_name and cluster_location outputs
 │   ├── versions.tf       # pin google/google-beta ~> 6.0
-│   └── values.yaml       # Helm values if applicable
+│   └── workload/         # Helm chart directory
 ├── config-connector/
-│   └── *.yaml            # KCC manifests targeting forge-management namespace
+│   ├── *.yaml            # KCC manifests targeting forge-management namespace
+│   └── workload/         # Kubernetes manifests for the workload (optional)
 ├── verification_plan.md  # exact commands to deploy, verify, and destroy both paths
 └── README.md             # YOU write descriptive sections; CI appends Validation Record
 ```
+
+The directory name IS the template identity. Do not prefix with an issue number. Examples: `templates/private-gke-cloud-sql/`, `templates/gke-ray-cluster/`.
 
 ---
 
@@ -146,7 +149,7 @@ The CI appends this automatically after validation — **do not write it**:
 | **Duration** | 8m 32s | 4m 15s |
 | **Region** | us-central1 | us-central1 (KCC cluster) |
 | **Zones** | us-central1-b, us-central1-f | forge-management namespace |
-| **Cluster** | cluster-issue-6 | krmapihost-kcc-instance |
+| **Cluster** | enterprise-gke | krmapihost-kcc-instance |
 | **Agent tokens used** | 42,150 input / 8,320 output | (shared session) |
 | **Estimated agent cost** | $0.043 | — |
 | **Commit** | `be1d879d` | `be1d879d` |
@@ -162,7 +165,7 @@ The Terraform provider defaults to `true`. Without this, `terraform destroy` fai
 
 ```hcl
 resource "google_container_cluster" "main" {
-  name                = "cluster-issue-${var.issue_number}"
+  name                = var.cluster_name  # derived from template name, e.g. "enterprise-gke"
   location            = var.region
   deletion_protection = false  # MANDATORY
 }
@@ -180,13 +183,16 @@ resource "google_container_cluster" "main" {
 
 **Do NOT reuse `forge-network`** for GKE clusters. It has no secondary IP ranges and its `/24` subnet cannot fit pod/service CIDRs.
 
-Create a **dedicated VPC per issue** using the issue number to derive non-overlapping CIDRs:
+Create a **dedicated VPC per template** with unique, non-overlapping CIDRs. Check existing templates before picking ranges to avoid conflicts. Allocate in increments of 16 through the `10.0.0.0/8` space:
 
-| Range | Pattern | Example (issue 6) |
-|---|---|---|
-| Primary subnet | `10.<issue>.0.0/20` | `10.6.0.0/20` |
-| Pods secondary | `10.1<issue>.0.0/16` | `10.16.0.0/16` |
-| Services secondary | `172.16.<issue>.0/20` | `172.16.6.0/20` |
+| Slot | Primary subnet | Pods secondary | Services secondary | Example template |
+|---|---|---|---|---|
+| 0 | `10.0.0.0/20` | `10.4.0.0/14` | `10.8.0.0/20` | basic-gke-hello-world |
+| 1 | `10.16.0.0/20` | `10.20.0.0/14` | `10.24.0.0/20` | enterprise-gke |
+| 2 | `10.32.0.0/20` | `10.36.0.0/14` | `10.40.0.0/20` | *(next template)* |
+| N | `10.(N×16).0.0/20` | `10.(N×16+4).0.0/14` | `10.(N×16+8).0.0/20` | |
+
+Name VPCs and subnets after the template: `<template-name>-vpc`, `<template-name>-subnet`.
 
 Always use **VPC-native clusters** (`networking_mode = "VPC_NATIVE"` with `ip_allocation_policy`). Always set `private_ip_google_access = true` on subnets.
 
@@ -309,7 +315,7 @@ All KCC resources go into the `forge-management` namespace on `krmapihost-kcc-in
 metadata:
   namespace: forge-management
   labels:
-    template: templates/6-my-template
+    template: templates/my-template
   # annotations:
   #   cnrm.cloud.google.com/deletion-policy: abandon  ← NEVER
 ```
@@ -343,7 +349,7 @@ See `user-instructions.json` → `reference_repositories` for the full list.
 Before opening the PR, write a `.agent-metrics` file to the template root. The CI reads this to populate the token/cost row in the Validation Record. Use your best estimate of total tokens consumed across the whole session for the issue.
 
 ```bash
-cat > templates/<issue>-<name>/.agent-metrics <<EOF
+cat > templates/<name>/.agent-metrics <<EOF
 {
   "input_tokens": 42150,
   "output_tokens": 8320,
@@ -421,7 +427,7 @@ Do not open a PR or comment success until this is captured. Do not mark an issue
 |---|---|
 | `deletion_protection = false` on all GKE clusters | CI cannot destroy clusters without it |
 | No `deletion-policy: abandon` on KCC resources | Prevents orphaned billable GCP resources |
-| Per-issue VPC, not `forge-network` | forge-network has no GKE-compatible secondary ranges |
+| Per-template VPC, not `forge-network` | forge-network has no GKE-compatible secondary ranges |
 | Pre-check quotas before apply | Prevents failed deployments that waste sandbox time |
 | Use DWS + Kueue for A100/TPU | Only way to get scarce accelerators without hardcoded reservations |
 | Spot/preemptible for validation nodes | Reduces sandbox cost by ~60–80% |
