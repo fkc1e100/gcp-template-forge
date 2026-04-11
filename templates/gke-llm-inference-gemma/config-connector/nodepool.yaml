@@ -23,6 +23,10 @@ metadata:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   location: us-central1
+  nodeLocations:
+    - us-central1-a
+    - us-central1-b
+    - us-central1-c
   clusterRef:
     name: gke-llm-inference-gemma-kcc
   nodeCount: 1
