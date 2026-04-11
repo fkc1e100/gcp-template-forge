@@ -1,0 +1,7 @@
+{
+  "input_tokens": 25000,
+  "output_tokens": 10000,
+  "estimated_cost_usd": "0.015",
+  "model": "gemini-3-flash-preview",
+  "session_start": "2026-04-11T18:00:00Z"
+}

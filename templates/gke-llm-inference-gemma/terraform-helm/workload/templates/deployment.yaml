@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "gke-llm-inference-gemma.fullname" . }}
+  labels:
+    {{- include "gke-llm-inference-gemma.labels" . | nindent 4 }}
+spec:
+  replicaCount: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "gke-llm-inference-gemma.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        gke-gcsfuse/volumes: "true"
+      labels:
+        {{- include "gke-llm-inference-gemma.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "gke-llm-inference-gemma.serviceAccountName" . }}
+      containers:
+        - name: vllm
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["python3", "-m", "vllm.entrypoints.openai.api_server"]
+          args:
+            - "--model"
+            - {{ .Values.model.name | quote }}
+            - "--load-format"
+            - "safetensors"
+            - "--gpu-memory-utilization"
+            - {{ .Values.vllm.gpuMemoryUtilization | quote }}
+            - "--max-model-len"
+            - {{ .Values.vllm.maxModelLen | quote }}
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: /data
+              name: gcs-fuse-csi-ephemeral
+              readOnly: true
+      volumes:
+        - name: gcs-fuse-csi-ephemeral
+          csi:
+            driver: gcsfuse.csi.storage.gke.io
+            volumeAttributes:
+              bucketName: {{ .Values.bucketName | quote }}
+              mountOptions: "implicit-dirs"
+      nodeSelector:
+        {{- toYaml .Values.nodeSelector | nindent 8 }}
+      tolerations:
+        {{- toYaml .Values.tolerations | nindent 8 }}
