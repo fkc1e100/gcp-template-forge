@@ -58,3 +58,4 @@ spec:
     vulnerabilityMode: VULNERABILITY_ENTERPRISE
   releaseChannel:
     channel: REGULAR
+# KCC validation trigger
