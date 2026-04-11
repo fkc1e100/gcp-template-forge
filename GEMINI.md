@@ -281,10 +281,32 @@ gcloud container ai profiles manifests create \
 
 **Workflow**:
 1. Run `gcloud container ai profiles use-cases list` to find the right use-case for the requested model.
-2. Run `gcloud container ai profiles manifests create` with the target accelerator and latency requirements.
-3. Use the generated manifests as the baseline for the template's `workload/` directory — **do not write GPU/model-server configs from scratch**. The tool produces benchmark-validated resource requests and model-server flags.
-4. Size the node pool to match the accelerator and replica count in the generated manifests.
-5. Use L4 (`nvidia-l4`) as the default for LLM serving unless the model or latency requirement demands H100 (quota = 0 here — do not request H100).
+2. Run `gcloud container ai profiles benchmarks list --filter="modelId:<model>"` to get benchmark data (throughput, TTFT, NTPOT, cost) for your chosen accelerator.
+3. Run `gcloud container ai profiles manifests create` with the target accelerator and latency requirements.
+4. Use the generated manifests as the baseline for the template's `workload/` directory — **do not write GPU/model-server configs from scratch**. The tool produces benchmark-validated resource requests and model-server flags.
+5. Size the node pool to match the accelerator and replica count in the generated manifests.
+6. Use L4 (`nvidia-l4`) as the default for LLM serving unless the model or latency requirement demands H100 (quota = 0 here — do not request H100).
+
+**Required README section for inference templates**: Every inference template README must include a `## Performance & Cost Estimates` section populated from the benchmark output:
+
+```markdown
+## Performance & Cost Estimates
+
+*Generated from `gcloud container ai profiles benchmarks list`*
+
+| Metric | Value |
+|---|---|
+| Model | Gemma 2 9B IT |
+| Accelerator | NVIDIA L4 (1×) |
+| Time to First Token (p50) | ~XXX ms |
+| Next Token Output Token (p50) | ~XX ms |
+| Throughput | ~XXX tokens/sec |
+| Node type | g2-standard-12 (spot) |
+| Estimated node cost | ~$X.XX/hr |
+| Estimated cost per 1M tokens | ~$X.XX |
+```
+
+Do not fabricate these numbers. Run the benchmarks command and use the actual output.
 
 > **Note**: `gcloud container ai profiles manifests create` calls `gkerecommender.googleapis.com` and requires authentication. The sandbox WIF credentials cover this automatically — the SA is `forge-sandbox@gca-gke-2025.iam.gserviceaccount.com`.
 
