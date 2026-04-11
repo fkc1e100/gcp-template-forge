@@ -221,8 +221,9 @@ jobs:
             });
 
   # ── 3. PR deploy-and-test: full apply+verify+destroy ─────────────────────
-  deploy-and-test:
-    name: "Deploy & Test (${{ matrix.template }})"
+  # ── 3a. PR: TF+Helm deploy → verify → destroy (parallel with deploy-test-kcc) ──
+  deploy-test-tf:
+    name: "Deploy & Test TF+Helm (${{ matrix.template }})"
     needs: [ detect-changes, lint ]
     if: >-
       github.event_name == 'pull_request' &&
@@ -242,13 +243,6 @@ jobs:
         with:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
-
-      - name: Get KCC cluster credentials
-        uses: google-github-actions/get-gke-credentials@v2
-        with:
-          cluster_name: ${{ env.KCC_CLUSTER }}
-          location: ${{ env.KCC_REGION }}
-          project_id: ${{ env.PROJECT_ID }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -282,7 +276,6 @@ jobs:
           echo "tf_cluster=${CLUSTER}" >> $GITHUB_OUTPUT
           echo "tf_location=${LOCATION}" >> $GITHUB_OUTPUT
 
-      # Use the action (direct token auth) so kubectl works without gke-gcloud-auth-plugin
       - name: Get TF cluster credentials
         id: tf-creds
         if: >-
@@ -351,7 +344,6 @@ jobs:
           gcloud services enable ondemandscanning.googleapis.com \
             --project="$PROJECT" --quiet 2>/dev/null || true
 
-          # Collect unique images from workload namespaces (exclude GKE system namespaces)
           IMAGES=$(kubectl get pods --all-namespaces -o json 2>/dev/null \
             | jq -r '.items[] | select(.metadata.namespace | IN("kube-system","kube-public","kube-node-lease","gke-gmp-system","gke-managed-metrics-server","config-management-system") | not) | [(.spec.containers//[]),(.spec.initContainers//[])] | add//[] | .[].image' 2>/dev/null \
             | sort -u) || true
@@ -418,10 +410,55 @@ jobs:
             --project="${{ env.PROJECT_ID }}" --quiet --async || true
           echo "::warning::Cluster deletion initiated via gcloud fallback. VPC may need manual cleanup."
 
-      # Restore KCC cluster credentials — Verify Terraform cluster overwrites
-      # the kubeconfig context; we must switch back before kubectl apply.
-      - name: Restore KCC cluster credentials
-        if: "hashFiles(format('{0}/config-connector', matrix.template)) != ''"
+      - name: Post TF+Helm summary to PR
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const template = '${{ matrix.template }}';
+            const tfResult = '${{ steps.tf-verify.outcome || 'skipped' }}';
+            const helmResult = '${{ steps.helm-deploy.outcome || 'skipped' }}';
+            const failed = [tfResult, helmResult].some(r => r === 'failure');
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = [
+              `### Deploy & Test TF+Helm: \`${template}\``,
+              `| Step | Result |`,
+              `|---|---|`,
+              `| Terraform apply + cluster verify | **${tfResult}** |`,
+              `| Helm deploy + verify | **${helmResult}** |`,
+              ...(failed ? ['', `TF+Helm test failed — see [run logs](${runUrl}) for details.`] : []),
+            ].join('\n');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body,
+            });
+
+  # ── 3b. PR: KCC deploy → wait → delete (parallel with deploy-test-tf) ─────
+  deploy-test-kcc:
+    name: "Deploy & Test KCC (${{ matrix.template }})"
+    needs: [ detect-changes, lint ]
+    if: >-
+      github.event_name == 'pull_request' &&
+      needs.detect-changes.outputs.has_templates == 'true' &&
+      needs.lint.result == 'success'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+
+      - name: Get KCC cluster credentials
         uses: google-github-actions/get-gke-credentials@v2
         with:
           cluster_name: ${{ env.KCC_CLUSTER }}
@@ -456,25 +493,21 @@ jobs:
             -f ${{ matrix.template }}/config-connector/ \
             --wait=true --timeout=900s || true
 
-      - name: Post deploy summary to PR
+      - name: Post KCC summary to PR
         if: always()
         uses: actions/github-script@v7
         with:
           script: |
             const template = '${{ matrix.template }}';
-            const tfResult = '${{ steps.tf-verify.outcome || 'skipped' }}';
-            const helmResult = '${{ steps.helm-deploy.outcome || 'skipped' }}';
             const kccResult = '${{ steps.kcc-wait.outcome || 'skipped' }}';
-            const failed = [tfResult, helmResult, kccResult].some(r => r === 'failure');
+            const failed = kccResult === 'failure';
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             const body = [
-              `### Deploy & Test: \`${template}\``,
-              `| Path | Result |`,
+              `### Deploy & Test KCC: \`${template}\``,
+              `| Step | Result |`,
               `|---|---|`,
-              `| Terraform apply + cluster verify | **${tfResult}** |`,
-              `| Helm deploy + verify | **${helmResult}** |`,
               `| KCC apply + Ready | **${kccResult}** |`,
-              ...(failed ? ['', `One or more deployment tests failed — see [run logs](${runUrl}) for details.`, 'Please investigate the failure, fix the issue, and push a new commit.'] : []),
+              ...(failed ? ['', `KCC test failed — see [run logs](${runUrl}) for details.`] : []),
             ].join('\n');
             github.rest.issues.createComment({
               issue_number: context.issue.number,
