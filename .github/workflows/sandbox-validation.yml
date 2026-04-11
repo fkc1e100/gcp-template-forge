@@ -685,15 +685,84 @@ jobs:
           open(sys.argv[1], 'w').write(content)
           " "$README"
 
-          # Read agent metrics if present
-          METRICS="${TEMPLATE}/.agent-metrics"
-          INPUT_TOKENS=""; OUTPUT_TOKENS=""; AGENT_COST=""
-          if [ -f "$METRICS" ]; then
-            INPUT_TOKENS=$(python3 -c "import json; d=json.load(open('$METRICS')); print(d.get('input_tokens',''))"  2>/dev/null || true)
-            OUTPUT_TOKENS=$(python3 -c "import json; d=json.load(open('$METRICS')); print(d.get('output_tokens',''))" 2>/dev/null || true)
-            AGENT_COST=$(python3   -c "import json; d=json.load(open('$METRICS')); print(d.get('estimated_cost_usd',''))" 2>/dev/null || true)
-          fi
-          TOKEN_STR="${INPUT_TOKENS:+${INPUT_TOKENS} in / ${OUTPUT_TOKENS} out}"
+          # Accumulate agent metrics across all sandbox sessions.
+          # Uses session_start as a dedup key so re-runs don't double-count.
+          python3 - "$TEMPLATE" << 'ACCUMPY'
+          import json, os, sys, datetime
+          template = sys.argv[1]
+          metrics_file      = f'{template}/.agent-metrics'
+          cumulative_file   = f'{template}/.agent-metrics-cumulative'
+
+          current = {}
+          if os.path.exists(metrics_file):
+              try:    current = json.load(open(metrics_file))
+              except: pass
+
+          cumulative = {'total_input_tokens': 0, 'total_output_tokens': 0,
+                        'total_cost_usd': 0.0, 'sessions': []}
+          if os.path.exists(cumulative_file):
+              try:    cumulative = json.load(open(cumulative_file))
+              except: pass
+
+          session_start    = current.get('session_start', '')
+          already_counted  = session_start and any(
+              s.get('session_start') == session_start
+              for s in cumulative.get('sessions', [])
+          )
+
+          if session_start and not already_counted:
+              in_tok  = current.get('input_tokens')
+              out_tok = current.get('output_tokens')
+              cost    = float(current.get('estimated_cost_usd') or 0)
+              if isinstance(in_tok, (int, float)) and in_tok:
+                  cumulative['total_input_tokens']  += int(in_tok)
+                  cumulative['total_output_tokens'] += int(out_tok or 0)
+                  cumulative['total_cost_usd']       = round(
+                      cumulative['total_cost_usd'] + cost, 4)
+                  cumulative.setdefault('sessions', []).append({
+                      'session_start':     session_start,
+                      'input_tokens':      int(in_tok),
+                      'output_tokens':     int(out_tok or 0),
+                      'estimated_cost_usd': str(cost),
+                      'model':             current.get('model', ''),
+                      'counted_at':        datetime.datetime.now(
+                          datetime.timezone.utc).isoformat()
+                  })
+                  json.dump(cumulative, open(cumulative_file, 'w'), indent=2)
+                  print(f"Counted session {session_start}: "
+                        f"{in_tok:,}+{out_tok:,} tokens, ${cost}")
+              else:
+                  print("Session tokens are null — skipping accumulation")
+          elif already_counted:
+              print(f"Session {session_start} already counted — skipping")
+          else:
+              print("No session_start in .agent-metrics — skipping")
+          ACCUMPY
+
+          # Read cumulative totals for README display
+          eval "$(python3 - "$TEMPLATE" << 'READPY'
+          import json, os, sys
+          template = sys.argv[1]
+          f = f'{template}/.agent-metrics-cumulative'
+          d = json.load(open(f)) if os.path.exists(f) else {}
+          n      = len(d.get('sessions', []))
+          in_t   = d.get('total_input_tokens',  0)
+          out_t  = d.get('total_output_tokens', 0)
+          cost   = d.get('total_cost_usd',      0.0)
+          if n > 0 and in_t > 0:
+              suffix = f" ({n} session{'s' if n != 1 else ''})"
+              print(f'INPUT_TOKENS="{in_t:,}"')
+              print(f'OUTPUT_TOKENS="{out_t:,}"')
+              print(f'AGENT_COST="{cost}"')
+              print(f'SESSION_SUFFIX="{suffix}"')
+          else:
+              print('INPUT_TOKENS=""')
+              print('OUTPUT_TOKENS=""')
+              print('AGENT_COST=""')
+              print('SESSION_SUFFIX=""')
+          READPY
+          )"
+          TOKEN_STR="${INPUT_TOKENS:+${INPUT_TOKENS} in / ${OUTPUT_TOKENS} out${SESSION_SUFFIX}}"
           TOKEN_STR="${TOKEN_STR:-not recorded}"
           COST_STR="${AGENT_COST:+\$${AGENT_COST}}"
           COST_STR="${COST_STR:--}"
@@ -733,5 +802,7 @@ jobs:
           git config user.email "codebot-sfle@users.noreply.github.com"
           git pull --rebase origin main
           git add "${TEMPLATE}/README.md" "${TEMPLATE}/.validated"
+          [ -f "${TEMPLATE}/.agent-metrics-cumulative" ] && \
+            git add "${TEMPLATE}/.agent-metrics-cumulative"
           git commit -m "ci: validate ${TEMPLATE} [skip ci]" || true
           git push
