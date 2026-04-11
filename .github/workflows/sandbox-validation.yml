@@ -335,18 +335,9 @@ jobs:
             --project="$PROJECT" --quiet 2>/dev/null || true
 
           # Collect unique images from workload namespaces (exclude GKE system namespaces)
-          IMAGES=$(kubectl get pods --all-namespaces -o json 2>/dev/null | python3 -c "
-import json, sys
-SKIP = {'kube-system','kube-public','kube-node-lease',
-        'gke-gmp-system','gke-managed-metrics-server','config-management-system'}
-data = json.load(sys.stdin)
-imgs = set()
-for pod in data.get('items', []):
-    if pod['metadata']['namespace'] not in SKIP:
-        for c in (pod['spec'].get('containers') or []) + (pod['spec'].get('initContainers') or []):
-            if c.get('image'): imgs.add(c['image'])
-for i in sorted(imgs): print(i)
-" 2>/dev/null) || true
+          IMAGES=$(kubectl get pods --all-namespaces -o json 2>/dev/null \
+            | jq -r '.items[] | select(.metadata.namespace | IN("kube-system","kube-public","kube-node-lease","gke-gmp-system","gke-managed-metrics-server","config-management-system") | not) | [(.spec.containers//[]),(.spec.initContainers//[])] | add//[] | .[].image' 2>/dev/null \
+            | sort -u) || true
 
           if [ -z "$IMAGES" ]; then
             echo "No workload images found outside system namespaces — skipping image scan"
@@ -593,18 +584,9 @@ for i in sorted(imgs): print(i)
             --project="$PROJECT" --quiet 2>/dev/null || true
 
           # Collect unique images from workload namespaces (exclude GKE system namespaces)
-          IMAGES=$(kubectl get pods --all-namespaces -o json 2>/dev/null | python3 -c "
-import json, sys
-SKIP = {'kube-system','kube-public','kube-node-lease',
-        'gke-gmp-system','gke-managed-metrics-server','config-management-system'}
-data = json.load(sys.stdin)
-imgs = set()
-for pod in data.get('items', []):
-    if pod['metadata']['namespace'] not in SKIP:
-        for c in (pod['spec'].get('containers') or []) + (pod['spec'].get('initContainers') or []):
-            if c.get('image'): imgs.add(c['image'])
-for i in sorted(imgs): print(i)
-" 2>/dev/null) || true
+          IMAGES=$(kubectl get pods --all-namespaces -o json 2>/dev/null \
+            | jq -r '.items[] | select(.metadata.namespace | IN("kube-system","kube-public","kube-node-lease","gke-gmp-system","gke-managed-metrics-server","config-management-system") | not) | [(.spec.containers//[]),(.spec.initContainers//[])] | add//[] | .[].image' 2>/dev/null \
+            | sort -u) || true
 
           if [ -z "$IMAGES" ]; then
             echo "No workload images found outside system namespaces — skipping image scan"
