@@ -64,9 +64,37 @@ graph TD
 
 ---
 
-## Design → Deploy → Test Flow
+## CI Pipeline
 
-Each template goes through two separate CI gate points:
+### Job dependency graph
+
+```mermaid
+flowchart LR
+    DC(["🔍 detect-changes\nDiff PR head SHA or push\nagainst base — outputs\nchanged template list"])
+
+    subgraph pr ["━━━  Pull Request  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"]
+        direction LR
+        L(["🔎 lint\nper template\ntf fmt · tf validate\nhelm lint · KCC YAML\nboth-paths check"])
+        DAT(["🚀 deploy-and-test\nper template\nTF apply → verify → destroy\nKCC apply → wait Ready → delete\nPost PR summary comment"])
+    end
+
+    subgraph push ["━━━  Push to main  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"]
+        direction LR
+        VTH(["🏗️ validate-tf-helm\nper template · 90 min timeout\nTF apply → verify cluster\nRUNNING → TF destroy\nSaves results artifact"])
+        VKCC(["☸️ validate-kcc\nper template · 60 min timeout\nFresh runner — KCC cluster\ncreds from the start\nKCC apply → wait Ready\n→ delete\nSaves results artifact"])
+        PUB(["📋 publish-validated\nper template\nAccumulate agent metrics\nUpdate README + .validated\n.agent-metrics-cumulative\ngit push [skip ci]"])
+    end
+
+    DC --> L
+    L --> DAT
+    DC --> VTH
+    VTH --> VKCC
+    VKCC --> PUB
+```
+
+> `validate-tf-helm` and `validate-kcc` run on **separate independent runners** — two real GKE clusters built end-to-end, one via Terraform + Helm and one via Config Connector. They run sequentially (not simultaneously) to avoid GCP resource name conflicts.
+
+### End-to-end sequence
 
 ```mermaid
 sequenceDiagram
@@ -79,50 +107,55 @@ sequenceDiagram
     GH->>CI: Overseer creates branch + triggers AgentSandbox
     CI->>GH: Agent commits terraform-helm/ + config-connector/
 
-    Note over GH,CI: Pull Request CI Gate
-    GH->>CI: PR opened → sandbox-validation.yml triggers
-    CI->>CI: detect-changes (PR head SHA diff)
+    Note over GH,CI: ── Pull Request CI Gate ──────────────────────────────
+    GH->>CI: PR opened → detect-changes (PR head SHA diff)
     CI->>CI: lint: tf fmt/validate · helm lint · KCC YAML · both-paths check
-    CI->>GCP: deploy-and-test: terraform apply
+    CI->>GCP: deploy-and-test: TF apply
     GCP-->>CI: cluster RUNNING ✓
     CI->>GCP: helm upgrade --install
     GCP-->>CI: workload ready ✓
-    CI->>GCP: terraform destroy
-    CI->>GCP: kubectl apply (KCC manifests)
-    GCP-->>CI: KCC resources Ready ✓
-    CI->>GCP: kubectl delete (KCC teardown)
-    CI->>GH: Post deploy summary to PR
+    CI->>GCP: TF destroy
+    CI->>GCP: KCC apply → wait Ready → delete
+    CI->>GH: Post deploy summary comment to PR
     Dev->>GH: Review + merge PR
 
-    Note over GH,CI: Post-Merge CI Gate
-    GH->>CI: push to main → validate-and-publish triggers
-    CI->>CI: skip-check (has template changed since .validated?)
-    CI->>GCP: terraform apply (full re-deploy)
-    GCP-->>CI: cluster RUNNING ✓
-    CI->>GCP: terraform destroy
-    CI->>GCP: KCC apply + wait Ready
-    CI->>GCP: KCC delete
-    CI->>GH: Commit updated README.md + .validated marker
+    Note over GH,CI: ── Post-Merge CI Gate (3 independent jobs) ───────────
+    GH->>CI: push to main → validate-tf-helm starts
+    CI->>CI: skip-check (template changed since last .validated commit?)
+    CI->>GCP: TF apply (VPC · cluster · node pool · Helm workload)
+    GCP-->>CI: cluster RUNNING ✓  nodes ready ✓
+    CI->>GCP: TF destroy (full teardown)
+    CI->>CI: validate-kcc starts (fresh runner, KCC cluster creds)
+    CI->>GCP: kubectl apply -n forge-management (KCC manifests)
+    GCP-->>CI: ContainerCluster Ready ✓
+    CI->>GCP: kubectl delete (KCC teardown)
+    CI->>CI: publish-validated starts
+    CI->>CI: accumulate .agent-metrics across all sandbox sessions
+    CI->>GH: Commit README.md + .validated + .agent-metrics-cumulative
 ```
 
-### Template CI Lifecycle
+### Template structure
 
 ```
 templates/<name>/
-├── terraform-helm/         ← Terraform + Helm deployment path
-│   ├── main.tf             ← VPC · cluster · workload resources
+├── terraform-helm/              ← Terraform + Helm deployment path
+│   ├── main.tf                  ← VPC · cluster · workload resources
 │   ├── variables.tf
-│   ├── versions.tf         ← pinned provider versions + GCS backend
-│   ├── outputs.tf          ← cluster_name, cluster_location (required by CI)
-│   └── workload/           ← Helm chart for the workload
+│   ├── versions.tf              ← pinned provider versions + GCS backend
+│   ├── outputs.tf               ← cluster_name + cluster_location (required by CI)
+│   └── workload/                ← Helm chart for the workload
 │       ├── Chart.yaml
 │       ├── values.yaml
 │       └── templates/
-├── config-connector/       ← Config Connector (KCC) deployment path
-│   ├── network.yaml        ← ComputeNetwork + ComputeSubnetwork
-│   └── cluster.yaml        ← ContainerCluster (+ NodePool if standard)
-├── README.md               ← auto-updated by CI with validation record
-└── .validated              ← CI marker: commit + status written after successful deploy
+├── config-connector/            ← Config Connector (KCC) deployment path
+│   ├── network.yaml             ← ComputeNetwork + ComputeSubnetwork
+│   ├── cluster.yaml             ← ContainerCluster (+ NodePool if standard)
+│   └── workload/                ← Kubernetes manifests for the workload (optional)
+│       └── *.yaml               ← Deployment · Service · HPA · NetworkPolicy etc.
+├── README.md                    ← auto-updated by CI with validation record
+├── .validated                   ← CI marker: commit + status after successful deploy
+├── .agent-metrics               ← written by agent sandbox (latest session)
+└── .agent-metrics-cumulative    ← CI-maintained running total across all sessions
 ```
 
 **CI enforcement rules:**
@@ -130,7 +163,7 @@ templates/<name>/
 - `google_container_cluster` must have `deletion_protection = false`
 - KCC manifests must not use `cnrm.cloud.google.com/deletion-policy: abandon`
 - Resources must use template-based names (e.g., `enterprise-gke-vpc`) not issue numbers
-- `validate-and-publish` re-runs whenever the template changes after its last `.validated` commit
+- `validate-tf-helm` / `validate-kcc` re-run whenever the template changes since last `.validated` commit
 
 ---
 
