@@ -250,7 +250,9 @@ For templates that serve **pre-trained AI models** (LLM inference, image generat
 
 **Why**: The quickstart benchmarks model-hardware combinations and emits validated Kubernetes manifests (Deployment, Service, HPA, PodMonitoring) with correct resource requests, GPU configuration, and model-server flags. Starting from these avoids hours of trial-and-error sizing.
 
-**Key commands** (requires gcloud ≥ 536.0.1):
+**Available in the sandbox**: `gcloud` (≥ 536.0.1) with the `gke-gke-extension` is pre-installed in the agent sandbox and authenticated via Workload Identity — no setup required. Run the commands below directly.
+
+**Key commands**:
 
 ```bash
 # 1. List supported models and use-cases
@@ -280,9 +282,11 @@ gcloud container ai profiles manifests create \
 **Workflow**:
 1. Run `gcloud container ai profiles use-cases list` to find the right use-case for the requested model.
 2. Run `gcloud container ai profiles manifests create` with the target accelerator and latency requirements.
-3. Use the generated manifests as the baseline for the template's `workload/` directory — do not write GPU/model-server configs from scratch.
+3. Use the generated manifests as the baseline for the template's `workload/` directory — **do not write GPU/model-server configs from scratch**. The tool produces benchmark-validated resource requests and model-server flags.
 4. Size the node pool to match the accelerator and replica count in the generated manifests.
 5. Use L4 (`nvidia-l4`) as the default for LLM serving unless the model or latency requirement demands H100 (quota = 0 here — do not request H100).
+
+> **Note**: `gcloud container ai profiles manifests create` calls `gkerecommender.googleapis.com` and requires authentication. The sandbox WIF credentials cover this automatically — the SA is `forge-sandbox@gca-gke-2025.iam.gserviceaccount.com`.
 
 ---
 
