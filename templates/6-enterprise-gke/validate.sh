@@ -36,7 +36,7 @@ echo "Test 3: Workload Identity Integration..."
 gcloud container clusters get-credentials ${CLUSTER_NAME} --region ${REGION} --project ${PROJECT_ID}
 
 # Apply namespace first
-kubectl apply -f config-connector/workload/namespace.yaml
+kubectl apply -f manifests/namespace.yaml
 
 cat <<EOF | kubectl apply -f -
 apiVersion: batch/v1
@@ -67,7 +67,7 @@ echo "Test 4: Endpoint Interaction..."
 
 # Apply workload manifests to the target cluster
 echo "Applying workload manifests to target cluster..."
-kubectl apply -R -f config-connector/workload/
+kubectl apply -R -f manifests/
 
 # Wait for rollout
 kubectl rollout status deployment/workload-6 -n ${NAMESPACE_WORKLOAD} --timeout=5m
@@ -106,7 +106,7 @@ done
 # 5. Teardown Verification
 echo "Test 5: Teardown Verification..."
 # Delete workload from target cluster
-kubectl delete -R -f config-connector/workload/ --ignore-not-found
+kubectl delete -R -f manifests/ --ignore-not-found
 
 # Delete KCC manifests
 kubectl delete -f config-connector/ -n ${NAMESPACE} --ignore-not-found
