@@ -4,11 +4,11 @@ replicaCount: 1
 image:
   repository: vllm/vllm-openai
   pullPolicy: IfNotPresent
-  tag: "v0.5.3"
+  tag: "v0.7.2"
 
 # Model configuration
 model:
-  name: "google/gemma-2-9b-it"
+  name: "google/gemma-4-31B-it"
   # Path inside the bucket where weights are stored
   # GCS FUSE will mount the bucket to /data
   path: "/data"
@@ -17,6 +17,7 @@ model:
 vllm:
   maxModelLen: 4096
   gpuMemoryUtilization: 0.9
+  tensorParallelSize: 4
 
 bucketName: "" # Provided by Terraform
 
@@ -30,9 +31,9 @@ service:
 
 resources:
   limits:
-    nvidia.com/gpu: 1
+    nvidia.com/gpu: 4
   requests:
-    nvidia.com/gpu: 1
+    nvidia.com/gpu: 4
 
 nodeSelector:
   nvidia.com/gpu: "present"

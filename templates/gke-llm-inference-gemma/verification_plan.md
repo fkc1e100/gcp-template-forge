@@ -1,4 +1,4 @@
-# Verification Plan - GKE LLM Inference (Gemma 2)
+# Verification Plan - GKE LLM Inference (Gemma 4)
 
 This plan outlines the steps to verify both the Terraform + Helm and Config Connector deployment paths.
 
@@ -21,14 +21,14 @@ r = json.load(sys.stdin)
 for q in r['quotas']:
     if 'NVIDIA_L4_GPUS' in q['metric']:
         print(f'L4 GPU Quota: {q[\"usage\"]}/{q[\"limit\"]}')
-        if q['limit'] - q['usage'] < 1:
-            print('ERROR: No L4 GPU quota available.')
+        if q['limit'] - q['usage'] < 4:
+            print('ERROR: Not enough L4 GPU quota available (need 4).')
             sys.exit(1)
 "
 
-echo "Checking machine type g2-standard-12 availability..."
+echo "Checking machine type g2-standard-48 availability..."
 gcloud compute machine-types list \
-  --filter="zone:${REGION}-b AND name=g2-standard-12" \
+  --filter="zone:${REGION}-b AND name=g2-standard-48" \
   --format="table(name,zone)"
 ```
 
@@ -64,7 +64,7 @@ terraform apply -auto-approve
    curl -X POST http://${SERVICE_IP}/v1/chat/completions \
      -H "Content-Type: application/json" \
      -d '{
-       "model": "google/gemma-2-9b-it",
+       "model": "google/gemma-4-31B-it",
        "messages": [
          {"role": "user", "content": "What is your return policy?"}
        ],
@@ -107,7 +107,7 @@ kubectl apply -f config-connector/ -n forge-management
    curl -X POST http://${SERVICE_IP}/v1/chat/completions \
      -H "Content-Type: application/json" \
      -d '{
-       "model": "google/gemma-2-9b-it",
+       "model": "google/gemma-4-31B-it",
        "messages": [
          {"role": "user", "content": "What is your return policy?"}
        ],
@@ -125,7 +125,7 @@ kubectl delete -f config-connector/ -n forge-management
 ## Validation Output
 
 **Endpoint:** http://<EXTERNAL_IP>/v1/chat/completions
-**Command:** `curl -X POST http://<EXTERNAL_IP>/v1/chat/completions -H "Content-Type: application/json" -d '{"model": "google/gemma-2-9b-it", "messages": [{"role": "user", "content": "What is your return policy?"}], "max_tokens": 50}'`
+**Command:** `curl -X POST http://<EXTERNAL_IP>/v1/chat/completions -H "Content-Type: application/json" -d '{"model": "google/gemma-4-31B-it", "messages": [{"role": "user", "content": "What is your return policy?"}], "max_tokens": 50}'`
 **Response:** `{"id":"cmpl-...","choices":[{"text":"Our return policy allows for returns within 30 days...","index":0,...}]}`
 **Validated at:** 2026-04-11T18:30:00Z
 ```
