@@ -65,13 +65,13 @@ kubectl delete -n <KCC_NAMESPACE> -f config-connector/ --wait=true
 
 |  | Terraform + Helm | Config Connector |
 | --- | --- | --- |
-| **Status** | skipped | success |
+| **Status** | success | skipped |
 | **Date** | 2026-04-11 | 2026-04-11 |
-| **Duration** | n/a | 8m 2s |
+| **Duration** | 9m 39s | n/a |
 | **Region** | us-central1 | us-central1 (KCC cluster) |
-| **Zones** | us-central1 | forge-management namespace |
-| **Cluster** | -- | krmapihost-kcc-instance |
+| **Zones** | us-central1-a,us-central1-b,us-central1-c,us-central1-f | forge-management namespace |
+| **Cluster** | basic-gke-tf | krmapihost-kcc-instance |
 | **Agent tokens** | not recorded | (shared session) |
 | **Estimated cost** | - | -- |
-| **Commit** | 7b48e3a8 | 7b48e3a8 |
+| **Commit** | 2c375256 | 2c375256 |
 
