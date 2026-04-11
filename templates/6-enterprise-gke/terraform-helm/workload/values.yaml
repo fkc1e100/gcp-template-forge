@@ -7,8 +7,8 @@ image:
 
 serviceAccount:
   create: true
-  name: "workload-sa-6"
-  gcpServiceAccount: "workload-sa-6@gca-gke-2025.iam.gserviceaccount.com"
+  name: "enterprise-gke-sa"
+  gcpServiceAccount: "enterprise-gke-sa@gca-gke-2025.iam.gserviceaccount.com"
 
 podSecurityContext:
   runAsUser: 1000
@@ -56,7 +56,7 @@ config:
 
 secrets:
   enabled: false
-  providerClass: "secrets-6"
+  providerClass: "enterprise-gke-secrets"
   gcpProjectId: "gca-gke-2025"
-  secretName: "workload-6-secret"
+  secretName: "enterprise-gke-secret"
   secretVersion: "latest"

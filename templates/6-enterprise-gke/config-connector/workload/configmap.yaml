@@ -17,8 +17,8 @@ kind: ConfigMap
 metadata:
   labels:
     template: 6-enterprise-gke
-  name: config-6
-  namespace: workload-6
+  name: enterprise-gke-config
+  namespace: enterprise-gke
 data:
   LOG_LEVEL: "info"
   ENVIRONMENT: "production"

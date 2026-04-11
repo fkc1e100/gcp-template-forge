@@ -15,22 +15,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: workload-6
-  namespace: workload-6
+  name: enterprise-gke
+  namespace: enterprise-gke
   labels:
     template: 6-enterprise-gke
-    app.kubernetes.io/name: workload-6
+    app.kubernetes.io/name: enterprise-gke
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: workload-6
+      app.kubernetes.io/name: enterprise-gke
   template:
     metadata:
       labels:
         template: 6-enterprise-gke
-        app.kubernetes.io/name: workload-6
+        app.kubernetes.io/name: enterprise-gke
     spec:
-      serviceAccountName: workload-sa-6
+      serviceAccountName: enterprise-gke-sa
       securityContext:
         runAsUser: 1000
         runAsGroup: 3000
@@ -48,7 +48,7 @@ spec:
                     - key: app.kubernetes.io/name
                       operator: In
                       values:
-                        - workload-6
+                        - enterprise-gke
                 topologyKey: kubernetes.io/hostname
             - weight: 50
               podAffinityTerm:
@@ -57,10 +57,10 @@ spec:
                     - key: app.kubernetes.io/name
                       operator: In
                       values:
-                        - workload-6
+                        - enterprise-gke
                 topologyKey: topology.kubernetes.io/zone
       containers:
-        - name: workload-6
+        - name: enterprise-gke
           securityContext:
             capabilities:
               drop:
@@ -94,7 +94,7 @@ spec:
               memory: 128Mi
           envFrom:
             - configMapRef:
-                name: config-6
+                name: enterprise-gke-config
           volumeMounts:
             - name: tmp
               mountPath: /tmp
@@ -117,4 +117,4 @@ spec:
 #            driver: secrets-store.csi.k8s.io
 #            readOnly: true
 #            volumeAttributes:
-#              secretProviderClass: secrets-6
+#              secretProviderClass: enterprise-gke-secrets

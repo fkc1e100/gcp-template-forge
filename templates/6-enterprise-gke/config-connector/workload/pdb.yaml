@@ -17,10 +17,10 @@ kind: PodDisruptionBudget
 metadata:
   labels:
     template: 6-enterprise-gke
-  name: workload-6-pdb
-  namespace: workload-6
+  name: enterprise-gke-pdb
+  namespace: enterprise-gke
 spec:
   minAvailable: 2
   selector:
     matchLabels:
-      app.kubernetes.io/name: workload-6
+      app.kubernetes.io/name: enterprise-gke

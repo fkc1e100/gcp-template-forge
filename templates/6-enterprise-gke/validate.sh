@@ -4,10 +4,10 @@ set -e
 echo "Starting KCC Validation Tests..."
 
 PROJECT_ID=${PROJECT_ID:-"gca-gke-2025"}
-CLUSTER_NAME="cluster-issue-6-kcc"
-NODE_POOL_NAME="pool-issue-6-kcc"
+CLUSTER_NAME="enterprise-gke"
+NODE_POOL_NAME="enterprise-gke-pool"
 NAMESPACE="forge-management"
-NAMESPACE_WORKLOAD="workload-6"
+NAMESPACE_WORKLOAD="enterprise-gke"
 REGION="us-central1"
 
 # 1. Resource Readiness
@@ -47,7 +47,7 @@ metadata:
 spec:
   template:
     spec:
-      serviceAccountName: workload-sa-6
+      serviceAccountName: enterprise-gke-sa
       containers:
       - name: gcloud
         image: google/cloud-sdk:slim
@@ -70,12 +70,12 @@ echo "Applying workload manifests to target cluster..."
 kubectl apply -R -f config-connector/workload/
 
 # Wait for rollout
-kubectl rollout status deployment/workload-6 -n ${NAMESPACE_WORKLOAD} --timeout=5m
+kubectl rollout status deployment/enterprise-gke -n ${NAMESPACE_WORKLOAD} --timeout=5m
 
 # Wait for LoadBalancer IP
 SERVICE_IP=""
 for i in {1..20}; do
-  SERVICE_IP=$(kubectl get svc workload-6 -o jsonpath='{.status.loadBalancer.ingress[0].ip}' -n ${NAMESPACE_WORKLOAD} || true)
+  SERVICE_IP=$(kubectl get svc enterprise-gke -o jsonpath='{.status.loadBalancer.ingress[0].ip}' -n ${NAMESPACE_WORKLOAD} || true)
   if [ ! -z "$SERVICE_IP" ]; then
     break
   fi

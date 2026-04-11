@@ -34,38 +34,38 @@ provider "helm" {
 
 # VPC Network
 resource "google_compute_network" "vpc" {
-  name                    = "vpc-issue-${var.issue_number}"
+  name                    = "enterprise-gke-vpc"
   auto_create_subnetworks = false
 }
 
 # Subnet
 resource "google_compute_subnetwork" "subnet" {
-  name                     = "subnet-issue-${var.issue_number}"
-  ip_cidr_range            = "10.${var.issue_number}.0.0/20"
+  name                     = "enterprise-gke-subnet"
+  ip_cidr_range            = "10.100.0.0/20"
   region                   = var.region
   network                  = google_compute_network.vpc.id
   private_ip_google_access = true
 
   secondary_ip_range {
     range_name    = "pods"
-    ip_cidr_range = "10.1${var.issue_number}.0.0/16"
+    ip_cidr_range = "10.200.0.0/16"
   }
 
   secondary_ip_range {
     range_name    = "services"
-    ip_cidr_range = "172.16.${var.issue_number}.0/20"
+    ip_cidr_range = "172.16.100.0/20"
   }
 }
 
 # Cloud NAT for private nodes
 resource "google_compute_router" "router" {
-  name    = "router-issue-${var.issue_number}"
+  name    = "enterprise-gke-router"
   region  = var.region
   network = google_compute_network.vpc.id
 }
 
 resource "google_compute_router_nat" "nat" {
-  name                               = "nat-issue-${var.issue_number}"
+  name                               = "enterprise-gke-nat"
   router                             = google_compute_router.router.name
   region                             = var.region
   nat_ip_allocate_option             = "AUTO_ONLY"
@@ -103,7 +103,7 @@ resource "google_container_cluster" "enterprise_cluster" {
   private_cluster_config {
     enable_private_nodes    = true
     enable_private_endpoint = false
-    master_ipv4_cidr_block  = "172.16.${var.issue_number + 100}.0/28"
+    master_ipv4_cidr_block  = "172.16.200.0/28"
   }
 
   workload_identity_config {
@@ -145,7 +145,7 @@ resource "google_container_cluster" "enterprise_cluster" {
 }
 
 resource "google_container_node_pool" "primary_nodes" {
-  name       = "pool-issue-${var.issue_number}"
+  name       = "enterprise-gke-pool"
   location   = var.region
   cluster    = google_container_cluster.enterprise_cluster.name
   node_count = 1
@@ -182,7 +182,7 @@ resource "google_container_node_pool" "primary_nodes" {
 
 # Workload Service Account
 resource "google_service_account" "workload_sa" {
-  account_id   = "workload-sa-6"
+  account_id   = "enterprise-gke-sa"
   display_name = "Enterprise Workload Service Account"
 }
 
@@ -190,13 +190,13 @@ resource "google_service_account" "workload_sa" {
 resource "google_service_account_iam_member" "workload_identity_binding" {
   service_account_id = google_service_account.workload_sa.name
   role               = "roles/iam.workloadIdentityUser"
-  member             = "serviceAccount:${var.project_id}.svc.id.goog[workload-6/workload-sa-6]"
+  member             = "serviceAccount:${var.project_id}.svc.id.goog[enterprise-gke/enterprise-gke-sa]"
 }
 
 resource "helm_release" "workload" {
-  name             = "workload-6"
+  name             = "enterprise-gke"
   chart            = "${path.module}/workload"
-  namespace        = "workload-6"
+  namespace        = "enterprise-gke"
   create_namespace = true
   depends_on       = [google_container_node_pool.primary_nodes]
 

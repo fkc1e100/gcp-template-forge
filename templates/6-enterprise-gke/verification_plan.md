@@ -41,17 +41,17 @@ terraform apply -auto-approve
 ### Verification
 1. **Cluster Health:**
    ```bash
-   gcloud container clusters describe cluster-issue-6 --region us-central1 --format="value(status)"
+   gcloud container clusters describe enterprise-gke --region us-central1 --format="value(status)"
    ```
 2. **Workload Health:**
    ```bash
-   gcloud container clusters get-credentials cluster-issue-6 --region us-central1
-   kubectl get pods -l app.kubernetes.io/name=workload-6 -n workload-6
+   gcloud container clusters get-credentials enterprise-gke --region us-central1
+   kubectl get pods -l app.kubernetes.io/name=enterprise-gke -n enterprise-gke
    ```
 3. **Endpoint Interaction:**
    ```bash
    # Get LoadBalancer IP
-   SERVICE_IP=$(kubectl get svc workload-6 -o jsonpath='{.status.loadBalancer.ingress[0].ip}' -n workload-6)
+   SERVICE_IP=$(kubectl get svc enterprise-gke -o jsonpath='{.status.loadBalancer.ingress[0].ip}' -n enterprise-gke)
    curl -sf http://${SERVICE_IP}:8080/
    ```
 
@@ -71,7 +71,7 @@ kubectl apply -f config-connector/ -n forge-management
 ### Verification
 1. **Resource Readiness:**
    ```bash
-   kubectl wait --for=condition=Ready containercluster/cluster-issue-6-kcc -n forge-management --timeout=20m
+   kubectl wait --for=condition=Ready containercluster/enterprise-gke-kcc -n forge-management --timeout=20m
    ```
 2. **Workload Deployment & Integration:**
    The `validate.sh` script handles the deployment of standard Kubernetes manifests located in `config-connector/workload/` to the newly created cluster and performs interaction tests.

@@ -24,16 +24,10 @@ variable "region" {
   default     = "us-central1"
 }
 
-variable "issue_number" {
-  description = "The issue number to derive CIDRs"
-  type        = number
-  default     = 6
-}
-
 variable "cluster_name" {
   description = "The name of the cluster"
   type        = string
-  default     = "cluster-issue-6"
+  default     = "enterprise-gke"
 }
 
 variable "service_account" {

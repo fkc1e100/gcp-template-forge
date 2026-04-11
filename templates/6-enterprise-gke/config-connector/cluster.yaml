@@ -15,7 +15,7 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerCluster
 metadata:
-  name: cluster-issue-6-kcc
+  name: enterprise-gke
   namespace: forge-management
   labels:
     template: 6-enterprise-gke
@@ -27,9 +27,9 @@ spec:
   initialNodeCount: 1
   networkingMode: VPC_NATIVE
   networkRef:
-    name: vpc-issue-6-kcc
+    name: enterprise-gke-vpc
   subnetworkRef:
-    name: subnet-issue-6-kcc
+    name: enterprise-gke-subnet
   ipAllocationPolicy:
     clusterSecondaryRangeName: pods
     servicesSecondaryRangeName: services

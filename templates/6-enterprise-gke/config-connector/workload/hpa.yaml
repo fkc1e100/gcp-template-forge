@@ -17,13 +17,13 @@ kind: HorizontalPodAutoscaler
 metadata:
   labels:
     template: 6-enterprise-gke
-  name: workload-6-hpa
-  namespace: workload-6
+  name: enterprise-gke-hpa
+  namespace: enterprise-gke
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: workload-6
+    name: enterprise-gke
   minReplicas: 3
   maxReplicas: 10
   metrics:

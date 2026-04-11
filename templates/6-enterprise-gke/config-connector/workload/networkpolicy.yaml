@@ -17,12 +17,12 @@ kind: NetworkPolicy
 metadata:
   labels:
     template: 6-enterprise-gke
-  name: workload-6-netpol
-  namespace: workload-6
+  name: enterprise-gke-netpol
+  namespace: enterprise-gke
 spec:
   podSelector:
     matchLabels:
-      app.kubernetes.io/name: workload-6
+      app.kubernetes.io/name: enterprise-gke
   policyTypes:
     - Ingress
     - Egress

@@ -18,7 +18,7 @@ This template provides an enterprise-grade Google Kubernetes Engine (GKE) archit
 ## Cluster Details
 - **Type**: GKE Standard
 - **Release channel**: REGULAR
-- **Node pools**: pool-issue-6 (e2-standard-4, spot nodes)
+- **Node pools**: enterprise-gke-pool (e2-standard-4, spot nodes)
 - **Networking**: VPC-native, Private nodes, dedicated VPC per issue
 
 ## Workload Details
