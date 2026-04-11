@@ -33,7 +33,6 @@ spec:
     servicesSecondaryRangeName: services
   releaseChannel:
     channel: REGULAR
-  deletionProtection: false
   securityPostureConfig:
     mode: BASIC
     vulnerabilityMode: VULNERABILITY_BASIC
