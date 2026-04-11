@@ -18,7 +18,7 @@ metadata:
   name: gke-llm-inference-gemma
   namespace: gemma
 spec:
-  replicaCount: 1
+  replicas: 1
   selector:
     matchLabels:
       app: gke-llm-inference-gemma

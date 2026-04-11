@@ -5,7 +5,7 @@ metadata:
   labels:
     {{- include "gke-llm-inference-gemma.labels" . | nindent 4 }}
 spec:
-  replicaCount: {{ .Values.replicaCount }}
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       {{- include "gke-llm-inference-gemma.selectorLabels" . | nindent 6 }}
