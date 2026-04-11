@@ -1,0 +1,874 @@
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	﻿2026-04-11T00:38:14.9097430Z Current runner version: '2.333.1'
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:14.9120160Z ##[group]Runner Image Provisioner
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:14.9120947Z Hosted Compute Agent
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:14.9121614Z Version: 20260213.493
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:14.9122181Z Commit: 5c115507f6dd24b8de37d8bbe0bb4509d0cc0fa3
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:14.9122867Z Build Date: 2026-02-13T00:28:41Z
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:14.9123514Z Worker ID: {b451dce7-440b-4c0b-bc6d-0a06bfc5fc55}
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:14.9124206Z Azure Region: eastus2
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:14.9124710Z ##[endgroup]
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:14.9127257Z ##[group]Operating System
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:14.9128125Z Ubuntu
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:14.9128802Z 24.04.4
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:14.9129505Z LTS
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:14.9130423Z ##[endgroup]
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:14.9130985Z ##[group]Runner Image
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:14.9131535Z Image: ubuntu-24.04
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:14.9132135Z Version: 20260406.80.1
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:14.9133284Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260406.80/images/ubuntu/Ubuntu2404-Readme.md
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:14.9134767Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260406.80
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:14.9135663Z ##[endgroup]
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:14.9136837Z ##[group]GITHUB_TOKEN Permissions
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:14.9138629Z Contents: write
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:14.9139146Z Metadata: read
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:14.9140148Z PullRequests: write
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:14.9140714Z ##[endgroup]
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:14.9142859Z Secret source: Actions
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:14.9143645Z Prepare workflow directory
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:14.9527389Z Prepare all required actions
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:14.9564939Z Getting action download info
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:15.3570334Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:15.5123371Z Download action repository 'google-github-actions/auth@v2' (SHA:c200f3691d83b41bf9bbd8638997a462592937ed)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:15.7186136Z Download action repository 'google-github-actions/get-gke-credentials@v2' (SHA:64bc7249bbcf78056bb92f14d3cedc2da193946c)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:15.9169269Z Download action repository 'hashicorp/setup-terraform@v3' (SHA:b9cd54a3c349d3f38e8881555d616ced269862dd)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.1386895Z Download action repository 'azure/setup-helm@v4' (SHA:1a275c3b69536ee54be43f2070a358922e12c8d4)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.3526201Z Download action repository 'actions/github-script@v7' (SHA:f28e40c7f34bde8b3046d885e986cb6290c5673b)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.6912590Z Complete job name: Dry Run (templates/6-enterprise-gke)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.7775567Z ##[group]Run actions/checkout@v4
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.7776840Z with:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.7777620Z   repository: fkc1e100/gcp-template-forge
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.7778895Z   token: ***
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.7779829Z   ssh-strict: true
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.7780578Z   ssh-user: git
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.7781344Z   persist-credentials: true
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.7782201Z   clean: true
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.7782986Z   sparse-checkout-cone-mode: true
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.7783919Z   fetch-depth: 1
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.7784666Z   fetch-tags: false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.7785464Z   show-progress: true
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.7786232Z   lfs: false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.7786930Z   submodules: false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.7787704Z   set-safe-directory: true
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.7788781Z env:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.7789465Z   PROJECT_ID: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.7790550Z   KCC_CLUSTER: krmapihost-kcc-instance
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.7791534Z   KCC_REGION: us-central1
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.7792447Z   KCC_NAMESPACE: forge-management
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.7794218Z   WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.7796427Z   WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.7797888Z   TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.7798924Z ##[endgroup]
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.8931029Z Syncing repository: fkc1e100/gcp-template-forge
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.8934843Z ##[group]Getting Git version info
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.8937319Z Working directory is '/home/runner/work/gcp-template-forge/gcp-template-forge'
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.8941843Z [command]/usr/bin/git version
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.8943459Z git version 2.53.0
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.8948552Z ##[endgroup]
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.8962267Z Temporarily overriding HOME='/home/runner/work/_temp/293c64ae-4a5e-429e-90d6-9e987f590352' before making global git config changes
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.8966010Z Adding repository directory to the temporary git global config as a safe directory
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.8968589Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/gcp-template-forge/gcp-template-forge
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.8999262Z Deleting the contents of '/home/runner/work/gcp-template-forge/gcp-template-forge'
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.9003301Z ##[group]Initializing the repository
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.9007628Z [command]/usr/bin/git init /home/runner/work/gcp-template-forge/gcp-template-forge
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.9090718Z hint: Using 'master' as the name for the initial branch. This default branch name
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.9093025Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.9095131Z hint: to use in all of your new repositories, which will suppress this warning,
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.9097079Z hint: call:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.9098216Z hint:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.9099857Z hint: 	git config --global init.defaultBranch <name>
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.9101360Z hint:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.9103086Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.9105244Z hint: 'development'. The just-created branch can be renamed via this command:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.9107276Z hint:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.9108413Z hint: 	git branch -m <name>
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.9109876Z hint:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.9111498Z hint: Disable this message with "git config set advice.defaultBranchName false"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.9115296Z Initialized empty Git repository in /home/runner/work/gcp-template-forge/gcp-template-forge/.git/
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.9120694Z [command]/usr/bin/git remote add origin https://github.com/fkc1e100/gcp-template-forge
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.9147260Z ##[endgroup]
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.9149885Z ##[group]Disabling automatic garbage collection
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.9152054Z [command]/usr/bin/git config --local gc.auto 0
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.9184415Z ##[endgroup]
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.9186579Z ##[group]Setting up auth
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.9192847Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.9227823Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.9523504Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.9562941Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.9797260Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:16.9834264Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.0066805Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.0111071Z ##[endgroup]
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.0113352Z ##[group]Fetching the repository
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.0117879Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +dfac0608ad958c85df495c91ffff5d74f264b3e9:refs/remotes/pull/8/merge
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.1856562Z From https://github.com/fkc1e100/gcp-template-forge
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.1859160Z  * [new ref]         dfac0608ad958c85df495c91ffff5d74f264b3e9 -> pull/8/merge
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.1887472Z ##[endgroup]
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.1890262Z ##[group]Determining the checkout info
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.1892718Z ##[endgroup]
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.1896167Z [command]/usr/bin/git sparse-checkout disable
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.1935111Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.1961893Z ##[group]Checking out the ref
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.1964118Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/8/merge
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2044925Z Note: switching to 'refs/remotes/pull/8/merge'.
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2046302Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2047428Z You are in 'detached HEAD' state. You can look around, make experimental
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2049580Z changes and commit them, and you can discard any commits you make in this
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2051555Z state without impacting any branches by switching back to a branch.
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2053189Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2054249Z If you want to create a new branch to retain commits you create, you may
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2056525Z do so (now or later) by using -c with the switch command. Example:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2057434Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2057799Z   git switch -c <new-branch-name>
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2058408Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2058764Z Or undo this operation with:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2059317Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2059828Z   git switch -
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2060283Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2061025Z Turn off this advice by setting config variable advice.detachedHead to false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2062249Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2063422Z HEAD is now at dfac060 Merge 99778d1af9df47f4be08ea1d84bf740407c4310f into 9ddff020458adfe24240d9887c44b836af5fe36e
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2066733Z ##[endgroup]
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2088196Z [command]/usr/bin/git log -1 --format=%H
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2109568Z dfac0608ad958c85df495c91ffff5d74f264b3e9
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2436564Z ##[group]Run google-github-actions/auth@v2
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2437570Z with:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2439243Z   workload_identity_provider: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2441728Z   service_account: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2443027Z   create_credentials_file: true
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2443936Z   export_environment_variables: true
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2444872Z   universe: googleapis.com
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2445715Z   cleanup_credentials: true
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2446558Z   access_token_lifetime: 3600s
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2447760Z   access_token_scopes: https://www.googleapis.com/auth/cloud-platform
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2449055Z   id_token_include_email: false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2450070Z env:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2450741Z   PROJECT_ID: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2451619Z   KCC_CLUSTER: krmapihost-kcc-instance
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2452602Z   KCC_REGION: us-central1
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2453445Z   KCC_NAMESPACE: forge-management
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2455141Z   WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2457276Z   WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2458659Z   TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.2459765Z ##[endgroup]
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.4276657Z Created credentials file at "/home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-3a146bdbf02dc342.json"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.5255409Z ##[group]Run google-github-actions/get-gke-credentials@v2
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.5256598Z with:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.5257349Z   cluster_name: krmapihost-kcc-instance
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.5258332Z   location: us-central1
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.5259157Z   project_id: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.5260183Z   use_auth_provider: false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.5261024Z   use_internal_ip: false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.5261880Z   use_connect_gateway: false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.5262757Z   use_dns_based_endpoint: false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.5263603Z env:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.5264291Z   PROJECT_ID: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.5265175Z   KCC_CLUSTER: krmapihost-kcc-instance
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.5266410Z   KCC_REGION: us-central1
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.5267270Z   KCC_NAMESPACE: forge-management
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.5268992Z   WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.5271338Z   WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.5272760Z   TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.5274808Z   CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-3a146bdbf02dc342.json
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.5277745Z   GOOGLE_APPLICATION_CREDENTIALS: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-3a146bdbf02dc342.json
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.5280809Z   GOOGLE_GHA_CREDS_PATH: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-3a146bdbf02dc342.json
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.5282632Z   CLOUDSDK_CORE_PROJECT: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.5283603Z   CLOUDSDK_PROJECT: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.5284546Z   GCLOUD_PROJECT: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.5285428Z   GCP_PROJECT: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.5286313Z   GOOGLE_CLOUD_PROJECT: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:17.5287233Z ##[endgroup]
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:18.1688431Z Successfully created and exported "KUBECONFIG" at: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-kubeconfig-d4458352a81aad6b
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:18.1795554Z ##[group]Run hashicorp/setup-terraform@v3
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:18.1795904Z with:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:18.1796173Z   cli_config_credentials_hostname: app.terraform.io
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:18.1796518Z   terraform_version: latest
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:18.1796786Z   terraform_wrapper: true
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:18.1797023Z env:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:18.1797237Z   PROJECT_ID: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:18.1797511Z   KCC_CLUSTER: krmapihost-kcc-instance
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:18.1797802Z   KCC_REGION: us-central1
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:18.1798062Z   KCC_NAMESPACE: forge-management
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:18.1798602Z   WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:18.1799281Z   WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:18.1800021Z   TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:18.1800706Z   CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-3a146bdbf02dc342.json
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:18.1801603Z   GOOGLE_APPLICATION_CREDENTIALS: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-3a146bdbf02dc342.json
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:18.1802450Z   GOOGLE_GHA_CREDS_PATH: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-3a146bdbf02dc342.json
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:18.1803000Z   CLOUDSDK_CORE_PROJECT: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:18.1803307Z   CLOUDSDK_PROJECT: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:18.1803596Z   GCLOUD_PROJECT: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:18.1803869Z   GCP_PROJECT: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:18.1804136Z   GOOGLE_CLOUD_PROJECT: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:18.1804665Z   KUBECONFIG: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-kubeconfig-d4458352a81aad6b
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:18.1805421Z   KUBE_CONFIG_PATH: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-kubeconfig-d4458352a81aad6b
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:18.1805946Z ##[endgroup]
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:18.7620275Z [command]/usr/bin/unzip -o -q /home/runner/work/_temp/0ef23d1b-7164-401b-b2ed-db9f7d5222ed
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:19.4808260Z ##[group]Run terraform init \
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:19.4808624Z [36;1mterraform init \[0m
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:19.4808923Z [36;1m  -backend-config="bucket=$TF_STATE_BUCKET" \[0m
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:19.4809368Z [36;1m  -backend-config="prefix=templates/6-enterprise-gke/terraform-helm"[0m
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:19.4810346Z [36;1mterraform plan -input=false -detailed-exitcode 2>&1 | tee /tmp/tf-plan.txt[0m
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:19.4810856Z [36;1mecho "tf_plan_exit=${PIPESTATUS[0]}" >> $GITHUB_OUTPUT[0m
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:19.4837290Z shell: /usr/bin/bash -e {0}
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:19.4837750Z env:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:19.4837970Z   PROJECT_ID: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:19.4838226Z   KCC_CLUSTER: krmapihost-kcc-instance
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:19.4838503Z   KCC_REGION: us-central1
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:19.4838741Z   KCC_NAMESPACE: forge-management
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:19.4839226Z   WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:19.4840216Z   WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:19.4840630Z   TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:19.4841230Z   CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-3a146bdbf02dc342.json
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:19.4842079Z   GOOGLE_APPLICATION_CREDENTIALS: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-3a146bdbf02dc342.json
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:19.4842845Z   GOOGLE_GHA_CREDS_PATH: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-3a146bdbf02dc342.json
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:19.4843347Z   CLOUDSDK_CORE_PROJECT: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:19.4843612Z   CLOUDSDK_PROJECT: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:19.4843858Z   GCLOUD_PROJECT: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:19.4844086Z   GCP_PROJECT: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:19.4844328Z   GOOGLE_CLOUD_PROJECT: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:19.4844800Z   KUBECONFIG: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-kubeconfig-d4458352a81aad6b
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:19.4845495Z   KUBE_CONFIG_PATH: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-kubeconfig-d4458352a81aad6b
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:19.4846096Z   TERRAFORM_CLI_PATH: /home/runner/work/_temp/9f2d149c-313d-482e-aa0a-963e53226fed
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:19.4846476Z ##[endgroup]
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:20.3313948Z [0m[1mInitializing the backend...[0m
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:20.6200059Z [0m[32m
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:20.6201119Z Successfully configured the backend "gcs"! Terraform will automatically
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:20.6201853Z use this backend unless the backend configuration changes.[0m
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:20.8043552Z [0m[1mInitializing provider plugins...[0m
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:20.8044307Z - Finding hashicorp/google versions matching "~> 6.0"...
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:20.9289484Z - Finding hashicorp/google-beta versions matching "~> 6.0"...
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:20.9533394Z - Finding hashicorp/helm versions matching "~> 2.10"...
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:21.0652508Z - Installing hashicorp/google v6.50.0...
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:21.9424856Z - Installed hashicorp/google v6.50.0 (signed by HashiCorp)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:22.0205956Z - Installing hashicorp/google-beta v6.50.0...
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:22.9120027Z - Installed hashicorp/google-beta v6.50.0 (signed by HashiCorp)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:22.9951485Z - Installing hashicorp/helm v2.17.0...
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:23.4884459Z - Installed hashicorp/helm v2.17.0 (signed by HashiCorp)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:23.4886198Z Terraform has created a lock file [1m.terraform.lock.hcl[0m to record the provider
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:23.4888603Z selections it made above. Include this file in your version control repository
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:23.4889374Z so that Terraform can guarantee to make the same selections by default when
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:23.4890490Z you run "terraform init" in the future.[0m
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:23.4891184Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:23.4891984Z [0m[1m[32mTerraform has been successfully initialized![0m[32m[0m
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:23.4892846Z [0m[32m
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:23.4893656Z You may now begin working with Terraform. Try running "terraform plan" to see
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:23.4894370Z any changes that are required for your infrastructure. All Terraform commands
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:23.4894783Z should now work.
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:23.4894908Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:23.4895108Z If you ever set or change modules or backend configuration for Terraform,
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:23.4895645Z rerun this command to reinitialize your working directory. If you forget, other
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:23.4896237Z commands will detect it and remind you to do so if necessary.[0m
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.4701449Z [0m[1mdata.google_client_config.default: Reading...[0m[0m
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.5879342Z [0m[1mdata.google_client_config.default: Read complete after 1s [id=projects/gca-gke-2025/regions/us-central1/zones/][0m
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6855968Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6856667Z Terraform used the selected providers to generate the following execution
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6857525Z plan. Resource actions are indicated with the following symbols:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6858411Z   [32m+[0m create[0m
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6858643Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6858847Z Terraform will perform the following actions:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6860008Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6860817Z [1m  # google_compute_network.vpc[0m will be created
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6861702Z [0m  [32m+[0m[0m resource "google_compute_network" "vpc" {
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6862623Z       [32m+[0m[0m auto_create_subnetworks                   = false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6863650Z       [32m+[0m[0m bgp_always_compare_med                    = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6864982Z       [32m+[0m[0m bgp_best_path_selection_mode              = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6866474Z       [32m+[0m[0m bgp_inter_region_cost                     = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6867652Z       [32m+[0m[0m delete_default_routes_on_create           = false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6868889Z       [32m+[0m[0m gateway_ipv4                              = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6870532Z       [32m+[0m[0m id                                        = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6871928Z       [32m+[0m[0m internal_ipv6_range                       = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6873325Z       [32m+[0m[0m mtu                                       = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6874550Z       [32m+[0m[0m name                                      = "vpc-issue-6"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6875787Z       [32m+[0m[0m network_firewall_policy_enforcement_order = "AFTER_CLASSIC_FIREWALL"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6876746Z       [32m+[0m[0m network_id                                = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6877604Z       [32m+[0m[0m numeric_id                                = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6878433Z       [32m+[0m[0m project                                   = "gca-gke-2025"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6879239Z       [32m+[0m[0m routing_mode                              = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6880401Z       [32m+[0m[0m self_link                                 = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6880968Z     }
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6881128Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6881486Z [1m  # google_compute_router.router[0m will be created
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6882190Z [0m  [32m+[0m[0m resource "google_compute_router" "router" {
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6882914Z       [32m+[0m[0m creation_timestamp = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6900769Z       [32m+[0m[0m id                 = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6901598Z       [32m+[0m[0m name               = "router-issue-6"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6902083Z       [32m+[0m[0m network            = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6902463Z       [32m+[0m[0m project            = "gca-gke-2025"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6902805Z       [32m+[0m[0m region             = "us-central1"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6903166Z       [32m+[0m[0m self_link          = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6903441Z     }
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6903774Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6903961Z [1m  # google_compute_router_nat.nat[0m will be created
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6904362Z [0m  [32m+[0m[0m resource "google_compute_router_nat" "nat" {
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6904799Z       [32m+[0m[0m auto_network_tier                   = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6905253Z       [32m+[0m[0m drain_nat_ips                       = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6905712Z       [32m+[0m[0m enable_dynamic_port_allocation      = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6906183Z       [32m+[0m[0m enable_endpoint_independent_mapping = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6906786Z       [32m+[0m[0m endpoint_types                      = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6907193Z       [32m+[0m[0m icmp_idle_timeout_sec               = 30
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6907580Z       [32m+[0m[0m id                                  = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6908003Z       [32m+[0m[0m min_ports_per_vm                    = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6908415Z       [32m+[0m[0m name                                = "nat-issue-6"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6908821Z       [32m+[0m[0m nat_ip_allocate_option              = "AUTO_ONLY"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6909234Z       [32m+[0m[0m nat_ips                             = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6909889Z       [32m+[0m[0m project                             = "gca-gke-2025"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6910323Z       [32m+[0m[0m region                              = "us-central1"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6910729Z       [32m+[0m[0m router                              = "router-issue-6"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6911225Z       [32m+[0m[0m source_subnetwork_ip_ranges_to_nat  = "ALL_SUBNETWORKS_ALL_IP_RANGES"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6911695Z       [32m+[0m[0m tcp_established_idle_timeout_sec    = 1200
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6912081Z       [32m+[0m[0m tcp_time_wait_timeout_sec           = 120
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6912456Z       [32m+[0m[0m tcp_transitory_idle_timeout_sec     = 30
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6912874Z       [32m+[0m[0m type                                = "PUBLIC"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6913247Z       [32m+[0m[0m udp_idle_timeout_sec                = 30
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6913443Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6913565Z       [32m+[0m[0m log_config {
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6913832Z           [32m+[0m[0m enable = true
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6914125Z           [32m+[0m[0m filter = "ERRORS_ONLY"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6914371Z         }
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6914528Z     }
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6914633Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6914820Z [1m  # google_compute_subnetwork.subnet[0m will be created
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6915237Z [0m  [32m+[0m[0m resource "google_compute_subnetwork" "subnet" {
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6915655Z       [32m+[0m[0m creation_timestamp         = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6916056Z       [32m+[0m[0m enable_flow_logs           = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6916451Z       [32m+[0m[0m external_ipv6_prefix       = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6916986Z       [32m+[0m[0m fingerprint                = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6917415Z       [32m+[0m[0m gateway_address            = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6917787Z       [32m+[0m[0m id                         = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6918165Z       [32m+[0m[0m internal_ipv6_prefix       = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6918547Z       [32m+[0m[0m ip_cidr_range              = "10.6.0.0/20"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6918925Z       [32m+[0m[0m ipv6_cidr_range            = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6919315Z       [32m+[0m[0m ipv6_gce_endpoint          = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6919966Z       [32m+[0m[0m name                       = "subnet-issue-6"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6920619Z       [32m+[0m[0m network                    = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6920996Z       [32m+[0m[0m private_ip_google_access   = true
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6921535Z       [32m+[0m[0m private_ipv6_google_access = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6921945Z       [32m+[0m[0m project                    = "gca-gke-2025"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6922322Z       [32m+[0m[0m purpose                    = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6922701Z       [32m+[0m[0m region                     = "us-central1"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6923076Z       [32m+[0m[0m self_link                  = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6923470Z       [32m+[0m[0m stack_type                 = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6923853Z       [32m+[0m[0m state                      = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6924351Z       [32m+[0m[0m subnetwork_id              = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6924566Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6924696Z       [32m+[0m[0m secondary_ip_range {
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6925006Z           [32m+[0m[0m ip_cidr_range = "10.16.0.0/16"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6925327Z           [32m+[0m[0m range_name    = "pods"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6925575Z         }
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6925794Z       [32m+[0m[0m secondary_ip_range {
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6926126Z           [32m+[0m[0m ip_cidr_range = "172.16.6.0/20"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6926459Z           [32m+[0m[0m range_name    = "services"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6926703Z         }
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6926868Z     }
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6926958Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6927193Z [1m  # google_container_cluster.enterprise_cluster[0m will be created
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6927681Z [0m  [32m+[0m[0m resource "google_container_cluster" "enterprise_cluster" {
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6928174Z       [32m+[0m[0m cluster_ipv4_cidr                        = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6928687Z       [32m+[0m[0m datapath_provider                        = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6929170Z       [32m+[0m[0m default_max_pods_per_node                = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6929802Z       [32m+[0m[0m deletion_protection                      = false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6930255Z       [32m+[0m[0m disable_l4_lb_firewall_reconciliation    = false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6930655Z       [32m+[0m[0m effective_labels                         = {
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6931042Z           [32m+[0m[0m "goog-terraform-provisioned" = "true"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6931476Z           [32m+[0m[0m "template"                   = "templates/6-enterprise-gke"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6931801Z         }
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6932077Z       [32m+[0m[0m enable_cilium_clusterwide_network_policy = false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6932482Z       [32m+[0m[0m enable_fqdn_network_policy               = false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6932935Z       [32m+[0m[0m enable_intranode_visibility              = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6933382Z       [32m+[0m[0m enable_kubernetes_alpha                  = false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6933776Z       [32m+[0m[0m enable_l4_ilb_subsetting                 = false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6934163Z       [32m+[0m[0m enable_legacy_abac                       = false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6934555Z       [32m+[0m[0m enable_multi_networking                  = false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6934941Z       [32m+[0m[0m enable_shielded_nodes                    = true
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6935366Z       [32m+[0m[0m endpoint                                 = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6935796Z       [32m+[0m[0m id                                       = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6936179Z       [32m+[0m[0m initial_node_count                       = 1
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6936604Z       [32m+[0m[0m label_fingerprint                        = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6937060Z       [32m+[0m[0m location                                 = "us-central1"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6937505Z       [32m+[0m[0m logging_service                          = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6937958Z       [32m+[0m[0m master_version                           = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6938551Z       [32m+[0m[0m monitoring_service                       = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6939053Z       [32m+[0m[0m name                                     = "cluster-issue-6"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6939470Z       [32m+[0m[0m network                                  = "vpc-issue-6"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6940104Z       [32m+[0m[0m networking_mode                          = "VPC_NATIVE"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6940558Z       [32m+[0m[0m node_locations                           = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6941014Z       [32m+[0m[0m node_version                             = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6941599Z       [32m+[0m[0m operation                                = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6942062Z       [32m+[0m[0m private_ipv6_google_access               = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6942514Z       [32m+[0m[0m project                                  = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6942918Z       [32m+[0m[0m remove_default_node_pool                 = true
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6943315Z       [32m+[0m[0m resource_labels                          = {
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6943707Z           [32m+[0m[0m "template" = "templates/6-enterprise-gke"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6943990Z         }
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6944280Z       [32m+[0m[0m self_link                                = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6944736Z       [32m+[0m[0m services_ipv4_cidr                       = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6945197Z       [32m+[0m[0m subnetwork                               = "subnet-issue-6"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6945620Z       [32m+[0m[0m terraform_labels                         = {
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6946005Z           [32m+[0m[0m "goog-terraform-provisioned" = "true"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6946428Z           [32m+[0m[0m "template"                   = "templates/6-enterprise-gke"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6946736Z         }
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6947040Z       [32m+[0m[0m tpu_ipv4_cidr_block                      = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6947294Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6947455Z       [32m+[0m[0m addons_config (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6947646Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6947853Z       [32m+[0m[0m anonymous_authentication_config (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6948097Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6948286Z       [32m+[0m[0m authenticator_groups_config (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6948514Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6948641Z       [32m+[0m[0m binary_authorization {
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6949026Z           [32m+[0m[0m evaluation_mode = "PROJECT_SINGLETON_POLICY_ENFORCE"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6949338Z         }
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6949435Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6949770Z       [32m+[0m[0m cluster_autoscaling (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6950022Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6950202Z       [32m+[0m[0m confidential_nodes (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6950405Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6950604Z       [32m+[0m[0m control_plane_endpoints_config (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6950835Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6951014Z       [32m+[0m[0m cost_management_config (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6951229Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6951392Z       [32m+[0m[0m database_encryption (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6951595Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6951759Z       [32m+[0m[0m default_snat_status (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6951956Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6952113Z       [32m+[0m[0m enterprise_config (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6952366Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6952621Z       [32m+[0m[0m gateway_api_config (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6952830Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6953013Z       [32m+[0m[0m gke_auto_upgrade_config (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6953230Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6953409Z       [32m+[0m[0m identity_service_config (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6953618Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6953745Z       [32m+[0m[0m ip_allocation_policy {
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6954121Z           [32m+[0m[0m cluster_ipv4_cidr_block       = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6954662Z           [32m+[0m[0m cluster_secondary_range_name  = "pods"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6955076Z           [32m+[0m[0m services_ipv4_cidr_block      = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6955484Z           [32m+[0m[0m services_secondary_range_name = "services"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6955854Z           [32m+[0m[0m stack_type                    = "IPV4"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6956047Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6956249Z           [32m+[0m[0m pod_cidr_overprovision_config (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6956551Z         }
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6956654Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6956891Z       [32m+[0m[0m logging_config {
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6957186Z           [32m+[0m[0m enable_components = [
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6957485Z               [32m+[0m[0m "SYSTEM_COMPONENTS",
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6957775Z               [32m+[0m[0m "WORKLOADS",
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6958004Z             ]
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6958170Z         }
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6958267Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6958420Z       [32m+[0m[0m master_auth (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6958611Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6958823Z       [32m+[0m[0m master_authorized_networks_config (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6959064Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6959230Z       [32m+[0m[0m mesh_certificates (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6959432Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6959550Z       [32m+[0m[0m monitoring_config {
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6960051Z           [32m+[0m[0m enable_components = [
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6960361Z               [32m+[0m[0m "SYSTEM_COMPONENTS",
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6960598Z             ]
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6960710Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6960944Z           [32m+[0m[0m advanced_datapath_observability_config (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6961212Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6961343Z           [32m+[0m[0m managed_prometheus {
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6961627Z               [32m+[0m[0m enabled = true
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6961799Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6961987Z               [32m+[0m[0m auto_monitoring_config (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6962277Z             }
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6962440Z         }
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6962531Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6962647Z       [32m+[0m[0m network_policy {
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6962919Z           [32m+[0m[0m enabled  = true
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6963207Z           [32m+[0m[0m provider = "CALICO"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6963433Z         }
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6963528Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6963674Z       [32m+[0m[0m node_config (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6963859Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6964002Z       [32m+[0m[0m node_pool (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6964187Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6964357Z       [32m+[0m[0m node_pool_auto_config (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6964570Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6964729Z       [32m+[0m[0m node_pool_defaults (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6964936Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6965100Z       [32m+[0m[0m notification_config (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6965301Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6965467Z       [32m+[0m[0m pod_autoscaling (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6965660Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6965788Z       [32m+[0m[0m private_cluster_config {
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6966130Z           [32m+[0m[0m enable_private_nodes   = true
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6966487Z           [32m+[0m[0m master_ipv4_cidr_block = "172.16.106.0/28"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6966877Z           [32m+[0m[0m peering_name           = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6967269Z           [32m+[0m[0m private_endpoint       = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6967652Z           [32m+[0m[0m public_endpoint        = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6967872Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6968059Z           [32m+[0m[0m master_global_access_config (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6968355Z         }
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6968448Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6968617Z       [32m+[0m[0m rbac_binding_config (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6968821Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6969115Z       [32m+[0m[0m release_channel {
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6969413Z           [32m+[0m[0m channel = "REGULAR"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6969858Z         }
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6969955Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6970089Z       [32m+[0m[0m secret_manager_config {
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6970374Z           [32m+[0m[0m enabled = true
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6970600Z         }
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6970689Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6970821Z       [32m+[0m[0m security_posture_config {
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6971138Z           [32m+[0m[0m mode               = "BASIC"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6971512Z           [32m+[0m[0m vulnerability_mode = "VULNERABILITY_ENTERPRISE"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6971932Z         }
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6972028Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6972220Z       [32m+[0m[0m service_external_ips_config (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6972445Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6972636Z       [32m+[0m[0m vertical_pod_autoscaling (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6972854Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6972998Z       [32m+[0m[0m workload_identity_config {
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6973353Z           [32m+[0m[0m workload_pool = "gca-gke-2025.svc.id.goog"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6973635Z         }
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6973799Z     }
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6973892Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6974108Z [1m  # google_container_node_pool.primary_nodes[0m will be created
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6974579Z [0m  [32m+[0m[0m resource "google_container_node_pool" "primary_nodes" {
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6975024Z       [32m+[0m[0m cluster                     = "cluster-issue-6"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6975410Z       [32m+[0m[0m id                          = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6975811Z       [32m+[0m[0m initial_node_count          = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6976219Z       [32m+[0m[0m instance_group_urls         = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6976612Z       [32m+[0m[0m location                    = "us-central1"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6977007Z       [32m+[0m[0m managed_instance_group_urls = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6977419Z       [32m+[0m[0m max_pods_per_node           = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6977810Z       [32m+[0m[0m name                        = "pool-issue-6"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6978194Z       [32m+[0m[0m name_prefix                 = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6978551Z       [32m+[0m[0m node_count                  = 1
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6978922Z       [32m+[0m[0m node_locations              = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6979313Z       [32m+[0m[0m operation                   = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6979905Z       [32m+[0m[0m project                     = "gca-gke-2025"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6980318Z       [32m+[0m[0m version                     = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6980535Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6980686Z       [32m+[0m[0m management (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6980874Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6981027Z       [32m+[0m[0m network_config (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6981223Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6981343Z       [32m+[0m[0m node_config {
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6981623Z           [32m+[0m[0m disk_size_gb     = 50
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6981955Z           [32m+[0m[0m disk_type        = "pd-standard"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6982319Z           [32m+[0m[0m effective_taints = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6982684Z           [32m+[0m[0m image_type       = "COS_CONTAINERD"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6983001Z           [32m+[0m[0m labels           = {
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6983352Z               [32m+[0m[0m "template" = "templates/6-enterprise-gke"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6983644Z             }
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6983902Z           [32m+[0m[0m local_ssd_count  = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6984265Z           [32m+[0m[0m logging_variant  = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6984627Z           [32m+[0m[0m machine_type     = "e2-standard-4"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6984979Z           [32m+[0m[0m metadata         = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6985454Z           [32m+[0m[0m min_cpu_platform = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6985795Z           [32m+[0m[0m oauth_scopes     = [
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6986207Z               [32m+[0m[0m "https://www.googleapis.com/auth/cloud-platform",
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6986532Z             ]
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6986770Z           [32m+[0m[0m preemptible      = false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6987240Z           [32m+[0m[0m service_account  = "forge-builder@gca-gke-2025.iam.gserviceaccount.com"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6987695Z           [32m+[0m[0m spot             = true
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6987880Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6988156Z           [32m+[0m[0m boot_disk (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6988348Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6988522Z           [32m+[0m[0m confidential_nodes (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6988729Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6988887Z           [32m+[0m[0m gcfs_config (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6989076Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6989247Z           [32m+[0m[0m guest_accelerator (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6989457Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6989805Z           [32m+[0m[0m kubelet_config (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6990044Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6990226Z           [32m+[0m[0m linux_node_config (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6990429Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6990569Z           [32m+[0m[0m shielded_instance_config {
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6990920Z               [32m+[0m[0m enable_integrity_monitoring = true
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6991278Z               [32m+[0m[0m enable_secure_boot          = true
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6991549Z             }
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6991657Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6991826Z           [32m+[0m[0m windows_node_config (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6992041Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6992179Z           [32m+[0m[0m workload_metadata_config {
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6992500Z               [32m+[0m[0m mode = "GKE_METADATA"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6992744Z             }
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6992915Z         }
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6993006Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6993172Z       [32m+[0m[0m upgrade_settings (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6993427Z     }
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6993523Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6993710Z [1m  # google_service_account.workload_sa[0m will be created
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6994131Z [0m  [32m+[0m[0m resource "google_service_account" "workload_sa" {
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6994501Z       [32m+[0m[0m account_id   = "workload-sa-6"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6994807Z       [32m+[0m[0m disabled     = false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6995180Z       [32m+[0m[0m display_name = "Enterprise Workload Service Account"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6995683Z       [32m+[0m[0m email        = "workload-sa-6@gca-gke-2025.iam.gserviceaccount.com"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6996117Z       [32m+[0m[0m id           = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6996624Z       [32m+[0m[0m member       = "serviceAccount:workload-sa-6@gca-gke-2025.iam.gserviceaccount.com"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6997106Z       [32m+[0m[0m name         = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6997430Z       [32m+[0m[0m project      = "gca-gke-2025"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6997766Z       [32m+[0m[0m unique_id    = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6998021Z     }
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6998111Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6998380Z [1m  # google_service_account_iam_member.workload_identity_binding[0m will be created
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6998980Z [0m  [32m+[0m[0m resource "google_service_account_iam_member" "workload_identity_binding" {
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.6999463Z       [32m+[0m[0m etag               = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7000094Z       [32m+[0m[0m id                 = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7000644Z       [32m+[0m[0m member             = "serviceAccount:gca-gke-2025.svc.id.goog[workload-6/workload-sa-6]"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7001208Z       [32m+[0m[0m role               = "roles/iam.workloadIdentityUser"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7001616Z       [32m+[0m[0m service_account_id = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7001886Z     }
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7002115Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7002273Z [1m  # helm_release.workload[0m will be created
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7002629Z [0m  [32m+[0m[0m resource "helm_release" "workload" {
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7002972Z       [32m+[0m[0m atomic                     = false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7003325Z       [32m+[0m[0m chart                      = "./workload"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7003676Z       [32m+[0m[0m cleanup_on_fail            = false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7004002Z       [32m+[0m[0m create_namespace           = true
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7004341Z       [32m+[0m[0m dependency_update          = false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7004779Z       [32m+[0m[0m disable_crd_hooks          = false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7005111Z       [32m+[0m[0m disable_openapi_validation = false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7005436Z       [32m+[0m[0m disable_webhooks           = false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7005759Z       [32m+[0m[0m force_update               = false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7006121Z       [32m+[0m[0m id                         = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7006468Z       [32m+[0m[0m lint                       = false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7006827Z       [32m+[0m[0m manifest                   = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7007186Z       [32m+[0m[0m max_history                = 0
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7007538Z       [32m+[0m[0m metadata                   = (known after apply)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7007915Z       [32m+[0m[0m name                       = "workload-6"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7008279Z       [32m+[0m[0m namespace                  = "workload-6"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7008630Z       [32m+[0m[0m pass_credentials           = false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7008959Z       [32m+[0m[0m recreate_pods              = false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7009295Z       [32m+[0m[0m render_subchart_notes      = true
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7009831Z       [32m+[0m[0m replace                    = false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7010231Z       [32m+[0m[0m reset_values               = false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7010569Z       [32m+[0m[0m reuse_values               = false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7010890Z       [32m+[0m[0m skip_crds                  = false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7011223Z       [32m+[0m[0m status                     = "deployed"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7011563Z       [32m+[0m[0m timeout                    = 300
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7011879Z       [32m+[0m[0m values                     = [
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7012170Z           [32m+[0m[0m <<-EOT
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7012398Z                 replicaCount: 3
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7012613Z                 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7012791Z                 image:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7012992Z                   repository: nginx
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7013249Z                   pullPolicy: IfNotPresent
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7013498Z                   tag: "1.25.3"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7013707Z                 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7013894Z                 serviceAccount:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7014108Z                   create: true
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7014342Z                   name: "workload-sa-6"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7014729Z                   gcpServiceAccount: "workload-sa-6@gca-gke-2025.iam.gserviceaccount.com"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7015117Z                 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7015314Z                 podSecurityContext:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7015560Z                   runAsUser: 1000
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7015789Z                   runAsGroup: 3000
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7016022Z                   fsGroup: 2000
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7016250Z                   runAsNonRoot: true
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7016494Z                   seccompProfile:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7016733Z                     type: RuntimeDefault
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7016966Z                 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7017154Z                 securityContext:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7017375Z                   capabilities:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7017594Z                     drop:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7017799Z                       - ALL
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7018030Z                   readOnlyRootFilesystem: true
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7018443Z                   allowPrivilegeEscalation: false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7018707Z                 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7018877Z                 service:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7019087Z                   type: LoadBalancer
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7019319Z                   port: 8080
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7019518Z                 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7019841Z                 resources:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7020045Z                   limits:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7020241Z                     cpu: 500m
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7020456Z                     memory: 512Mi
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7020678Z                   requests:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7020996Z                     cpu: 100m
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7021213Z                     memory: 128Mi
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7021427Z                 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7021603Z                 autoscaling:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7021815Z                   enabled: true
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7022035Z                   minReplicas: 3
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7022257Z                   maxReplicas: 10
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7022521Z                   targetCPUUtilizationPercentage: 80
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7022788Z                 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7022959Z                 pdb:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7023145Z                   enabled: true
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7023365Z                   minAvailable: 2
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7023573Z                 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7023757Z                 networkPolicy:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7023978Z                   enabled: true
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7024176Z                 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7024354Z                 config:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7024563Z                   LOG_LEVEL: "info"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7024801Z                   ENVIRONMENT: "production"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7025040Z                 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7025216Z                 secrets:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7025408Z                   enabled: true
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7025633Z                   providerClass: "secrets-6"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7025911Z                   gcpProjectId: "gca-gke-2025"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7026181Z                   secretName: "workload-6-secret"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7026448Z                   secretVersion: "latest"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7026680Z             EOT,
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7026854Z         ]
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7027112Z       [32m+[0m[0m verify                     = false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7027445Z       [32m+[0m[0m version                    = "0.1.0"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7027773Z       [32m+[0m[0m wait                       = true
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7028092Z       [32m+[0m[0m wait_for_jobs              = false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7028347Z     }
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7028435Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7028596Z [1mPlan:[0m [0m9 to add, 0 to change, 0 to destroy.
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7028795Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7028872Z Changes to Outputs:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7029126Z   [32m+[0m[0m cluster_location = "us-central1"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7029461Z   [32m+[0m[0m cluster_name     = "cluster-issue-6"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7029924Z   [32m+[0m[0m vpc_name         = "vpc-issue-6"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7030191Z [90m
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7030547Z ─────────────────────────────────────────────────────────────────────────────[0m
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7030809Z 
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7030995Z Note: You didn't use the -out option to save this plan, so Terraform can't
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.7031456Z guarantee to take exactly these actions if you run "terraform apply" now.
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.8975433Z ##[group]Run azure/setup-helm@v4
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.8975709Z with:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.8975881Z   version: latest
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.8976196Z   token: ***
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.8976437Z   downloadBaseURL: https://get.helm.sh
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.8976683Z env:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.8976866Z   PROJECT_ID: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.8977102Z   KCC_CLUSTER: krmapihost-kcc-instance
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.8977347Z   KCC_REGION: us-central1
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.8977573Z   KCC_NAMESPACE: forge-management
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.8978050Z   WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.8978668Z   WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.8979065Z   TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.8979899Z   CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-3a146bdbf02dc342.json
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.8980784Z   GOOGLE_APPLICATION_CREDENTIALS: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-3a146bdbf02dc342.json
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.8981536Z   GOOGLE_GHA_CREDS_PATH: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-3a146bdbf02dc342.json
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.8982203Z   CLOUDSDK_CORE_PROJECT: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.8982458Z   CLOUDSDK_PROJECT: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.8982695Z   GCLOUD_PROJECT: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.8982924Z   GCP_PROJECT: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.8983154Z   GOOGLE_CLOUD_PROJECT: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.8983627Z   KUBECONFIG: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-kubeconfig-d4458352a81aad6b
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.8984305Z   KUBE_CONFIG_PATH: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-kubeconfig-d4458352a81aad6b
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.8984901Z   TERRAFORM_CLI_PATH: /home/runner/work/_temp/9f2d149c-313d-482e-aa0a-963e53226fed
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:25.8985270Z ##[endgroup]
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:26.0496694Z ##[group]Installing v4.1.4
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:26.0506128Z Downloading 'v4.1.4' from 'https://get.helm.sh'
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:26.2252523Z [command]/usr/bin/tar xz --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/d5da8b16-8804-4aed-b87a-9338a88ae63e -f /home/runner/work/_temp/afa151bb-9bf6-4a90-8518-46a876bc9cdc
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:26.6404003Z ##[endgroup]
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:26.6405233Z Helm tool version 'v4.1.4' has been cached at /opt/hostedtoolcache/helm/4.1.4/x64/linux-amd64/helm
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:27.2190248Z ##[group]Run CHARTS=$(find templates/6-enterprise-gke/terraform-helm -name Chart.yaml -exec dirname {} \; 2>/dev/null)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:27.2191139Z [36;1mCHARTS=$(find templates/6-enterprise-gke/terraform-helm -name Chart.yaml -exec dirname {} \; 2>/dev/null)[0m
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:27.2191657Z [36;1mif [ -z "$CHARTS" ]; then[0m
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:27.2191949Z [36;1m  echo "No Helm charts found -- skipping"[0m
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:27.2192236Z [36;1m  exit 0[0m
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:27.2192415Z [36;1mfi[0m
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:27.2192606Z [36;1mfor chart in $CHARTS; do[0m
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:27.2192931Z [36;1m  echo "=== Helm template + server-side dry-run: $chart ==="[0m
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:27.2193313Z [36;1m  helm template release "$chart" \[0m
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:27.2193634Z [36;1m    | kubectl apply --dry-run=server -f - 2>&1[0m
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:27.2193922Z [36;1mdone[0m
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:27.2216059Z shell: /usr/bin/bash -e {0}
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:27.2216306Z env:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:27.2216543Z   PROJECT_ID: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:27.2216798Z   KCC_CLUSTER: krmapihost-kcc-instance
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:27.2217073Z   KCC_REGION: us-central1
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:27.2217301Z   KCC_NAMESPACE: forge-management
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:27.2217806Z   WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:27.2218435Z   WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:27.2218833Z   TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:27.2219433Z   CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-3a146bdbf02dc342.json
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:27.2220667Z   GOOGLE_APPLICATION_CREDENTIALS: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-3a146bdbf02dc342.json
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:27.2221462Z   GOOGLE_GHA_CREDS_PATH: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-3a146bdbf02dc342.json
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:27.2221983Z   CLOUDSDK_CORE_PROJECT: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:27.2222248Z   CLOUDSDK_PROJECT: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:27.2222483Z   GCLOUD_PROJECT: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:27.2222719Z   GCP_PROJECT: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:27.2222948Z   GOOGLE_CLOUD_PROJECT: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:27.2223411Z   KUBECONFIG: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-kubeconfig-d4458352a81aad6b
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:27.2224099Z   KUBE_CONFIG_PATH: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-kubeconfig-d4458352a81aad6b
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:27.2224701Z   TERRAFORM_CLI_PATH: /home/runner/work/_temp/9f2d149c-313d-482e-aa0a-963e53226fed
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:27.2225069Z ##[endgroup]
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:27.2298899Z === Helm template + server-side dry-run: templates/6-enterprise-gke/terraform-helm/workload ===
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:30.3641100Z networkpolicy.networking.k8s.io/release-enterprise-workload created (server dry run)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:30.5207995Z poddisruptionbudget.policy/release-enterprise-workload created (server dry run)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:30.6890135Z serviceaccount/workload-sa-6 created (server dry run)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:30.8467456Z configmap/release-enterprise-workload-config created (server dry run)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:31.0197377Z service/release-enterprise-workload created (server dry run)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:31.2057069Z deployment.apps/release-enterprise-workload created (server dry run)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:31.3637588Z horizontalpodautoscaler.autoscaling/release-enterprise-workload created (server dry run)
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:31.3639455Z error: resource mapping not found for name: "secrets-6" namespace: "" from "STDIN": no matches for kind "SecretProviderClass" in version "secrets-store.csi.x-k8s.io/v1"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:31.3640949Z ensure CRDs are installed first
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:31.3724780Z ##[error]Process completed with exit code 1.
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:31.3830724Z ##[group]Run actions/github-script@v7
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:31.3831008Z with:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:31.3834077Z   script: const template = 'templates/6-enterprise-gke';
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	const tfResult = 'success';
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	const helmResult = 'failure';
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	const kccResult = 'skipped';
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	const failed = [tfResult, helmResult, kccResult].some(r => r === 'failure');
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	const summaryLines = [
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	  `### Dry Run: \`${template}\``,
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	  `| Path | Result |`,
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	  `|---|---|`,
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	  `| Terraform plan | **${tfResult}** |`,
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	  `| Helm template + server-side dry-run | **${helmResult}** |`,
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	  `| KCC server-side dry-run | **${kccResult}** |`,
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	];
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	if (failed) {
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	  summaryLines.push('');
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	  summaryLines.push(`One or more dry-run checks failed — see [run logs](${runUrl}) for details.`);
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	  summaryLines.push(`Please investigate the failure, fix the issue, and push a new commit.`);
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	}
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	github.rest.issues.createComment({
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	  issue_number: context.issue.number,
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	  owner: context.repo.owner,
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	  repo: context.repo.repo,
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	  body: summaryLines.join('\n'),
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	});
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:31.3837302Z   github-token: ***
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:31.3837508Z   debug: false
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:31.3837702Z   user-agent: actions/github-script
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:31.3837954Z   result-encoding: json
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:31.3838155Z   retries: 0
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:31.3838363Z   retry-exempt-status-codes: 400,401,403,404,422
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:31.3838628Z env:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:31.3838802Z   PROJECT_ID: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:31.3839031Z   KCC_CLUSTER: krmapihost-kcc-instance
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:31.3839316Z   KCC_REGION: us-central1
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:31.3839537Z   KCC_NAMESPACE: forge-management
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:31.3840279Z   WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:31.3840881Z   WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:31.3841277Z   TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:31.3841855Z   CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-3a146bdbf02dc342.json
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:31.3842677Z   GOOGLE_APPLICATION_CREDENTIALS: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-3a146bdbf02dc342.json
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:31.3843429Z   GOOGLE_GHA_CREDS_PATH: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-3a146bdbf02dc342.json
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:31.3843937Z   CLOUDSDK_CORE_PROJECT: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:31.3844194Z   CLOUDSDK_PROJECT: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:31.3844426Z   GCLOUD_PROJECT: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:31.3844652Z   GCP_PROJECT: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:31.3844880Z   GOOGLE_CLOUD_PROJECT: gca-gke-2025
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:31.3845328Z   KUBECONFIG: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-kubeconfig-d4458352a81aad6b
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:31.3846189Z   KUBE_CONFIG_PATH: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-kubeconfig-d4458352a81aad6b
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:31.3846783Z   TERRAFORM_CLI_PATH: /home/runner/work/_temp/9f2d149c-313d-482e-aa0a-963e53226fed
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:31.3847146Z ##[endgroup]
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:32.0441207Z Post job cleanup.
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:32.1257850Z Removed exported credentials at "/home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-3a146bdbf02dc342.json".
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:32.1356243Z Post job cleanup.
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:32.2407156Z [command]/usr/bin/git version
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:32.2455867Z git version 2.53.0
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:32.2498794Z Temporarily overriding HOME='/home/runner/work/_temp/42a4e0bf-b801-401e-8280-a9e9b772f36d' before making global git config changes
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:32.2500374Z Adding repository directory to the temporary git global config as a safe directory
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:32.2505518Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/gcp-template-forge/gcp-template-forge
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:32.2541780Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:32.2575916Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:32.2796014Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:32.2816252Z http.https://github.com/.extraheader
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:32.2829537Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:32.2860183Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:32.3072010Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:32.3104763Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:32.3440449Z Cleaning up orphan processes
+Dry Run (templates/6-enterprise-gke)	UNKNOWN STEP	2026-04-11T00:38:32.3685147Z ##[warning]Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/checkout@v4, actions/github-script@v7, azure/setup-helm@v4, google-github-actions/auth@v2, google-github-actions/get-gke-credentials@v2, hashicorp/setup-terraform@v3. Actions will be forced to run with Node.js 24 by default starting June 2nd, 2026. Node.js 20 will be removed from the runner on September 16th, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

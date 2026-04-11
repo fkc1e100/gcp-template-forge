@@ -102,9 +102,9 @@ spec:
               mountPath: /var/run
             - name: cache
               mountPath: /var/cache/nginx
-            - name: secrets-volume
-              mountPath: "/mnt/secrets"
-              readOnly: true
+#            - name: secrets-volume
+#              mountPath: "/mnt/secrets"
+#              readOnly: true
       volumes:
         - name: tmp
           emptyDir: {}
@@ -112,9 +112,9 @@ spec:
           emptyDir: {}
         - name: cache
           emptyDir: {}
-        - name: secrets-volume
-          csi:
-            driver: secrets-store.csi.k8s.io
-            readOnly: true
-            volumeAttributes:
-              secretProviderClass: secrets-6
+#        - name: secrets-volume
+#          csi:
+#            driver: secrets-store.csi.k8s.io
+#            readOnly: true
+#            volumeAttributes:
+#              secretProviderClass: secrets-6

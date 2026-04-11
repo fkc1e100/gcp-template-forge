@@ -13,7 +13,7 @@ This template provides an enterprise-grade Google Kubernetes Engine (GKE) archit
 ### Config Connector (`config-connector/`)
 - Uses KCC resources (`ContainerCluster`, `ContainerNodePool`, `ComputeNetwork`, `ComputeSubnetwork`) to provision the same infrastructure.
 - Manages IAM roles and Service Accounts via KCC for seamless Workload Identity integration.
-- Workload manifests are located in the `manifests/` directory for manual application to the target cluster.
+- Workload manifests are located in `config-connector/workload/` for application to the target cluster.
 
 ## Cluster Details
 - **Type**: GKE Standard

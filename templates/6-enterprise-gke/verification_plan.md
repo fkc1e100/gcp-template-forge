@@ -64,8 +64,8 @@ terraform destroy -auto-approve
 
 ### Deployment
 ```bash
-# Apply KCC manifests to forge-management namespace on management cluster
-kubectl apply -R -f config-connector/ -n forge-management
+# Apply KCC manifests (GCP resources) to forge-management namespace on management cluster
+kubectl apply -f config-connector/ -n forge-management
 ```
 
 ### Verification
@@ -73,15 +73,16 @@ kubectl apply -R -f config-connector/ -n forge-management
    ```bash
    kubectl wait --for=condition=Ready containercluster/cluster-issue-6-kcc -n forge-management --timeout=20m
    ```
-2. **Workload Identity:**
+2. **Workload Deployment & Integration:**
+   The `validate.sh` script handles the deployment of standard Kubernetes manifests located in `config-connector/workload/` to the newly created cluster and performs interaction tests.
    ```bash
-   # Handled by validate.sh
    ./validate.sh
    ```
 
 ### Teardown
 ```bash
-kubectl delete -R -f config-connector/ -n forge-management
+# Delete KCC manifests (GCP resources)
+kubectl delete -f config-connector/ -n forge-management
 ```
 
 ## Validation Output
