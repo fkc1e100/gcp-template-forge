@@ -1,8 +1,8 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: enterprise-workload
-  namespace: default
+  name: enterprise-workload-netpol
+  namespace: enterprise-workload
 spec:
   podSelector:
     matchLabels:

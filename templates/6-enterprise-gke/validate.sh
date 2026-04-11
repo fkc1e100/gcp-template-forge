@@ -39,7 +39,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: test-workload-identity
-  namespace: default
+  namespace: enterprise-workload
 spec:
   template:
     spec:
@@ -51,11 +51,11 @@ spec:
       restartPolicy: Never
 EOF
 
-kubectl wait --for=condition=complete job/test-workload-identity --timeout=5m -n default
+kubectl wait --for=condition=complete job/test-workload-identity --timeout=5m -n enterprise-workload
 # Check logs to see if authentication was successful
-kubectl logs job/test-workload-identity -n default
+kubectl logs job/test-workload-identity -n enterprise-workload
 # Clean up job
-kubectl delete job test-workload-identity -n default
+kubectl delete job test-workload-identity -n enterprise-workload
 echo "Workload Identity Integration passed."
 
 # 4. Endpoint Interaction
@@ -63,7 +63,7 @@ echo "Test 4: Endpoint Interaction..."
 # Wait for LoadBalancer IP
 SERVICE_IP=""
 for i in {1..20}; do
-  SERVICE_IP=$(kubectl get svc enterprise-workload -o jsonpath='{.status.loadBalancer.ingress[0].ip}' -n default || true)
+  SERVICE_IP=$(kubectl get svc enterprise-workload -o jsonpath='{.status.loadBalancer.ingress[0].ip}' -n enterprise-workload || true)
   if [ ! -z "$SERVICE_IP" ]; then
     break
   fi

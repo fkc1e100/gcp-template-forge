@@ -1,3 +1,17 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 provider "google" {
   project = var.project_id
   region  = var.region
@@ -172,14 +186,15 @@ resource "google_service_account" "workload_sa" {
 resource "google_service_account_iam_member" "workload_identity_binding" {
   service_account_id = google_service_account.workload_sa.name
   role               = "roles/iam.workloadIdentityUser"
-  member             = "serviceAccount:${var.project_id}.svc.id.goog[default/enterprise-workload-sa]"
+  member             = "serviceAccount:${var.project_id}.svc.id.goog[enterprise-workload/enterprise-workload-sa]"
 }
 
 resource "helm_release" "workload" {
-  name       = "enterprise-workload"
-  chart      = "${path.module}/workload"
-  namespace  = "default"
-  depends_on = [google_container_node_pool.primary_nodes]
+  name             = "enterprise-workload"
+  chart            = "${path.module}/workload"
+  namespace        = "enterprise-workload"
+  create_namespace = true
+  depends_on       = [google_container_node_pool.primary_nodes]
 
   values = [
     file("${path.module}/values.yaml")

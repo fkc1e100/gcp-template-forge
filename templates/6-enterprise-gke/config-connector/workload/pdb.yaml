@@ -1,8 +1,8 @@
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: enterprise-workload
-  namespace: default
+  name: enterprise-workload-pdb
+  namespace: enterprise-workload
 spec:
   minAvailable: 2
   selector:

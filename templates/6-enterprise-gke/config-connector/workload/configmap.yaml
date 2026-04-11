@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: enterprise-workload-config
-  namespace: default
+  namespace: enterprise-workload
 data:
   LOG_LEVEL: "info"
   ENVIRONMENT: "production"
