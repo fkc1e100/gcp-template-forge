@@ -303,39 +303,87 @@ jobs:
             helm upgrade --install release "$chart" --wait --timeout=10m
           done
 
-      - name: Security scan — Trivy (workload images)
+      - name: Security scan — GCP native (On-Demand Scanning + Security Posture)
         id: security-scan
         continue-on-error: true
         if: steps.tf-verify.outcome == 'success'
         run: |
-          # Install Trivy
-          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
-            | sh -s -- -b /usr/local/bin
-          echo "Trivy $(trivy --version | head -1)"
-
-          # Authenticate Docker for private registries (GAR, GCR)
-          gcloud auth configure-docker us-docker.pkg.dev,gcr.io --quiet 2>/dev/null || true
-
-          # Scan cluster workloads — exclude GKE system namespaces
-          echo "=== Trivy: scanning cluster workload images (HIGH + CRITICAL) ==="
-          trivy k8s \
-            --severity HIGH,CRITICAL \
-            --report summary \
-            --format table \
-            --timeout 10m \
-            --exclude-namespaces kube-system,kube-public,kube-node-lease,gke-gmp-system,gke-managed-metrics-server,config-management-system \
-            cluster 2>&1 && TRIVY_EXIT=0 || TRIVY_EXIT=$?
-
-          # GKE Security Posture config
           CLUSTER="${{ steps.tf-outputs.outputs.tf_cluster }}"
           LOCATION="${{ steps.tf-outputs.outputs.tf_location }}"
-          if [ -n "$CLUSTER" ] && [ -n "$LOCATION" ]; then
-            echo "=== GKE Security Posture configuration ==="
-            gcloud container clusters describe "$CLUSTER" --location="$LOCATION" \
-              --format="yaml(securityPostureConfig,workloadVulnerabilityMode)" 2>/dev/null || true
+          PROJECT="${{ env.PROJECT_ID }}"
+          SCAN_WARNINGS=0
+
+          # ── GKE Security Posture ─────────────────────────────────────────
+          echo "=== GKE Security Posture configuration ==="
+          gcloud container clusters describe "$CLUSTER" --location="$LOCATION" \
+            --project="$PROJECT" --format="yaml(securityPostureConfig)"
+
+          echo "=== GKE Security Posture findings (HIGH/CRITICAL) ==="
+          POSTURE_OUT=$(gcloud beta container clusters list-security-posture-findings \
+            "$CLUSTER" --location="$LOCATION" --project="$PROJECT" \
+            --filter="severity=HIGH OR severity=CRITICAL" \
+            --format="table(severity,findingType,resourceUri,description)" 2>/dev/null || true)
+          echo "$POSTURE_OUT"
+          if echo "$POSTURE_OUT" | grep -qiE 'HIGH|CRITICAL'; then
+            echo "::warning::GKE Security Posture HIGH/CRITICAL findings detected"
+            SCAN_WARNINGS=1
           fi
 
-          [ "$TRIVY_EXIT" -eq 0 ] || echo "::warning::HIGH/CRITICAL vulnerabilities found — review Trivy output above"
+          # ── On-Demand Scanning: workload images ──────────────────────────
+          echo "=== On-Demand Scanning: workload images ==="
+          gcloud services enable ondemandscanning.googleapis.com \
+            --project="$PROJECT" --quiet 2>/dev/null || true
+
+          # Collect unique images from workload namespaces (exclude GKE system namespaces)
+          IMAGES=$(kubectl get pods --all-namespaces -o json 2>/dev/null | python3 -c "
+import json, sys
+SKIP = {'kube-system','kube-public','kube-node-lease',
+        'gke-gmp-system','gke-managed-metrics-server','config-management-system'}
+data = json.load(sys.stdin)
+imgs = set()
+for pod in data.get('items', []):
+    if pod['metadata']['namespace'] not in SKIP:
+        for c in (pod['spec'].get('containers') or []) + (pod['spec'].get('initContainers') or []):
+            if c.get('image'): imgs.add(c['image'])
+for i in sorted(imgs): print(i)
+" 2>/dev/null) || true
+
+          if [ -z "$IMAGES" ]; then
+            echo "No workload images found outside system namespaces — skipping image scan"
+          else
+            echo "Images to scan:"
+            echo "$IMAGES"
+            while IFS= read -r IMAGE; do
+              [ -z "$IMAGE" ] && continue
+              echo "--- Scanning: $IMAGE ---"
+              SCAN_OUT=$(gcloud artifacts docker images scan "$IMAGE" --remote \
+                --project="$PROJECT" --quiet 2>&1) || {
+                echo "::warning::On-Demand Scan failed for $IMAGE"
+                continue
+              }
+              echo "$SCAN_OUT"
+              SCAN_NAME=$(echo "$SCAN_OUT" | grep '^name:' | head -1 | awk '{print $2}' || true)
+              if [ -n "$SCAN_NAME" ]; then
+                VULNS=$(gcloud artifacts docker images list-vulnerabilities "$SCAN_NAME" \
+                  --project="$PROJECT" \
+                  --filter="vulnerability.effectiveSeverity=HIGH OR vulnerability.effectiveSeverity=CRITICAL" \
+                  --format="table(vulnerability.effectiveSeverity,vulnerability.packageIssue[0].affectedPackage,vulnerability.shortDescription)" \
+                  2>/dev/null || true)
+                if [ -n "$VULNS" ]; then
+                  echo "$VULNS"
+                  echo "::warning::HIGH/CRITICAL vulnerabilities in $IMAGE"
+                  SCAN_WARNINGS=1
+                else
+                  echo "No HIGH/CRITICAL vulnerabilities found in $IMAGE"
+                fi
+              fi
+            done <<< "$IMAGES"
+          fi
+
+          echo ""
+          [ "$SCAN_WARNINGS" -eq 0 ] \
+            && echo "Security scan complete — no HIGH/CRITICAL findings." \
+            || echo "::warning::Security findings detected — review output above (non-blocking)"
 
       - name: Terraform destroy
         if: always() && steps.tf-apply.outcome != 'skipped'
@@ -513,39 +561,87 @@ jobs:
           gcloud container clusters describe $CLUSTER --location=$LOCATION \
             --format="value(status)" | grep -q RUNNING
 
-      - name: Security scan — Trivy (workload images)
+      - name: Security scan — GCP native (On-Demand Scanning + Security Posture)
         id: security-scan
         continue-on-error: true
         if: steps.tf-verify.outcome == 'success'
         run: |
-          # Install Trivy
-          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
-            | sh -s -- -b /usr/local/bin
-          echo "Trivy $(trivy --version | head -1)"
-
-          # Authenticate Docker for private registries (GAR, GCR)
-          gcloud auth configure-docker us-docker.pkg.dev,gcr.io --quiet 2>/dev/null || true
-
-          # Scan cluster workloads — exclude GKE system namespaces
-          echo "=== Trivy: scanning cluster workload images (HIGH + CRITICAL) ==="
-          trivy k8s \
-            --severity HIGH,CRITICAL \
-            --report summary \
-            --format table \
-            --timeout 10m \
-            --exclude-namespaces kube-system,kube-public,kube-node-lease,gke-gmp-system,gke-managed-metrics-server,config-management-system \
-            cluster 2>&1 && TRIVY_EXIT=0 || TRIVY_EXIT=$?
-
-          # GKE Security Posture config
           CLUSTER="${{ steps.tf-outputs.outputs.tf_cluster }}"
           LOCATION="${{ steps.tf-outputs.outputs.tf_location }}"
-          if [ -n "$CLUSTER" ] && [ -n "$LOCATION" ]; then
-            echo "=== GKE Security Posture configuration ==="
-            gcloud container clusters describe "$CLUSTER" --location="$LOCATION" \
-              --format="yaml(securityPostureConfig,workloadVulnerabilityMode)" 2>/dev/null || true
+          PROJECT="${{ env.PROJECT_ID }}"
+          SCAN_WARNINGS=0
+
+          # ── GKE Security Posture ─────────────────────────────────────────
+          echo "=== GKE Security Posture configuration ==="
+          gcloud container clusters describe "$CLUSTER" --location="$LOCATION" \
+            --project="$PROJECT" --format="yaml(securityPostureConfig)"
+
+          echo "=== GKE Security Posture findings (HIGH/CRITICAL) ==="
+          POSTURE_OUT=$(gcloud beta container clusters list-security-posture-findings \
+            "$CLUSTER" --location="$LOCATION" --project="$PROJECT" \
+            --filter="severity=HIGH OR severity=CRITICAL" \
+            --format="table(severity,findingType,resourceUri,description)" 2>/dev/null || true)
+          echo "$POSTURE_OUT"
+          if echo "$POSTURE_OUT" | grep -qiE 'HIGH|CRITICAL'; then
+            echo "::warning::GKE Security Posture HIGH/CRITICAL findings detected"
+            SCAN_WARNINGS=1
           fi
 
-          [ "$TRIVY_EXIT" -eq 0 ] || echo "::warning::HIGH/CRITICAL vulnerabilities found — review Trivy output above"
+          # ── On-Demand Scanning: workload images ──────────────────────────
+          echo "=== On-Demand Scanning: workload images ==="
+          gcloud services enable ondemandscanning.googleapis.com \
+            --project="$PROJECT" --quiet 2>/dev/null || true
+
+          # Collect unique images from workload namespaces (exclude GKE system namespaces)
+          IMAGES=$(kubectl get pods --all-namespaces -o json 2>/dev/null | python3 -c "
+import json, sys
+SKIP = {'kube-system','kube-public','kube-node-lease',
+        'gke-gmp-system','gke-managed-metrics-server','config-management-system'}
+data = json.load(sys.stdin)
+imgs = set()
+for pod in data.get('items', []):
+    if pod['metadata']['namespace'] not in SKIP:
+        for c in (pod['spec'].get('containers') or []) + (pod['spec'].get('initContainers') or []):
+            if c.get('image'): imgs.add(c['image'])
+for i in sorted(imgs): print(i)
+" 2>/dev/null) || true
+
+          if [ -z "$IMAGES" ]; then
+            echo "No workload images found outside system namespaces — skipping image scan"
+          else
+            echo "Images to scan:"
+            echo "$IMAGES"
+            while IFS= read -r IMAGE; do
+              [ -z "$IMAGE" ] && continue
+              echo "--- Scanning: $IMAGE ---"
+              SCAN_OUT=$(gcloud artifacts docker images scan "$IMAGE" --remote \
+                --project="$PROJECT" --quiet 2>&1) || {
+                echo "::warning::On-Demand Scan failed for $IMAGE"
+                continue
+              }
+              echo "$SCAN_OUT"
+              SCAN_NAME=$(echo "$SCAN_OUT" | grep '^name:' | head -1 | awk '{print $2}' || true)
+              if [ -n "$SCAN_NAME" ]; then
+                VULNS=$(gcloud artifacts docker images list-vulnerabilities "$SCAN_NAME" \
+                  --project="$PROJECT" \
+                  --filter="vulnerability.effectiveSeverity=HIGH OR vulnerability.effectiveSeverity=CRITICAL" \
+                  --format="table(vulnerability.effectiveSeverity,vulnerability.packageIssue[0].affectedPackage,vulnerability.shortDescription)" \
+                  2>/dev/null || true)
+                if [ -n "$VULNS" ]; then
+                  echo "$VULNS"
+                  echo "::warning::HIGH/CRITICAL vulnerabilities in $IMAGE"
+                  SCAN_WARNINGS=1
+                else
+                  echo "No HIGH/CRITICAL vulnerabilities found in $IMAGE"
+                fi
+              fi
+            done <<< "$IMAGES"
+          fi
+
+          echo ""
+          [ "$SCAN_WARNINGS" -eq 0 ] \
+            && echo "Security scan complete — no HIGH/CRITICAL findings." \
+            || echo "::warning::Security findings detected — review output above (non-blocking)"
 
       - name: Terraform destroy
         if: always() && steps.tf-apply.outcome != 'skipped'

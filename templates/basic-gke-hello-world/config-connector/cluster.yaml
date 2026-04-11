@@ -18,7 +18,7 @@ metadata:
   name: basic-gke
   namespace: forge-management
   labels:
-    template: 1-basic-gke-hello-world
+    template: basic-gke-hello-world
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
@@ -34,3 +34,6 @@ spec:
   releaseChannel:
     channel: REGULAR
   deletionProtection: false
+  securityPostureConfig:
+    mode: BASIC
+    vulnerabilityMode: VULNERABILITY_BASIC

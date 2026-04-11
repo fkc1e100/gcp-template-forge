@@ -71,6 +71,11 @@ resource "google_container_cluster" "primary" {
   release_channel {
     channel = "REGULAR"
   }
+
+  security_posture_config {
+    mode               = "BASIC"
+    vulnerability_mode = "VULNERABILITY_BASIC"
+  }
 }
 
 # Hello World workload via Helm

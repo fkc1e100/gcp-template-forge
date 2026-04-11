@@ -85,7 +85,7 @@ resource "google_container_cluster" "enterprise_cluster" {
   deletion_protection = false
 
   resource_labels = {
-    template = "6-enterprise-gke"
+    template = "enterprise-gke"
   }
 
   remove_default_node_pool = true
@@ -175,7 +175,7 @@ resource "google_container_node_pool" "primary_nodes" {
     }
 
     labels = {
-      template = "6-enterprise-gke"
+      template = "enterprise-gke"
     }
   }
 }

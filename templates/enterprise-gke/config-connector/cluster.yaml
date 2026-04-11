@@ -18,7 +18,7 @@ metadata:
   name: enterprise-gke
   namespace: forge-management
   labels:
-    template: 6-enterprise-gke
+    template: enterprise-gke
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
     cnrm.cloud.google.com/remove-default-node-pool: "true"
