@@ -13,18 +13,6 @@
 # limitations under the License.
 
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
-kind: IAMServiceAccount
-metadata:
-  name: gemma-sa-kcc
-  namespace: forge-management
-  labels:
-    template: gke-llm-inference-gemma
-  annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025
-spec:
-  displayName: Gemma Workload Service Account (KCC)
----
-apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPolicyMember
 metadata:
   name: gemma-sa-wi-kcc
@@ -39,4 +27,4 @@ spec:
   resourceRef:
     apiVersion: iam.cnrm.cloud.google.com/v1beta1
     kind: IAMServiceAccount
-    name: gemma-sa-kcc
+    external: forge-builder@gca-gke-2025.iam.gserviceaccount.com
