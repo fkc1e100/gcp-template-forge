@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Kueue installation
+# Kueue installation — use HTTPS chart source; OCI (us-docker.pkg.dev) returns 403 in CI
 resource "helm_release" "kueue" {
   name             = "kueue"
-  repository       = "oci://us-docker.pkg.dev/gke-release-packages/helm-charts"
+  repository       = "https://charts.kueue.sigs.k8s.io"
   chart            = "kueue"
   version          = "0.9.1"
   namespace        = "kueue-system"
