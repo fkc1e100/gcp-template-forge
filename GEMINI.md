@@ -67,7 +67,20 @@ This ensures you always have the latest project rules and a clean working tree b
 3. Post an issue comment listing which files you fetched and your intended architecture.
 4. Run pre-deployment checks (quota, availability) — abort with issue comment if checks fail.
 5. Generate both paths: `terraform-helm/` and `config-connector/`, using fetched examples as the baseline.
-6. Open a PR. Always include `Closes #<issue-number>` in the PR body to link it to the issue via GitHub's Development panel.
+6. Open a PR — **push to `upstream` (fkc1e100), not `origin` (the fork)**. CI uses Workload Identity Federation (WIF) which requires the PR branch to live in the upstream repo. A PR from a fork will always fail with OIDC token / 403 errors regardless of code correctness.
+
+```bash
+# Push branch to upstream (codebot-sfle has write access to fkc1e100/gcp-template-forge)
+git push upstream HEAD
+
+# Open PR from the upstream branch — NOT from origin/fork
+gh pr create \
+  --repo fkc1e100/gcp-template-forge \
+  --head "$(git rev-parse --abbrev-ref HEAD)" \
+  --title "<title>" \
+  --body "Closes #<issue-number> ..."
+```
+
 7. CI deploys, validates, tears down, commits `.validated` on success.
 
 **If you close a PR and open a replacement** (e.g., a major redesign): close the old PR with a comment "Superseded by #<new-PR>" before opening the new one. This keeps the issue's Development panel accurate — one open linked PR at a time.
@@ -1098,6 +1111,15 @@ Format: `- **[area]** symptom → fix. (root cause)`
 - **WIF binding via Terraform** `google_service_account_iam_member` targeting the CI service account returns 403 during `terraform apply` → remove the resource entirely; do not attempt to set Workload Identity bindings on the CI SA from within the template. (The `forge-builder` SA lacks `iam.serviceAccounts.getIamPolicy` on itself; the binding already exists in the project and re-applying it via Terraform is both unnecessary and unauthorised.)
 
 - **Duplicate Terraform resource** `terraform validate` fails with `Duplicate resource … configuration` at lint → grep all `.tf` files in the directory for the resource name before declaring it. All files in `terraform-helm/` share the same module namespace; declaring the same resource in `main.tf` and `kueue.tf` is a compile error. Reference the existing resource instead of re-declaring it.
+
+- **CI fails with OIDC / WIF 403 on "Authenticate to GCP" + github-script 403 on comment** → the PR was opened from the fork (`codebot-sfle/gcp-template-forge`) instead of the upstream. WIF OIDC tokens are blocked for forked PRs by GitHub's security model — this is not a code problem. Fix: push the branch to upstream and reopen the PR from there.
+  ```bash
+  git push upstream HEAD
+  # Close the fork-based PR with a comment, then:
+  gh pr create --repo fkc1e100/gcp-template-forge \
+    --head "$(git rev-parse --abbrev-ref HEAD)" \
+    --title "<same title>" --body "Closes #<issue> ..."
+  ```
 
 - **OCI Helm registry 403 in CI** `helm_release` pointing to `oci://us-docker.pkg.dev/gke-release-packages/helm-charts/kueue` returns HTTP 403 during `terraform apply` → switch to the public HTTPS Helm repo (`repository = "https://charts.kueue.sigs.k8s.io"`). The WIF credentials the CI runner uses for `gcloud` do not automatically authenticate `helm` against Artifact Registry OCI endpoints.
 
