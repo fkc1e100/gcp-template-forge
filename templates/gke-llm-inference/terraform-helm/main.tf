@@ -22,21 +22,15 @@ resource "google_compute_subnetwork" "main" {
 }
 
 resource "google_container_cluster" "main" {
-  name     = var.cluster_name
-  location = var.region
-  network    = google_compute_network.main.name
-  subnetwork = google_compute_subnetwork.main.name
-
-  # Autopilot is preferred, but for GPU driver config or specific node pools, Standard might be needed.
-  # The GEMINI.md says: "Standard — required when: custom DaemonSets, privileged containers, GPU driver config, security scanning"
-  # GKE Inference Quickstart uses L4 GPUs which GKE can manage drivers for.
-  # However, to use DWS Flex-Start node pools, we need Standard cluster.
-  
+  name                     = var.cluster_name
+  location                 = var.region
+  network                  = google_compute_network.main.name
+  subnetwork               = google_compute_subnetwork.main.name
   remove_default_node_pool = true
   initial_node_count       = 1
   deletion_protection      = false
 
-  networking_mode = "VPC_NATIVE"
+  networking_mode          = "VPC_NATIVE"
   ip_allocation_policy {
     cluster_secondary_range_name  = "pods"
     services_secondary_range_name = "services"
@@ -84,9 +78,9 @@ resource "google_container_node_pool" "gpu_pool" {
   }
 
   node_config {
-    machine_type = "g2-standard-12"
-    spot         = false # DWS Flex-Start is NOT spot
-    
+    machine_type    = "g2-standard-12"
+    spot            = false # DWS Flex-Start is NOT spot
+
     # DWS cannot use reservations
     reservation_affinity {
       consume_reservation_type = "NO_RESERVATION"
@@ -116,9 +110,9 @@ resource "google_container_node_pool" "gpu_pool" {
 }
 
 resource "google_storage_bucket" "weights" {
-  name     = "${var.project_id}-${var.cluster_name}-weights"
-  location = var.region
-  force_destroy = true
+  name                        = "${var.project_id}-${var.cluster_name}-weights"
+  location                    = var.region
+  force_destroy               = true
   uniform_bucket_level_access = true
 }
 
@@ -140,10 +134,10 @@ resource "google_service_account_iam_member" "workload_identity_binding" {
 }
 
 resource "helm_release" "vllm" {
-  name       = "vllm"
-  chart      = "${path.module}/workload"
-  namespace  = "default"
-  
+  name      = "vllm"
+  chart     = "${path.module}/workload"
+  namespace = "default"
+
   set {
     name  = "bucketName"
     value = google_storage_bucket.weights.name
