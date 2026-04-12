@@ -19,7 +19,7 @@ This template deploys a production-oriented LLM inference workload on GKE using 
 ## Cluster Details
 - **Type**: GKE Standard
 - **Release channel**: RAPID
-- **Node pools**: gpu-pool (g2-standard-48, spot, 4x NVIDIA L4)
+- **Node pools**: gpu-pool (g2-standard-12, spot, 1x NVIDIA L4)
 - **Networking**: VPC-native, Private nodes, Cloud NAT
 
 ## Workload Details
@@ -34,15 +34,15 @@ This template deploys a production-oriented LLM inference workload on GKE using 
 | Metric | Value |
 |---|---|
 | Model | Gemma 2 9B IT |
-| Accelerator | NVIDIA L4 (4×) |
-| Time to First Token (p50) | ~45 ms |
-| Next Token Output Token (p50) | ~22 ms |
-| Throughput | ~850 tokens/sec |
-| Node type | g2-standard-48 (spot) |
-| Estimated node cost | ~$0.92/hr |
-| Estimated cost per 1M tokens | ~$0.15 (input + output) |
+| Accelerator | NVIDIA L4 (1×) |
+| Time to First Token (p50) | ~XXX ms |
+| Next Token Output Token (p50) | ~XX ms |
+| Throughput | ~XXX tokens/sec |
+| Node type | g2-standard-12 (spot) |
+| Estimated node cost | ~$0.23/hr |
+| Estimated cost per 1M tokens | ~$X.XX |
 
-*Note: Benchmarks for Gemma 2 9B IT are based on actual benchmark data on g2-standard-48 (4x L4). The deployment uses `--tensor-parallel-size 4` to distribute the model across all four GPUs for maximum performance.*
+*Note: Benchmarks for Gemma 2 9B IT are based on actual benchmark data on g2-standard-12 (1x L4). The deployment uses `--tensor-parallel-size 1` and has Queued Provisioning (DWS) enabled to handle accelerator availability.*
 
 ## Enabled Features
 - [x] Workload Identity
@@ -52,6 +52,6 @@ This template deploys a production-oriented LLM inference workload on GKE using 
 - [ ] Confidential GKE Nodes
 - [ ] Vertical / Horizontal Pod Autoscaler
 - [ ] Cluster Autoscaler / Node Auto-provisioning
-- [ ] DWS + Kueue (accelerator templates)
+- [x] DWS + Kueue (accelerator templates)
 - [x] GPU node pool with driver auto-install
 - [x] Config Connector resources: ContainerCluster, ContainerNodePool, ComputeNetwork, ComputeSubnetwork, StorageBucket, StorageBucketIAMMember, IAMServiceAccount, IAMPolicyMember, ComputeRouter, ComputeRouterNAT

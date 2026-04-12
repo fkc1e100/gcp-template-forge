@@ -21,14 +21,14 @@ r = json.load(sys.stdin)
 for q in r['quotas']:
     if 'NVIDIA_L4_GPUS' in q['metric']:
         print(f'L4 GPU Quota: {q[\"usage\"]}/{q[\"limit\"]}')
-        if q['limit'] - q['usage'] < 4:
-            print('ERROR: Not enough L4 GPU quota available (need 4).')
+        if q['limit'] - q['usage'] < 1:
+            print('ERROR: Not enough L4 GPU quota available (need 1).')
             sys.exit(1)
 "
 
-echo "Checking machine type g2-standard-48 availability..."
+echo "Checking machine type g2-standard-12 availability..."
 gcloud compute machine-types list \
-  --filter="zone:${REGION}-b AND name=g2-standard-48" \
+  --filter="zone:${REGION}-b AND name=g2-standard-12" \
   --format="table(name,zone)"
 ```
 
@@ -46,14 +46,18 @@ terraform apply -auto-approve
    ```bash
    gcloud container clusters describe gke-llm-inference-gemma-tf --region us-central1 --format="value(status)"
    ```
-2. **GPU Node Readiness:**
+2. **Kueue and GPU Readiness:**
    ```bash
    gcloud container clusters get-credentials gke-llm-inference-gemma-tf --region us-central1
+   kubectl get pods -n kueue-system
+   kubectl get clusterqueues
    kubectl get nodes -l nvidia.com/gpu=present
    ```
-3. **Workload Health:**
+3. **Workload Health (Queued Provisioning):**
    ```bash
-   kubectl wait --for=condition=Available deployment/gke-llm-inference-gemma -n gemma --timeout=15m
+   # Monitor the workload. It may take time if capacity is scarce.
+   kubectl get workloads -n gemma
+   kubectl wait --for=condition=Available deployment/gke-llm-inference-gemma -n gemma --timeout=30m
    ```
 4. **Endpoint Interaction:**
    ```bash
@@ -90,16 +94,20 @@ kubectl apply -f config-connector/ -n forge-management
    ```bash
    kubectl wait --for=condition=Ready containercluster/gke-llm-inference-gemma-kcc -n forge-management --timeout=20m
    ```
-2. **Workload Deployment:**
+2. **Workload and Kueue Deployment:**
    ```bash
    # Get credentials for the KCC-created cluster
    gcloud container clusters get-credentials gke-llm-inference-gemma-kcc --region us-central1
    
-   # Apply workload manifests
+   # Install Kueue via Helm
+   helm install kueue oci://us-docker.pkg.dev/gke-release-packages/helm-charts/kueue \
+     --version 0.9.1 --namespace kueue-system --create-namespace
+   
+   # Apply workload and Kueue manifests
    kubectl apply -f config-connector/workload/
    
    # Wait for deployment
-   kubectl wait --for=condition=Available deployment/gke-llm-inference-gemma -n gemma --timeout=15m
+   kubectl wait --for=condition=Available deployment/gke-llm-inference-gemma -n gemma --timeout=30m
    ```
 3. **Endpoint Interaction:**
    ```bash
