@@ -284,6 +284,11 @@
         "name": "Gemini for Kubernetes Development",
         "url": "https://github.com/gke-labs/gemini-for-kubernetes-development",
         "use_for": "The agent infrastructure underpinning this repo. Reference for understanding the repo-agent/overseer system you are running within."
+      },
+      {
+        "name": "Config Connector Samples",
+        "url": "https://github.com/GoogleCloudPlatform/k8s-config-connector",
+        "use_for": "Authoritative KCC YAML for every GCP resource type. Fetch from config/samples/resources/<resource-type>/ for ContainerCluster, ComputeNetwork, ComputeSubnetwork, SQLInstance, etc. Always use these samples as the baseline for config-connector/ manifests — never write KCC YAML from memory."
       }
     ]
   },
@@ -317,7 +322,7 @@
   },
 
   "guidelines": [
-    "For every issue, start by identifying which reference_repositories are most relevant to the intent, then FETCH actual files from those repos before writing any code.",
+    "MANDATORY FIRST STEP: Before writing any Terraform, Helm, or KCC YAML, fetch reference files using the commands in GEMINI.md 'Mandatory Design Research' section. Use 'gh api repos/<owner>/<repo>/contents/<path> --jq .content | base64 -d' to fetch specific files. Save them to /tmp/refs/ and read them before writing. Post an issue comment listing what you fetched and your intended architecture before writing a single line of code. Agents that skip this step produce LLM-hallucinated configs with wrong API fields and missing required attributes.",
     "Support dual-path IaC generation: Terraform/Helm and Config Connector.",
     "For every issue requiring infrastructure generation, the agent MUST create two distinct folders under templates/<short-name>/: one named config-connector/ for Config Connector manifests, and one named terraform-helm/ for Terraform/Helm files. The directory name is the template identity — do NOT prefix with an issue number.",
     "All generated GCP resources MUST use path-specific suffixes: -tf for the Terraform path (e.g., enterprise-gke-tf, enterprise-gke-tf-vpc) and -kcc for the Config Connector path (e.g., enterprise-gke-kcc, enterprise-gke-kcc-vpc). This allows both CI jobs to run in parallel without name collisions in GCP.",

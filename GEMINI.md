@@ -60,14 +60,118 @@ This ensures you always have the latest project rules and a clean working tree b
 
 ## Workflow
 
-1. Read the issue. Identify intent and which reference repos are most relevant.
-2. **Fetch real examples** from those repos before writing code (see Reference Repositories below).
-3. Run pre-deployment checks (quota, availability) — abort with issue comment if checks fail.
-4. Generate both paths: `terraform-helm/` and `config-connector/`.
-5. Open a PR. Post a comment on the issue linking to it.
-6. CI deploys, validates, tears down, commits `.validated` on success.
+1. Read the issue and classify the template type (see Mandatory Design Research below).
+2. **Fetch reference files** using the commands for your template type — do this before writing a single line of code.
+3. Post an issue comment listing which files you fetched and your intended architecture.
+4. Run pre-deployment checks (quota, availability) — abort with issue comment if checks fail.
+5. Generate both paths: `terraform-helm/` and `config-connector/`, using fetched examples as the baseline.
+6. Open a PR. Post a comment on the issue linking to it.
+7. CI deploys, validates, tears down, commits `.validated` on success.
 
 **Post progress comments throughout** — see Issue Communication below.
+
+---
+
+## Mandatory Design Research
+
+**Do not write any Terraform, Helm, or KCC YAML from memory.** Fetch proven, working examples from the reference repositories first and use them as the baseline. This prevents the entire class of errors that come from LLM-hallucinated configs (wrong API fields, incorrect resource relationships, outdated patterns).
+
+`gh` CLI and `curl` are available in the sandbox. The GitHub MCP server also provides structured read access to GitHub repos.
+
+### Step 1 — Classify the template
+
+| If the issue mentions… | Template type | Fetch set |
+|---|---|---|
+| GPU, L4, A100, vLLM, LLM, inference, model serving | **GPU / LLM inference** | Set A below |
+| GKE + database, GKE + Pub/Sub, GKE + Cloud SQL | **GKE + managed service** | Set B below |
+| private cluster, VPC, networking, security hardening | **Standard / enterprise GKE** | Set B below |
+| Config Connector, KCC | **KCC path** | Always fetch Set C in addition |
+
+### Step 2 — Fetch for your type (copy-paste these commands)
+
+#### Set A — GPU / LLM inference
+
+```bash
+mkdir -p /tmp/refs && cd /tmp/refs
+
+# 1. L4 GPU node pool Terraform (proven config with correct taints/labels)
+gh api repos/GoogleCloudPlatform/accelerated-platforms/contents/platforms/gke/base/core/container_node_pool/gpu/region/us-central1/container_node_pool_gpu_l4_rtx.tf \
+  --jq '.content' | base64 -d > gpu_node_pool.tf
+
+# 2. vLLM Deployment manifest for Gemma on L4 (resource requests, GPU limits, tolerations)
+gh api repos/GoogleCloudPlatform/kubernetes-engine-samples/contents/ai-ml/llm-serving-gemma/vllm/vllm-2b-it.yaml \
+  --jq '.content' | base64 -d > vllm_deployment.yaml
+
+# 3. DWS flex-start TorchJob example (shows queued_provisioning pattern in use)
+gh api repos/ai-on-gke/tutorials-and-examples/contents/dws-flex-training-pytorch/training/templates/torch_job.yaml \
+  --jq '.content' | base64 -d > dws_torch_job.yaml
+
+# 4. Browse the vLLM inference reference arch directory for additional context
+gh api repos/GoogleCloudPlatform/accelerated-platforms/contents/platforms/gke/base/use-cases/inference-ref-arch/kubernetes-manifests/online-inference-gpu/vllm \
+  --jq '.[].name'
+```
+
+#### Set B — Standard / enterprise GKE
+
+```bash
+mkdir -p /tmp/refs && cd /tmp/refs
+
+# 1. VPC-native cluster Terraform (VPC + subnet + GKE using official modules)
+gh api repos/terraform-google-modules/terraform-google-kubernetes-engine/contents/examples/simple_regional_with_networking/main.tf \
+  --jq '.content' | base64 -d > gke_cluster.tf
+
+# 2. Simple HTTP workload Deployment
+gh api repos/GoogleCloudPlatform/kubernetes-engine-samples/contents/quickstarts/hello-app/manifests/helloweb-deployment.yaml \
+  --jq '.content' | base64 -d > workload_deployment.yaml
+
+# 3. LoadBalancer Service
+gh api repos/GoogleCloudPlatform/kubernetes-engine-samples/contents/quickstarts/hello-app/manifests/helloweb-service-load-balancer.yaml \
+  --jq '.content' | base64 -d > workload_service.yaml
+```
+
+#### Set C — Config Connector (KCC) path — always fetch alongside Set A or B
+
+```bash
+mkdir -p /tmp/refs/kcc && cd /tmp/refs/kcc
+
+# 1. KCC ContainerCluster (VPC-native, with node pool)
+gh api repos/GoogleCloudPlatform/k8s-config-connector/contents/config/samples/resources/containercluster/vpc-native-container-cluster/container_v1beta1_containercluster.yaml \
+  --jq '.content' | base64 -d > containercluster.yaml
+
+# 2. KCC ComputeNetwork
+gh api repos/GoogleCloudPlatform/k8s-config-connector/contents/config/samples/resources/containercluster/vpc-native-container-cluster/compute_v1beta1_computenetwork.yaml \
+  --jq '.content' | base64 -d > computenetwork.yaml
+
+# 3. KCC ComputeSubnetwork (with secondary IP ranges for pods/services)
+gh api repos/GoogleCloudPlatform/k8s-config-connector/contents/config/samples/resources/containercluster/vpc-native-container-cluster/compute_v1beta1_computesubnetwork.yaml \
+  --jq '.content' | base64 -d > computesubnetwork.yaml
+```
+
+### Step 3 — Read what you fetched, then adapt
+
+Read each fetched file fully before writing your template. Adapt (don't copy verbatim) to match:
+- Template naming conventions (`<name>-tf`, `<name>-kcc`)
+- CIDR slot assigned to this template (see Networking section)
+- Required fields from GEMINI.md (deletion_protection, backend "gcs", outputs)
+- Any issue-specific requirements
+
+### Step 4 — Post a design comment before writing code
+
+```bash
+gh issue comment <number> --repo fkc1e100/gcp-template-forge --body "$(cat <<'EOF'
+**Design checkpoint — reference files fetched:**
+- \`gpu_node_pool.tf\` from GoogleCloudPlatform/accelerated-platforms (L4 node pool config)
+- \`vllm_deployment.yaml\` from kubernetes-engine-samples (vLLM resource requests)
+- KCC ContainerCluster + Network + Subnetwork from k8s-config-connector samples
+
+**Intended architecture:** <2-3 sentence summary>
+**CIDR slot:** <N> (primary <x.x.x.x/20>)
+**Key decisions:** <any tradeoffs>
+EOF
+)"
+```
+
+This comment is a checkpoint — it proves you fetched before you wrote, and gives the human reviewer a chance to redirect before you spend time generating the wrong thing.
 
 ---
 
@@ -351,7 +455,7 @@ For templates that serve **pre-trained AI models** (LLM inference, image generat
 
 **Why**: The quickstart benchmarks model-hardware combinations and emits validated Kubernetes manifests (Deployment, Service, HPA, PodMonitoring) with correct resource requests, GPU configuration, and model-server flags. Starting from these avoids hours of trial-and-error sizing.
 
-**Available in the sandbox**: `gcloud` (≥ 536.0.1) with the `gke-gke-extension` is pre-installed in the agent sandbox and authenticated via Workload Identity — no setup required. Run the commands below directly.
+**Available in the sandbox**: `gcloud` (≥ 536.0.1) with the `gke-gke-extension`, `gh` CLI (authenticated via the `github-token` secret), `terraform`, `helm`, `kubectl`, and `curl` are all pre-installed and authenticated. The GitHub MCP server also provides structured read access to GitHub repositories — use it or `gh api` for reference file fetching. Run all commands directly without any setup.
 
 **Key commands**:
 
@@ -762,11 +866,16 @@ This applies to orphan cleanup scripts as well as manual teardown.
 
 ## Reference Repositories
 
-Before writing code, fetch real examples from the most relevant upstream repos. Use `gh` CLI:
+> **See the [Mandatory Design Research](#mandatory-design-research) section above for the exact `gh api` fetch commands to run before writing any code.** The table below is the full catalogue; the Design Research section gives you the specific files and commands for each template type.
+
+Before writing code, fetch real examples from the most relevant upstream repos. Use `gh` CLI or the GitHub MCP server (both are available in the sandbox):
 
 ```bash
-gh api repos/terraform-google-modules/terraform-google-kubernetes-engine/contents/examples/simple_regional_private \
-  --jq '.content' | base64 -d
+# Browse a directory
+gh api repos/<owner>/<repo>/contents/<path> --jq '.[].name'
+
+# Fetch and decode a specific file
+gh api repos/<owner>/<repo>/contents/<path> --jq '.content' | base64 -d
 ```
 
 Key sources:
@@ -778,6 +887,7 @@ Key sources:
 - **LLM-D** — `llm-d/llm-d` (distributed LLM inference on GKE)
 - **GKE AI Labs** — `gke-ai-labs.dev` (AI/ML on GKE patterns and benchmarks)
 - **GKE Policy Automation** — `google/gke-policy-automation` (policy as code)
+- **Config Connector Samples** — `GoogleCloudPlatform/k8s-config-connector` (`config/samples/resources/`) — authoritative KCC YAML for every GCP resource type
 
 See `user-instructions.json` → `reference_repositories` for the full list.
 

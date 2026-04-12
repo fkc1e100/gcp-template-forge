@@ -4,7 +4,7 @@ metadata:
   name: github-mcp-server
   namespace: repo-agent-system
 spec:
-  replicas: 0
+  replicas: 1
   selector:
     matchLabels:
       app: github-mcp-server
@@ -20,8 +20,8 @@ spec:
         - containerPort: 8000
         env:
         - name: GITHUB_TOOLSETS
-          #value: "repos,issues,pull_requests,actions,code_security,experiments"
-          value: "issues,pull_requests,actions,experiments"
+          # repos toolset enabled so agents can read reference repo files via MCP
+          value: "repos,issues,pull_requests,actions,code_security,experiments"
         - name: GITHUB_DYNAMIC_TOOLSETS
           value: "1"
         - name: GITHUB_READ_ONLY
