@@ -44,15 +44,15 @@ spec:
             - "--max-model-len"
             - "4096"
             - "--tensor-parallel-size"
-            - "4"
+            - "1"
           ports:
             - name: http
               containerPort: 8000
           resources:
             limits:
-              nvidia.com/gpu: 4
+              nvidia.com/gpu: 1
             requests:
-              nvidia.com/gpu: 4
+              nvidia.com/gpu: 1
           volumeMounts:
             - mountPath: /data
               name: gcs-fuse-csi-ephemeral
