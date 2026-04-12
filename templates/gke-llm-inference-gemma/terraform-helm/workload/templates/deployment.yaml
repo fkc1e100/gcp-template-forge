@@ -18,6 +18,57 @@ spec:
         kueue.x-k8s.io/queue-name: local-queue
     spec:
       serviceAccountName: {{ include "gke-llm-inference-gemma.serviceAccountName" . }}
+
+      # Init container: downloads model weights from HuggingFace into GCS on
+      # first run. Subsequent starts skip the download (weights already present).
+      # The main vLLM container reads weights from the GCS FUSE mount — no HF
+      # dependency at inference runtime.
+      initContainers:
+        - name: download-weights
+          image: google/cloud-sdk:slim
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -euo pipefail
+              BUCKET="{{ .Values.bucketName }}"
+              MODEL="{{ .Values.model.name }}"
+              DEST="gs://${BUCKET}/weights/"
+
+              echo "Checking for existing weights at ${DEST}..."
+              COUNT=$(gsutil ls "${DEST}" 2>/dev/null | wc -l || echo "0")
+              if [ "${COUNT}" -gt "0" ]; then
+                echo "Weights already present (${COUNT} objects) — skipping download."
+                exit 0
+              fi
+
+              echo "Weights not found. Fetching HF token from Secret Manager..."
+              HF_TOKEN=$(gcloud secrets versions access latest \
+                --secret=huggingface-token \
+                --project={{ .Values.projectId }})
+
+              echo "Installing huggingface_hub..."
+              pip install --quiet huggingface_hub
+
+              echo "Downloading ${MODEL} to /tmp/weights ..."
+              python3 -c "
+              from huggingface_hub import snapshot_download
+              import os, sys
+              snapshot_download(
+                  repo_id='${MODEL}',
+                  local_dir='/tmp/weights',
+                  token='${HF_TOKEN}',
+                  ignore_patterns=['*.msgpack','flax_model*','tf_model*','rust_model*'],
+              )
+              "
+
+              echo "Uploading to ${DEST}..."
+              gsutil -m cp -r /tmp/weights/* "${DEST}"
+              echo "Done — weights at ${DEST}"
+          env:
+            - name: CLOUDSDK_CORE_DISABLE_PROMPTS
+              value: "1"
+
       containers:
         - name: vllm
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -25,7 +76,9 @@ spec:
           command: ["python3", "-m", "vllm.entrypoints.openai.api_server"]
           args:
             - "--model"
-            - {{ .Values.model.name | quote }}
+            - {{ .Values.model.path | quote }}      # GCS FUSE mount — no HF download at runtime
+            - "--served-model-name"
+            - {{ .Values.model.name | quote }}      # logical name used in API requests
             - "--load-format"
             - "safetensors"
             - "--gpu-memory-utilization"
@@ -44,6 +97,7 @@ spec:
             - mountPath: /data
               name: gcs-fuse-csi-ephemeral
               readOnly: true
+
       volumes:
         - name: gcs-fuse-csi-ephemeral
           csi:
@@ -51,6 +105,7 @@ spec:
             volumeAttributes:
               bucketName: {{ .Values.bucketName | quote }}
               mountOptions: "implicit-dirs"
+
       nodeSelector:
         {{- toYaml .Values.nodeSelector | nindent 8 }}
       tolerations:

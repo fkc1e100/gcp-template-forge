@@ -9,9 +9,10 @@ image:
 # Model configuration
 model:
   name: "google/gemma-2-9b-it"
-  # Path inside the bucket where weights are stored
-  # GCS FUSE will mount the bucket to /data
-  path: "/data"
+  # Path where vLLM reads weights — GCS FUSE mount + weights subdir.
+  # Init container downloads to gs://<bucket>/weights/ on first run;
+  # subsequent pod starts skip the download automatically.
+  path: "/data/weights"
 
 # vLLM arguments
 vllm:
@@ -19,7 +20,8 @@ vllm:
   gpuMemoryUtilization: 0.9
   tensorParallelSize: 1
 
-bucketName: "" # Provided by Terraform
+bucketName: "" # Provided by Terraform via helm set
+projectId: ""  # Provided by Terraform via helm set (needed by init container to access Secret Manager)
 
 serviceAccount:
   name: "gemma-sa"
