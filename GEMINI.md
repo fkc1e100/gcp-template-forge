@@ -304,9 +304,10 @@ queued_provisioning {
 ```
 
 ```bash
-# Install Kueue via Helm in the template
-helm install kueue oci://us-docker.pkg.dev/gke-release-packages/helm-charts/kueue \
-  --version <latest> --namespace kueue-system --create-namespace
+# Install Kueue via Helm — use the public HTTPS repo (OCI endpoint requires GCP auth in CI)
+helm install kueue kueue/kueue \
+  --repo https://charts.kueue.sigs.k8s.io \
+  --version 0.9.1 --namespace kueue-system --create-namespace
 ```
 
 Required Kueue resources: `ClusterQueue` → `ResourceFlavor` → `LocalQueue`. Workload pods need label `kueue.x-k8s.io/queue-name: <local-queue-name>`.
@@ -515,6 +516,99 @@ terraform {
 
 ---
 
+## ⚠️ Terraform Correctness: Run These Checks Before Every Commit
+
+CI runs `terraform fmt -check -recursive` and `terraform validate` on every push. Failures here block the entire pipeline. Run these yourself first:
+
+```bash
+cd templates/<name>/terraform-helm
+
+# 1. Format check — MUST exit 0
+terraform fmt -check -recursive
+
+# 2. Structural validation — catches duplicate resources, bad references, type errors
+terraform validate
+```
+
+**If `terraform fmt` reports a diff, run `terraform fmt` (without `-check`) to auto-fix alignment and re-stage the files.**
+
+### Rule: all `=` signs in a resource block must align
+
+`terraform fmt` aligns every `=` to the column after the longest key in the block, with exactly one space. If you add a key that is longer than all existing keys, every other key in the block needs more padding.
+
+```hcl
+# ✅ correct — longest key is "create_namespace" (16 chars), all = at column 19
+resource "helm_release" "example" {
+  name             = "example"
+  chart            = "${path.module}/chart"
+  namespace        = "default"
+  create_namespace = true
+  depends_on       = [google_container_node_pool.pool]
+}
+
+# ❌ wrong — "name" is under-padded; terraform fmt will reject this
+resource "helm_release" "example" {
+  name = "example"
+  create_namespace = true
+}
+```
+
+### Rule: resource names must be unique across ALL `.tf` files in the directory
+
+Every `.tf` file in `terraform-helm/` is part of the same Terraform root module. A resource declared in `kueue.tf` and again in `main.tf` with the same type + name is a **compile error**. Before adding any resource, grep the directory:
+
+```bash
+grep -r 'resource "helm_release" "kueue_resources"' .
+```
+
+If the name already exists in any file, do not declare it again — reference the existing resource instead.
+
+### Rule: keep related resources together in one file
+
+Do not split a single logical unit across files unless the split is intentional and named clearly (e.g., `kueue.tf` owns everything Kueue: operator install + queue resources). When you add to an existing file, read it fully first so you don't duplicate what's already there.
+
+---
+
+## Helm Chart Sources
+
+### Prefer public HTTP repos over OCI registries
+
+OCI Helm registries (e.g. `oci://us-docker.pkg.dev/...`) may require GCP authentication that GitHub Actions runners do not have by default. The CI runner authenticates via WIF for `gcloud`/Terraform, but that authentication does **not** automatically extend to `helm pull` from Artifact Registry OCI endpoints.
+
+**Prefer in this order:**
+
+| Priority | Source | Example |
+|---|---|---|
+| 1 | **Local chart in repo** | `chart = "${path.module}/my-chart"` |
+| 2 | **Public HTTPS Helm repo** | `repository = "https://charts.example.io"` |
+| 3 | **Public OCI registry** | `oci://registry.k8s.io/...` (k8s.io is unauthenticated) |
+| 4 | **GCP Artifact Registry OCI** | `oci://us-docker.pkg.dev/...` — **avoid unless you add explicit auth** |
+
+For **Kueue specifically**: install the operator from the official public chart, then use a local chart for your `ResourceFlavor` / `ClusterQueue` / `LocalQueue` objects:
+
+```hcl
+# Kueue operator — use public HTTPS repo, not the GCP OCI endpoint
+resource "helm_release" "kueue" {
+  name             = "kueue"
+  repository       = "https://charts.kueue.sigs.k8s.io"
+  chart            = "kueue"
+  version          = "0.9.1"
+  namespace        = "kueue-system"
+  create_namespace = true
+}
+
+# Queue resources — always local chart
+resource "helm_release" "kueue_resources" {
+  name             = "kueue-resources"
+  chart            = "${path.module}/kueue-chart"
+  namespace        = "kueue-system"
+  create_namespace = true
+  depends_on       = [helm_release.kueue, google_container_node_pool.gpu_pool]
+}
+```
+
+---
+
 ## KCC Manifests
 
 All KCC resources go into the `forge-management` namespace on `krmapihost-kcc-instance`. Label every resource with the template directory name so CI can target it:
@@ -695,5 +789,11 @@ Format: `- **[area]** symptom → fix. (root cause)`
 - **GPU node pools (L4)** `g2-standard-48` with 4×L4 enters ERROR state after ~45 min → use `g2-standard-12` with 1×L4 and set `tensorParallelSize: 1` in values.yaml. (Spot availability and quota for large multi-GPU machines is thin in us-central1; 1×L4 on g2-standard-12 is sufficient for 9B-parameter models and provisions reliably.)
 
 - **WIF binding via Terraform** `google_service_account_iam_member` targeting the CI service account returns 403 during `terraform apply` → remove the resource entirely; do not attempt to set Workload Identity bindings on the CI SA from within the template. (The `forge-builder` SA lacks `iam.serviceAccounts.getIamPolicy` on itself; the binding already exists in the project and re-applying it via Terraform is both unnecessary and unauthorised.)
+
+- **Duplicate Terraform resource** `terraform validate` fails with `Duplicate resource … configuration` at lint → grep all `.tf` files in the directory for the resource name before declaring it. All files in `terraform-helm/` share the same module namespace; declaring the same resource in `main.tf` and `kueue.tf` is a compile error. Reference the existing resource instead of re-declaring it.
+
+- **OCI Helm registry 403 in CI** `helm_release` pointing to `oci://us-docker.pkg.dev/gke-release-packages/helm-charts/kueue` returns HTTP 403 during `terraform apply` → switch to the public HTTPS Helm repo (`repository = "https://charts.kueue.sigs.k8s.io"`). The WIF credentials the CI runner uses for `gcloud` do not automatically authenticate `helm` against Artifact Registry OCI endpoints.
+
+- **DWS node pool config** `google_container_node_pool` with `queued_provisioning { enabled = true }` fails with API 400 → three fields are required simultaneously: (1) `autoscaling { min_node_count = 0, max_node_count = N }` — do not use `node_count`; (2) `reservation_affinity { consume_reservation_type = "NO_RESERVATION" }` inside `node_config`; (3) `spot = false` — DWS flex-start is not compatible with spot. Missing any one of these causes the node pool creation to be rejected.
 
 - **L4 GPU spot → GCE_STOCKOUT** `spot = true` on `g2-standard-12` node pools in us-central1-a/b fails with `GCE_STOCKOUT` — 0 nodes provisioned after 35 min → switch to DWS flex-start: set `spot = false` and keep `queued_provisioning { enabled = true }`. Spot VMs are surplus capacity; on-demand has first physical claim on GPU inventory, so spot requests fail outright during scarcity with no queue. DWS flex-start draws from the larger preemptible quota pool and is non-preemptible once running (~53% below on-demand cost). Also restrict `node_locations` to `["${var.region}-c"]` — us-central1-c has the best L4 headroom within the region. L4 is available globally across 44 zones in 19 regions (us-central1, us-east1, europe-west4, asia-southeast1, and more) — expand zones if us-central1-c stockouts persist.
