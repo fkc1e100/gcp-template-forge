@@ -516,28 +516,56 @@ terraform {
 
 ---
 
-## ⚠️ Terraform Correctness: Run These Checks Before Every Commit
+## ⚠️ Terraform Correctness: Mandatory Checks Before Every Commit
 
-CI runs `terraform fmt -check -recursive` and `terraform validate` on every push. Failures here block the entire pipeline. Run these yourself first:
+CI runs `terraform fmt -check -recursive` and `terraform validate` on every push. **A single lint failure blocks the entire pipeline — deploy jobs never run.** Do not push until all three steps below pass locally.
 
 ```bash
 cd templates/<name>/terraform-helm
 
-# 1. Format check — MUST exit 0
-terraform fmt -check -recursive
+# ── STEP 1: Duplicate declaration scan ──────────────────────────────────────
+# All .tf files in the same directory share one module namespace.
+# Any duplicate resource/variable/output/local is a compile error.
+# This must print NOTHING. If it prints anything, fix it before continuing.
+grep -rh '^\s*resource\|^\s*variable\|^\s*output\|^\s*locals' *.tf \
+  | grep -v '^\s*#' \
+  | sort | uniq -d
 
-# 2. Structural validation — catches duplicate resources, bad references, type errors
+# ── STEP 2: Format check ─────────────────────────────────────────────────────
+terraform fmt -check -recursive
+# If this exits non-zero, run: terraform fmt -recursive   (auto-fixes alignment)
+# Then re-stage and re-run the check.
+
+# ── STEP 3: Structural validation ───────────────────────────────────────────
 terraform validate
+# Catches bad references, wrong types, and any duplicates the grep missed.
 ```
 
-**If `terraform fmt` reports a diff, run `terraform fmt` (without `-check`) to auto-fix alignment and re-stage the files.**
+**All three steps must exit 0 before you `git push`.**
+
+### Rule: no repetition across `.tf` files — read before you write
+
+Every `.tf` file in `terraform-helm/` is part of the **same Terraform root module**. There is no isolation between files. Before declaring any `resource`, `variable`, `output`, or `local`:
+
+1. **Read every existing `.tf` file** in the directory to know what is already declared.
+2. **Grep for the name** you are about to use: `grep -r '"my_resource_name"' *.tf`
+3. If it exists anywhere — in any file — **do not declare it again**. Reference the existing declaration or extend it.
+
+Declarations that trip up agents most often:
+
+| What gets duplicated | How it happens | How to avoid |
+|---|---|---|
+| `resource "helm_release" "kueue_resources"` | Added to `main.tf` after `kueue.tf` already owned it | Read `kueue.tf` first; extend it instead |
+| `variable "project_id"` | Declared in both `variables.tf` and a new module file | All vars live in `variables.tf` only |
+| `output "cluster_name"` | Copied from another template without checking | Read `outputs.tf` before adding |
+| `resource "google_storage_bucket" "weights"` | Added twice when refactoring across files | Step 1 grep catches this |
 
 ### Rule: all `=` signs in a resource block must align
 
-`terraform fmt` aligns every `=` to the column after the longest key in the block, with exactly one space. If you add a key that is longer than all existing keys, every other key in the block needs more padding.
+`terraform fmt` aligns every `=` to the column after the longest key in the block, with exactly one space. If you add a key that is longer than all existing keys, **every other key in the block needs more padding** — not just the new one.
 
 ```hcl
-# ✅ correct — longest key is "create_namespace" (16 chars), all = at column 19
+# ✅ correct — longest key is "create_namespace" (16 chars), all = aligned
 resource "helm_release" "example" {
   name             = "example"
   chart            = "${path.module}/chart"
@@ -546,26 +574,18 @@ resource "helm_release" "example" {
   depends_on       = [google_container_node_pool.pool]
 }
 
-# ❌ wrong — "name" is under-padded; terraform fmt will reject this
+# ❌ wrong — adding "create_namespace" without re-padding the shorter keys
 resource "helm_release" "example" {
-  name = "example"
+  name = "example"           # too short — fmt will flag this
   create_namespace = true
 }
 ```
 
-### Rule: resource names must be unique across ALL `.tf` files in the directory
+**The safest fix is always: run `terraform fmt -recursive` and commit the result rather than hand-padding.**
 
-Every `.tf` file in `terraform-helm/` is part of the same Terraform root module. A resource declared in `kueue.tf` and again in `main.tf` with the same type + name is a **compile error**. Before adding any resource, grep the directory:
+### Rule: one file owns one concern
 
-```bash
-grep -r 'resource "helm_release" "kueue_resources"' .
-```
-
-If the name already exists in any file, do not declare it again — reference the existing resource instead.
-
-### Rule: keep related resources together in one file
-
-Do not split a single logical unit across files unless the split is intentional and named clearly (e.g., `kueue.tf` owns everything Kueue: operator install + queue resources). When you add to an existing file, read it fully first so you don't duplicate what's already there.
+Do not split a logical unit across files. If `kueue.tf` owns the Kueue operator and its queue resources, all changes to those resources go in `kueue.tf` — not in `main.tf`. When you are unsure which file owns something, read all `.tf` files first, then decide.
 
 ---
 
