@@ -15,6 +15,7 @@ spec:
         gke-gcsfuse/volumes: "true"
       labels:
         {{- include "gke-llm-inference-gemma.selectorLabels" . | nindent 8 }}
+        kueue.x-k8s.io/queue-name: local-queue
     spec:
       serviceAccountName: {{ include "gke-llm-inference-gemma.serviceAccountName" . }}
       containers:

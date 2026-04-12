@@ -28,6 +28,7 @@ spec:
         gke-gcsfuse/volumes: "true"
       labels:
         app: gke-llm-inference-gemma
+        kueue.x-k8s.io/queue-name: local-queue
     spec:
       serviceAccountName: gemma-sa
       containers:
