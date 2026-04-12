@@ -12,45 +12,35 @@
 
 ## System Architecture
 
-The forge is powered by the operator stack from [`gke-labs/gemini-for-kubernetes-development`](https://github.com/gke-labs/gemini-for-kubernetes-development), running on a GKE Standard control-plane cluster. Each new template request flows through four components:
+The forge is powered by the operator stack from [`gke-labs/gemini-for-kubernetes-development`](https://github.com/gke-labs/gemini-for-kubernetes-development), running on a GKE Standard control-plane cluster.
 
 ```mermaid
-graph TD
-    subgraph "gke-labs Operator Stack (Control Plane GKE Cluster)"
-        OV["🎯 Overseer\nMonitors GitHub issues & PRs\nCoordinates the full workflow"]
-        RA["📋 Repo-Agent\nManages GitHub operations\n(create issue, branch, PR)"]
-        AS["🤖 AgentSandboxes\nIsolated Kubernetes Jobs\nwhere Gemini CLI runs"]
-        CR["📦 Container Registry\nAgent container images"]
+flowchart LR
+    DEV["👤 Developer\nopens issue"]
+
+    subgraph OPS ["gke-labs Operator Stack"]
+        OV["🎯 Overseer + Repo-Agent\ncreates branch & PR"]
+        AG["🤖 Agent Sandbox\nauthors Terraform + KCC templates"]
+        OV --> AG
     end
 
-    subgraph "GitHub (fkc1e100/gcp-template-forge)"
-        ISS["📝 Issue\n'Template request'"]
-        BR["🌿 Branch\nissue-N-<slug>"]
-        PR["🔀 Pull Request\nTemplate + CI checks"]
-        MAIN["✅ main branch\nValidated templates"]
+    subgraph GH ["GitHub — gcp-template-forge"]
+        PR["🔀 Pull Request\nlint · deploy-test-tf ∥ deploy-test-kcc"]
+        MAIN["✅ main\nvalidated template library"]
+        PR -->|approved + merged| MAIN
     end
 
-    subgraph "GCP Sandbox Project (gca-gke-2025)"
-        KCC["☸️ KCC Cluster\nkrmapihost-kcc-instance\nConfig Connector resources"]
-        TF["🏗️ Terraform Resources\nVPC · GKE · NAT · IAM"]
-        HELM["⎈ Helm Workloads\nDeployed to Terraform cluster"]
+    subgraph GCP ["GCP Sandbox — gca-gke-2025"]
+        TF["🏗️ TF + Helm\ncluster"]
+        KCC["☸️ Config Connector\ncluster"]
     end
 
-    USER["👤 Developer\nopens GitHub issue"] --> ISS
-    ISS --> OV
-    OV --> RA
-    RA --> BR
-    OV --> AS
-    AS --> CR
-    AS -- "commits template files" --> BR
-    BR --> PR
-    PR -- "CI: lint → deploy-test-tf" --> TF
-    PR -- "CI: lint → deploy-test-kcc" --> KCC
-    TF --> HELM
-    PR -- "approved + merged" --> MAIN
-    MAIN -- "CI: validate-tf-helm ∥ validate-kcc" --> TF
-    MAIN -- "CI: validate-tf-helm ∥ validate-kcc" --> KCC
-    MAIN -- "publish-validated: README + .validated" --> MAIN
+    DEV --> OV
+    AG -->|commits templates| PR
+    PR -->|deploy-test-tf| TF
+    PR -->|deploy-test-kcc| KCC
+    MAIN -->|validate-tf-helm ∥ validate-kcc\nthen publish-validated| TF
+    MAIN -->|validate-tf-helm ∥ validate-kcc\nthen publish-validated| KCC
 ```
 
 ### Key Components
