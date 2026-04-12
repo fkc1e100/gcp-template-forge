@@ -147,13 +147,22 @@ resource "google_container_node_pool" "gpu_pool" {
   location       = var.region
   node_locations = ["${var.region}-c"]
   cluster        = google_container_cluster.primary.name
-  node_count     = 1
+  # DWS flex-start requires autoscaling; node_count is managed by the scheduler
+  autoscaling {
+    min_node_count = 0
+    max_node_count = 1
+  }
 
   node_config {
-    # DWS flex-start: spot=false + queued_provisioning=true means non-preemptible
-    # once provisioned, but draws from the larger preemptible quota pool.
-    spot         = false
-    machine_type = "g2-standard-12"
+    # DWS flex-start: spot=false + queued_provisioning=true — non-preemptible
+    # once provisioned, draws from the larger preemptible quota pool (~53% cheaper).
+    spot            = false
+    machine_type    = "g2-standard-12"
+
+    # DWS flex-start requires NO_RESERVATION affinity
+    reservation_affinity {
+      consume_reservation_type = "NO_RESERVATION"
+    }
 
     guest_accelerator {
       type  = "nvidia-l4"
@@ -186,6 +195,16 @@ resource "google_container_node_pool" "gpu_pool" {
   queued_provisioning {
     enabled = true
   }
+}
+
+# Kueue resources: ResourceFlavor + ClusterQueue + LocalQueue
+# Installed from a local chart so CI doesn't need OCI registry access.
+resource "helm_release" "kueue_resources" {
+  name             = "kueue-resources"
+  chart            = "${path.module}/kueue-chart"
+  namespace        = "kueue-system"
+  create_namespace = true
+  depends_on       = [google_container_node_pool.gpu_pool]
 }
 
 # IAM for GCS FUSE — read weights at runtime
