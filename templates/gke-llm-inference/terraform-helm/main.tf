@@ -30,7 +30,7 @@ resource "google_container_cluster" "main" {
   initial_node_count       = 1
   deletion_protection      = false
 
-  networking_mode          = "VPC_NATIVE"
+  networking_mode = "VPC_NATIVE"
   ip_allocation_policy {
     cluster_secondary_range_name  = "pods"
     services_secondary_range_name = "services"
@@ -78,8 +78,8 @@ resource "google_container_node_pool" "gpu_pool" {
   }
 
   node_config {
-    machine_type    = "g2-standard-12"
-    spot            = false # DWS Flex-Start is NOT spot
+    machine_type = "g2-standard-12"
+    spot         = false # DWS Flex-Start is NOT spot
 
     # DWS cannot use reservations
     reservation_affinity {
