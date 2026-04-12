@@ -30,8 +30,6 @@ spec:
   clusterRef:
     name: gke-llm-inference-gemma-kcc
   nodeCount: 1
-  queuedProvisioning:
-    enabled: true
   nodeConfig:
     spot: true
     machineType: g2-standard-12

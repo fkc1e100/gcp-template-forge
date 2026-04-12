@@ -21,10 +21,10 @@ metadata:
     template: gke-llm-inference-gemma
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
+    cnrm.cloud.google.com/remove-default-node-pool: "true"
 spec:
   location: us-central1
   initialNodeCount: 1
-  removeDefaultNodePool: true
   networkingMode: VPC_NATIVE
   networkRef:
     name: gke-llm-inference-gemma-kcc-vpc
