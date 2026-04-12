@@ -88,22 +88,21 @@ resource "google_storage_bucket" "weights" {
 
 # GKE Cluster
 resource "google_container_cluster" "primary" {
-  name     = var.cluster_name
-  location = var.region
+  name                = var.cluster_name
+  location            = var.region
 
   # MANDATORY for CI to be able to destroy
   deletion_protection = false
 
   resource_labels = {
-    "template" = "gke-llm-inference-gemma"
+    template = "gke-llm-inference-gemma"
   }
 
   remove_default_node_pool = true
   initial_node_count       = 1
-
-  networking_mode = "VPC_NATIVE"
-  network         = google_compute_network.vpc.name
-  subnetwork      = google_compute_subnetwork.subnet.name
+  networking_mode          = "VPC_NATIVE"
+  network                  = google_compute_network.vpc.name
+  subnetwork               = google_compute_subnetwork.subnet.name
 
   ip_allocation_policy {
     cluster_secondary_range_name  = "pods"
@@ -175,9 +174,8 @@ resource "google_container_node_pool" "gpu_pool" {
 
     labels = {
       "nvidia.com/gpu" = "present"
-      "template"       = "gke-llm-inference-gemma"
+      template         = "gke-llm-inference-gemma"
     }
-
     taint {
       key    = "nvidia.com/gpu"
       value  = "present"
