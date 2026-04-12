@@ -156,8 +156,8 @@ resource "google_container_node_pool" "gpu_pool" {
   node_config {
     # DWS flex-start: spot=false + queued_provisioning=true — non-preemptible
     # once provisioned, draws from the larger preemptible quota pool (~53% cheaper).
-    spot            = false
-    machine_type    = "g2-standard-12"
+    spot         = false
+    machine_type = "g2-standard-12"
 
     # DWS flex-start requires NO_RESERVATION affinity
     reservation_affinity {
