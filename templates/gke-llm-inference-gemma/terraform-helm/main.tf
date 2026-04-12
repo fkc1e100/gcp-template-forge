@@ -145,7 +145,9 @@ resource "google_container_cluster" "primary" {
 resource "google_container_node_pool" "gpu_pool" {
   name           = "gpu-pool"
   location       = var.region
-  node_locations = ["us-central1-a", "us-central1-b", "us-central1-c"]
+  # Restrict to us-central1-c only: -a and -b have chronic L4 spot stockouts.
+  # If stockouts persist here, try us-east1-b or us-east4-a as a secondary pool.
+  node_locations = ["${var.region}-c"]
   cluster        = google_container_cluster.primary.name
   node_count     = 1
 
