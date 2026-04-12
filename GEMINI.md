@@ -33,9 +33,11 @@ if git ls-remote --exit-code upstream "refs/heads/${BRANCH}" >/dev/null 2>&1; th
   git checkout -B "${BRANCH}" "upstream/${BRANCH}"
 fi
 
-# 4. Sync guidance files from upstream main
+# 4. Sync guidance files from upstream main (always pull latest, even mid-branch)
+git fetch upstream main --quiet
+git checkout upstream/main -- GEMINI.md .gemini/user-instructions.json 2>/dev/null || true
 git add GEMINI.md .gemini/user-instructions.json 2>/dev/null || true
-git commit -m "chore: sync guidance from upstream" --quiet 2>/dev/null || true
+git commit -m "chore: sync guidance from upstream main" --quiet 2>/dev/null || true
 ```
 
 This ensures you always have the latest project rules and a clean working tree before generating any code.
