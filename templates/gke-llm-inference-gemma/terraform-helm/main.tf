@@ -100,9 +100,10 @@ resource "google_container_cluster" "primary" {
 
   remove_default_node_pool = true
   initial_node_count       = 1
-  networking_mode          = "VPC_NATIVE"
-  network                  = google_compute_network.vpc.name
-  subnetwork               = google_compute_subnetwork.subnet.name
+
+  networking_mode = "VPC_NATIVE"
+  network         = google_compute_network.vpc.name
+  subnetwork      = google_compute_subnetwork.subnet.name
 
   ip_allocation_policy {
     cluster_secondary_range_name  = "pods"
