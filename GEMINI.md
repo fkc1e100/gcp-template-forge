@@ -91,17 +91,20 @@ The following tools are **pre-installed** in the sandbox:
 The following tools are **not pre-installed** — install them before first use:
 
 ```bash
-# Install terraform (run once per sandbox session)
+# Install terraform (run once per sandbox session — binary download, no apt/lsb_release needed)
 if ! which terraform &>/dev/null; then
-  curl -fsSL https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
-  echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" \
-    | tee /etc/apt/sources.list.d/hashicorp.list
-  apt-get update -qq && apt-get install -y -qq terraform
+  TF_VER=$(curl -fsSL https://api.releases.hashicorp.com/v1/releases/terraform/latest \
+    | python3 -c "import json,sys; print(json.load(sys.stdin)['version'])")
+  curl -fsSL "https://releases.hashicorp.com/terraform/${TF_VER}/terraform_${TF_VER}_linux_amd64.zip" \
+    -o /tmp/terraform.zip
+  cd /tmp && unzip -q terraform.zip && mv terraform /usr/local/bin/ && rm terraform.zip
+  terraform version
 fi
 
 # Install helm (run once per sandbox session)
 if ! which helm &>/dev/null; then
-  curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+  curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 \
+    | HELM_INSTALL_DIR=/usr/local/bin bash
 fi
 
 # Install kubectl (run once per sandbox session)
