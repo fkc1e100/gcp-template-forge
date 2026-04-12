@@ -352,17 +352,23 @@ Always use **VPC-native clusters** (`networking_mode = "VPC_NATIVE"` with `ip_al
 
 ## Machine Types & Accelerators
 
-Use spot/preemptible for all sandbox validation clusters to minimise cost. **Exception: GPU node pools — see DWS Flex-Start section below.**
+Use spot/preemptible for all sandbox validation clusters to minimise cost.
 
 | Use case | Machine type | Spot | Notes |
 |---|---|---|---|
 | General GKE | `e2-standard-4` | ✓ | Default choice |
 | Memory intensive | `n2-highmem-4` | ✓ | Databases, caches |
-| GPU inference | `g2-standard-12` (L4) | **DWS flex-start** | **Preferred for LLM serving** — 16 L4s available. Use DWS flex-start, not spot — see below |
+| GPU inference | `g2-standard-12` (L4) | **DWS** | 16 L4s available — see [GPU / AI / ML section](#gpu--ai--ml-templates) |
 | GPU inference | `n1-standard-4` (T4) | ✓ | 8 T4s available |
-| GPU training | `a2-highgpu-1g` (A100 40GB) | — | Use **DWS + Kueue** — 16 A100s available |
+| GPU training | `a2-highgpu-1g` (A100 40GB) | — | Use DWS + Kueue — see [GPU / AI / ML section](#gpu--ai--ml-templates) |
 | **❌ DO NOT USE** | `a3-highgpu` (A100 80GB) | — | **Quota = 0, will fail** |
 | **❌ DO NOT USE** | `a3-mega` (H100) | — | **Quota = 0, will fail** |
+
+---
+
+## GPU / AI / ML Templates
+
+> **Skip this entire section if your template does not use GPU node pools or serve AI models.** This section covers accelerator provisioning (DWS flex-start), LLM inference tooling, GCS model weight mounting, and Kueue batch scheduling.
 
 ### L4 GPU Node Pools: Use DWS Flex-Start, Not Spot
 
@@ -388,7 +394,7 @@ resource "google_container_node_pool" "gpu_pool" {
 
 DWS flex-start draws from the *preemptible* quota pool (which GCP sets larger than standard on-demand quota) but the provisioned VMs are non-preemptible once running. Cost is ~53% below on-demand. GKE queues the request until capacity is available rather than failing immediately — correct for CI validation where a delay is acceptable but a stockout failure is not.
 
-**Zone selection for L4:** `nvidia-l4` / `g2-standard-12` is available in **44 zones across 19 global regions**. Best spot headroom within us-central1 is zone `-c`. If stockouts persist, expand `node_locations` to include zones in `us-east1`, `europe-west4`, or `asia-southeast1` — all have 3 L4-capable zones. Restrict `node_locations` to a single zone to reduce scheduling spread and improve fill rate: `node_locations = ["${var.region}-c"]`.
+**Zone selection for L4:** `nvidia-l4` / `g2-standard-12` is available in **44 zones across 19 global regions**. Best headroom within us-central1 is zone `-c`. If stockouts persist, expand `node_locations` to include zones in `us-east1`, `europe-west4`, or `asia-southeast1` — all have 3 L4-capable zones. Restrict `node_locations` to a single zone to reduce scheduling spread and improve fill rate: `node_locations = ["${var.region}-c"]`.
 
 ### Scarce Accelerators: Use DWS + Kueue
 
@@ -447,9 +453,7 @@ Reference: `github.com/GoogleCloudPlatform/accelerated-platforms` — check the 
 
 In `verification_plan.md`, document the expected wait and how to monitor: `kubectl get workloads -n <namespace>`. Use `--timeout=1800s` (30 min) for GPU cluster `kubectl wait` commands — 600s is too short for GPU node pool provisioning.
 
----
-
-## GKE Inference Quickstart
+### GKE Inference Quickstart
 
 For templates that serve **pre-trained AI models** (LLM inference, image generation, embedding serving), use the **GKE Inference Quickstart** tool (`gcloud container ai profiles`) to generate performance-tuned cluster and workload designs before writing any Terraform or manifests.
 
@@ -506,12 +510,84 @@ gcloud container ai profiles manifests create \
 | Time to First Token (p50) | ~XXX ms |
 | Next Token Output Token (p50) | ~XX ms |
 | Throughput | ~XXX tokens/sec |
-| Node type | g2-standard-12 (spot) |
+| Node type | g2-standard-12 (DWS flex-start) |
 | Estimated node cost | ~$X.XX/hr |
 | Estimated cost per 1M tokens | ~$X.XX |
 ```
 
 Do not fabricate these numbers. Run the benchmarks command and use the actual output.
+
+### GCS FUSE CSI Driver
+
+For templates that mount GCS buckets as volumes (e.g., model weights for LLM inference), the **GCS FUSE CSI driver must be explicitly enabled** on the cluster. Without it, pod `volumeMount` against a `csi` volume with driver `gcsfuse.csi.storage.gke.io` will silently fail to mount.
+
+```hcl
+resource "google_container_cluster" "primary" {
+  # ...
+  addons_config {
+    gcs_fuse_csi_driver_config {
+      enabled = true
+    }
+  }
+}
+```
+
+The pod's ServiceAccount must also have `roles/storage.objectViewer` (read) and optionally `roles/storage.objectCreator` (write for init containers that populate the bucket). Grant these via `google_storage_bucket_iam_member`, not `google_project_iam_member`.
+
+### Local Kueue Chart Structure
+
+When using a local chart for Kueue queue resources (ResourceFlavor, ClusterQueue, LocalQueue), the chart must have this minimal structure:
+
+```
+kueue-chart/
+├── Chart.yaml
+└── templates/
+    └── queues.yaml
+```
+
+`Chart.yaml`:
+```yaml
+apiVersion: v2
+name: kueue-resources
+description: Kueue queue resources for GPU template
+type: application
+version: 0.1.0
+```
+
+`templates/queues.yaml`:
+```yaml
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ResourceFlavor
+metadata:
+  name: gpu-flavor
+spec:
+  nodeLabels:
+    cloud.google.com/gke-accelerator: nvidia-l4
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ClusterQueue
+metadata:
+  name: gpu-cluster-queue
+spec:
+  namespaceSelector: {}
+  resourceGroups:
+    - coveredResources: ["cpu", "memory", "nvidia.com/gpu"]
+      flavors:
+        - name: gpu-flavor
+          resources:
+            - name: "nvidia.com/gpu"
+              nominalQuota: 1
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: LocalQueue
+metadata:
+  name: gpu-local-queue
+  namespace: <workload-namespace>
+spec:
+  clusterQueueName: gpu-cluster-queue
+```
+
+Workload pods must include the label `kueue.x-k8s.io/queue-name: gpu-local-queue` to be admitted through the queue.
 
 ---
 
@@ -572,12 +648,12 @@ for q in r['quotas']:
         print(f'WARNING: {q[\"metric\"]} at {q[\"usage\"]/q[\"limit\"]*100:.0f}% ({q[\"usage\"]:.0f}/{q[\"limit\"]:.0f})')
 "
 
-# 2. Check machine type is available in zone
+# 2. Check your machine type is available in zone (replace <machine-type> with the actual type)
 gcloud compute machine-types list \
-  --filter="zone:us-central1-b AND name=g2-standard-12" \
+  --filter="zone:us-central1-b AND name=<machine-type>" \
   --format="table(name,zone)"
 
-# 3. For accelerator templates, check current GPU/TPU availability
+# 3. GPU / AI / ML templates only — check accelerator availability
 gcloud compute accelerator-types list \
   --filter="zone:us-central1-b" \
   --format="table(name,zone)"
@@ -735,7 +811,20 @@ OCI Helm registries (e.g. `oci://us-docker.pkg.dev/...`) may require GCP authent
 | 3 | **Public OCI registry** | `oci://registry.k8s.io/...` (k8s.io is unauthenticated) |
 | 4 | **GCP Artifact Registry OCI** | `oci://us-docker.pkg.dev/...` — **avoid unless you add explicit auth** |
 
-For **Kueue specifically**: install the operator from the official public chart, then use a local chart for your `ResourceFlavor` / `ClusterQueue` / `LocalQueue` objects:
+**For a standard public HTTPS chart** (e.g., ingress-nginx, cert-manager, external-dns):
+
+```hcl
+resource "helm_release" "ingress_nginx" {
+  name             = "ingress-nginx"
+  repository       = "https://kubernetes.github.io/ingress-nginx"
+  chart            = "ingress-nginx"
+  version          = "4.10.0"
+  namespace        = "ingress-nginx"
+  create_namespace = true
+}
+```
+
+**For Kueue specifically** (GPU / AI / ML templates): install the operator from the official public chart, then use a local chart for your `ResourceFlavor` / `ClusterQueue` / `LocalQueue` objects:
 
 ```hcl
 # Kueue operator — use public HTTPS repo, not the GCP OCI endpoint
@@ -757,82 +846,6 @@ resource "helm_release" "kueue_resources" {
   depends_on       = [helm_release.kueue, google_container_node_pool.gpu_pool]
 }
 ```
-
----
-
-## GCS FUSE CSI Driver
-
-For templates that mount GCS buckets as volumes (e.g., model weights for LLM inference), the **GCS FUSE CSI driver must be explicitly enabled** on the cluster. Without it, pod `volumeMount` against a `csi` volume with driver `gcsfuse.csi.storage.gke.io` will silently fail to mount.
-
-```hcl
-resource "google_container_cluster" "primary" {
-  # ...
-  addons_config {
-    gcs_fuse_csi_driver_config {
-      enabled = true
-    }
-  }
-}
-```
-
-The pod's ServiceAccount must also have `roles/storage.objectViewer` (read) and optionally `roles/storage.objectCreator` (write for init containers that populate the bucket). Grant these via `google_storage_bucket_iam_member`, not `google_project_iam_member`.
-
----
-
-## Local Kueue Chart Structure
-
-When using a local chart for Kueue queue resources (ResourceFlavor, ClusterQueue, LocalQueue), the chart must have this minimal structure:
-
-```
-kueue-chart/
-├── Chart.yaml
-└── templates/
-    └── queues.yaml
-```
-
-`Chart.yaml`:
-```yaml
-apiVersion: v2
-name: kueue-resources
-description: Kueue queue resources for GPU template
-type: application
-version: 0.1.0
-```
-
-`templates/queues.yaml`:
-```yaml
-apiVersion: kueue.x-k8s.io/v1beta1
-kind: ResourceFlavor
-metadata:
-  name: gpu-flavor
-spec:
-  nodeLabels:
-    cloud.google.com/gke-accelerator: nvidia-l4
----
-apiVersion: kueue.x-k8s.io/v1beta1
-kind: ClusterQueue
-metadata:
-  name: gpu-cluster-queue
-spec:
-  namespaceSelector: {}
-  resourceGroups:
-    - coveredResources: ["cpu", "memory", "nvidia.com/gpu"]
-      flavors:
-        - name: gpu-flavor
-          resources:
-            - name: "nvidia.com/gpu"
-              nominalQuota: 1
----
-apiVersion: kueue.x-k8s.io/v1beta1
-kind: LocalQueue
-metadata:
-  name: gpu-local-queue
-  namespace: <workload-namespace>
-spec:
-  clusterQueueName: gpu-cluster-queue
-```
-
-Workload pods must include the label `kueue.x-k8s.io/queue-name: gpu-local-queue` to be admitted through the queue.
 
 ---
 
