@@ -152,8 +152,10 @@ resource "google_container_node_pool" "gpu_pool" {
   node_count     = 1
 
   node_config {
-    spot         = true
-    machine_type = "g2-standard-12"
+    # DWS flex-start: spot=false + queued_provisioning=true means non-preemptible
+    # once provisioned, but draws from the larger preemptible quota pool.
+    spot            = false
+    machine_type    = "g2-standard-12"
 
     guest_accelerator {
       type  = "nvidia-l4"
