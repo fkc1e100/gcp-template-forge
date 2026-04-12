@@ -1,15 +1,13 @@
 FROM ghcr.io/gke-labs/gemini-for-kubernetes-development/generic-golang:latest
 
-# Install HashiCorp Terraform
-RUN apt-get update -qq && \
-    apt-get install -y -qq gnupg software-properties-common lsb-release && \
-    curl -fsSL https://apt.releases.hashicorp.com/gpg \
-      | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg && \
-    echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] \
-      https://apt.releases.hashicorp.com $(lsb_release -cs) main" \
-      > /etc/apt/sources.list.d/hashicorp.list && \
-    apt-get update -qq && \
-    apt-get install -y -qq terraform && \
+# Install HashiCorp Terraform (binary download — no lsb_release/apt repo needed)
+RUN apt-get update -qq && apt-get install -y -qq unzip && \
+    TF_VER=$(curl -fsSL https://api.releases.hashicorp.com/v1/releases/terraform/latest \
+      | python3 -c "import json,sys; print(json.load(sys.stdin)['version'])") && \
+    curl -fsSL "https://releases.hashicorp.com/terraform/${TF_VER}/terraform_${TF_VER}_linux_amd64.zip" \
+      -o /tmp/terraform.zip && \
+    unzip -q /tmp/terraform.zip -d /usr/local/bin/ && \
+    rm /tmp/terraform.zip && \
     terraform version
 
 # Install Helm
