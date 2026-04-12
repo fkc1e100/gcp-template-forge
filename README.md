@@ -30,7 +30,7 @@ flowchart LR
         PR -->|approved + merged| MAIN
     end
 
-    subgraph GCP ["GCP Sandbox — gca-gke-2025"]
+    subgraph GCP ["GCP Sandbox"]
         TF["🏗️ TF + Helm\ncluster"]
         KCC["☸️ Config Connector\ncluster"]
     end
@@ -50,7 +50,7 @@ flowchart LR
 | **Overseer** | Kubernetes operator that watches GitHub for new issues, coordinates the agent lifecycle, and manages PR state | [`gke-labs/gemini-for-kubernetes-development`](https://github.com/gke-labs/gemini-for-kubernetes-development) |
 | **Repo-Agent** | Creates GitHub issues, branches, and PRs; posts status comments; triggers the agent sandbox | same |
 | **AgentSandboxes** | Kubernetes Jobs that spin up an isolated Gemini CLI session per template; the agent authors all IaC files and commits them | same |
-| **forge-builder SA** | GCP service account used by GitHub Actions CI to authenticate and run Terraform/Helm/KCC against the sandbox project | `agent-infra/` |
+| **CI Service Account** | GCP service account used by GitHub Actions CI to authenticate and run Terraform/Helm/KCC against the sandbox project | `agent-infra/` |
 
 ### Repository Layout
 
@@ -60,7 +60,7 @@ flowchart LR
     sandbox-validation.yml  ← lint · deploy-test-tf ∥ deploy-test-kcc (PR) · validate-tf-helm ∥ validate-kcc · publish-validated (push)
   ISSUE_TEMPLATE/           ← template request form
 agent-infra/
-  terraform/                ← control-plane GKE cluster + forge-builder SA
+  terraform/                ← control-plane GKE cluster + CI service account
   manifests/                ← Overseer + Repo-Agent + AgentSandboxes deployments
 templates/                  ← validated template library (see Templates section below)
 GEMINI.md                   ← guardrails and instructions for the Gemini CLI agent
@@ -125,7 +125,7 @@ sequenceDiagram
         GCP-->>CI: workload ready ✓
         CI->>GCP: TF destroy
     and deploy-test-kcc (parallel)
-        CI->>GCP: KCC apply -n forge-management
+        CI->>GCP: KCC apply (Config Connector manifests)
         GCP-->>CI: ContainerCluster Ready ✓
         CI->>GCP: kubectl delete (KCC teardown)
     end
@@ -141,7 +141,7 @@ sequenceDiagram
         CI->>GCP: TF destroy (full teardown)
     and validate-kcc (parallel)
         CI->>CI: skip-check (changed since last .validated?)
-        CI->>GCP: kubectl apply -n forge-management (KCC manifests)
+        CI->>GCP: kubectl apply (KCC manifests)
         GCP-->>CI: ContainerCluster Ready ✓
         CI->>GCP: kubectl delete (KCC teardown)
     end
