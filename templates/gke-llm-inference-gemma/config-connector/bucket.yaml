@@ -38,4 +38,4 @@ spec:
   bucketRef:
     name: gca-gke-2025-gemma-weights-kcc
   role: roles/storage.objectViewer
-  member: serviceAccount:gemma-sa-kcc@gca-gke-2025.iam.gserviceaccount.com
+  member: serviceAccount:forge-builder@gca-gke-2025.iam.gserviceaccount.com
