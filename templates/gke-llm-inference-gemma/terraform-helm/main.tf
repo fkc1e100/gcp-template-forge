@@ -95,7 +95,7 @@ resource "google_container_cluster" "primary" {
   deletion_protection = false
 
   resource_labels = {
-    "template" = "gke-llm-inference-gemma"
+    template = "gke-llm-inference-gemma"
   }
 
   remove_default_node_pool = true
@@ -173,7 +173,7 @@ resource "google_container_node_pool" "gpu_pool" {
 
     labels = {
       "nvidia.com/gpu" = "present"
-      "template"       = "gke-llm-inference-gemma"
+      template         = "gke-llm-inference-gemma"
     }
 
     taint {
@@ -211,10 +211,10 @@ resource "google_secret_manager_secret_iam_member" "hf_token_accessor" {
 
 # Helm Release
 resource "helm_release" "workload" {
-  name             = "gke-llm-inference-gemma"
-  chart            = "${path.module}/workload"
-  namespace        = "gemma"
-  depends_on       = [google_container_node_pool.gpu_pool, helm_release.kueue_resources]
+  name       = "gke-llm-inference-gemma"
+  chart      = "${path.module}/workload"
+  namespace  = "gemma"
+  depends_on = [google_container_node_pool.gpu_pool, helm_release.kueue_resources]
 
   values = [
     file("${path.module}/workload/values.yaml")
@@ -224,10 +224,12 @@ resource "helm_release" "workload" {
     name  = "bucketName"
     value = google_storage_bucket.weights.name
   }
+
   set {
     name  = "serviceAccount.annotations.iam\\.gke\\.io/gcp-service-account"
     value = var.service_account
   }
+
   set {
     name  = "projectId"
     value = var.project_id
