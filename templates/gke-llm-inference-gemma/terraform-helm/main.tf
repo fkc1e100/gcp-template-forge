@@ -226,7 +226,7 @@ resource "helm_release" "workload" {
   }
 
   set {
-    name  = "serviceAccount.annotations.iam\\.gke\\.io/gcp-service-account"
+    name  = "serviceAccount.annotations.iam\.gke\.io/gcp-service-account"
     value = var.service_account
   }
 
