@@ -95,7 +95,7 @@ resource "google_container_cluster" "primary" {
   deletion_protection = false
 
   resource_labels = {
-    "template" = "gke-llm-inference-gemma"
+    template = "gke-llm-inference-gemma"
   }
 
   remove_default_node_pool = true
@@ -173,7 +173,7 @@ resource "google_container_node_pool" "gpu_pool" {
 
     labels = {
       "nvidia.com/gpu" = "present"
-      "template"       = "gke-llm-inference-gemma"
+      template         = "gke-llm-inference-gemma"
     }
 
     taint {
