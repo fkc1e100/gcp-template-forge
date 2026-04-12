@@ -1,4 +1,4 @@
-# Verification Plan - GKE LLM Inference (Gemma 4)
+# Verification Plan - GKE LLM Inference (Gemma 2 9B IT)
 
 This plan outlines the steps to verify both the Terraform + Helm and Config Connector deployment paths.
 
