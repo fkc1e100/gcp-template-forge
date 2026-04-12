@@ -152,6 +152,10 @@ resource "google_container_node_pool" "gpu_pool" {
       count = 1
     }
 
+    gpu_driver_installation_config {
+      gpu_driver_version = "LATEST"
+    }
+
     service_account = var.service_account
     oauth_scopes    = ["https://www.googleapis.com/auth/cloud-platform"]
 
