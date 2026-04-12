@@ -105,6 +105,7 @@ kubectl apply -f config-connector/ -n forge-management
    
    # Apply workload and Kueue manifests
    kubectl apply -f config-connector/workload/
+   kubectl apply -f kueue-kcc.yaml
    
    # Wait for deployment
    kubectl wait --for=condition=Available deployment/gke-llm-inference-gemma -n gemma --timeout=30m
