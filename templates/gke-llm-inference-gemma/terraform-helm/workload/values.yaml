@@ -1,0 +1,47 @@
+# Default values for gke-llm-inference-gemma.
+replicaCount: 1
+
+image:
+  repository: vllm/vllm-openai
+  pullPolicy: IfNotPresent
+  tag: "v0.7.2"
+
+# Model configuration
+model:
+  name: "google/gemma-2-9b-it"
+  # Path where vLLM reads weights — GCS FUSE mount + weights subdir.
+  # Init container downloads to gs://<bucket>/weights/ on first run;
+  # subsequent pod starts skip the download automatically.
+  path: "/data/weights"
+
+# vLLM arguments
+vllm:
+  maxModelLen: 4096
+  gpuMemoryUtilization: 0.9
+  tensorParallelSize: 1
+
+bucketName: "" # Provided by Terraform via helm set
+projectId: ""  # Provided by Terraform via helm set (needed by init container to access Secret Manager)
+
+serviceAccount:
+  name: "gemma-sa"
+  annotations: {}
+
+service:
+  type: LoadBalancer
+  port: 80
+
+resources:
+  limits:
+    nvidia.com/gpu: 1
+  requests:
+    nvidia.com/gpu: 1
+
+nodeSelector:
+  nvidia.com/gpu: "present"
+
+tolerations:
+  - key: "nvidia.com/gpu"
+    operator: "Equal"
+    value: "present"
+    effect: "NoSchedule"
