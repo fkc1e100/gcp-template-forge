@@ -30,6 +30,8 @@ spec:
   clusterRef:
     name: gke-llm-inference-gemma-kcc
   nodeCount: 1
+  queuedProvisioning:
+    enabled: true
   nodeConfig:
     spot: true
     machineType: g2-standard-12
@@ -40,8 +42,8 @@ spec:
     guestAccelerator:
       - type: nvidia-l4
         count: 1
-    gpuDriverInstallationConfig:
-      gpuDriverVersion: LATEST
+        gpuDriverInstallationConfig:
+          gpuDriverVersion: LATEST
     labels:
       template: gke-llm-inference-gemma
       nvidia.com/gpu: present

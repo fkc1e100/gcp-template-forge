@@ -150,10 +150,10 @@ resource "google_container_node_pool" "gpu_pool" {
     guest_accelerator {
       type  = "nvidia-l4"
       count = 1
-    }
 
-    gpu_driver_installation_config {
-      gpu_driver_version = "LATEST"
+      gpu_driver_installation_config {
+        gpu_driver_version = "LATEST"
+      }
     }
 
     service_account = var.service_account
@@ -173,6 +173,10 @@ resource "google_container_node_pool" "gpu_pool" {
       value  = "present"
       effect = "NO_SCHEDULE"
     }
+  }
+
+  queued_provisioning {
+    enabled = true
   }
 }
 
