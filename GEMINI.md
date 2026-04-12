@@ -253,11 +253,37 @@ Use spot/preemptible for all sandbox validation clusters to minimise cost.
 |---|---|---|---|
 | General GKE | `e2-standard-4` | ✓ | Default choice |
 | Memory intensive | `n2-highmem-4` | ✓ | Databases, caches |
-| GPU inference | `g2-standard-12` (L4) | ✓ | **Preferred for LLM serving** — 16 L4s available |
+| GPU inference | `g2-standard-12` (L4) | **DWS flex-start** | **Preferred for LLM serving** — 16 L4s available. Use DWS flex-start, not spot — see below |
 | GPU inference | `n1-standard-4` (T4) | ✓ | 8 T4s available |
 | GPU training | `a2-highgpu-1g` (A100 40GB) | — | Use **DWS + Kueue** — 16 A100s available |
 | **❌ DO NOT USE** | `a3-highgpu` (A100 80GB) | — | **Quota = 0, will fail** |
 | **❌ DO NOT USE** | `a3-mega` (H100) | — | **Quota = 0, will fail** |
+
+### L4 GPU Node Pools: Use DWS Flex-Start, Not Spot
+
+**Do not use `spot = true` for L4 GPU node pools.** Spot VMs are surplus/excess capacity — on-demand requests have first claim on GPU inventory. During scarcity, spot requests fail immediately (`GCE_STOCKOUT`) with no queuing. The problems compound:
+1. On-demand physically displaces spot from the capacity pool — spot is structurally last in line
+2. L4 spot capacity is chronically thin in us-central1-a and us-central1-b
+
+**Use DWS flex-start instead** (`spot = false` + `queued_provisioning = true`):
+
+```hcl
+resource "google_container_node_pool" "gpu_pool" {
+  node_config {
+    spot         = false  # NOT spot — DWS flex-start is non-preemptible once provisioned
+    machine_type = "g2-standard-12"
+    ...
+  }
+
+  queued_provisioning {
+    enabled = true  # spot=false + queued_provisioning=true = DWS flex-start mode
+  }
+}
+```
+
+DWS flex-start draws from the *preemptible* quota pool (which GCP sets larger than standard on-demand quota) but the provisioned VMs are non-preemptible once running. Cost is ~53% below on-demand. GKE queues the request until capacity is available rather than failing immediately — correct for CI validation where a delay is acceptable but a stockout failure is not.
+
+**Zone selection for L4:** `nvidia-l4` / `g2-standard-12` is available in **44 zones across 19 global regions**. Best spot headroom within us-central1 is zone `-c`. If stockouts persist, expand `node_locations` to include zones in `us-east1`, `europe-west4`, or `asia-southeast1` — all have 3 L4-capable zones. Restrict `node_locations` to a single zone to reduce scheduling spread and improve fill rate: `node_locations = ["${var.region}-c"]`.
 
 ### Scarce Accelerators: Use DWS + Kueue
 
@@ -612,7 +638,7 @@ Do not open a PR or comment success until this is captured. Do not mark an issue
 | Per-template VPC, not `forge-network` | forge-network has no GKE-compatible secondary ranges |
 | Pre-check quotas before apply | Prevents failed deployments that waste sandbox time |
 | Use DWS + Kueue for A100/TPU | Only way to get scarce accelerators without hardcoded reservations |
-| Spot/preemptible for validation nodes | Reduces sandbox cost by ~60–80% |
+| Spot/preemptible for **CPU** validation nodes | Reduces sandbox cost by ~60–80%; **exception: GPU node pools — use DWS flex-start (`spot = false` + `queued_provisioning = true`) — spot puts GPU requests at the back of the capacity queue and fails immediately on stockout** |
 | Pin provider versions `~> 6.0` | Prevents unexpected breaking changes on re-runs |
 | Empty `backend "gcs" {}` block | CI injects state location; hardcoding causes conflicts |
 | Issue comments at every checkpoint | Visibility for human reviewers; catch problems early |
@@ -633,3 +659,5 @@ Format: `- **[area]** symptom → fix. (root cause)`
 - **GPU node pools (L4)** `g2-standard-48` with 4×L4 enters ERROR state after ~45 min → use `g2-standard-12` with 1×L4 and set `tensorParallelSize: 1` in values.yaml. (Spot availability and quota for large multi-GPU machines is thin in us-central1; 1×L4 on g2-standard-12 is sufficient for 9B-parameter models and provisions reliably.)
 
 - **WIF binding via Terraform** `google_service_account_iam_member` targeting the CI service account returns 403 during `terraform apply` → remove the resource entirely; do not attempt to set Workload Identity bindings on the CI SA from within the template. (The `forge-builder` SA lacks `iam.serviceAccounts.getIamPolicy` on itself; the binding already exists in the project and re-applying it via Terraform is both unnecessary and unauthorised.)
+
+- **L4 GPU spot → GCE_STOCKOUT** `spot = true` on `g2-standard-12` node pools in us-central1-a/b fails with `GCE_STOCKOUT` — 0 nodes provisioned after 35 min → switch to DWS flex-start: set `spot = false` and keep `queued_provisioning { enabled = true }`. Spot VMs are surplus capacity; on-demand has first physical claim on GPU inventory, so spot requests fail outright during scarcity with no queue. DWS flex-start draws from the larger preemptible quota pool and is non-preemptible once running (~53% below on-demand cost). Also restrict `node_locations` to `["${var.region}-c"]` — us-central1-c has the best L4 headroom within the region. L4 is available globally across 44 zones in 19 regions (us-central1, us-east1, europe-west4, asia-southeast1, and more) — expand zones if us-central1-c stockouts persist.
