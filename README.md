@@ -44,13 +44,13 @@ graph TD
     AS --> CR
     AS -- "commits template files" --> BR
     BR --> PR
-    PR -- "CI: lint + deploy-and-test" --> TF
-    PR -- "CI: lint + deploy-and-test" --> KCC
+    PR -- "CI: lint → deploy-test-tf" --> TF
+    PR -- "CI: lint → deploy-test-kcc" --> KCC
     TF --> HELM
     PR -- "approved + merged" --> MAIN
-    MAIN -- "CI: validate-and-publish" --> TF
-    MAIN -- "CI: validate-and-publish" --> KCC
-    MAIN -- "updates README + .validated" --> MAIN
+    MAIN -- "CI: validate-tf-helm ∥ validate-kcc" --> TF
+    MAIN -- "CI: validate-tf-helm ∥ validate-kcc" --> KCC
+    MAIN -- "publish-validated: README + .validated" --> MAIN
 ```
 
 ### Key Components
@@ -67,7 +67,7 @@ graph TD
 ```
 .github/
   workflows/
-    sandbox-validation.yml  ← lint · deploy-and-test (PR) · validate-tf-helm · validate-kcc · publish-validated (push)
+    sandbox-validation.yml  ← lint · deploy-test-tf ∥ deploy-test-kcc (PR) · validate-tf-helm ∥ validate-kcc · publish-validated (push)
   ISSUE_TEMPLATE/           ← template request form
 agent-infra/
   terraform/                ← control-plane GKE cluster + forge-builder SA
@@ -90,7 +90,8 @@ flowchart LR
     subgraph pr ["━━━  Pull Request  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"]
         direction LR
         L(["🔎 lint\nper template\ntf fmt · tf validate\nhelm lint · KCC YAML\nboth-paths check"])
-        DAT(["🚀 deploy-and-test\nper template\nTF apply → verify → destroy\nKCC apply → wait Ready → delete\nPost PR summary comment"])
+        DTTF(["🏗️ deploy-test-tf\nper template\nTF apply → verify → Helm deploy\n→ security scan → TF destroy\nPost PR summary comment"])
+        DTKCC(["☸️ deploy-test-kcc\nper template\nKCC apply → wait Ready\n→ delete\nPost PR summary comment"])
     end
 
     subgraph push ["━━━  Push to main  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"]
@@ -101,13 +102,15 @@ flowchart LR
     end
 
     DC --> L
-    L --> DAT
+    L --> DTTF
+    L --> DTKCC
     DC --> VTH
-    VTH --> VKCC
+    DC --> VKCC
+    VTH --> PUB
     VKCC --> PUB
 ```
 
-> `validate-tf-helm` and `validate-kcc` run on **separate independent runners** — two real GKE clusters built end-to-end, one via Terraform + Helm and one via Config Connector. They run sequentially (not simultaneously) to avoid GCP resource name conflicts.
+> `deploy-test-tf` and `deploy-test-kcc` run **in parallel** on separate runners after lint passes. Likewise, `validate-tf-helm` and `validate-kcc` both run in parallel on push to main — GCP resource name collisions are avoided by the `-tf` / `-kcc` suffix convention on all resource names. `publish-validated` waits for both validate jobs to complete before updating the README and `.validated` marker.
 
 ### End-to-end sequence
 
@@ -125,26 +128,34 @@ sequenceDiagram
     Note over GH,CI: ── Pull Request CI Gate ──────────────────────────────
     GH->>CI: PR opened → detect-changes (PR head SHA diff)
     CI->>CI: lint: tf fmt/validate · helm lint · KCC YAML · both-paths check
-    CI->>GCP: deploy-and-test: TF apply
-    GCP-->>CI: cluster RUNNING ✓
-    CI->>GCP: helm upgrade --install
-    GCP-->>CI: workload ready ✓
-    CI->>GCP: TF destroy
-    CI->>GCP: KCC apply → wait Ready → delete
-    CI->>GH: Post deploy summary comment to PR
+    par deploy-test-tf (parallel)
+        CI->>GCP: TF apply (VPC · cluster · node pool)
+        GCP-->>CI: cluster RUNNING ✓
+        CI->>GCP: helm upgrade --install
+        GCP-->>CI: workload ready ✓
+        CI->>GCP: TF destroy
+    and deploy-test-kcc (parallel)
+        CI->>GCP: KCC apply -n forge-management
+        GCP-->>CI: ContainerCluster Ready ✓
+        CI->>GCP: kubectl delete (KCC teardown)
+    end
+    CI->>GH: Post deploy summary comment to PR (both paths)
     Dev->>GH: Review + merge PR
 
-    Note over GH,CI: ── Post-Merge CI Gate (3 independent jobs) ───────────
-    GH->>CI: push to main → validate-tf-helm starts
-    CI->>CI: skip-check (template changed since last .validated commit?)
-    CI->>GCP: TF apply (VPC · cluster · node pool · Helm workload)
-    GCP-->>CI: cluster RUNNING ✓  nodes ready ✓
-    CI->>GCP: TF destroy (full teardown)
-    CI->>CI: validate-kcc starts (fresh runner, KCC cluster creds)
-    CI->>GCP: kubectl apply -n forge-management (KCC manifests)
-    GCP-->>CI: ContainerCluster Ready ✓
-    CI->>GCP: kubectl delete (KCC teardown)
-    CI->>CI: publish-validated starts
+    Note over GH,CI: ── Post-Merge CI Gate (4 independent jobs) ──────────
+    GH->>CI: push to main → detect-changes
+    par validate-tf-helm (parallel)
+        CI->>CI: skip-check (changed since last .validated?)
+        CI->>GCP: TF apply (VPC · cluster · node pool · Helm workload)
+        GCP-->>CI: cluster RUNNING ✓  nodes ready ✓
+        CI->>GCP: TF destroy (full teardown)
+    and validate-kcc (parallel)
+        CI->>CI: skip-check (changed since last .validated?)
+        CI->>GCP: kubectl apply -n forge-management (KCC manifests)
+        GCP-->>CI: ContainerCluster Ready ✓
+        CI->>GCP: kubectl delete (KCC teardown)
+    end
+    CI->>CI: publish-validated starts (waits for both above)
     CI->>CI: accumulate .agent-metrics across all sandbox sessions
     CI->>GH: Commit README.md + .validated + .agent-metrics-cumulative
 ```
