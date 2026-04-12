@@ -4,7 +4,7 @@ metadata:
   name: gke-llm-inference-kcc
   namespace: forge-management
   labels:
-    template: templates/gke-llm-inference
+    template: gke-llm-inference
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
@@ -13,8 +13,6 @@ spec:
     name: gke-llm-inference-kcc-vpc
   subnetworkRef:
     name: gke-llm-inference-kcc-subnet
-  removeDefaultNodePool: true
-  initialNodeCount: 1
   networkingMode: VPC_NATIVE
   ipAllocationPolicy:
     clusterSecondaryRangeName: pods
@@ -34,7 +32,7 @@ metadata:
   name: cpu-pool-kcc
   namespace: forge-management
   labels:
-    template: templates/gke-llm-inference
+    template: gke-llm-inference
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
@@ -54,7 +52,7 @@ metadata:
   name: gpu-pool-kcc
   namespace: forge-management
   labels:
-    template: templates/gke-llm-inference
+    template: gke-llm-inference
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
@@ -66,8 +64,6 @@ spec:
   autoscaling:
     minNodeCount: 0
     maxNodeCount: 1
-  queuedProvisioning:
-    enabled: true
   nodeConfig:
     machineType: g2-standard-12
     spot: false

@@ -31,3 +31,9 @@ variable "service_account" {
   description = "The service account to run the GKE nodes"
   type        = string
 }
+
+variable "workload_service_account_email" {
+  description = "Existing GCP service account to use for the workload. If not provided, a new one will be created (requires iam.serviceAccounts.create permission)."
+  type        = string
+  default     = ""
+}

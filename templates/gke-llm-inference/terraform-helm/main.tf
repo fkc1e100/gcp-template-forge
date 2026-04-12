@@ -116,7 +116,13 @@ resource "google_storage_bucket" "weights" {
   uniform_bucket_level_access = true
 }
 
+locals {
+  create_workload_sa = var.workload_service_account_email == ""
+  workload_sa_email  = local.create_workload_sa ? (length(google_service_account.workload_sa) > 0 ? google_service_account.workload_sa[0].email : "") : var.workload_service_account_email
+}
+
 resource "google_service_account" "workload_sa" {
+  count        = local.create_workload_sa ? 1 : 0
   account_id   = "gke-llm-inference-workload"
   display_name = "GKE LLM Inference Workload Service Account"
 }
@@ -124,11 +130,12 @@ resource "google_service_account" "workload_sa" {
 resource "google_storage_bucket_iam_member" "workload_reader" {
   bucket = google_storage_bucket.weights.name
   role   = "roles/storage.objectViewer"
-  member = "serviceAccount:${google_service_account.workload_sa.email}"
+  member = "serviceAccount:${local.workload_sa_email}"
 }
 
 resource "google_service_account_iam_member" "workload_identity_binding" {
-  service_account_id = google_service_account.workload_sa.name
+  count              = local.create_workload_sa ? 1 : 0
+  service_account_id = google_service_account.workload_sa[0].name
   role               = "roles/iam.workloadIdentityUser"
   member             = "serviceAccount:${var.project_id}.svc.id.goog[default/gemma-2-2b-it-vllm-sa]"
 }
@@ -145,8 +152,8 @@ resource "helm_release" "vllm" {
 
   set {
     name  = "serviceAccountEmail"
-    value = google_service_account.workload_sa.email
+    value = local.workload_sa_email
   }
 
-  depends_on = [google_container_node_pool.gpu_pool, google_service_account_iam_member.workload_identity_binding]
+  depends_on = [google_container_node_pool.gpu_pool]
 }

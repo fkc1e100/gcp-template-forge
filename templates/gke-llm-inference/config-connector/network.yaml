@@ -4,7 +4,7 @@ metadata:
   name: gke-llm-inference-kcc-vpc
   namespace: forge-management
   labels:
-    template: templates/gke-llm-inference
+    template: gke-llm-inference
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
@@ -16,7 +16,7 @@ metadata:
   name: gke-llm-inference-kcc-subnet
   namespace: forge-management
   labels:
-    template: templates/gke-llm-inference
+    template: gke-llm-inference
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
