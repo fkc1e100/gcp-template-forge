@@ -202,12 +202,13 @@ resource "google_storage_bucket_iam_member" "weights_creator" {
   member = "serviceAccount:${var.service_account}"
 }
 
-# Allow the workload SA to read the HF token from Secret Manager
-resource "google_secret_manager_secret_iam_member" "hf_token_accessor" {
-  secret_id = "huggingface-token"
-  role      = "roles/secretmanager.secretAccessor"
-  member    = "serviceAccount:${var.service_account}"
-}
+# NOTE: Permission 'secretmanager.secrets.getIamPolicy' denied in CI for 'huggingface-token'.
+# Assuming the permission is granted out-of-band or via other means.
+# resource "google_secret_manager_secret_iam_member" "hf_token_accessor" {
+#   secret_id = "huggingface-token"
+#   role      = "roles/secretmanager.secretAccessor"
+#   member    = "serviceAccount:${var.service_account}"
+# }
 
 # Helm Release
 resource "helm_release" "workload" {
