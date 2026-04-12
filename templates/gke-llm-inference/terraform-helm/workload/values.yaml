@@ -1,0 +1,28 @@
+replicaCount: 1
+
+image:
+  repository: vllm/vllm-openai
+  tag: v0.7.2
+  pullPolicy: IfNotPresent
+
+model:
+  id: google/gemma-2-2b-it
+  bucketName: "" # Injected by Terraform
+
+service:
+  type: LoadBalancer
+  port: 80
+
+resources:
+  limits:
+    nvidia.com/gpu: 1
+  requests:
+    nvidia.com/gpu: 1
+
+nodeSelector:
+  cloud.google.com/gke-accelerator: nvidia-l4
+
+tolerations:
+- key: "nvidia.com/gpu"
+  operator: "Exists"
+  effect: "NoSchedule"

@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gemma-2-2b-it-vllm
+  labels:
+    app: vllm-inference-server
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: vllm-inference-server
+  template:
+    metadata:
+      labels:
+        app: vllm-inference-server
+      annotations:
+        gke-gcsview.csi.storage.gke.io/volumes: "true"
+    spec:
+      serviceAccountName: gemma-2-2b-it-vllm-sa
+      containers:
+      - name: inference-server
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command:
+        - python3
+        - -m
+        - vllm.entrypoints.openai.api_server
+        args:
+        - --model=/data/{{ .Values.model.id }}
+        - --tensor-parallel-size=1
+        - --max-num-seq=1024
+        ports:
+        - containerPort: {{ .Values.service.port }}
+          name: http
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+        volumeMounts:
+        - mountPath: /dev/shm
+          name: dshm
+        - mountPath: /data
+          name: gcs-fuse-csi-ephemeral
+          readOnly: true
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          failureThreshold: 20
+      nodeSelector:
+        {{- toYaml .Values.nodeSelector | nindent 8 }}
+      tolerations:
+        {{- toYaml .Values.tolerations | nindent 8 }}
+      volumes:
+      - name: dshm
+        emptyDir:
+          medium: Memory
+      - name: gcs-fuse-csi-ephemeral
+        csi:
+          driver: gcsfuse.csi.storage.gke.io
+          volumeAttributes:
+            bucketName: {{ .Values.model.bucketName }}
+            mountOptions: "implicit-dirs"
