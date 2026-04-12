@@ -88,11 +88,11 @@ resource "google_storage_bucket" "weights" {
 
 # GKE Cluster
 resource "google_container_cluster" "primary" {
-  name                     = var.cluster_name
-  location                 = var.region
+  name     = var.cluster_name
+  location = var.region
 
   # MANDATORY for CI to be able to destroy
-  deletion_protection      = false
+  deletion_protection = false
 
   resource_labels = {
     template = "gke-llm-inference-gemma"
