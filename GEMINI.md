@@ -65,8 +65,10 @@ This ensures you always have the latest project rules and a clean working tree b
 3. Post an issue comment listing which files you fetched and your intended architecture.
 4. Run pre-deployment checks (quota, availability) — abort with issue comment if checks fail.
 5. Generate both paths: `terraform-helm/` and `config-connector/`, using fetched examples as the baseline.
-6. Open a PR. Post a comment on the issue linking to it.
+6. Open a PR. Always include `Closes #<issue-number>` in the PR body to link it to the issue via GitHub's Development panel.
 7. CI deploys, validates, tears down, commits `.validated` on success.
+
+**If you close a PR and open a replacement** (e.g., a major redesign): close the old PR with a comment "Superseded by #<new-PR>" before opening the new one. This keeps the issue's Development panel accurate — one open linked PR at a time.
 
 **Post progress comments throughout** — see Issue Communication below.
 
@@ -972,8 +974,10 @@ gh issue comment <number> --repo fkc1e100/gcp-template-forge --body "..."
 | On start | Branch name, intended architecture, which reference repos you're drawing from |
 | After design | Architecture summary, tradeoffs, any DWS/quota concerns |
 | Pre-check result | Quota headroom confirmed (or failure reason) |
-| PR created | Link to PR, summary of what was generated |
+| PR created | Link to PR (`Closes #N` already in PR body — no need to repeat in comment) |
 | CI outcome | Pass with timings, or failure with diagnosis and intended fix |
+
+**PR body must always contain `Closes #<issue-number>`** — this links the PR to the issue in GitHub's Development panel. Do not omit it.
 
 ---
 
