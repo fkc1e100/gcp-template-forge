@@ -224,12 +224,10 @@ resource "helm_release" "workload" {
     name  = "bucketName"
     value = google_storage_bucket.weights.name
   }
-
   set {
-    name  = "serviceAccount.annotations.iam\.gke\.io/gcp-service-account"
+    name  = "serviceAccount.annotations.iam\\.gke\\.io/gcp-service-account"
     value = var.service_account
   }
-
   set {
     name  = "projectId"
     value = var.project_id
