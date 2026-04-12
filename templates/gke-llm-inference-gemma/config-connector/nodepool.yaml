@@ -32,14 +32,16 @@ spec:
   nodeCount: 1
   nodeConfig:
     spot: true
-    machineType: g2-standard-48
+    machineType: g2-standard-12
     serviceAccountRef:
       external: forge-builder@gca-gke-2025.iam.gserviceaccount.com
     oauthScopes:
       - https://www.googleapis.com/auth/cloud-platform
     guestAccelerator:
       - type: nvidia-l4
-        count: 4
+        count: 1
+    gpuDriverInstallationConfig:
+      gpuDriverVersion: LATEST
     labels:
       template: gke-llm-inference-gemma
       nvidia.com/gpu: present
