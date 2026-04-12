@@ -74,6 +74,46 @@ This ensures you always have the latest project rules and a clean working tree b
 
 ---
 
+## Sandbox Environment
+
+The following tools are **pre-installed** in the sandbox:
+
+| Tool | Path | Notes |
+|---|---|---|
+| `gcloud` | `/usr/bin/gcloud` | Authenticated via Workload Identity; includes `gke-gcloud-auth-plugin` |
+| `gh` | `/usr/local/bin/gh` | Authenticated via mounted secret |
+| `git` | `/usr/bin/git` | |
+| `curl` | `/usr/bin/curl` | |
+| `jq` | `/usr/bin/jq` | |
+
+The following tools are **not pre-installed** — install them before first use:
+
+```bash
+# Install terraform (run once per sandbox session)
+if ! which terraform &>/dev/null; then
+  curl -fsSL https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+  echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" \
+    | tee /etc/apt/sources.list.d/hashicorp.list
+  apt-get update -qq && apt-get install -y -qq terraform
+fi
+
+# Install helm (run once per sandbox session)
+if ! which helm &>/dev/null; then
+  curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+fi
+
+# Install kubectl (run once per sandbox session)
+if ! which kubectl &>/dev/null; then
+  gcloud components install kubectl --quiet
+fi
+```
+
+Run these installs **at the start of your first task** so all subsequent steps have the full toolchain available.
+
+The GitHub MCP server also provides structured read access to GitHub repos.
+
+---
+
 ## Mandatory Design Research
 
 **Do not write any Terraform, Helm, or KCC YAML from memory.** Fetch proven, working examples from the reference repositories first and use them as the baseline. This prevents the entire class of errors that come from LLM-hallucinated configs (wrong API fields, incorrect resource relationships, outdated patterns).
