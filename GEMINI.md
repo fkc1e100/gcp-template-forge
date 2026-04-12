@@ -89,6 +89,21 @@ gh pr create \
 
 ---
 
+## Investigate-Failures Protocol
+
+When triggered by a CI failure, **always take a corrective action — never file a report with "Action Taken: None" more than once for the same root cause.**
+
+| Root cause | Required action |
+|---|---|
+| OIDC/WIF 403 — "Authenticate to GCP" fails | PR is from a fork. Push branch to upstream and reopen PR (see Workflow step 6). Do not re-investigate the same run — act. |
+| Terraform lint (`fmt`/`validate`) | Fix formatting/validation errors locally, commit, and push. |
+| Code error (wrong resource, bad field) | Fix the code, commit, push. |
+| Infrastructure (quota, stockout, API not enabled) | File an issue comment with the specific blocker; request human action if quota requires project-level changes. |
+
+**If the same CI run has been investigated once and the cause is "Infrastructure / OIDC / WIF fork":** do not raise another investigate-failures report for the same run ID. Instead, execute the fix immediately.
+
+---
+
 ## Sandbox Environment
 
 The following tools are **pre-installed** in the sandbox:
