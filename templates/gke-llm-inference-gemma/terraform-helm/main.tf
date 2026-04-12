@@ -214,8 +214,7 @@ resource "helm_release" "workload" {
   name             = "gke-llm-inference-gemma"
   chart            = "${path.module}/workload"
   namespace        = "gemma"
-  create_namespace = true
-  depends_on       = [google_container_node_pool.gpu_pool]
+  depends_on       = [google_container_node_pool.gpu_pool, helm_release.kueue_resources]
 
   values = [
     file("${path.module}/workload/values.yaml")
