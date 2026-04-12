@@ -1,3 +1,33 @@
+terraform {
+  backend "gcs" {}
+  required_providers {
+    google      = { source = "hashicorp/google",      version = "~> 6.0" }
+    google-beta = { source = "hashicorp/google-beta", version = "~> 6.0" }
+    kubernetes  = { source = "hashicorp/kubernetes",   version = "~> 2.0" }
+    helm        = { source = "hashicorp/helm",         version = "~> 2.0" }
+  }
+}
+
+provider "google" {
+  project = var.project_id
+  region  = var.region
+}
+
+provider "google-beta" {
+  project = var.project_id
+  region  = var.region
+}
+
+data "google_client_config" "default" {}
+
+provider "helm" {
+  kubernetes {
+    host                   = "https://${google_container_cluster.main.endpoint}"
+    token                  = data.google_client_config.default.access_token
+    cluster_ca_certificate = base64decode(google_container_cluster.main.master_auth[0].cluster_ca_certificate)
+  }
+}
+
 resource "google_compute_network" "main" {
   name                    = var.network_name
   auto_create_subnetworks = false
@@ -117,12 +147,11 @@ resource "google_storage_bucket" "weights" {
 }
 
 locals {
-  create_workload_sa = var.workload_service_account_email == ""
-  workload_sa_email  = local.create_workload_sa ? (length(google_service_account.workload_sa) > 0 ? google_service_account.workload_sa[0].email : "") : var.workload_service_account_email
+  workload_sa_email = var.create_workload_sa ? join("", google_service_account.workload_sa.*.email) : (var.workload_service_account_email != "" ? var.workload_service_account_email : var.service_account)
 }
 
 resource "google_service_account" "workload_sa" {
-  count        = local.create_workload_sa ? 1 : 0
+  count        = var.create_workload_sa ? 1 : 0
   account_id   = "gke-llm-inference-workload"
   display_name = "GKE LLM Inference Workload Service Account"
 }
@@ -134,8 +163,8 @@ resource "google_storage_bucket_iam_member" "workload_reader" {
 }
 
 resource "google_service_account_iam_member" "workload_identity_binding" {
-  count              = local.create_workload_sa ? 1 : 0
-  service_account_id = google_service_account.workload_sa[0].name
+  count              = var.create_workload_sa ? 1 : 0
+  service_account_id = join("", google_service_account.workload_sa.*.name)
   role               = "roles/iam.workloadIdentityUser"
   member             = "serviceAccount:${var.project_id}.svc.id.goog[default/gemma-2-2b-it-vllm-sa]"
 }

@@ -32,8 +32,14 @@ variable "service_account" {
   type        = string
 }
 
+variable "create_workload_sa" {
+  description = "Whether to create a dedicated service account for the workload"
+  type        = bool
+  default     = false
+}
+
 variable "workload_service_account_email" {
-  description = "Existing GCP service account to use for the workload. If not provided, a new one will be created (requires iam.serviceAccounts.create permission)."
+  description = "Existing GCP service account to use for the workload. If not provided, will use node service account if create_workload_sa is false."
   type        = string
   default     = ""
 }
