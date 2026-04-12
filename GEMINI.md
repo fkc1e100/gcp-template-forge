@@ -547,8 +547,44 @@ Key sources:
 - **AI on GKE** — `ai-on-gke/tutorials-and-examples` (GPU/LLM patterns)
 - **Accelerated Platforms** — `GoogleCloudPlatform/accelerated-platforms` (GPU cluster blueprints, DWS examples)
 - **Cloud Foundation Toolkit** — `GoogleCloudPlatform/cloud-foundation-toolkit` (VPC, IAM modules)
+- **LLM-D** — `llm-d/llm-d` (distributed LLM inference on GKE)
+- **GKE AI Labs** — `gke-ai-labs.dev` (AI/ML on GKE patterns and benchmarks)
+- **GKE Policy Automation** — `google/gke-policy-automation` (policy as code)
 
 See `user-instructions.json` → `reference_repositories` for the full list.
+
+### When to search the web
+
+**Do not guess at API behaviour, error codes, or resource constraints — search first.**
+
+If you hit an unfamiliar error, a quota limit, a GKE API validation failure, or any situation where the correct configuration is not obvious from the code or GEMINI.md guidance, **stop and research it before writing a fix**. Use web search or fetch public documentation:
+
+```bash
+# Fetch GCP/GKE documentation pages directly
+curl -s "https://cloud.google.com/kubernetes-engine/docs/how-to/node-pools" | \
+  python3 -c "import sys,html,re; print(re.sub('<[^>]+>','',html.unescape(sys.stdin.read())))" | head -200
+
+# Search GitHub issues for known errors
+gh search issues "queued_provisioning requires autoscaling" --repo hashicorp/terraform-provider-google
+
+# Fetch raw source from a reference repo
+gh api repos/GoogleCloudPlatform/accelerated-platforms/contents/platforms/gke/base/cluster/node-pools/dws \
+  --jq '.content' | base64 -d
+```
+
+**Priority research targets by error type:**
+
+| Error type | Where to look |
+|---|---|
+| GKE API 400 / node pool validation | [GKE node pool docs](https://cloud.google.com/kubernetes-engine/docs/how-to/node-pools) + `terraform-provider-google` GitHub issues |
+| DWS / queued provisioning config | [DWS docs](https://cloud.google.com/kubernetes-engine/docs/how-to/provisioningrequest) + `GoogleCloudPlatform/accelerated-platforms` |
+| Helm / OCI registry 403 | Helm GitHub issues + chart's own repo for auth requirements |
+| GPU driver / accelerator errors | [GKE GPU docs](https://cloud.google.com/kubernetes-engine/docs/how-to/gpus) + `GoogleCloudPlatform/kubernetes-engine-samples/gpu` |
+| vLLM / inference server config | [vLLM docs](https://docs.vllm.ai) + `vllm-project/vllm` GitHub issues |
+| Secret Manager IAM | [Secret Manager IAM docs](https://cloud.google.com/secret-manager/docs/access-control) |
+| Kueue config / CRDs | [Kueue docs](https://kueue.sigs.k8s.io/docs/) + `kubernetes-sigs/kueue` |
+
+**After finding a fix from web research, append a bullet to `## Agent-Discovered Fixes`** so the next agent doesn't have to repeat the same search.
 
 ---
 
