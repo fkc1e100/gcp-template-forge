@@ -74,6 +74,46 @@ This ensures you always have the latest project rules and a clean working tree b
 
 ---
 
+## Sandbox Environment
+
+The following tools are **pre-installed** in the sandbox:
+
+| Tool | Path | Notes |
+|---|---|---|
+| `gcloud` | `/usr/bin/gcloud` | Authenticated via Workload Identity; includes `gke-gcloud-auth-plugin` |
+| `gh` | `/usr/local/bin/gh` | Authenticated via mounted secret |
+| `git` | `/usr/bin/git` | |
+| `curl` | `/usr/bin/curl` | |
+| `jq` | `/usr/bin/jq` | |
+
+The following tools are **not pre-installed** — install them before first use:
+
+```bash
+# Install terraform (run once per sandbox session)
+if ! which terraform &>/dev/null; then
+  curl -fsSL https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+  echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" \
+    | tee /etc/apt/sources.list.d/hashicorp.list
+  apt-get update -qq && apt-get install -y -qq terraform
+fi
+
+# Install helm (run once per sandbox session)
+if ! which helm &>/dev/null; then
+  curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+fi
+
+# Install kubectl (run once per sandbox session)
+if ! which kubectl &>/dev/null; then
+  gcloud components install kubectl --quiet
+fi
+```
+
+Run these installs **at the start of your first task** so all subsequent steps have the full toolchain available.
+
+The GitHub MCP server also provides structured read access to GitHub repos.
+
+---
+
 ## Mandatory Design Research
 
 **Do not write any Terraform, Helm, or KCC YAML from memory.** Fetch proven, working examples from the reference repositories first and use them as the baseline. This prevents the entire class of errors that come from LLM-hallucinated configs (wrong API fields, incorrect resource relationships, outdated patterns).
@@ -469,19 +509,19 @@ For templates that serve **pre-trained AI models** (LLM inference, image generat
 # 1. List supported models and use-cases
 gcloud container ai profiles use-cases list
 
-# 2. View benchmark data for a model+accelerator combination
+# 2. View benchmark data for a model across all available accelerators
 gcloud container ai profiles benchmarks list \
-  --filter="modelId:gemma AND acceleratorType:nvidia-l4"
+  --filter="modelId:<model-id>"
 
-# 3. Generate deployment manifests for a model
+# 3. Generate deployment manifests using the accelerator selected from step 2
 gcloud container ai profiles manifests create \
   --use-case=<use-case-id> \
-  --accelerator-type=nvidia-l4 \
+  --accelerator-type=<accelerator-from-benchmarks> \
   --output-path=./workload/
 ```
 
 **Flags of interest**:
-- `--accelerator-type` — GPU type (e.g., `nvidia-l4`, `nvidia-tesla-t4`, `nvidia-h100-80gb`)
+- `--accelerator-type` — GPU type selected from benchmark output (e.g., `nvidia-l4`, `nvidia-tesla-t4`)
 - `--target-ttft-milliseconds` — Time to First Token latency target
 - `--target-ntpot-milliseconds` — Next Token per Output Token latency target
 - `--model-bucket-uri` — Cloud Storage URI of the model weights (if self-hosted)
@@ -492,11 +532,12 @@ gcloud container ai profiles manifests create \
 
 **Workflow**:
 1. Run `gcloud container ai profiles use-cases list` to find the right use-case for the requested model.
-2. Run `gcloud container ai profiles benchmarks list --filter="modelId:<model>"` to get benchmark data (throughput, TTFT, NTPOT, cost) for your chosen accelerator.
-3. Run `gcloud container ai profiles manifests create` with the target accelerator and latency requirements.
-4. Use the generated manifests as the baseline for the template's `workload/` directory — **do not write GPU/model-server configs from scratch**. The tool produces benchmark-validated resource requests and model-server flags.
-5. Size the node pool to match the accelerator and replica count in the generated manifests.
-6. Use L4 (`nvidia-l4`) as the default for LLM serving unless the model or latency requirement demands H100 (quota = 0 here — do not request H100).
+2. Run `gcloud container ai profiles benchmarks list --filter="modelId:<model>"` to see benchmark data (throughput, TTFT, NTPOT, cost) across all accelerator options. **Select the accelerator from this output** — do not pre-decide the GPU type before running this command.
+3. Run `gcloud container ai profiles manifests create` using the accelerator chosen in step 2. The generated manifests specify the GPU type, count, resource requests, and model-server flags — these are the authoritative source for hardware selection.
+4. Use the generated manifests as the baseline for the template's `workload/` directory — **do not write GPU/model-server configs from scratch**.
+5. **Build the node pool to match the accelerator type and replica count from the generated manifests.** The manifest output drives the cluster spec, not prior assumption.
+
+**Note on quota**: H100 quota is 0 in this sandbox — do not request H100. If the benchmark output recommends H100, select the next best available option from the benchmark list.
 
 **Required README section for inference templates**: Every inference template README must include a `## Performance & Cost Estimates` section populated from the benchmark output:
 
@@ -507,12 +548,12 @@ gcloud container ai profiles manifests create \
 
 | Metric | Value |
 |---|---|
-| Model | Gemma 2 9B IT |
-| Accelerator | NVIDIA L4 (1×) |
-| Time to First Token (p50) | ~XXX ms |
-| Next Token Output Token (p50) | ~XX ms |
-| Throughput | ~XXX tokens/sec |
-| Node type | g2-standard-12 (DWS flex-start) |
+| Model | <from benchmarks output> |
+| Accelerator | <from benchmarks output> |
+| Time to First Token (p50) | <from benchmarks output> |
+| Next Token Output Token (p50) | <from benchmarks output> |
+| Throughput | <from benchmarks output> |
+| Node type | <from manifests output> |
 | Estimated node cost | ~$X.XX/hr |
 | Estimated cost per 1M tokens | ~$X.XX |
 ```
