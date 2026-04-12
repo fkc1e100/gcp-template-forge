@@ -236,7 +236,8 @@ Create a **dedicated VPC per template** with unique, non-overlapping CIDRs. Chec
 |---|---|---|---|---|
 | 0 | `10.0.0.0/20` | `10.4.0.0/14` | `10.8.0.0/20` | basic-gke-hello-world |
 | 1 | `10.16.0.0/20` | `10.20.0.0/14` | `10.24.0.0/20` | enterprise-gke |
-| 2 | `10.32.0.0/20` | `10.36.0.0/14` | `10.40.0.0/20` | *(next template)* |
+| 2 | `10.32.0.0/20` | `10.36.0.0/14` | `10.40.0.0/20` | gke-llm-inference-gemma |
+| 3 | `10.48.0.0/20` | `10.52.0.0/14` | `10.56.0.0/20` | *(next template)* |
 | N | `10.(N×16).0.0/20` | `10.(N×16+4).0.0/14` | `10.(N×16+8).0.0/20` | |
 
 Name VPCs and subnets with path-specific suffixes: `<template-name>-tf-vpc` / `<template-name>-tf-subnet` for the Terraform path, and `<template-name>-kcc-vpc` / `<template-name>-kcc-subnet` for the Config Connector path. This ensures the two CI jobs can run in parallel without GCP-level name collisions.
@@ -247,7 +248,7 @@ Always use **VPC-native clusters** (`networking_mode = "VPC_NATIVE"` with `ip_al
 
 ## Machine Types & Accelerators
 
-Use spot/preemptible for all sandbox validation clusters to minimise cost.
+Use spot/preemptible for all sandbox validation clusters to minimise cost. **Exception: GPU node pools — see DWS Flex-Start section below.**
 
 | Use case | Machine type | Spot | Notes |
 |---|---|---|---|
@@ -294,17 +295,39 @@ For A100/A2 node pools and v5e/v6e TPU slices, **Dynamic Workload Scheduler (DWS
 - Any TPU v5e/v6e slice node pool
 - Any accelerator where quota headroom is <50%
 
-**How to configure:**
+**How to configure — all three fields are required simultaneously:**
 
 ```hcl
-# In the node pool:
-queued_provisioning {
-  enabled = true
+resource "google_container_node_pool" "gpu_pool" {
+  # REQUIRED for DWS: autoscaling block — do NOT use node_count alongside autoscaling
+  autoscaling {
+    min_node_count = 0
+    max_node_count = 1
+  }
+
+  node_config {
+    spot         = false  # REQUIRED: DWS flex-start is non-preemptible
+    machine_type = "g2-standard-12"
+
+    # REQUIRED: DWS cannot use reservations
+    reservation_affinity {
+      consume_reservation_type = "NO_RESERVATION"
+    }
+    # ... rest of node_config
+  }
+
+  # REQUIRED: enables the DWS queue
+  queued_provisioning {
+    enabled = true
+  }
 }
 ```
 
+**Omitting any one of `autoscaling`, `reservation_affinity NO_RESERVATION`, or `spot = false` causes a GKE API 400 error.**
+**Never use `node_count` alongside `autoscaling {}` — they are mutually exclusive.**
+
 ```bash
-# Install Kueue via Helm — use the public HTTPS repo (OCI endpoint requires GCP auth in CI)
+# Install Kueue operator — use the public HTTPS repo (OCI endpoint requires GCP auth in CI)
 helm install kueue kueue/kueue \
   --repo https://charts.kueue.sigs.k8s.io \
   --version 0.9.1 --namespace kueue-system --create-namespace
@@ -314,7 +337,11 @@ Required Kueue resources: `ClusterQueue` → `ResourceFlavor` → `LocalQueue`. 
 
 Reference: `github.com/GoogleCloudPlatform/accelerated-platforms` — check the DWS examples.
 
-**In `verification_plan.md`**: note that DWS-based templates may take up to 7 days to validate. Document the expected wait and how to monitor queue status: `kubectl get workloads -n <namespace>`.
+**Validation timeouts — DWS provisioning time varies significantly by hardware:**
+- **L4 flex-start** (`g2-standard-12`): typically **20–30 minutes** once the request is queued
+- **A100/A2 DWS + Kueue**: **hours to 7 days** depending on regional contention
+
+In `verification_plan.md`, document the expected wait and how to monitor: `kubectl get workloads -n <namespace>`. Use `--timeout=1800s` (30 min) for GPU cluster `kubectl wait` commands — 600s is too short for GPU node pool provisioning.
 
 ---
 
@@ -629,6 +656,82 @@ resource "helm_release" "kueue_resources" {
 
 ---
 
+## GCS FUSE CSI Driver
+
+For templates that mount GCS buckets as volumes (e.g., model weights for LLM inference), the **GCS FUSE CSI driver must be explicitly enabled** on the cluster. Without it, pod `volumeMount` against a `csi` volume with driver `gcsfuse.csi.storage.gke.io` will silently fail to mount.
+
+```hcl
+resource "google_container_cluster" "primary" {
+  # ...
+  addons_config {
+    gcs_fuse_csi_driver_config {
+      enabled = true
+    }
+  }
+}
+```
+
+The pod's ServiceAccount must also have `roles/storage.objectViewer` (read) and optionally `roles/storage.objectCreator` (write for init containers that populate the bucket). Grant these via `google_storage_bucket_iam_member`, not `google_project_iam_member`.
+
+---
+
+## Local Kueue Chart Structure
+
+When using a local chart for Kueue queue resources (ResourceFlavor, ClusterQueue, LocalQueue), the chart must have this minimal structure:
+
+```
+kueue-chart/
+├── Chart.yaml
+└── templates/
+    └── queues.yaml
+```
+
+`Chart.yaml`:
+```yaml
+apiVersion: v2
+name: kueue-resources
+description: Kueue queue resources for GPU template
+type: application
+version: 0.1.0
+```
+
+`templates/queues.yaml`:
+```yaml
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ResourceFlavor
+metadata:
+  name: gpu-flavor
+spec:
+  nodeLabels:
+    cloud.google.com/gke-accelerator: nvidia-l4
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ClusterQueue
+metadata:
+  name: gpu-cluster-queue
+spec:
+  namespaceSelector: {}
+  resourceGroups:
+    - coveredResources: ["cpu", "memory", "nvidia.com/gpu"]
+      flavors:
+        - name: gpu-flavor
+          resources:
+            - name: "nvidia.com/gpu"
+              nominalQuota: 1
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: LocalQueue
+metadata:
+  name: gpu-local-queue
+  namespace: <workload-namespace>
+spec:
+  clusterQueueName: gpu-cluster-queue
+```
+
+Workload pods must include the label `kueue.x-k8s.io/queue-name: gpu-local-queue` to be admitted through the queue.
+
+---
+
 ## KCC Manifests
 
 All KCC resources go into the `forge-management` namespace on `krmapihost-kcc-instance`. Label every resource with the template directory name so CI can target it:
@@ -643,6 +746,17 @@ metadata:
 ```
 
 Annotate with the project: `cnrm.cloud.google.com/project-id: gca-gke-2025`.
+
+### ⚠️ KCC Deletion Order — Critical
+
+**Never delete a GKE cluster directly via `gcloud container clusters delete` while its KCC `ContainerCluster` resource still exists.** Config Connector reconciles continuously — if the GCP cluster disappears, KCC will immediately re-provision it (typically within 8 minutes).
+
+Always delete in this order:
+1. `kubectl delete containerclusters.container.cnrm.cloud.google.com <name> -n forge-management --wait=false`
+2. Wait for the GKE cluster to reach `STOPPING` status: `gcloud container clusters list --filter="name=<name>"`
+3. Only then confirm the cluster is fully gone — do not `gcloud delete` directly
+
+This applies to orphan cleanup scripts as well as manual teardown.
 
 ---
 
@@ -742,10 +856,10 @@ gh issue comment <number> --repo fkc1e100/gcp-template-forge --body "..."
 
 ## Validation Checklist (KCC)
 
-- [ ] `kubectl wait --for=condition=Ready` on all applied KCC CRs
+- [ ] `kubectl wait --for=condition=Ready` on all applied KCC CRs — **use `--timeout=1800s` for GPU clusters; 600s is too short for GPU node pool provisioning (15–25 min)**
 - [ ] Drift and revert: mutate a resource out-of-band → verify KCC reverts it
 - [ ] Workload Identity integration: deploy a Job to verify pod can access KCC-created resources
-- [ ] Teardown: `kubectl delete` → verify GCP resource is gone via `gcloud`
+- [ ] Teardown: `kubectl delete` KCC resource first → wait for GCP cluster to reach STOPPING → confirm gone via `gcloud` (never `gcloud delete` directly while KCC resource exists — see KCC Deletion Order above)
 
 ---
 
@@ -762,7 +876,7 @@ gh issue comment <number> --repo fkc1e100/gcp-template-forge --body "..."
 | Database (Cloud SQL) | Connect via Cloud SQL Auth Proxy: `psql ... -c "SELECT 1"` |
 | Pub/Sub | `gcloud pubsub subscriptions pull <sub> --limit=1` after publishing a message |
 | GPU workload | `kubectl exec <pod> -- nvidia-smi` and verify GPU is detected |
-| LLM inference | Send a test prompt to the inference endpoint and verify a generated response |
+| LLM inference | **Wait for model to load first** (pod Ready ≠ model ready — vLLM takes 5–15 min after pod Running to load weights). Poll `GET /health` until HTTP 200, then send a test prompt and verify a generated response. |
 
 Capture the command and output. Append to `verification_plan.md` under a `## Validation Output` section:
 
@@ -815,5 +929,7 @@ Format: `- **[area]** symptom → fix. (root cause)`
 - **OCI Helm registry 403 in CI** `helm_release` pointing to `oci://us-docker.pkg.dev/gke-release-packages/helm-charts/kueue` returns HTTP 403 during `terraform apply` → switch to the public HTTPS Helm repo (`repository = "https://charts.kueue.sigs.k8s.io"`). The WIF credentials the CI runner uses for `gcloud` do not automatically authenticate `helm` against Artifact Registry OCI endpoints.
 
 - **DWS node pool config** `google_container_node_pool` with `queued_provisioning { enabled = true }` fails with API 400 → three fields are required simultaneously: (1) `autoscaling { min_node_count = 0, max_node_count = N }` — do not use `node_count`; (2) `reservation_affinity { consume_reservation_type = "NO_RESERVATION" }` inside `node_config`; (3) `spot = false` — DWS flex-start is not compatible with spot. Missing any one of these causes the node pool creation to be rejected.
+
+- **Secret Manager IAM via Terraform** `google_secret_manager_secret_iam_member` targeting a pre-existing secret (e.g., `huggingface-token`) fails with 403 during `terraform apply` → remove the resource; grant `roles/secretmanager.secretAccessor` to the workload SA out-of-band via `gcloud secrets add-iam-policy-binding`. The CI SA has `secretAccessor` to *read* secrets but lacks `secretmanager.secrets.getIamPolicy` needed to *manage* IAM on them. Do not attempt to set IAM on pre-existing secrets from within the template.
 
 - **L4 GPU spot → GCE_STOCKOUT** `spot = true` on `g2-standard-12` node pools in us-central1-a/b fails with `GCE_STOCKOUT` — 0 nodes provisioned after 35 min → switch to DWS flex-start: set `spot = false` and keep `queued_provisioning { enabled = true }`. Spot VMs are surplus capacity; on-demand has first physical claim on GPU inventory, so spot requests fail outright during scarcity with no queue. DWS flex-start draws from the larger preemptible quota pool and is non-preemptible once running (~53% below on-demand cost). Also restrict `node_locations` to `["${var.region}-c"]` — us-central1-c has the best L4 headroom within the region. L4 is available globally across 44 zones in 19 regions (us-central1, us-east1, europe-west4, asia-southeast1, and more) — expand zones if us-central1-c stockouts persist.

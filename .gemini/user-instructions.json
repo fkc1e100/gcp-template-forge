@@ -38,7 +38,8 @@
       "cloudkms.googleapis.com",
       "anthosconfigmanagement.googleapis.com",
       "config.googleapis.com",
-      "storage.googleapis.com"
+      "storage.googleapis.com",
+      "gkerecommender.googleapis.com"
     ],
     "not_enabled_enable_if_needed": [
       "alloydb.googleapis.com",
@@ -58,6 +59,8 @@
       "description": "Allocate CIDRs in increments of 16 through the 10.0.0.0/8 space. Check existing templates to avoid conflicts.",
       "slot_0_basic_gke_hello_world": "primary=10.0.0.0/20, pods=10.4.0.0/14, services=10.8.0.0/20",
       "slot_1_enterprise_gke": "primary=10.16.0.0/20, pods=10.20.0.0/14, services=10.24.0.0/20",
+      "slot_2_gke_llm_inference_gemma": "primary=10.32.0.0/20, pods=10.36.0.0/14, services=10.40.0.0/20",
+      "next_available_slot": 3,
       "next_template_pattern": "primary=10.(N×16).0.0/20, pods=10.(N×16+4).0.0/14, services=10.(N×16+8).0.0/20"
     },
     "naming": "Use path-specific suffixes to avoid GCP-level name collisions between the two CI paths (which run in parallel). Terraform path: <template-name>-tf (cluster), <template-name>-tf-vpc, <template-name>-tf-subnet. Config Connector path: <template-name>-kcc (cluster), <template-name>-kcc-vpc, <template-name>-kcc-subnet. All other Kubernetes-internal names (Deployments, Services, KSAs) need no suffix as they live in separate clusters.",
@@ -66,13 +69,13 @@
   },
 
   "machine_types": {
-    "guidance": "Match machine type to workload. Use spot/preemptible for all sandbox validation to cut costs. For scarce accelerators (A2, v6e TPUs), use DWS + Kueue — see accelerator_strategy below.",
+    "guidance": "Match machine type to workload. Use spot/preemptible for all sandbox validation to cut costs (exception: GPU node pools — use DWS flex-start, see accelerator_strategy). For scarce accelerators (A2, v6e TPUs), use DWS + Kueue — see accelerator_strategy below.",
     "recommendations": [
       {"use_case": "General / standard GKE template", "type": "e2-standard-2 or e2-standard-4", "spot": true},
       {"use_case": "Memory-intensive workloads (databases, in-memory caches)", "type": "n2-highmem-4", "spot": true},
       {"use_case": "CPU-intensive (compilation, data processing)", "type": "c3-standard-4", "spot": true},
       {"use_case": "GPU inference (T4)", "type": "n1-standard-4 with nvidia-tesla-t4", "spot": true, "quota_available": 8},
-      {"use_case": "GPU inference (L4 — preferred for LLM serving)", "type": "g2-standard-12 with nvidia-l4", "spot": true, "quota_available": 16},
+      {"use_case": "GPU inference (L4 — preferred for LLM serving)", "type": "g2-standard-12 with nvidia-l4", "spot": false, "quota_available": 16, "note": "Use DWS flex-start: spot=false + queued_provisioning enabled=true. Do NOT use spot=true — GCE_STOCKOUT on spot L4 is chronic. See accelerator_strategy for all three required node pool fields."},
       {"use_case": "GPU training (A100 40GB) — use DWS+Kueue", "type": "a2-highgpu-1g with nvidia-tesla-a100", "spot": false, "quota_available": 16},
       {"use_case": "DO NOT USE", "type": "a3-highgpu (A100 80GB) — quota is 0, will fail", "spot": false, "quota_available": 0},
       {"use_case": "DO NOT USE", "type": "a3-mega (H100) — quota is 0, will fail", "spot": false, "quota_available": 0}
@@ -87,17 +90,18 @@
       "Any template where the target accelerator has <50% quota headroom in the region"
     ],
     "dws_kueue_pattern": {
-      "node_pool_config": "Set queued_provisioning { enabled = true } on the node pool in Terraform. This enables DWS.",
-      "kueue_install": "Install Kueue via Helm: helm install kueue oci://us-docker.pkg.dev/gke-release-packages/helm-charts/kueue --version <latest>",
+      "node_pool_config": "Three fields are ALL required simultaneously — missing any one causes a GKE API 400 error: (1) autoscaling { min_node_count=0, max_node_count=N } — do NOT use node_count alongside autoscaling, they are mutually exclusive; (2) reservation_affinity { consume_reservation_type=NO_RESERVATION } inside node_config; (3) spot=false — DWS flex-start is incompatible with spot VMs. Also set queued_provisioning { enabled=true } on the node pool.",
+      "kueue_install": "Install Kueue operator via the public HTTPS Helm repo — NOT the OCI endpoint (oci://us-docker.pkg.dev returns 403 in CI without GCP auth): helm install kueue kueue/kueue --repo https://charts.kueue.sigs.k8s.io --version 0.9.1 --namespace kueue-system --create-namespace",
+      "kueue_resources_install": "Install ResourceFlavor/ClusterQueue/LocalQueue from a LOCAL helm chart in the template repo (kueue-chart/ directory), not from the OCI registry. Use helm_release with chart = path.module/kueue-chart and depends_on = [helm_release.kueue, google_container_node_pool.gpu_pool]",
       "required_resources": [
         "ClusterQueue — defines the resource budget (GPU/TPU quotas)",
         "LocalQueue — namespace-scoped queue that workloads submit to",
-        "ResourceFlavor — maps to the physical node pool"
+        "ResourceFlavor — maps to the physical node pool with nodeLabels matching the GPU accelerator"
       ],
       "workload_annotation": "Jobs/Pods must have kueue.x-k8s.io/queue-name: <local-queue-name> label to be managed by Kueue",
       "reference": "https://github.com/GoogleCloudPlatform/accelerated-platforms — check the DWS examples directory"
     },
-    "validation_timeout_guidance": "When a template uses DWS/Kueue, set the CI validation timeout to 7 days (10080 minutes) rather than the default 10 minutes. The workflow will poll for completion. Document the expected wait time in verification_plan.md.",
+    "validation_timeout_guidance": "DWS provisioning time varies by hardware: L4 flex-start (g2-standard-12) typically provisions in 20-30 minutes; A100/A2 DWS+Kueue can take hours to 7 days depending on regional contention. Use --timeout=1800s (30 min) for kubectl wait on GPU clusters — 600s is too short. Document the expected wait time in verification_plan.md.",
     "pre_check_script": "Before deploying any accelerator template, run the quota and availability pre-check (see pre_deployment_checks below)."
   },
 
@@ -149,7 +153,8 @@
       {"registry": "https://grafana.github.io/helm-charts", "use_for": "Grafana"},
       {"registry": "https://charts.jetstack.io", "use_for": "cert-manager"},
       {"registry": "https://istio-release.storage.googleapis.com/charts", "use_for": "Istio service mesh"},
-      {"registry": "oci://us-docker.pkg.dev/ml-serving-discovery/helm", "use_for": "GKE Inference Gateway / vLLM serving"}
+      {"registry": "https://charts.kueue.sigs.k8s.io", "use_for": "Kueue operator for DWS/GPU templates — use this HTTPS repo, NOT the OCI endpoint at us-docker.pkg.dev which requires GCP auth"},
+      {"registry": "oci://us-docker.pkg.dev/ml-serving-discovery/helm", "use_for": "GKE Inference Gateway / vLLM serving — WARNING: this is a GCP Artifact Registry OCI endpoint and may require authentication; verify access before using in CI, or use a local chart"}
     ],
     "guidance": [
       "Pin chart versions explicitly — never use 'latest' or '*' as a chart version.",
@@ -322,15 +327,28 @@
     "Ensure templates are security scanned and work out-of-the-box.",
     "Consider and factor in new GKE features if the example architectures could benefit from them.",
     "For any template serving pre-trained AI models (LLM inference, embeddings, image generation): ALWAYS run the GKE Inference Quickstart tool first (gcloud container ai profiles manifests create) to generate performance-tuned manifests. See inference_quickstart section for full workflow.",
-    "When selecting GKE release channels: Use RAPID for templates requiring bleeding-edge features or AI/ML workloads. Use REGULAR or STABLE for standard enterprise templates."
+    "When selecting GKE release channels: Use RAPID for templates requiring bleeding-edge features or AI/ML workloads. Use REGULAR or STABLE for standard enterprise templates.",
+    "Secret Manager IAM: The CI service account has roles/secretmanager.secretAccessor (can read secrets) but NOT secretmanager.secrets.getIamPolicy. Do not add google_secret_manager_secret_iam_member resources targeting pre-existing secrets (e.g. huggingface-token) — the apply will fail with 403. Grant workload SA access out-of-band via gcloud secrets add-iam-policy-binding instead.",
+    "GCS FUSE CSI: Templates that mount GCS buckets as pod volumes must enable gcs_fuse_csi_driver_config { enabled = true } in the cluster addons_config block. Without it, FUSE mounts silently fail at pod startup. Grant the workload SA roles/storage.objectViewer (and objectCreator if the init container writes weights).",
+    "Model loading latency: For LLM inference templates, pod Running/Ready status does NOT mean the model is loaded. vLLM takes 5-15 minutes after pod start to load weights into GPU memory. Validation scripts must poll GET /health until HTTP 200 before sending a test prompt — probing immediately after pod Ready will return 503."
   ],
+
+  "terraform_quality_checks": {
+    "description": "CI runs terraform fmt -check -recursive and terraform validate on every push. Failures block the entire pipeline — no deploy jobs run. These three steps MUST all exit 0 before every git push.",
+    "step_1_duplicate_scan": "grep -rh '^\\s*resource\\|^\\s*variable\\|^\\s*output\\|^\\s*locals' *.tf | grep -v '^\\s*#' | sort | uniq -d — must print NOTHING. All .tf files in terraform-helm/ share one module namespace; duplicate resource/variable/output/local names are compile errors.",
+    "step_2_format_check": "terraform fmt -check -recursive — if non-zero, run terraform fmt -recursive to auto-fix alignment, then re-stage. Never hand-pad alignment; always use terraform fmt to fix it.",
+    "step_3_validate": "terraform validate — catches bad references, wrong types, and any duplicates the grep missed.",
+    "alignment_rule": "terraform fmt aligns all = signs in a block to the column after the longest key name + one space. If you add a key longer than all existing keys, every other key in the block needs more padding. Run terraform fmt -recursive rather than hand-editing.",
+    "no_repetition_rule": "Before declaring any resource, variable, output, or local: (1) read every existing .tf file in the directory, (2) grep for the name you plan to use, (3) if it exists anywhere — in any file — do not declare it again. Reference or extend the existing declaration instead. One file should own one concern (e.g. kueue.tf owns all Kueue resources).",
+    "node_count_vs_autoscaling": "node_count and autoscaling {} are mutually exclusive in google_container_node_pool. When using autoscaling {}, omit node_count entirely — using both causes unexpected behavior or API errors."
+  },
 
   "sandbox_constraints": {
     "description": "All resources created during sandbox validation MUST be fully deleteable by automation without manual intervention. Violating these constraints will cause terraform destroy and kubectl delete to fail, leaving orphaned resources and incurring ongoing costs.",
     "gke_cluster_rules": [
       "MANDATORY: Every google_container_cluster resource MUST include deletion_protection = false. The Terraform provider defaults to true, which will prevent automated teardown.",
       "MANDATORY: Output cluster_name and cluster_location from every terraform-helm/main.tf so the CI can verify the cluster is healthy before teardown.",
-      "RECOMMENDED: Use spot = true or preemptible = true in node_config to minimise sandbox cost."
+      "RECOMMENDED: Use spot = true or preemptible = true in node_config to minimise sandbox cost. EXCEPTION: GPU node pools (L4, A100) must use DWS flex-start (spot=false + queued_provisioning enabled=true) — spot GPU requests fail immediately with GCE_STOCKOUT during capacity scarcity. See accelerator_strategy for full GPU node pool config."
     ],
     "kcc_rules": [
       "MANDATORY: Do NOT add the annotation cnrm.cloud.google.com/deletion-policy: abandon to any KCC resource.",
