@@ -22,11 +22,12 @@ resource "helm_release" "kueue" {
   create_namespace = true
 }
 
-# Kueue resources (ResourceFlavor, ClusterQueue, LocalQueue) via Helm
-# to avoid plan-time connection issues with kubernetes_manifest.
+# Kueue resources (ResourceFlavor, ClusterQueue, LocalQueue) via local Helm chart
+# to avoid OCI registry auth requirements in CI.
 resource "helm_release" "kueue_resources" {
-  name       = "kueue-resources"
-  chart      = "${path.module}/kueue-chart"
-  namespace  = "kueue-system" # Cluster-wide resources like ClusterQueue can go here
-  depends_on = [helm_release.kueue]
+  name             = "kueue-resources"
+  chart            = "${path.module}/kueue-chart"
+  namespace        = "kueue-system"
+  create_namespace = true
+  depends_on       = [helm_release.kueue, google_container_node_pool.gpu_pool]
 }

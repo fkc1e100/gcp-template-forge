@@ -197,16 +197,6 @@ resource "google_container_node_pool" "gpu_pool" {
   }
 }
 
-# Kueue resources: ResourceFlavor + ClusterQueue + LocalQueue
-# Installed from a local chart so CI doesn't need OCI registry access.
-resource "helm_release" "kueue_resources" {
-  name             = "kueue-resources"
-  chart            = "${path.module}/kueue-chart"
-  namespace        = "kueue-system"
-  create_namespace = true
-  depends_on       = [google_container_node_pool.gpu_pool]
-}
-
 # IAM for GCS FUSE — read weights at runtime
 resource "google_storage_bucket_iam_member" "weights_viewer" {
   bucket = google_storage_bucket.weights.name
