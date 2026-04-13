@@ -18,6 +18,7 @@ metadata:
   name: gke-basic-kcc-v2-vpc
   namespace: forge-management
   labels:
+    project: gcp-template-forge
     template: basic-gke-hello-world
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
@@ -30,6 +31,7 @@ metadata:
   name: gke-basic-kcc-v2-subnet
   namespace: forge-management
   labels:
+    project: gcp-template-forge
     template: basic-gke-hello-world
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025

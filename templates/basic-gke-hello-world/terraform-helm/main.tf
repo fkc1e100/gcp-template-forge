@@ -44,6 +44,10 @@ resource "google_compute_subnetwork" "subnet" {
 
 # GKE Standard Cluster
 resource "google_container_cluster" "primary" {
+  resource_labels = {
+    project = "gcp-template-forge"
+  }
+
   name     = var.cluster_name
   location = var.region
 
@@ -97,6 +101,10 @@ resource "google_container_node_pool" "primary_nodes" {
     }
 
     service_account = var.service_account
+  
+    labels = {
+      project: "gcp-template-forge"
+    }
   }
 }
 

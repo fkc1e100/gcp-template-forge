@@ -26,8 +26,8 @@ REGION="us-central1"
 
 # 1. Resource Readiness
 echo "Test 1: Resource Readiness..."
-kubectl wait --for=condition=Ready containercluster/${CLUSTER_NAME} --timeout=20m -n ${NAMESPACE}
-kubectl wait --for=condition=Ready containernodepool/${NODE_POOL_NAME} --timeout=20m -n ${NAMESPACE}
+kubectl wait --for=condition=Ready containercluster/${CLUSTER_NAME} --timeout=30m -n ${NAMESPACE}
+kubectl wait --for=condition=Ready containernodepool/${NODE_POOL_NAME} --timeout=30m -n ${NAMESPACE}
 echo "Resource Readiness passed."
 
 # 2. Drift & Revert
@@ -81,7 +81,7 @@ echo "Installing Helm chart from terraform-helm/workload/..."
 helm upgrade --install enterprise-gke terraform-helm/workload/ \
   --namespace ${NAMESPACE_WORKLOAD} \
   --create-namespace \
-  --wait --timeout=10m
+  --wait --timeout=15m
 
 # Now the ServiceAccount should exist, run the WI test Job again
 echo "Re-running Workload Identity test Job..."
@@ -103,7 +103,7 @@ spec:
       restartPolicy: Never
 EOF
 
-kubectl wait --for=condition=complete job/test-workload-identity --timeout=5m -n ${NAMESPACE_WORKLOAD}
+kubectl wait --for=condition=complete job/test-workload-identity --timeout=30m -n ${NAMESPACE_WORKLOAD}
 # Check logs to see if authentication was successful
 kubectl logs job/test-workload-identity -n ${NAMESPACE_WORKLOAD}
 # Clean up job

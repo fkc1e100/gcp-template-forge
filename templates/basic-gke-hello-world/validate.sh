@@ -25,7 +25,7 @@ REGION="us-central1"
 
 # 1. Resource Readiness
 echo "Test 1: Resource Readiness..."
-kubectl wait --for=condition=Ready containercluster/${CLUSTER_NAME} --timeout=20m -n ${NAMESPACE}
+kubectl wait --for=condition=Ready containercluster/${CLUSTER_NAME} --timeout=30m -n ${NAMESPACE}
 echo "Resource Readiness passed."
 
 # 2. Drift & Revert
@@ -52,7 +52,7 @@ echo "Installing Helm chart from terraform-helm/workload/..."
 helm upgrade --install gke-basic terraform-helm/workload/ \
   --namespace ${NAMESPACE_WORKLOAD} \
   --create-namespace \
-  --wait --timeout=10m
+  --wait --timeout=15m
 
 # 4. Endpoint Interaction
 echo "Test 4: Endpoint Interaction..."

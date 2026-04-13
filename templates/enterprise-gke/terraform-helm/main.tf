@@ -75,6 +75,7 @@ resource "google_container_cluster" "enterprise_cluster" {
   deletion_protection = false
 
   resource_labels = {
+    project = "gcp-template-forge"
     template = "enterprise-gke"
   }
 
@@ -164,6 +165,7 @@ resource "google_container_node_pool" "primary_nodes" {
       enable_integrity_monitoring = true
     }
     labels = {
+      project: "gcp-template-forge"
       template = "enterprise-gke"
     }
   }
