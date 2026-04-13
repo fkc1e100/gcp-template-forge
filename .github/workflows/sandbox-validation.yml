@@ -240,6 +240,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Authenticate to GCP
+      - name: Install gke-gcloud-auth-plugin
+        run: | 
+          gcloud components install gke-gcloud-auth-plugin --quiet
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
@@ -477,6 +480,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Authenticate to GCP
+      - name: Install gke-gcloud-auth-plugin
+        run: | 
+          gcloud components install gke-gcloud-auth-plugin --quiet
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
@@ -584,6 +590,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Authenticate to GCP
+      - name: Install gke-gcloud-auth-plugin
+        run: | 
+          gcloud components install gke-gcloud-auth-plugin --quiet
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
@@ -680,6 +689,9 @@ jobs:
           fi
 
       - name: Authenticate to GCP
+      - name: Install gke-gcloud-auth-plugin
+        run: | 
+          gcloud components install gke-gcloud-auth-plugin --quiet
         if: steps.skip-check.outputs.skip != 'true'
         uses: google-github-actions/auth@v2
         with:
@@ -914,6 +926,9 @@ jobs:
           fi
 
       - name: Authenticate to GCP
+      - name: Install gke-gcloud-auth-plugin
+        run: | 
+          gcloud components install gke-gcloud-auth-plugin --quiet
         if: steps.skip-check.outputs.skip != 'true'
         uses: google-github-actions/auth@v2
         with:
