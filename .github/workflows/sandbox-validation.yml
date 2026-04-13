@@ -311,6 +311,13 @@ jobs:
           if [ -z "$CHARTS" ]; then echo "No Helm charts found -- skipping"; exit 0; fi
           for chart in $CHARTS; do
             echo "=== Helm deploy: $chart ==="
+            # Cleanup stale helm locks
+            PENDING_RELEASE=$(helm list -n default --filter "^release$" --status pending-install,pending-upgrade,pending-rollback -q)
+            if [ -n "$PENDING_RELEASE" ]; then
+              echo "Cleaning up pending helm release: $PENDING_RELEASE"
+              kubectl delete secret -n default -l owner=helm,name=release,status=pending-install 2>/dev/null || true
+              kubectl delete secret -n default -l owner=helm,name=release,status=pending-upgrade 2>/dev/null || true
+            fi
             helm upgrade --install release "$chart" --wait --timeout=10m
           done
 
