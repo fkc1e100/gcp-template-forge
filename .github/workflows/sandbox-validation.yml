@@ -264,6 +264,7 @@ jobs:
         run: |
           gcloud container clusters update enterprise-gke-tf --location=us-central1 --project=gca-gke-2025 --no-enable-deletion-protection --quiet 2>/dev/null || true
           gcloud container clusters delete enterprise-gke-tf --location=us-central1 --project=gca-gke-2025 --quiet 2>/dev/null || true
+
       - name: Terraform apply
         id: tf-apply
         if: "hashFiles(format('{0}/terraform-helm/main.tf', matrix.template)) != ''"
@@ -729,6 +730,7 @@ jobs:
         run: |
           gcloud container clusters update enterprise-gke-tf --location=us-central1 --project=gca-gke-2025 --no-enable-deletion-protection --quiet 2>/dev/null || true
           gcloud container clusters delete enterprise-gke-tf --location=us-central1 --project=gca-gke-2025 --quiet 2>/dev/null || true
+
       - name: Terraform apply
         id: tf-apply
         if: >-
@@ -983,7 +985,7 @@ jobs:
             -n $KCC_NAMESPACE \
             --for=condition=Ready \
             --all \
-            --timeout=1800s \
+            --timeout=600s \
             -f ${{ matrix.template }}/config-connector/ || true
           KCC_DURATION=$(( $(date -u +%s) - ${KCC_START} ))
           echo "kcc_duration=${KCC_DURATION}" >> $GITHUB_OUTPUT
