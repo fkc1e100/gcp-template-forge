@@ -1143,3 +1143,48 @@ Format: `- **[area]** symptom → fix. (root cause)`
 - **Secret Manager IAM via Terraform** `google_secret_manager_secret_iam_member` targeting a pre-existing secret (e.g., `huggingface-token`) fails with 403 during `terraform apply` → remove the resource; grant `roles/secretmanager.secretAccessor` to the workload SA out-of-band via `gcloud secrets add-iam-policy-binding`. The CI SA has `secretAccessor` to *read* secrets but lacks `secretmanager.secrets.getIamPolicy` needed to *manage* IAM on them. Do not attempt to set IAM on pre-existing secrets from within the template.
 
 - **L4 GPU spot → GCE_STOCKOUT** `spot = true` on `g2-standard-12` node pools in us-central1-a/b fails with `GCE_STOCKOUT` — 0 nodes provisioned after 35 min → switch to DWS flex-start: set `spot = false` and keep `queued_provisioning { enabled = true }`. Spot VMs are surplus capacity; on-demand has first physical claim on GPU inventory, so spot requests fail outright during scarcity with no queue. DWS flex-start draws from the larger preemptible quota pool and is non-preemptible once running (~53% below on-demand cost). Also restrict `node_locations` to `["${var.region}-c"]` — us-central1-c has the best L4 headroom within the region. L4 is available globally across 44 zones in 19 regions (us-central1, us-east1, europe-west4, asia-southeast1, and more) — expand zones if us-central1-c stockouts persist.
+
+- **`helm_release` context deadline exceeded for GPU workloads** — `helm_release` with `wait = true` (default) blocks Terraform until all pods are Ready. For vLLM + L4 + GCS FUSE, cold-start time is 15–30 min (DWS provisioning 5–15 min + image pull 2–3 min + model load from GCS 3–5 min + CUDA init 1–2 min). No static timeout is reliable. **Fix: set `wait = false` on the `helm_release` and verify readiness separately with `kubectl wait`:**
+  ```hcl
+  resource "helm_release" "vllm" {
+    wait          = false  # don't block terraform apply
+    wait_for_jobs = false
+    timeout       = 300    # only used for helm client operations, not pod readiness
+    # ... rest of config unchanged
+  }
+  ```
+  Then add a `null_resource` (or CI step) that runs after `terraform apply`:
+  ```bash
+  # Wait up to 30 min for the vLLM pod to be Ready
+  kubectl wait pod -l app=vllm-inference-server -n default \
+    --for=condition=Ready --timeout=1800s
+  # Then test the endpoint
+  kubectl run -it --rm probe --image=curlimages/curl --restart=Never -- \
+    curl -sf http://<SERVICE_IP>:8000/health
+  ```
+  Also fix the **startup probe** in `values.yaml` — the default `failureThreshold: 20 × periodSeconds: 30 = 600s` is too short for cold GCS FUSE model loads. Use:
+  ```yaml
+  startupProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    failureThreshold: 120   # allows up to 60 min for first-time model load
+    httpGet:
+      path: /health
+      port: 8000
+  ```
+
+- **KCC ContainerCluster `kubectl wait --timeout=600s` times out for GPU clusters** — KCC's `ContainerCluster` Ready condition reflects control-plane readiness only (~5–10 min). `ContainerNodePool` with DWS flex-start has its own separate Ready condition that only becomes true once a node is provisioned and GPU drivers are installed — which takes an additional 10–20 min. The CI workflow uses 600s (10 min) which is insufficient. **Fix: wait separately on each resource type with appropriate timeouts:**
+  ```bash
+  # 1. Wait for control plane (fast)
+  kubectl wait containerclusters -n $KCC_NAMESPACE \
+    --for=condition=Ready --timeout=600s --all
+
+  # 2. Wait for GPU node pool separately (slow — DWS provisioning)
+  kubectl wait containernodepools -n $KCC_NAMESPACE \
+    --for=condition=Ready --timeout=1800s --all
+
+  # 3. Verify actual node readiness
+  kubectl wait nodes -l cloud.google.com/gke-nodepool=<gpu-pool-name> \
+    --for=condition=Ready --timeout=1800s
+  ```
+  The CI workflow `kubectl wait --all --timeout=600s` hits the ContainerNodePool Ready gate and fails. Split the wait into two stages in the template's `verification_plan.md` and document that GPU node pool provisioning requires a 1800s timeout.
