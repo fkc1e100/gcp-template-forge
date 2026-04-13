@@ -11,6 +11,47 @@ This document is your primary operating context. You are **Jetski**: an autonomo
 
 Also load `.gemini/user-instructions.json` — it contains the full structured specification including reference repos and sandbox constraints.
 
+Also fetch the repo's `llms.txt` for a structured index of all key resources:
+```bash
+curl -fsSL https://raw.githubusercontent.com/fkc1e100/gcp-template-forge/main/llms.txt
+```
+
+---
+
+## Autoresearch Protocol: Iterating Toward a Passing CI Run
+
+This project uses a **ratchet loop** pattern for autonomous template development: each push is an experiment; CI is the binary metric (pass = keep, fail = investigate + retry). Unlike human-driven iteration, you have no cognitive limit on how many cycles you can run — iterate until CI goes green.
+
+### Rules
+
+1. **Revert to last known-good on persistent failure.** If the same root cause produces three or more consecutive CI failures, revert the failing changes with `git revert HEAD~N` (not `git reset --hard` — keep the history), state the failure reason clearly in the commit message, and try a fundamentally different approach.
+
+2. **Log each attempt.** Maintain an `EXPERIMENTS.md` file in the template directory:
+   ```markdown
+   # Experiments Log
+
+   | Attempt | Change | CI Result | Hypothesis | Next step |
+   |---|---|---|---|---|
+   | 1 | Added DWS queued_provisioning | ❌ API 400 | Missing autoscaling block | Add autoscaling |
+   | 2 | Added autoscaling{} | ✅ Node pool created | — | Done |
+   ```
+   This prevents re-trying fixes that already failed.
+
+3. **Fix the root cause, not the symptom.** If the error is "Kubernetes cluster unreachable", diagnose why (`terraform show` the cluster resource, check if endpoint is empty, check if cluster creation itself failed) before changing the helm provider config.
+
+4. **One change per commit.** Atomic commits make it trivial to identify which change fixed or broke CI. Do not bundle unrelated changes.
+
+5. **CI concurrency causes false 412 errors.** If two CI runs start for the same template at the same time, one will fail with HTTP 412 acquiring the TF state lock. This is not a code error — re-push a no-op commit (`git commit --allow-empty -m "ci: retry"`) to trigger a clean run after the concurrent run finishes.
+
+### What counts as "passing"
+
+CI is green when **all** of these pass:
+- Lint: `terraform fmt -check -recursive` + `terraform validate`
+- Deploy & Test TF+Helm: full `terraform apply`, workload health check, `terraform destroy`
+- Deploy & Test KCC: apply KCC manifests, workload health check, `kubectl delete`
+
+A partial pass (lint only, or KCC only) is not success. Do not open a PR until all three pass.
+
 ---
 
 ## First Step: Sync Guidance and Resolve Divergence
@@ -1172,6 +1213,10 @@ Format: `- **[area]** symptom → fix. (root cause)`
       path: /health
       port: 8000
   ```
+
+- **`binary_authorization { evaluation_mode = "PROJECT_SINGLETON_POLICY_ENFORCE" }`** causes silent cluster provisioning failure → Kubernetes cluster unreachable / empty endpoint in helm provider. `PROJECT_SINGLETON_POLICY_ENFORCE` requires a pre-existing Binary Authorization policy at the GCP project level. If no policy exists, GKE silently fails to expose the cluster endpoint, and the `provider "helm" { kubernetes { host = ... } }` block receives an empty string, producing "invalid configuration: no configuration has been provided". Fix: set `evaluation_mode = "DISABLED"` in templates. If Binary Authorization is a template requirement, document that the prerequisite policy must be created out-of-band before CI can pass.
+
+- **Helm provider "Kubernetes cluster unreachable" when cluster creation fails** — if `terraform apply` creates the cluster but a downstream error (quota, API not enabled, Binary Authorization rejection) causes the apply to partially fail, the `provider "helm"` block receives an empty `host` from the not-yet-provisioned cluster and reports "invalid configuration: no configuration has been provided". This is a secondary symptom — the root cause is always a cluster creation failure. Diagnose with `terraform show | grep endpoint` — if empty, the cluster did not fully provision. Fix the cluster provisioning error first; the helm provider error resolves automatically.
 
 - **KCC ContainerCluster `kubectl wait --timeout=600s` times out for GPU clusters** — KCC's `ContainerCluster` Ready condition reflects control-plane readiness only (~5–10 min). `ContainerNodePool` with DWS flex-start has its own separate Ready condition that only becomes true once a node is provisioned and GPU drivers are installed — which takes an additional 10–20 min. The CI workflow uses 600s (10 min) which is insufficient. **Fix: wait separately on each resource type with appropriate timeouts:**
   ```bash
