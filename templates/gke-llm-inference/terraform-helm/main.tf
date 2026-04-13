@@ -157,9 +157,15 @@ resource "google_service_account_iam_member" "workload_identity_binding" {
 resource "null_resource" "stage_model_weights" {
   provisioner "local-exec" {
     command = <<-EOT
+      # Ensure we are authenticated
+      if [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
+        gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS" --project="${var.project_id}" --quiet || true
+      fi
+
       # Only download if bucket is empty
-      COUNT=$(gsutil ls gs://${google_storage_bucket.weights.name}/Qwen/Qwen2.5-1.5B-Instruct/ 2>/dev/null | wc -l || echo "0")
+      COUNT=$(gcloud storage ls gs://${google_storage_bucket.weights.name}/Qwen/Qwen2.5-1.5B-Instruct/ 2>/dev/null | wc -l || echo "0")
       if [ "$COUNT" -eq 0 ]; then
+        echo "Bucket is empty, staging model weights..."
         pip install huggingface_hub --quiet 2>/dev/null || pip3 install huggingface_hub --quiet 2>/dev/null || true
         export HF_TOKEN=$(gcloud secrets versions access latest --secret="huggingface-token" --project="${var.project_id}" 2>/dev/null || echo "")
         python3 -c "
@@ -174,7 +180,9 @@ try:
 except Exception as e:
     print(f'Error downloading model: {e}')
     exit(1)
-" && gsutil -m cp -r /tmp/model/* gs://${google_storage_bucket.weights.name}/Qwen/Qwen2.5-1.5B-Instruct/
+" && gcloud storage cp -r /tmp/model/* gs://${google_storage_bucket.weights.name}/Qwen/Qwen2.5-1.5B-Instruct/
+      else
+        echo "Model weights already present in bucket."
       fi
     EOT
   }
@@ -191,6 +199,11 @@ resource "null_resource" "deploy_workload" {
 
   provisioner "local-exec" {
     command = <<-EOT
+      # Ensure we are authenticated
+      if [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
+        gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS" --project="${var.project_id}" --quiet || true
+      fi
+
       gcloud container clusters get-credentials ${google_container_cluster.main.name} \
         --region ${var.region} --project ${var.project_id}
       helm upgrade --install release ${path.module}/workload \
