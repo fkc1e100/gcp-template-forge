@@ -246,7 +246,9 @@ jobs:
           service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
 
       - name: Install gke-gcloud-auth-plugin
-        run: gcloud components install gke-gcloud-auth-plugin --quiet
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -486,7 +488,9 @@ jobs:
           service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
 
       - name: Install gke-gcloud-auth-plugin
-        run: gcloud components install gke-gcloud-auth-plugin --quiet
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
 
       - name: Get KCC cluster credentials
         uses: google-github-actions/get-gke-credentials@v2
@@ -596,7 +600,9 @@ jobs:
           service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
 
       - name: Install gke-gcloud-auth-plugin
-        run: gcloud components install gke-gcloud-auth-plugin --quiet
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
 
       # ── TF cleanup ──────────────────────────────────────────────────────────
       - name: Setup Terraform
@@ -697,7 +703,9 @@ jobs:
 
       - name: Install gke-gcloud-auth-plugin
         if: steps.skip-check.outputs.skip != 'true'
-        run: gcloud components install gke-gcloud-auth-plugin --quiet
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
 
       - name: Setup Terraform
         if: steps.skip-check.outputs.skip != 'true'
@@ -935,7 +943,9 @@ jobs:
 
       - name: Install gke-gcloud-auth-plugin
         if: steps.skip-check.outputs.skip != 'true'
-        run: gcloud components install gke-gcloud-auth-plugin --quiet
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
 
       - name: Get KCC cluster credentials
         if: steps.skip-check.outputs.skip != 'true'
