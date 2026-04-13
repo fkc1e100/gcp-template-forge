@@ -216,7 +216,7 @@ resource "null_resource" "deploy_workload" {
       # Ensure gke-gcloud-auth-plugin is installed
       if ! which gke-gcloud-auth-plugin >/dev/null 2>&1; then
         echo "Installing gke-gcloud-auth-plugin..."
-        sudo apt-get update && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin || true
+        echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg && sudo apt-get update && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin || true
       fi
 
       gcloud container clusters get-credentials ${google_container_cluster.main.name} \
