@@ -216,7 +216,7 @@ resource "null_resource" "deploy_workload" {
       # Ensure gke-gcloud-auth-plugin is installed
       if ! which gke-gcloud-auth-plugin >/dev/null 2>&1; then
         echo "Installing gke-gcloud-auth-plugin..."
-        gcloud components install gke-gcloud-auth-plugin --quiet || true
+        sudo apt-get update && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin || true
       fi
 
       gcloud container clusters get-credentials ${google_container_cluster.main.name} \
