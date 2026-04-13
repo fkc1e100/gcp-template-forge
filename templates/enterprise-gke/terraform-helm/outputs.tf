@@ -12,6 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+output "cluster_endpoint" {
+  description = "The endpoint of the GKE cluster"
+  value       = google_container_cluster.enterprise_cluster.endpoint
+}
+
 output "cluster_name" {
   description = "The name of the GKE cluster"
   value       = google_container_cluster.enterprise_cluster.name

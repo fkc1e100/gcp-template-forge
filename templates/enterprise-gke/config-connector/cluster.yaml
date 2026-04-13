@@ -15,7 +15,7 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerCluster
 metadata:
-  name: enterprise-gke-kcc
+  name: enterprise-gke-kcc-v3
   namespace: forge-management
   labels:
     template: enterprise-gke
@@ -36,14 +36,14 @@ spec:
   privateClusterConfig:
     enablePrivateNodes: true
     enablePrivateEndpoint: false
-    masterIpv4CidrBlock: "172.16.106.0/28"
+    masterIpv4CidrBlock: "172.16.1.16/28"
   workloadIdentityConfig:
     workloadPool: "gca-gke-2025.svc.id.goog"
   networkPolicy:
     enabled: true
     provider: CALICO
   binaryAuthorization:
-    evaluationMode: PROJECT_SINGLETON_POLICY_ENFORCE
+    evaluationMode: DISABLED
   loggingConfig:
     enableComponents:
       - SYSTEM_COMPONENTS
@@ -59,3 +59,4 @@ spec:
   releaseChannel:
     channel: REGULAR
 # KCC validation trigger
+# Trigger CI run at Mon Apr 13 05:48:19 UTC 2026

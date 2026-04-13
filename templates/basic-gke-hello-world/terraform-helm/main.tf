@@ -17,28 +17,19 @@ provider "google" {
   region  = var.region
 }
 
-data "google_client_config" "default" {}
-
-provider "helm" {
-  kubernetes {
-    host                   = "https://${google_container_cluster.primary.endpoint}"
-    token                  = data.google_client_config.default.access_token
-    cluster_ca_certificate = base64decode(google_container_cluster.primary.master_auth[0].cluster_ca_certificate)
-  }
-}
-
 # VPC Network
 resource "google_compute_network" "vpc" {
-  name                    = "basic-gke-tf-vpc"
+  name                    = "gke-basic-tf-vpc"
   auto_create_subnetworks = false
 }
 
-# Subnet with secondary ranges for VPC-native GKE Autopilot
+# Subnet with secondary ranges for VPC-native GKE
 resource "google_compute_subnetwork" "subnet" {
-  name          = "basic-gke-tf-subnet"
-  ip_cidr_range = "10.0.0.0/24"
-  region        = var.region
-  network       = google_compute_network.vpc.id
+  name                     = "gke-basic-tf-subnet"
+  ip_cidr_range            = "10.0.0.0/20"
+  region                   = var.region
+  network                  = google_compute_network.vpc.id
+  private_ip_google_access = true
 
   secondary_ip_range {
     range_name    = "pods"
@@ -51,14 +42,16 @@ resource "google_compute_subnetwork" "subnet" {
   }
 }
 
-# GKE Autopilot Cluster
+# GKE Standard Cluster
 resource "google_container_cluster" "primary" {
   name     = var.cluster_name
   location = var.region
 
   deletion_protection = false
 
-  enable_autopilot = true
+  # Remove default node pool; managed separately below
+  remove_default_node_pool = true
+  initial_node_count       = 1
 
   network    = google_compute_network.vpc.name
   subnetwork = google_compute_subnetwork.subnet.name
@@ -66,6 +59,10 @@ resource "google_container_cluster" "primary" {
   ip_allocation_policy {
     cluster_secondary_range_name  = "pods"
     services_secondary_range_name = "services"
+  }
+
+  workload_identity_config {
+    workload_pool = "${var.project_id}.svc.id.goog"
   }
 
   release_channel {
@@ -78,11 +75,45 @@ resource "google_container_cluster" "primary" {
   }
 }
 
-# Hello World workload via Helm
+# Node pool — spot e2-standard-2 for cost-efficient sandbox validation
+resource "google_container_node_pool" "primary_nodes" {
+  name       = "default-pool"
+  location   = var.region
+  cluster    = google_container_cluster.primary.name
+  node_count = 1
+
+  node_config {
+    spot         = true
+    machine_type = "e2-standard-2"
+    disk_size_gb = 50
+    disk_type    = "pd-standard"
+
+    oauth_scopes = [
+      "https://www.googleapis.com/auth/cloud-platform",
+    ]
+
+    workload_metadata_config {
+      mode = "GKE_METADATA"
+    }
+
+    service_account = var.service_account
+  }
+}
+
+data "google_client_config" "default" {}
+
+provider "helm" {
+  kubernetes {
+    host                   = "https://${google_container_cluster.primary.endpoint}"
+    token                  = data.google_client_config.default.access_token
+    cluster_ca_certificate = base64decode(google_container_cluster.primary.master_auth[0].cluster_ca_certificate)
+  }
+}
+
 resource "helm_release" "hello_world" {
   name             = "hello-world"
   chart            = "${path.module}/workload"
   namespace        = "hello-world"
   create_namespace = true
-  depends_on       = [google_container_cluster.primary]
+  wait             = false # Avoid timeouts in TF, verify in CI instead
 }

@@ -15,7 +15,7 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
 metadata:
-  name: enterprise-gke-kcc-pool
+  name: enterprise-gke-kcc-pool-v3
   namespace: forge-management
   labels:
     template: enterprise-gke
@@ -24,7 +24,7 @@ metadata:
 spec:
   location: us-central1
   clusterRef:
-    name: enterprise-gke-kcc
+    name: enterprise-gke-kcc-v3
   nodeCount: 1
   nodeConfig:
     spot: true
@@ -32,8 +32,6 @@ spec:
     diskSizeGb: 50
     diskType: pd-standard
     imageType: COS_CONTAINERD
-    serviceAccountRef:
-      external: forge-builder@gca-gke-2025.iam.gserviceaccount.com
     oauthScopes:
       - "https://www.googleapis.com/auth/cloud-platform"
     workloadMetadataConfig:
