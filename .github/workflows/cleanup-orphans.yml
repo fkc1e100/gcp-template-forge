@@ -24,9 +24,8 @@ jobs:
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
-
-      - name: Install gke-gcloud-auth-plugin
-        run: gcloud components install gke-gcloud-auth-plugin --quiet
+        with:
+          install_components: 'gke-gcloud-auth-plugin'
 
       - name: Find and Delete Orphaned Clusters
         env:
