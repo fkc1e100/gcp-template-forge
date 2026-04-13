@@ -165,7 +165,7 @@ resource "google_container_node_pool" "primary_nodes" {
       enable_integrity_monitoring = true
     }
     labels = {
-      project: "gcp-template-forge"
+      project = "gcp-template-forge"
       template = "enterprise-gke"
     }
   }
