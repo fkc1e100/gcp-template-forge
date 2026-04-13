@@ -1,0 +1,88 @@
+name: Cleanup Orphaned Infrastructure
+on:
+  schedule:
+    - cron: '0 */3 * * *' # Runs every 3 hours
+  workflow_dispatch: # Allows manual triggering from the GitHub Actions UI
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      actions: read # Required to list workflow runs
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+          service_account: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Install gke-gcloud-auth-plugin
+        run: |
+          curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
+          echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+          sudo apt-get update
+          sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
+
+      - name: Find and Delete Orphaned Clusters
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Checking for active GitHub Actions runs..."
+          # Count in_progress or queued runs
+          ACTIVE_RUNS=$(gh run list --status in_progress --json databaseId -q '. | length')
+          QUEUED_RUNS=$(gh run list --status queued --json databaseId -q '. | length')
+          TOTAL_ACTIVE=$((ACTIVE_RUNS + QUEUED_RUNS))
+          
+          if [ "$TOTAL_ACTIVE" -gt 0 ]; then
+            echo "Found $TOTAL_ACTIVE active/queued runs. Skipping cleanup to avoid interrupting active deployments."
+            exit 0
+          fi
+
+          echo "No active runs found. Proceeding with cleanup of orphaned resources..."
+          
+          # 1. Clean up Terraform-provisioned GKE Clusters
+          echo "Searching for Terraform clusters labeled with project=gcp-template-forge..."
+          TF_CLUSTERS=$(gcloud container clusters list \
+            --project=gca-gke-2025 \
+            --region=us-central1 \
+            --filter="resourceLabels.project=gcp-template-forge" \
+            --format="value(name)")
+
+          if [ -n "$TF_CLUSTERS" ]; then
+            for CLUSTER in $TF_CLUSTERS; do
+              echo "Deleting orphaned TF cluster: $CLUSTER"
+              gcloud container clusters delete $CLUSTER \
+                --project=gca-gke-2025 \
+                --region=us-central1 \
+                --quiet --async
+            done
+          else
+            echo "No orphaned Terraform clusters found."
+          fi
+
+          # 2. Clean up KCC-provisioned ContainerClusters
+          echo "Connecting to Management Cluster (krmapihost-kcc-instance)..."
+          gcloud container clusters get-credentials krmapihost-kcc-instance \
+            --region us-central1 \
+            --project gca-gke-2025
+          
+          echo "Searching for KCC ContainerClusters labeled with project=gcp-template-forge..."
+          # The label was added to KCC manifests as 'project: gcp-template-forge'
+          KCC_CLUSTERS=$(kubectl get containercluster -n forge-management -l project=gcp-template-forge -o name || true)
+          
+          if [ -n "$KCC_CLUSTERS" ]; then
+            echo "Deleting orphaned KCC resources..."
+            # Using --wait=false so the action finishes quickly and KCC handles the deletion in the background
+            kubectl delete $KCC_CLUSTERS -n forge-management --wait=false
+          else
+            echo "No orphaned KCC clusters found."
+          fi

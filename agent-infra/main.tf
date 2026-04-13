@@ -26,8 +26,8 @@ resource "google_container_cluster" "template_forge_cluster" {
   remove_default_node_pool = true
   initial_node_count       = 1
 
-  network          = google_compute_network.forge_network.name
-  subnetwork       = google_compute_subnetwork.forge_subnet.name
+  network    = google_compute_network.forge_network.name
+  subnetwork = google_compute_subnetwork.forge_subnet.name
 
   release_channel {
     channel = "REGULAR"
@@ -36,10 +36,10 @@ resource "google_container_cluster" "template_forge_cluster" {
 
 # Node Pool for Standard Cluster
 resource "google_container_node_pool" "primary_nodes" {
-  name       = "default-pool"
-  location   = "us-central1"
-  cluster    = google_container_cluster.template_forge_cluster.name
-  
+  name     = "default-pool"
+  location = "us-central1"
+  cluster  = google_container_cluster.template_forge_cluster.name
+
   autoscaling {
     min_node_count = 1
     max_node_count = 3
@@ -50,7 +50,7 @@ resource "google_container_node_pool" "primary_nodes" {
     machine_type = "e2-standard-4"
 
     service_account = google_service_account.forge_builder.email
-    oauth_scopes    = [
+    oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform"
     ]
   }

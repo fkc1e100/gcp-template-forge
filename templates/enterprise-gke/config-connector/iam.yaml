@@ -18,6 +18,7 @@ metadata:
   name: enterprise-gke-kcc-sa
   namespace: forge-management
   labels:
+    project: gcp-template-forge
     template: enterprise-gke
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
@@ -30,6 +31,7 @@ metadata:
   name: enterprise-gke-kcc-wi-binding-v2
   namespace: forge-management
   labels:
+    project: gcp-template-forge
     template: enterprise-gke
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025

@@ -44,6 +44,10 @@ resource "google_compute_subnetwork" "subnet" {
 
 # GKE Standard Cluster
 resource "google_container_cluster" "primary" {
+  resource_labels = {
+    project = "gcp-template-forge"
+  }
+
   name     = var.cluster_name
   location = var.region
 
@@ -97,16 +101,19 @@ resource "google_container_node_pool" "primary_nodes" {
     }
 
     service_account = var.service_account
+
+    labels = {
+      project = "gcp-template-forge"
+    }
   }
 }
 
-data "google_client_config" "default" {}
+provider "helm" {}
 
-provider "helm" {
-  kubernetes {
-    host                   = "https://${google_container_cluster.primary.endpoint}"
-    token                  = data.google_client_config.default.access_token
-    cluster_ca_certificate = base64decode(google_container_cluster.primary.master_auth[0].cluster_ca_certificate)
+resource "null_resource" "cluster_credentials" {
+  depends_on = [google_container_node_pool.primary_nodes]
+  provisioner "local-exec" {
+    command = "gcloud container clusters get-credentials ${google_container_cluster.primary.name} --region ${var.region} --project ${var.project_id}"
   }
 }
 
@@ -115,5 +122,6 @@ resource "helm_release" "hello_world" {
   chart            = "${path.module}/workload"
   namespace        = "hello-world"
   create_namespace = true
+  depends_on       = [null_resource.cluster_credentials]
   wait             = false # Avoid timeouts in TF, verify in CI instead
 }
