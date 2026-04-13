@@ -247,8 +247,7 @@ jobs:
 
       - name: Install gke-gcloud-auth-plugin
         run: |
-          sudo apt-get update
-          sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
+          gcloud components install gke-gcloud-auth-plugin --quiet
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -489,8 +488,7 @@ jobs:
 
       - name: Install gke-gcloud-auth-plugin
         run: |
-          sudo apt-get update
-          sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
+          gcloud components install gke-gcloud-auth-plugin --quiet
 
       - name: Get KCC cluster credentials
         uses: google-github-actions/get-gke-credentials@v2
@@ -601,8 +599,7 @@ jobs:
 
       - name: Install gke-gcloud-auth-plugin
         run: |
-          sudo apt-get update
-          sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
+          gcloud components install gke-gcloud-auth-plugin --quiet
 
       # ── TF cleanup ──────────────────────────────────────────────────────────
       - name: Setup Terraform
@@ -704,8 +701,7 @@ jobs:
       - name: Install gke-gcloud-auth-plugin
         if: steps.skip-check.outputs.skip != 'true'
         run: |
-          sudo apt-get update
-          sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
+          gcloud components install gke-gcloud-auth-plugin --quiet
 
       - name: Setup Terraform
         if: steps.skip-check.outputs.skip != 'true'
@@ -944,8 +940,7 @@ jobs:
       - name: Install gke-gcloud-auth-plugin
         if: steps.skip-check.outputs.skip != 'true'
         run: |
-          sudo apt-get update
-          sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
+          gcloud components install gke-gcloud-auth-plugin --quiet
 
       - name: Get KCC cluster credentials
         if: steps.skip-check.outputs.skip != 'true'
