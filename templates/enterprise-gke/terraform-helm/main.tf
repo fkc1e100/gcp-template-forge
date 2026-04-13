@@ -106,7 +106,7 @@ resource "google_container_cluster" "enterprise_cluster" {
   }
 
   binary_authorization {
-    evaluation_mode = "PROJECT_SINGLETON_POLICY_ENFORCE"
+    evaluation_mode = "DISABLED"
   }
 
   logging_config {
@@ -170,13 +170,17 @@ resource "google_container_node_pool" "primary_nodes" {
   }
 }
 
-data "google_client_config" "default" {}
+data "google_container_cluster" "enterprise_cluster" {
+  name     = google_container_cluster.enterprise_cluster.name
+  location = var.region
+  depends_on = [google_container_node_pool.primary_nodes]
+}
 
 provider "helm" {
   kubernetes {
-    host                   = "https://${google_container_cluster.enterprise_cluster.endpoint}"
+    host                   = "https://${data.google_container_cluster.enterprise_cluster.endpoint}"
     token                  = data.google_client_config.default.access_token
-    cluster_ca_certificate = base64decode(google_container_cluster.enterprise_cluster.master_auth[0].cluster_ca_certificate)
+    cluster_ca_certificate = base64decode(data.google_container_cluster.enterprise_cluster.master_auth[0].cluster_ca_certificate)
   }
 }
 
@@ -185,7 +189,6 @@ resource "helm_release" "workload" {
   chart            = "${path.module}/workload"
   namespace        = "enterprise-gke"
   create_namespace = true
-  depends_on       = [google_container_node_pool.primary_nodes]
 
   values = [
     file("${path.module}/workload/values.yaml")
