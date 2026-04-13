@@ -108,6 +108,7 @@ jobs:
       - name: Remove .tflock files older than 2h
         run: |
           echo "=== Scanning for stale TF state locks ==="
+          gsutil ls -r "gs://gke-gca-2025-forge-tf-state/**"
 
           gsutil ls -r "gs://${{ env.TF_STATE_BUCKET }}/**" 2>/dev/null \
             | grep '\.tflock$' \
