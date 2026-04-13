@@ -66,6 +66,7 @@ resource "google_container_cluster" "main" {
     }
   }
 
+  # Standard clusters use VULNERABILITY_ENTERPRISE for advanced vulnerability insights
   security_posture_config {
     mode               = "BASIC"
     vulnerability_mode = "VULNERABILITY_ENTERPRISE"
@@ -159,29 +160,10 @@ resource "google_service_account_iam_member" "workload_identity_binding" {
   member             = "serviceAccount:${var.project_id}.svc.id.goog[default/${helm_release.release.name}-sa]"
 }
 
-resource "null_resource" "stage_model_weights" {
-  provisioner "local-exec" {
-    command = <<-EOT
-      # Only download if bucket is empty
-      COUNT=$(gsutil ls gs://${google_storage_bucket.weights.name}/google/gemma-2-2b-it/ 2>/dev/null | wc -l || echo "0")
-      if [ "$COUNT" -eq 0 ]; then
-        # Install huggingface_hub if needed, then download and copy
-        pip install huggingface_hub --quiet 2>/dev/null || true
-        python3 -c "
-from huggingface_hub import snapshot_download
-snapshot_download('google/gemma-2-2b-it', local_dir='/tmp/model')
-" && gsutil -m cp -r /tmp/model/* gs://${google_storage_bucket.weights.name}/google/gemma-2-2b-it/
-      fi
-    EOT
-  }
-
-  depends_on = [google_storage_bucket.weights]
-}
-
 resource "helm_release" "release" {
-  wait          = true
-  wait_for_jobs = true
-  timeout       = 3600
+  wait          = false
+  wait_for_jobs = false
+  timeout       = 1800
   name          = "release"
   chart         = "${path.module}/workload"
   namespace     = "default"
@@ -196,5 +178,5 @@ resource "helm_release" "release" {
     value = local.workload_sa_email
   }
 
-  depends_on = [google_container_node_pool.gpu_pool, google_container_node_pool.cpu_pool, null_resource.stage_model_weights]
+  depends_on = [google_container_node_pool.gpu_pool, google_container_node_pool.cpu_pool]
 }
