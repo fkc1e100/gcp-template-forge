@@ -6,7 +6,7 @@ image:
   pullPolicy: IfNotPresent
 
 model:
-  id: google/gemma-2-2b-it
+  id: Qwen/Qwen2.5-1.5B-Instruct
   bucketName: "" # Injected by Terraform
 
 service:

@@ -41,9 +41,9 @@ kubectl wait pod -l app=vllm-inference-server -n default \
   --for=condition=Ready --timeout=3600s
 
 # (Optional) Populate bucket with model weights if not already present
-# This requires a Hugging Face token with access to Gemma 2
+# This requires a Hugging Face token with access to Qwen 2.5
 # hf_token=$(gcloud secrets versions access latest --secret="huggingface-token")
-# gcloud storage cp -r gs://some-public-source/gemma-2-2b-it gs://$BUCKET_NAME/google/
+# gsutil -m cp -r /tmp/model/* gs://$BUCKET_NAME/Qwen/Qwen2.5-1.5B-Instruct/
 ```
 
 ## Config Connector Deployment
@@ -95,7 +95,7 @@ done
 curl -X POST http://$EXTERNAL_IP/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "google/gemma-2-2b-it",
+    "model": "Qwen/Qwen2.5-1.5B-Instruct",
     "messages": [
       {"role": "user", "content": "Tell me a short joke about a customer support chatbot."}
     ],

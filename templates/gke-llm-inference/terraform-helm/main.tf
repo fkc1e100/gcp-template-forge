@@ -158,7 +158,7 @@ resource "null_resource" "stage_model_weights" {
   provisioner "local-exec" {
     command = <<-EOT
       # Only download if bucket is empty
-      COUNT=$(gsutil ls gs://${google_storage_bucket.weights.name}/google/gemma-2-2b-it/ 2>/dev/null | wc -l || echo "0")
+      COUNT=$(gsutil ls gs://${google_storage_bucket.weights.name}/Qwen/Qwen2.5-1.5B-Instruct/ 2>/dev/null | wc -l || echo "0")
       if [ "$COUNT" -eq 0 ]; then
         pip install huggingface_hub --quiet 2>/dev/null || pip3 install huggingface_hub --quiet 2>/dev/null || true
         export HF_TOKEN=$(gcloud secrets versions access latest --secret="huggingface-token" --project="${var.project_id}" 2>/dev/null || echo "")
@@ -169,11 +169,12 @@ token = os.environ.get('HF_TOKEN')
 if not token:
     print('Warning: HF_TOKEN not found, attempting download without token...')
 try:
-    snapshot_download('google/gemma-2-2b-it', local_dir='/tmp/model', token=token)
+    # Qwen 2.5 is not gated, so token is optional but helps with rate limits
+    snapshot_download('Qwen/Qwen2.5-1.5B-Instruct', local_dir='/tmp/model', token=token)
 except Exception as e:
     print(f'Error downloading model: {e}')
     exit(1)
-" && gsutil -m cp -r /tmp/model/* gs://${google_storage_bucket.weights.name}/google/gemma-2-2b-it/
+" && gsutil -m cp -r /tmp/model/* gs://${google_storage_bucket.weights.name}/Qwen/Qwen2.5-1.5B-Instruct/
       fi
     EOT
   }
