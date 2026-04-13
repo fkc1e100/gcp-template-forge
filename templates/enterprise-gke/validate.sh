@@ -18,10 +18,10 @@ set -e
 echo "Starting KCC Validation Tests..."
 
 PROJECT_ID=${PROJECT_ID:-"gca-gke-2025"}
-CLUSTER_NAME="gke-enterprise-kcc-v3"
-NODE_POOL_NAME="gke-enterprise-kcc-pool-v3"
+CLUSTER_NAME="enterprise-gke-kcc-v3"
+NODE_POOL_NAME="enterprise-gke-kcc-pool-v3"
 NAMESPACE="forge-management"
-NAMESPACE_WORKLOAD="gke-enterprise"
+NAMESPACE_WORKLOAD="enterprise-gke"
 REGION="us-central1"
 
 # 1. Resource Readiness
@@ -61,7 +61,7 @@ metadata:
 spec:
   template:
     spec:
-      serviceAccountName: gke-enterprise-sa
+      serviceAccountName: enterprise-gke-sa
       containers:
       - name: gcloud
         image: google/cloud-sdk:slim
@@ -69,7 +69,7 @@ spec:
       restartPolicy: Never
 EOF
 
-# Note: This Job might fail if the ServiceAccount 'gke-enterprise-sa' is not yet created by Helm
+# Note: This Job might fail if the ServiceAccount 'enterprise-gke-sa' is not yet created by Helm
 # So we should probably install the Helm chart FIRST or at least create the SA.
 # Let's move Helm installation up or combine.
 
@@ -78,7 +78,7 @@ echo "Test 4: Endpoint Interaction (via Helm)..."
 
 # Apply workload via Helm chart
 echo "Installing Helm chart from terraform-helm/workload/..."
-helm upgrade --install gke-enterprise terraform-helm/workload/ \
+helm upgrade --install enterprise-gke terraform-helm/workload/ \
   --namespace ${NAMESPACE_WORKLOAD} \
   --create-namespace \
   --wait --timeout=10m
@@ -95,7 +95,7 @@ metadata:
 spec:
   template:
     spec:
-      serviceAccountName: gke-enterprise-sa
+      serviceAccountName: enterprise-gke-sa
       containers:
       - name: gcloud
         image: google/cloud-sdk:slim
@@ -112,7 +112,7 @@ kubectl delete job test-workload-identity -n ${NAMESPACE_WORKLOAD}
 # Wait for LoadBalancer IP
 SERVICE_IP=""
 for i in {1..20}; do
-  SERVICE_IP=$(kubectl get svc -n ${NAMESPACE_WORKLOAD} -l app.kubernetes.io/instance=gke-enterprise -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}' || true)
+  SERVICE_IP=$(kubectl get svc -n ${NAMESPACE_WORKLOAD} -l app.kubernetes.io/instance=enterprise-gke -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}' || true)
   if [ ! -z "$SERVICE_IP" ]; then
     break
   fi
@@ -143,7 +143,7 @@ done
 # 5. Teardown Verification
 echo "Test 5: Teardown Verification..."
 # Delete workload via Helm
-helm uninstall gke-enterprise -n ${NAMESPACE_WORKLOAD}
+helm uninstall enterprise-gke -n ${NAMESPACE_WORKLOAD}
 
 # Delete KCC manifests
 # Note: GEMINI.md says: Always delete KCC ContainerCluster first, wait for STOPPING.

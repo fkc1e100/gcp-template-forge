@@ -15,10 +15,10 @@
 apiVersion: compute.cnrm.cloud.google.com/v1beta1
 kind: ComputeNetwork
 metadata:
-  name: gke-enterprise-kcc-vpc
+  name: enterprise-gke-kcc-vpc
   namespace: forge-management
   labels:
-    template: gke-enterprise
+    template: enterprise-gke
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
@@ -27,17 +27,17 @@ spec:
 apiVersion: compute.cnrm.cloud.google.com/v1beta1
 kind: ComputeSubnetwork
 metadata:
-  name: gke-enterprise-kcc-subnet
+  name: enterprise-gke-kcc-subnet
   namespace: forge-management
   labels:
-    template: gke-enterprise
+    template: enterprise-gke
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   ipCidrRange: 10.16.0.0/20
   region: us-central1
   networkRef:
-    name: gke-enterprise-kcc-vpc
+    name: enterprise-gke-kcc-vpc
   privateIpGoogleAccess: true
   secondaryIpRange:
     - rangeName: pods

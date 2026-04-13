@@ -24,13 +24,13 @@ provider "google-beta" {
 
 # VPC Network
 resource "google_compute_network" "vpc" {
-  name                    = "gke-enterprise-tf-vpc"
+  name                    = "enterprise-gke-tf-vpc"
   auto_create_subnetworks = false
 }
 
 # Subnet
 resource "google_compute_subnetwork" "subnet" {
-  name                     = "gke-enterprise-tf-subnet"
+  name                     = "enterprise-gke-tf-subnet"
   ip_cidr_range            = "10.16.0.0/20"
   region                   = var.region
   network                  = google_compute_network.vpc.id
@@ -49,13 +49,13 @@ resource "google_compute_subnetwork" "subnet" {
 
 # Cloud NAT for private nodes
 resource "google_compute_router" "router" {
-  name    = "gke-enterprise-router"
+  name    = "enterprise-gke-router"
   region  = var.region
   network = google_compute_network.vpc.id
 }
 
 resource "google_compute_router_nat" "nat" {
-  name                               = "gke-enterprise-nat"
+  name                               = "enterprise-gke-nat"
   router                             = google_compute_router.router.name
   region                             = var.region
   nat_ip_allocate_option             = "AUTO_ONLY"
@@ -75,7 +75,7 @@ resource "google_container_cluster" "enterprise_cluster" {
   deletion_protection = false
 
   resource_labels = {
-    template = "gke-enterprise"
+    template = "enterprise-gke"
   }
 
   remove_default_node_pool = true
@@ -135,7 +135,7 @@ resource "google_container_cluster" "enterprise_cluster" {
 }
 
 resource "google_container_node_pool" "primary_nodes" {
-  name       = "gke-enterprise-pool"
+  name       = "enterprise-gke-pool"
   location   = var.region
   cluster    = google_container_cluster.enterprise_cluster.name
   node_count = 1
@@ -164,7 +164,7 @@ resource "google_container_node_pool" "primary_nodes" {
       enable_integrity_monitoring = true
     }
     labels = {
-      template = "gke-enterprise"
+      template = "enterprise-gke"
     }
   }
 }
@@ -180,9 +180,9 @@ provider "helm" {
 }
 
 resource "helm_release" "workload" {
-  name             = "gke-enterprise"
+  name             = "enterprise-gke"
   chart            = "${path.module}/workload"
-  namespace        = "gke-enterprise"
+  namespace        = "enterprise-gke"
   create_namespace = true
   wait             = false # Avoid timeouts in TF, verify in CI instead
 

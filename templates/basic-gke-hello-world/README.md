@@ -16,7 +16,7 @@ A minimal GKE Autopilot cluster with a Hello World workload, deployable via Terr
 cd terraform-helm
 terraform init \
   -backend-config="bucket=<TF_STATE_BUCKET>" \
-  -backend-config="prefix=templates/1-gke-basic-hello-world/terraform-helm"
+  -backend-config="prefix=templates/1-basic-gke-hello-world/terraform-helm"
 terraform apply -var="project_id=<PROJECT_ID>"
 ```
 

@@ -15,7 +15,7 @@
 
 set -e
 
-echo "Starting KCC Validation Tests for gke-basic-hello-world..."
+echo "Starting KCC Validation Tests for basic-gke-hello-world..."
 
 PROJECT_ID=${PROJECT_ID:-"gca-gke-2025"}
 CLUSTER_NAME="gke-basic-kcc-v2"

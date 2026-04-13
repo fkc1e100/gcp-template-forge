@@ -15,10 +15,10 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerCluster
 metadata:
-  name: gke-enterprise-kcc-v3
+  name: enterprise-gke-kcc-v3
   namespace: forge-management
   labels:
-    template: gke-enterprise
+    template: enterprise-gke
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
     cnrm.cloud.google.com/remove-default-node-pool: "true"
@@ -27,9 +27,9 @@ spec:
   initialNodeCount: 1
   networkingMode: VPC_NATIVE
   networkRef:
-    name: gke-enterprise-kcc-vpc
+    name: enterprise-gke-kcc-vpc
   subnetworkRef:
-    name: gke-enterprise-kcc-subnet
+    name: enterprise-gke-kcc-subnet
   ipAllocationPolicy:
     clusterSecondaryRangeName: pods
     servicesSecondaryRangeName: services

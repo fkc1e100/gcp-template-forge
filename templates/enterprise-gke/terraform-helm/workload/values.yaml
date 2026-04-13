@@ -7,7 +7,7 @@ image:
 
 serviceAccount:
   create: true
-  name: "gke-enterprise-sa"
+  name: "enterprise-gke-sa"
 
 podSecurityContext:
   runAsUser: 1000
@@ -56,7 +56,7 @@ config:
 
 secrets:
   enabled: false
-  providerClass: "gke-enterprise-secrets"
+  providerClass: "enterprise-gke-secrets"
   gcpProjectId: "gca-gke-2025"
-  secretName: "gke-enterprise-secret"
+  secretName: "enterprise-gke-secret"
   secretVersion: "latest"
