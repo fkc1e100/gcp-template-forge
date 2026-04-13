@@ -148,6 +148,7 @@ resource "google_service_account" "workload_sa" {
 }
 
 resource "google_storage_bucket_iam_member" "workload_reader" {
+  count  = var.create_workload_sa ? 1 : 0
   bucket = google_storage_bucket.weights.name
   role   = "roles/storage.objectViewer"
   member = "serviceAccount:${local.workload_sa_email}"
