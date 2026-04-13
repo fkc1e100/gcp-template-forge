@@ -156,7 +156,7 @@ resource "google_service_account_iam_member" "workload_identity_binding" {
   count              = var.create_workload_sa ? 1 : 0
   service_account_id = join("", google_service_account.workload_sa.*.name)
   role               = "roles/iam.workloadIdentityUser"
-  member             = "serviceAccount:${var.project_id}.svc.id.goog[default/gemma-2-2b-it-vllm-sa]"
+  member             = "serviceAccount:${var.project_id}.svc.id.goog[default/${helm_release.release.name}-sa]"
 }
 
 resource "helm_release" "release" {

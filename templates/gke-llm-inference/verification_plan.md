@@ -67,7 +67,7 @@ kubectl apply -f workload/manifests.yaml
 # Wait for the service to get an external IP
 EXTERNAL_IP=""
 while [ -z "$EXTERNAL_IP" ]; do
-  EXTERNAL_IP=$(kubectl get svc gemma-2-2b-it-vllm -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+  EXTERNAL_IP=$(kubectl get svc release-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
   [ -z "$EXTERNAL_IP" ] && sleep 10
 done
 
