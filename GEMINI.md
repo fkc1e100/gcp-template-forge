@@ -1557,15 +1557,3 @@ CI failure on PR
     → Overseer logs "infrastructure stall" → human intervention required
     → Manual action: check stale TF lock, fix code, push new commit
 ```
-
-## MCP Servers
-```json
-{
-  "mcpServers": {
-    "gke-mcp": {
-      "command": "npx",
-      "args": ["-y", "@googlecloud/gke-mcp"]
-    }
-  }
-}
-```
