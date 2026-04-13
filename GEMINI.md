@@ -1257,6 +1257,8 @@ Format: `- **[area]** symptom → fix. (root cause)`
   ```
   The CI workflow `kubectl wait --all --timeout=600s` hits the ContainerNodePool Ready gate and fails. Split the wait into two stages in the template's `verification_plan.md` and document that GPU node pool provisioning requires a 1800s timeout.
 
+- **[CI/CD]** `gcloud components install gke-gcloud-auth-plugin` fails on managed GitHub runners → use `sudo apt-get install google-cloud-cli-gke-gcloud-auth-plugin`. (The component manager is disabled on managed runners; using `setup-gcloud` with `install_components` also fails for the same reason.)
+
 ---
 
 ## Infrastructure & Operator Architecture
