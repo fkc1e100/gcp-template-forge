@@ -19,13 +19,13 @@ provider "google" {
 
 # VPC Network
 resource "google_compute_network" "vpc" {
-  name                    = "basic-gke-tf-vpc"
+  name                    = "gke-basic-tf-vpc"
   auto_create_subnetworks = false
 }
 
 # Subnet with secondary ranges for VPC-native GKE
 resource "google_compute_subnetwork" "subnet" {
-  name                     = "basic-gke-tf-subnet"
+  name                     = "gke-basic-tf-subnet"
   ip_cidr_range            = "10.0.0.0/20"
   region                   = var.region
   network                  = google_compute_network.vpc.id

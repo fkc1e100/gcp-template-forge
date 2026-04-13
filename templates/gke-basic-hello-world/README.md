@@ -4,8 +4,8 @@ A minimal GKE Autopilot cluster with a Hello World workload, deployable via Terr
 
 ## Architecture
 
-- **VPC + Subnet** — isolated VPC with secondary CIDR ranges for pods and services (`basic-gke-vpc`, `basic-gke-subnet`)
-- **GKE Autopilot** — fully managed cluster (`basic-gke`); no node pool configuration required
+- **VPC + Subnet** — isolated VPC with secondary CIDR ranges for pods and services (`gke-basic-vpc`, `gke-basic-subnet`)
+- **GKE Autopilot** — fully managed cluster (`gke-basic`); no node pool configuration required
 - **Hello World workload** — Google's `hello-app` container, 3 replicas, exposed via LoadBalancer on port 80
 
 ## Deployment Paths
@@ -16,7 +16,7 @@ A minimal GKE Autopilot cluster with a Hello World workload, deployable via Terr
 cd terraform-helm
 terraform init \
   -backend-config="bucket=<TF_STATE_BUCKET>" \
-  -backend-config="prefix=templates/1-basic-gke-hello-world/terraform-helm"
+  -backend-config="prefix=templates/1-gke-basic-hello-world/terraform-helm"
 terraform apply -var="project_id=<PROJECT_ID>"
 ```
 
@@ -34,12 +34,12 @@ Creates `ComputeNetwork`, `ComputeSubnetwork`, and `ContainerCluster` (Autopilot
 
 | Resource | Path | Name |
 |---|---|---|
-| VPC | TF | `basic-gke-tf-vpc` |
-| VPC | KCC | `basic-gke-kcc-vpc` |
-| Subnet | TF | `basic-gke-tf-subnet` |
-| Subnet | KCC | `basic-gke-kcc-subnet` |
-| GKE cluster | TF | `basic-gke-tf` |
-| GKE cluster | KCC | `basic-gke-kcc` |
+| VPC | TF | `gke-basic-tf-vpc` |
+| VPC | KCC | `gke-basic-kcc-vpc` |
+| Subnet | TF | `gke-basic-tf-subnet` |
+| Subnet | KCC | `gke-basic-kcc-subnet` |
+| GKE cluster | TF | `gke-basic-tf` |
+| GKE cluster | KCC | `gke-basic-kcc` |
 
 ## Performance & Cost Estimates
 
@@ -73,7 +73,7 @@ kubectl delete -n <KCC_NAMESPACE> -f config-connector/ --wait=true
 | **Duration** | 9m 39s | |
 | **Region** | us-central1 | us-central1 (KCC cluster) |
 | **Zones** | us-central1-a,us-central1-b,us-central1-c,us-central1-f | forge-management namespace |
-| **Cluster** | basic-gke-tf | basic-gke-kcc |
+| **Cluster** | gke-basic-tf | gke-basic-kcc |
 | **Agent tokens** | not recorded | (shared session) |
 | **Estimated cost** | - | -- |
 | **Commit** | 2c375256 | |

@@ -12,35 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: compute.cnrm.cloud.google.com/v1beta1
-kind: ComputeNetwork
+apiVersion: container.cnrm.cloud.google.com/v1beta1
+kind: ContainerNodePool
 metadata:
-  name: enterprise-gke-kcc-vpc
+  name: gke-basic-kcc-v2-pool
   namespace: forge-management
   labels:
-    template: enterprise-gke
+    template: gke-basic-hello-world
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
-  autoCreateSubnetworks: false
----
-apiVersion: compute.cnrm.cloud.google.com/v1beta1
-kind: ComputeSubnetwork
-metadata:
-  name: enterprise-gke-kcc-subnet
-  namespace: forge-management
-  labels:
-    template: enterprise-gke
-  annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025
-spec:
-  ipCidrRange: 10.16.0.0/20
-  region: us-central1
-  networkRef:
-    name: enterprise-gke-kcc-vpc
-  privateIpGoogleAccess: true
-  secondaryIpRange:
-    - rangeName: pods
-      ipCidrRange: 10.20.0.0/14
-    - rangeName: services
-      ipCidrRange: 10.24.0.0/20
+  location: us-central1
+  clusterRef:
+    name: gke-basic-kcc-v2
+  nodeCount: 1
+  nodeConfig:
+    spot: true
+    machineType: e2-standard-2
+    diskSizeGb: 50
+    diskType: pd-standard
+    oauthScopes:
+      - https://www.googleapis.com/auth/cloud-platform
+    workloadMetadataConfig:
+      mode: GKE_METADATA

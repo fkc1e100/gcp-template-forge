@@ -12,35 +12,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: compute.cnrm.cloud.google.com/v1beta1
-kind: ComputeNetwork
+apiVersion: container.cnrm.cloud.google.com/v1beta1
+kind: ContainerCluster
 metadata:
-  name: basic-gke-kcc-v2-vpc
+  name: gke-basic-kcc-v2
   namespace: forge-management
   labels:
-    template: basic-gke-hello-world
+    template: gke-basic-hello-world
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
+    cnrm.cloud.google.com/remove-default-node-pool: "true"
 spec:
-  autoCreateSubnetworks: false
----
-apiVersion: compute.cnrm.cloud.google.com/v1beta1
-kind: ComputeSubnetwork
-metadata:
-  name: basic-gke-kcc-v2-subnet
-  namespace: forge-management
-  labels:
-    template: basic-gke-hello-world
-  annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025
-spec:
-  ipCidrRange: 10.0.0.0/20
-  region: us-central1
+  location: us-central1
+  # GKE Standard cluster — explicit node pool defined in nodepool.yaml
+  initialNodeCount: 1
   networkRef:
-    name: basic-gke-kcc-v2-vpc
-  privateIpGoogleAccess: true
-  secondaryIpRange:
-    - rangeName: pods
-      ipCidrRange: 10.4.0.0/14
-    - rangeName: services
-      ipCidrRange: 10.8.0.0/20
+    name: gke-basic-kcc-v2-vpc
+  subnetworkRef:
+    name: gke-basic-kcc-v2-subnet
+  ipAllocationPolicy:
+    clusterSecondaryRangeName: pods
+    servicesSecondaryRangeName: services
+  workloadIdentityConfig:
+    workloadPool: gca-gke-2025.svc.id.goog
+  releaseChannel:
+    channel: REGULAR
+  securityPostureConfig:
+    mode: BASIC
+    vulnerabilityMode: VULNERABILITY_BASIC
+# KCC validation trigger

@@ -12,31 +12,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: iam.cnrm.cloud.google.com/v1beta1
-kind: IAMServiceAccount
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeNetwork
 metadata:
-  name: enterprise-gke-kcc-sa
+  name: gke-enterprise-kcc-vpc
   namespace: forge-management
   labels:
-    template: enterprise-gke
+    template: gke-enterprise
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
-  displayName: "Enterprise Workload Service Account"
+  autoCreateSubnetworks: false
 ---
-apiVersion: iam.cnrm.cloud.google.com/v1beta1
-kind: IAMPolicyMember
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeSubnetwork
 metadata:
-  name: enterprise-gke-kcc-wi-binding-v2
+  name: gke-enterprise-kcc-subnet
   namespace: forge-management
   labels:
-    template: enterprise-gke
+    template: gke-enterprise
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
-  member: "serviceAccount:gca-gke-2025.svc.id.goog[enterprise-gke/enterprise-gke-sa]"
-  role: roles/iam.workloadIdentityUser
-  resourceRef:
-    apiVersion: iam.cnrm.cloud.google.com/v1beta1
-    kind: IAMServiceAccount
-    name: enterprise-gke-kcc-sa
+  ipCidrRange: 10.16.0.0/20
+  region: us-central1
+  networkRef:
+    name: gke-enterprise-kcc-vpc
+  privateIpGoogleAccess: true
+  secondaryIpRange:
+    - rangeName: pods
+      ipCidrRange: 10.20.0.0/14
+    - rangeName: services
+      ipCidrRange: 10.24.0.0/20

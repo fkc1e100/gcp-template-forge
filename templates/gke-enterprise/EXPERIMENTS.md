@@ -1,4 +1,4 @@
-# Experiments Log - enterprise-gke
+# Experiments Log - gke-enterprise
 
 | Attempt | Change | CI Result | Hypothesis | Next step |
 |---|---|---|---|---|

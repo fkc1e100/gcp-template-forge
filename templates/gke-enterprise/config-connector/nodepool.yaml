@@ -12,35 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: compute.cnrm.cloud.google.com/v1beta1
-kind: ComputeRouter
+apiVersion: container.cnrm.cloud.google.com/v1beta1
+kind: ContainerNodePool
 metadata:
-  name: enterprise-gke-kcc-router
+  name: gke-enterprise-kcc-pool-v3
   namespace: forge-management
   labels:
-    template: enterprise-gke
+    template: gke-enterprise
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
-  region: us-central1
-  networkRef:
-    name: enterprise-gke-kcc-vpc
----
-apiVersion: compute.cnrm.cloud.google.com/v1beta1
-kind: ComputeRouterNAT
-metadata:
-  name: enterprise-gke-kcc-nat
-  namespace: forge-management
-  labels:
-    template: enterprise-gke
-  annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025
-spec:
-  region: us-central1
-  routerRef:
-    name: enterprise-gke-kcc-router
-  natIpAllocateOption: AUTO_ONLY
-  sourceSubnetworkIpRangesToNat: ALL_SUBNETWORKS_ALL_IP_RANGES
-  logConfig:
-    enable: true
-    filter: ERRORS_ONLY
+  location: us-central1
+  clusterRef:
+    name: gke-enterprise-kcc-v3
+  nodeCount: 1
+  nodeConfig:
+    spot: true
+    machineType: e2-standard-4
+    diskSizeGb: 50
+    diskType: pd-standard
+    imageType: COS_CONTAINERD
+    oauthScopes:
+      - "https://www.googleapis.com/auth/cloud-platform"
+    workloadMetadataConfig:
+      mode: GKE_METADATA
+    shieldedInstanceConfig:
+      enableSecureBoot: true
+      enableIntegrityMonitoring: true

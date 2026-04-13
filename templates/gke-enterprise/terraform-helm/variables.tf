@@ -26,7 +26,7 @@ variable "region" {
 variable "cluster_name" {
   description = "The name of the cluster"
   type        = string
-  default     = "enterprise-gke-tf"
+  default     = "gke-enterprise-tf"
 }
 
 variable "service_account" {

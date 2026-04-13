@@ -1,4 +1,4 @@
-# Experiments Log - basic-gke-hello-world
+# Experiments Log - gke-basic-hello-world
 
 | Attempt | Change | CI Result | Hypothesis | Next step |
 |---|---|---|---|---|
