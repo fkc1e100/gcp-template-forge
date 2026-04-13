@@ -159,7 +159,7 @@ resource "google_service_account_iam_member" "workload_identity_binding" {
   member             = "serviceAccount:${var.project_id}.svc.id.goog[default/gemma-2-2b-it-vllm-sa]"
 }
 
-resource "helm_release" "vllm" {
+resource "helm_release" "release" {
   wait      = false
   timeout   = 1200
   name      = "vllm"
