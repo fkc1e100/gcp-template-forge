@@ -41,6 +41,8 @@ jobs:
     steps:
       - name: Authenticate to GCP
         uses: google-github-actions/auth@v2
+     - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
         with:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
@@ -101,6 +103,8 @@ jobs:
     steps:
       - name: Authenticate to GCP
         uses: google-github-actions/auth@v2
+     - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
         with:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
@@ -139,6 +143,8 @@ jobs:
     steps:
       - name: Authenticate to GCP
         uses: google-github-actions/auth@v2
+     - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
         with:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
