@@ -193,6 +193,6 @@ resource "helm_release" "workload" {
 
   set {
     name  = "secrets.enabled"
-    value = "true"
+    value = "false"
   }
 }

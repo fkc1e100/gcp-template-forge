@@ -125,10 +125,10 @@ if [ -z "$SERVICE_IP" ]; then
   exit 1
 fi
 
-echo "Testing endpoint http://${SERVICE_IP}:8080/..."
+echo "Testing endpoint http://${SERVICE_IP}:80/..."
 # Retry curl as the LB might take a few moments to actually start serving
 for i in {1..10}; do
-  if curl -sf http://${SERVICE_IP}:8080/; then
+  if curl -sf http://${SERVICE_IP}:80/; then
     echo "Endpoint test passed!"
     break
   fi
