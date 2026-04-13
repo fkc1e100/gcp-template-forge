@@ -34,10 +34,11 @@ metadata:
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
-  ipCidrRange: 10.0.0.0/24
+  ipCidrRange: 10.0.0.0/20
   region: us-central1
   networkRef:
     name: basic-gke-kcc-vpc
+  privateIpGoogleAccess: true
   secondaryIpRange:
     - rangeName: pods
       ipCidrRange: 10.4.0.0/14
