@@ -1,7 +1,6 @@
 name: Sandbox Validation
 
 on:
-  workflow_dispatch:
   push:
     branches: [ main ]
     paths:
@@ -41,7 +40,6 @@ jobs:
   detect-changes:
     name: Detect Changed Templates
     runs-on: ubuntu-latest
-  workflow_dispatch:
     outputs:
       templates: ${{ steps.find.outputs.templates }}
       has_templates: ${{ steps.find.outputs.has_templates }}
@@ -76,7 +74,6 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.has_templates == 'true'
     runs-on: ubuntu-latest
-  workflow_dispatch:
     strategy:
       fail-fast: true   # stop linting other templates the moment one fails
       matrix:
@@ -234,7 +231,6 @@ jobs:
       needs.detect-changes.outputs.has_templates == 'true' &&
       needs.lint.result == 'success'
     runs-on: ubuntu-latest
-  workflow_dispatch:
     strategy:
       fail-fast: false
       matrix:
@@ -290,7 +286,6 @@ jobs:
         with:
           cluster_name: ${{ steps.tf-outputs.outputs.tf_cluster }}
           location: ${{ steps.tf-outputs.outputs.tf_location }}
-  workflow_dispatch:
           project_id: ${{ env.PROJECT_ID }}
 
       - name: Verify Terraform cluster is RUNNING
@@ -406,11 +401,9 @@ jobs:
           if [ "$TF_APPLY" = "failure" ]; then
             echo "should_destroy=true"  >> $GITHUB_OUTPUT
             echo "Reason: TF apply failed — destroying partial state"
-  workflow_dispatch:
           elif [ "$TF_VERIFY" = "success" ] && { [ "$HELM" = "success" ] || [ "$HELM" = "skipped" ]; }; then
             echo "should_destroy=true"  >> $GITHUB_OUTPUT
             echo "Reason: All verification passed — performing normal teardown"
-  workflow_dispatch:
           else
             echo "should_destroy=false" >> $GITHUB_OUTPUT
             echo "::notice::Cluster left running — TF apply succeeded but a downstream step failed. Next push will skip provisioning and re-run the failing step. Cluster will be destroyed on next successful run or PR close."
@@ -475,7 +468,6 @@ jobs:
       needs.detect-changes.outputs.has_templates == 'true' &&
       needs.lint.result == 'success'
     runs-on: ubuntu-latest
-  workflow_dispatch:
     strategy:
       fail-fast: false
       matrix:
@@ -495,7 +487,6 @@ jobs:
         with:
           cluster_name: ${{ env.KCC_CLUSTER }}
           location: ${{ env.KCC_REGION }}
-  workflow_dispatch:
           project_id: ${{ env.PROJECT_ID }}
 
       - name: Apply KCC manifests
@@ -584,7 +575,6 @@ jobs:
       github.event.pull_request.merged == false &&
       needs.detect-changes.outputs.has_templates == 'true'
     runs-on: ubuntu-latest
-  workflow_dispatch:
     strategy:
       fail-fast: false
       matrix:
@@ -634,7 +624,6 @@ jobs:
         with:
           cluster_name: ${{ env.KCC_CLUSTER }}
           location: ${{ env.KCC_REGION }}
-  workflow_dispatch:
           project_id: ${{ env.PROJECT_ID }}
 
       - name: KCC cleanup (delete if any resources exist)
@@ -653,7 +642,6 @@ jobs:
     needs: detect-changes
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.detect-changes.outputs.has_templates == 'true'
     runs-on: ubuntu-latest
-  workflow_dispatch:
     timeout-minutes: 90
     strategy:
       fail-fast: false
@@ -750,7 +738,6 @@ jobs:
         with:
           cluster_name: ${{ steps.tf-outputs.outputs.tf_cluster }}
           location: ${{ steps.tf-outputs.outputs.tf_location }}
-  workflow_dispatch:
           project_id: ${{ env.PROJECT_ID }}
 
       - name: Verify Terraform cluster is RUNNING
@@ -894,7 +881,6 @@ jobs:
     needs: detect-changes
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.detect-changes.outputs.has_templates == 'true'
     runs-on: ubuntu-latest
-  workflow_dispatch:
     timeout-minutes: 60
     strategy:
       fail-fast: false
@@ -940,7 +926,6 @@ jobs:
         with:
           cluster_name: ${{ env.KCC_CLUSTER }}
           location: ${{ env.KCC_REGION }}
-  workflow_dispatch:
           project_id: ${{ env.PROJECT_ID }}
 
       - name: Apply KCC manifests
@@ -1008,7 +993,6 @@ jobs:
       needs.detect-changes.outputs.has_templates == 'true' &&
       !cancelled()
     runs-on: ubuntu-latest
-  workflow_dispatch:
     strategy:
       fail-fast: false
       matrix:
