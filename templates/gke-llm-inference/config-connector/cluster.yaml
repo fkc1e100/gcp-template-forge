@@ -24,7 +24,7 @@ spec:
       enabled: true
   securityPostureConfig:
     mode: BASIC
-    vulnerabilityMode: VULNERABILITY_ENTERPRISE
+    vulnerabilityMode: VULNERABILITY_BASIC
 ---
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool

@@ -160,11 +160,12 @@ resource "google_service_account_iam_member" "workload_identity_binding" {
 }
 
 resource "helm_release" "release" {
-  wait      = true
-  timeout   = 1800
-  name      = "release"
-  chart     = "${path.module}/workload"
-  namespace = "default"
+  wait          = false
+  wait_for_jobs = false
+  timeout       = 1800
+  name          = "release"
+  chart         = "${path.module}/workload"
+  namespace     = "default"
 
   set {
     name  = "bucketName"
@@ -176,5 +177,5 @@ resource "helm_release" "release" {
     value = local.workload_sa_email
   }
 
-  depends_on = [google_container_node_pool.gpu_pool]
+  depends_on = [google_container_node_pool.gpu_pool, google_container_node_pool.cpu_pool]
 }
