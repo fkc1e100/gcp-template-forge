@@ -18,8 +18,8 @@ set -e
 echo "Starting KCC Validation Tests..."
 
 PROJECT_ID=${PROJECT_ID:-"gca-gke-2025"}
-CLUSTER_NAME="enterprise-gke-kcc-v2"
-NODE_POOL_NAME="enterprise-gke-kcc-pool"
+CLUSTER_NAME="enterprise-gke-kcc-v3"
+NODE_POOL_NAME="enterprise-gke-kcc-pool-v3"
 NAMESPACE="forge-management"
 NAMESPACE_WORKLOAD="enterprise-gke"
 REGION="us-central1"
