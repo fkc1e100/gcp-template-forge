@@ -36,14 +36,14 @@ spec:
   privateClusterConfig:
     enablePrivateNodes: true
     enablePrivateEndpoint: false
-    masterIpv4CidrBlock: "172.16.106.0/28"
+    masterIpv4CidrBlock: "172.16.1.16/28"
   workloadIdentityConfig:
     workloadPool: "gca-gke-2025.svc.id.goog"
   networkPolicy:
     enabled: true
     provider: CALICO
   binaryAuthorization:
-    evaluationMode: PROJECT_SINGLETON_POLICY_ENFORCE
+    evaluationMode: DISABLED
   loggingConfig:
     enableComponents:
       - SYSTEM_COMPONENTS

@@ -21,10 +21,10 @@ metadata:
     template: basic-gke-hello-world
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
+    cnrm.cloud.google.com/remove-default-node-pool: "true"
 spec:
   location: us-central1
   # GKE Standard cluster — explicit node pool defined in nodepool.yaml
-  removeDefaultNodePool: true
   initialNodeCount: 1
   networkRef:
     name: basic-gke-kcc-vpc
