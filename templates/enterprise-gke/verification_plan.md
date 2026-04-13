@@ -71,7 +71,7 @@ kubectl apply -f config-connector/ -n forge-management
 ### Verification
 1. **Resource Readiness:**
    ```bash
-   kubectl wait --for=condition=Ready containercluster/enterprise-gke-kcc-v3 -n forge-management --timeout=20m
+   kubectl wait --for=condition=Ready containercluster/enterprise-gke-kcc -n forge-management --timeout=20m
    ```
 2. **Workload Deployment & Integration:**
    The `validate.sh` script handles the deployment of the workload via Helm to the newly created cluster and performs interaction tests.

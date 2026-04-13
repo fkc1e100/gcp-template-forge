@@ -15,7 +15,7 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerCluster
 metadata:
-  name: enterprise-gke-kcc-v3
+  name: enterprise-gke-kcc
   namespace: forge-management
   labels:
     project: gcp-template-forge
