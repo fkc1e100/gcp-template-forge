@@ -312,7 +312,7 @@ jobs:
           for chart in $CHARTS; do
             echo "=== Helm deploy: $chart ==="
             # Cleanup stale helm locks
-            PENDING_RELEASE=$(helm list -n default --filter "^release$" --status pending-install,pending-upgrade,pending-rollback -q)
+            PENDING_RELEASE=$(helm list -n default --filter "^release$" -q)
             if [ -n "$PENDING_RELEASE" ]; then
               echo "Cleaning up pending helm release: $PENDING_RELEASE"
               kubectl delete secret -n default -l owner=helm,name=release,status=pending-install 2>/dev/null || true
