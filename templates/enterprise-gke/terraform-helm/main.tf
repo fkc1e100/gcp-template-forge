@@ -170,6 +170,8 @@ resource "google_container_node_pool" "primary_nodes" {
   }
 }
 
+data "google_client_config" "default" {}
+
 data "google_container_cluster" "enterprise_cluster" {
   name       = google_container_cluster.enterprise_cluster.name
   location   = var.region
