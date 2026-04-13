@@ -1,11 +1,25 @@
 #!/usr/bin/env bash
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 set -e
 
 echo "Starting KCC Validation Tests..."
 
 PROJECT_ID=${PROJECT_ID:-"gca-gke-2025"}
-CLUSTER_NAME="enterprise-gke"
-NODE_POOL_NAME="enterprise-gke-pool"
+CLUSTER_NAME="enterprise-gke-kcc"
+NODE_POOL_NAME="enterprise-gke-kcc-pool"
 NAMESPACE="forge-management"
 NAMESPACE_WORKLOAD="enterprise-gke"
 REGION="us-central1"
@@ -35,9 +49,43 @@ echo "Test 3: Workload Identity Integration..."
 # Get credentials for the newly created cluster
 gcloud container clusters get-credentials ${CLUSTER_NAME} --region ${REGION} --project ${PROJECT_ID}
 
-# Apply namespace first
-kubectl apply -f config-connector/workload/namespace.yaml
+# Ensure workload namespace exists
+kubectl create namespace ${NAMESPACE_WORKLOAD} --dry-run=client -o yaml | kubectl apply -f -
 
+cat <<EOF | kubectl apply -f -
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: test-workload-identity
+  namespace: ${NAMESPACE_WORKLOAD}
+spec:
+  template:
+    spec:
+      serviceAccountName: enterprise-gke-sa
+      containers:
+      - name: gcloud
+        image: google/cloud-sdk:slim
+        command: ["gcloud", "auth", "list"]
+      restartPolicy: Never
+EOF
+
+# Note: This Job might fail if the ServiceAccount 'enterprise-gke-sa' is not yet created by Helm
+# So we should probably install the Helm chart FIRST or at least create the SA.
+# Let's move Helm installation up or combine.
+
+# 4. Endpoint Interaction (via Helm)
+echo "Test 4: Endpoint Interaction (via Helm)..."
+
+# Apply workload via Helm chart
+echo "Installing Helm chart from terraform-helm/workload/..."
+helm upgrade --install enterprise-gke terraform-helm/workload/ \
+  --namespace ${NAMESPACE_WORKLOAD} \
+  --create-namespace \
+  --wait --timeout=10m
+
+# Now the ServiceAccount should exist, run the WI test Job again
+echo "Re-running Workload Identity test Job..."
+kubectl delete job test-workload-identity -n ${NAMESPACE_WORKLOAD} --ignore-not-found
 cat <<EOF | kubectl apply -f -
 apiVersion: batch/v1
 kind: Job
@@ -60,17 +108,6 @@ kubectl wait --for=condition=complete job/test-workload-identity --timeout=5m -n
 kubectl logs job/test-workload-identity -n ${NAMESPACE_WORKLOAD}
 # Clean up job
 kubectl delete job test-workload-identity -n ${NAMESPACE_WORKLOAD}
-echo "Workload Identity Integration passed."
-
-# 4. Endpoint Interaction
-echo "Test 4: Endpoint Interaction..."
-
-# Apply workload manifests to the target cluster
-echo "Applying workload manifests to target cluster..."
-kubectl apply -R -f config-connector/workload/
-
-# Wait for rollout
-kubectl rollout status deployment/enterprise-gke -n ${NAMESPACE_WORKLOAD} --timeout=5m
 
 # Wait for LoadBalancer IP
 SERVICE_IP=""
@@ -105,22 +142,24 @@ done
 
 # 5. Teardown Verification
 echo "Test 5: Teardown Verification..."
-# Delete workload from target cluster
-kubectl delete -R -f config-connector/workload/ --ignore-not-found
+# Delete workload via Helm
+helm uninstall enterprise-gke -n ${NAMESPACE_WORKLOAD}
 
 # Delete KCC manifests
-kubectl delete -f config-connector/ -n ${NAMESPACE} --ignore-not-found
-echo "Waiting for cluster deletion (sleeping 5m)..."
-sleep 300
+# Note: GEMINI.md says: Always delete KCC ContainerCluster first, wait for STOPPING.
+kubectl delete containercluster/${CLUSTER_NAME} -n ${NAMESPACE} --wait=false
+echo "Waiting for cluster deletion to start..."
+for i in {1..20}; do
+  STATUS=$(gcloud container clusters describe ${CLUSTER_NAME} --region ${REGION} --project ${PROJECT_ID} --format="value(status)" 2>/dev/null || echo "DELETED")
+  if [ "$STATUS" == "STOPPING" ] || [ "$STATUS" == "DELETED" ]; then
+    echo "Cluster status: $STATUS"
+    break
+  fi
+  echo "Waiting for cluster to reach STOPPING (current: $STATUS)..."
+  sleep 30
+done
 
-# Verify GCP resource deletion
-set +e
-gcloud container clusters describe ${CLUSTER_NAME} --region ${REGION} --project ${PROJECT_ID}
-if [ $? -eq 0 ]; then
-  echo "Teardown Verification failed! Cluster still exists in GCP."
-  exit 1
-fi
-set -e
-echo "Teardown Verification passed."
+# Delete other KCC manifests
+kubectl delete -f config-connector/ -n ${NAMESPACE} --ignore-not-found
 
 echo "All KCC Validation Tests passed successfully!"

@@ -41,11 +41,11 @@ terraform apply -auto-approve
 ### Verification
 1. **Cluster Health:**
    ```bash
-   gcloud container clusters describe enterprise-gke --region us-central1 --format="value(status)"
+   gcloud container clusters describe enterprise-gke-tf --region us-central1 --format="value(status)"
    ```
 2. **Workload Health:**
    ```bash
-   gcloud container clusters get-credentials enterprise-gke --region us-central1
+   gcloud container clusters get-credentials enterprise-gke-tf --region us-central1
    kubectl get pods -l app.kubernetes.io/name=enterprise-gke -n enterprise-gke
    ```
 3. **Endpoint Interaction:**
@@ -74,7 +74,7 @@ kubectl apply -f config-connector/ -n forge-management
    kubectl wait --for=condition=Ready containercluster/enterprise-gke-kcc -n forge-management --timeout=20m
    ```
 2. **Workload Deployment & Integration:**
-   The `validate.sh` script handles the deployment of standard Kubernetes manifests located in `config-connector/workload/` to the newly created cluster and performs interaction tests.
+   The `validate.sh` script handles the deployment of the workload via Helm to the newly created cluster and performs interaction tests.
    ```bash
    ./validate.sh
    ```
