@@ -22,13 +22,6 @@ provider "google-beta" {
   region  = var.region
 }
 
-provider "helm" {
-  # Uses ~/.kube/config written by null_resource.cluster_credentials below.
-  # Do not configure the kubernetes {} block with computed cluster attributes —
-  # the endpoint is unknown during plan when the cluster is created from scratch,
-  # causing "invalid configuration: no configuration has been provided".
-}
-
 # VPC Network
 resource "google_compute_network" "vpc" {
   name                    = "enterprise-gke-tf-vpc"
@@ -181,24 +174,22 @@ resource "google_container_node_pool" "primary_nodes" {
 resource "null_resource" "cluster_credentials" {
   depends_on = [google_container_node_pool.primary_nodes]
 
+  # Fetch cluster credentials then deploy the workload via helm CLI.
+  # The Terraform helm provider cannot be used when the cluster is created in the
+  # same apply: the provider initialises at plan time (before any resources exist)
+  # and fails with "invalid configuration" when no kubeconfig is present.
   provisioner "local-exec" {
-    command = "gcloud container clusters get-credentials ${google_container_cluster.enterprise_cluster.name} --region ${var.region} --project ${var.project_id}"
+    command = <<-EOT
+      gcloud container clusters get-credentials ${google_container_cluster.enterprise_cluster.name} \
+        --region ${var.region} --project ${var.project_id}
+      helm upgrade --install enterprise-gke ${path.module}/workload \
+        --namespace enterprise-gke --create-namespace --wait --timeout 10m \
+        --set secrets.enabled=false
+    EOT
   }
-}
 
-resource "helm_release" "workload" {
-  name             = "enterprise-gke"
-  chart            = "${path.module}/workload"
-  namespace        = "enterprise-gke"
-  create_namespace = true
-  depends_on       = [null_resource.cluster_credentials]
-
-  values = [
-    file("${path.module}/workload/values.yaml")
-  ]
-
-  set {
-    name  = "secrets.enabled"
-    value = "false"
+  provisioner "local-exec" {
+    when    = destroy
+    command = "helm uninstall enterprise-gke --namespace enterprise-gke --ignore-not-found || true"
   }
 }

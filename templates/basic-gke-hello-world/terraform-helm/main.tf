@@ -17,13 +17,6 @@ provider "google" {
   region  = var.region
 }
 
-provider "helm" {
-  # Uses ~/.kube/config written by null_resource.cluster_credentials below.
-  # Do not configure the kubernetes {} block with computed cluster attributes —
-  # the endpoint is unknown during plan when the cluster is created from scratch,
-  # causing "invalid configuration: no configuration has been provided".
-}
-
 # VPC Network
 resource "google_compute_network" "vpc" {
   name                    = "basic-gke-tf-vpc"
@@ -75,20 +68,24 @@ resource "google_container_cluster" "primary" {
   }
 }
 
-# Configure kubectl after the cluster is ready; helm provider uses this kubeconfig.
-resource "null_resource" "cluster_credentials" {
+# Fetch cluster credentials then deploy the workload via helm CLI.
+# The Terraform helm provider cannot be used when the cluster is created in the
+# same apply: the provider initialises at plan time (before any resources exist)
+# and fails with "invalid configuration" when no kubeconfig is present.
+resource "null_resource" "deploy_workload" {
   depends_on = [google_container_cluster.primary]
 
   provisioner "local-exec" {
-    command = "gcloud container clusters get-credentials ${google_container_cluster.primary.name} --region ${var.region} --project ${var.project_id}"
+    command = <<-EOT
+      gcloud container clusters get-credentials ${google_container_cluster.primary.name} \
+        --region ${var.region} --project ${var.project_id}
+      helm upgrade --install basic-gke ${path.module}/workload \
+        --namespace hello-world --create-namespace --wait --timeout 10m
+    EOT
   }
-}
 
-# Hello World workload via Helm
-resource "helm_release" "hello_world" {
-  name             = "basic-gke"
-  chart            = "${path.module}/workload"
-  namespace        = "hello-world"
-  create_namespace = true
-  depends_on       = [null_resource.cluster_credentials]
+  provisioner "local-exec" {
+    when    = destroy
+    command = "helm uninstall basic-gke --namespace hello-world --ignore-not-found || true"
+  }
 }
