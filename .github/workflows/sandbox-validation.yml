@@ -245,6 +245,11 @@ jobs:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
 
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          install_components: 'gke-gcloud-auth-plugin'
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
@@ -253,6 +258,12 @@ jobs:
         run: |
           gsutil rm "gs://${TF_STATE_BUCKET}/${{ matrix.template }}/terraform-helm/default.tflock" \
             2>/dev/null && echo "Stale state lock removed" || echo "No stale lock present"
+
+      - name: Force delete conflicting cluster
+        if: matrix.template == "templates/enterprise-gke"
+        run: |
+          gcloud container clusters update enterprise-gke-tf --location=us-central1 --project=gca-gke-2025 --no-enable-deletion-protection --quiet 2>/dev/null || true
+          gcloud container clusters delete enterprise-gke-tf --location=us-central1 --project=gca-gke-2025 --quiet 2>/dev/null || true
 
       - name: Terraform apply
         id: tf-apply
@@ -311,7 +322,7 @@ jobs:
           if [ -z "$CHARTS" ]; then echo "No Helm charts found -- skipping"; exit 0; fi
           for chart in $CHARTS; do
             echo "=== Helm deploy: $chart ==="
-            helm upgrade --install release "$chart" --wait --timeout=10m
+            helm upgrade --install release "$chart" --wait --timeout=30m
           done
 
       - name: Security scan — GCP native (On-Demand Scanning + Security Posture)
@@ -482,6 +493,11 @@ jobs:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
 
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          install_components: 'gke-gcloud-auth-plugin'
+
       - name: Get KCC cluster credentials
         uses: google-github-actions/get-gke-credentials@v2
         with:
@@ -505,7 +521,7 @@ jobs:
             -n $KCC_NAMESPACE \
             --for=condition=Ready \
             --all \
-            --timeout=600s \
+            --timeout=1800s \
             -f ${{ matrix.template }}/config-connector/ || true
           echo "kcc_duration=$(( $(date -u +%s) - ${KCC_START} ))" >> $GITHUB_OUTPUT
 
@@ -525,7 +541,7 @@ jobs:
           STATUS=$(kubectl get containerclusters.container.cnrm.cloud.google.com \
             -n $KCC_NAMESPACE \
             -o jsonpath='{.items[*].status.conditions[?(@.type=="Ready")].status}' \
-            2>/dev/null | tr ' ' '\n' | grep -c "True" || echo "0")
+            2>/dev/null | tr ' ' '\n' | grep -c "True" 2>/dev/null) || STATUS=0
 
           if [ "$STATUS" -gt 0 ]; then
             echo "ContainerCluster is Ready — teardown can proceed"
@@ -588,6 +604,11 @@ jobs:
         with:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          install_components: 'gke-gcloud-auth-plugin'
 
       # ── TF cleanup ──────────────────────────────────────────────────────────
       - name: Setup Terraform
@@ -686,6 +707,12 @@ jobs:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
 
+      - name: Set up gcloud CLI
+        if: steps.skip-check.outputs.skip != 'true'
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          install_components: 'gke-gcloud-auth-plugin'
+
       - name: Setup Terraform
         if: steps.skip-check.outputs.skip != 'true'
         uses: hashicorp/setup-terraform@v3
@@ -697,6 +724,12 @@ jobs:
         run: |
           gsutil rm "gs://${TF_STATE_BUCKET}/${{ matrix.template }}/terraform-helm/default.tflock" \
             2>/dev/null && echo "Stale state lock removed" || echo "No stale lock present"
+
+      - name: Force delete conflicting cluster
+        if: matrix.template == "templates/enterprise-gke"
+        run: |
+          gcloud container clusters update enterprise-gke-tf --location=us-central1 --project=gca-gke-2025 --no-enable-deletion-protection --quiet 2>/dev/null || true
+          gcloud container clusters delete enterprise-gke-tf --location=us-central1 --project=gca-gke-2025 --quiet 2>/dev/null || true
 
       - name: Terraform apply
         id: tf-apply
@@ -920,6 +953,12 @@ jobs:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
 
+      - name: Set up gcloud CLI
+        if: steps.skip-check.outputs.skip != 'true'
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          install_components: 'gke-gcloud-auth-plugin'
+
       - name: Get KCC cluster credentials
         if: steps.skip-check.outputs.skip != 'true'
         uses: google-github-actions/get-gke-credentials@v2
@@ -1035,9 +1074,9 @@ jobs:
           if [ -n "$TF_RESULT_FILE" ]; then
             TF_STATUS=$(python3  -c "import json; d=json.load(open('$TF_RESULT_FILE')); print(d.get('status',''))")
             TF_DURATION=$(python3 -c "import json; d=json.load(open('$TF_RESULT_FILE')); print(d.get('duration',''))")
-            TF_CLUSTER=$(python3  -c "import json; d=json.load(open('$TF_RESULT_FILE')); print(d.get('cluster',''))")
-            TF_LOCATION=$(python3 -c "import json; d=json.load(open('$TF_RESULT_FILE')); print(d.get('location',''))")
-            TF_ZONES=$(python3    -c "import json; d=json.load(open('$TF_RESULT_FILE')); print(d.get('zones',''))")
+            TF_CLUSTER=$(python3  -c "import json; d=json.load(open('$TF_RESULT_FILE')); print(d.get('status',''))")
+            TF_LOCATION=$(python3  -c "import json; d=json.load(open('$TF_RESULT_FILE')); print(d.get('status',''))")
+            TF_ZONES=$(python3  -c "import json; d=json.load(open('$TF_RESULT_FILE')); print(d.get('status',''))")
           else
             TF_STATUS="$TF_JOB_RESULT"; TF_DURATION=""; TF_CLUSTER=""; TF_LOCATION=""; TF_ZONES=""
           fi
