@@ -196,7 +196,35 @@ except Exception as e:
 resource "local_file" "helm_values" {
   filename = "${path.module}/workload/values.yaml"
   content  = <<-EOT
-bucketName: ${google_storage_bucket.weights.name}
+replicaCount: 1
+
+image:
+  repository: vllm/vllm-openai
+  tag: v0.7.2
+  pullPolicy: IfNotPresent
+
 serviceAccountEmail: ${local.workload_sa_email}
+
+model:
+  id: Qwen/Qwen2.5-1.5B-Instruct
+  bucketName: ${google_storage_bucket.weights.name}
+
+service:
+  type: LoadBalancer
+  port: 80
+
+resources:
+  limits:
+    nvidia.com/gpu: 1
+  requests:
+    nvidia.com/gpu: 1
+
+nodeSelector:
+  cloud.google.com/gke-accelerator: nvidia-l4
+
+tolerations:
+- key: "nvidia.com/gpu"
+  operator: "Exists"
+  effect: "NoSchedule"
 EOT
 }
