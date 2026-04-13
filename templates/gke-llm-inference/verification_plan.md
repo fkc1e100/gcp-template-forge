@@ -38,7 +38,7 @@ gcloud container clusters get-credentials $CLUSTER_NAME --region $REGION
 # Wait for GPU node pool provisioning and pod readiness
 echo "Waiting for GPU node pool and vLLM pod readiness (up to 30 min)..."
 kubectl wait pod -l app=vllm-inference-server -n default \
-  --for=condition=Ready --timeout=1800s
+  --for=condition=Ready --timeout=3600s
 
 # (Optional) Populate bucket with model weights if not already present
 # This requires a Hugging Face token with access to Gemma 2
@@ -62,14 +62,14 @@ kubectl wait containerclusters gke-llm-inference-kcc -n forge-management \
 
 # Wait for GPU node pool separately (slow — DWS provisioning)
 kubectl wait containernodepools gpu-pool-kcc -n forge-management \
-  --for=condition=Ready --timeout=1800s
+  --for=condition=Ready --timeout=3600s
 
 # Get credentials for the KCC cluster
 gcloud container clusters get-credentials gke-llm-inference-kcc --region us-central1
 
 # Verify actual node readiness
 kubectl wait nodes -l cloud.google.com/gke-nodepool=gpu-pool-kcc \
-  --for=condition=Ready --timeout=1800s
+  --for=condition=Ready --timeout=3600s
 
 # Apply workload
 kubectl apply -f ../kcc-workload/manifests.yaml
