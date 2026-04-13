@@ -52,7 +52,7 @@ terraform apply -auto-approve
    ```bash
    # Get LoadBalancer IP
    SERVICE_IP=$(kubectl get svc enterprise-gke -o jsonpath='{.status.loadBalancer.ingress[0].ip}' -n enterprise-gke)
-   curl -sf http://${SERVICE_IP}:8080/
+   curl -sf http://${SERVICE_IP}:80/
    ```
 
 ### Teardown

@@ -24,11 +24,17 @@ provider "google-beta" {
 
 data "google_client_config" "default" {}
 
+data "google_container_cluster" "cluster_data" {
+  name     = var.cluster_name
+  location = var.region
+  depends_on = [google_container_cluster.enterprise_cluster]
+}
+
 provider "helm" {
   kubernetes {
-    host                   = "https://${google_container_cluster.enterprise_cluster.endpoint}"
+    host                   = "https://${data.google_container_cluster.cluster_data.endpoint}"
     token                  = data.google_client_config.default.access_token
-    cluster_ca_certificate = base64decode(google_container_cluster.enterprise_cluster.master_auth[0].cluster_ca_certificate)
+    cluster_ca_certificate = base64decode(data.google_container_cluster.cluster_data.master_auth[0].cluster_ca_certificate)
   }
 }
 
