@@ -8,7 +8,12 @@ provider "google-beta" {
   region  = var.region
 }
 
-data "google_client_config" "default" {}
+# The empty helm provider uses ~/.kube/config set by null_resource.cluster_credentials
+provider "helm" {
+  kubernetes {
+    config_path = "~/.kube/config"
+  }
+}
 
 # VPC Network
 resource "google_compute_network" "main" {
@@ -157,19 +162,9 @@ resource "google_service_account_iam_member" "workload_identity_binding" {
 resource "null_resource" "stage_model_weights" {
   provisioner "local-exec" {
     command = <<-EOT
-      # Ensure we are authenticated
-      if [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
-        if grep -q "external_account" "$GOOGLE_APPLICATION_CREDENTIALS" 2>/dev/null; then
-          gcloud auth login --cred-file="$GOOGLE_APPLICATION_CREDENTIALS" --quiet
-        else
-          gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS" --quiet
-        fi
-      fi
-
       # Only download if bucket is empty
       COUNT=$(gcloud storage ls gs://${google_storage_bucket.weights.name}/Qwen/Qwen2.5-1.5B-Instruct/ 2>/dev/null | wc -l || echo "0")
       if [ "$$COUNT" -eq 0 ]; then
-
         echo "Bucket is empty, staging model weights..."
         pip install huggingface_hub --quiet 2>/dev/null || pip3 install huggingface_hub --quiet 2>/dev/null || true
         export HF_TOKEN=$(gcloud secrets versions access latest --secret="huggingface-token" --project="${var.project_id}" 2>/dev/null || echo "")
@@ -195,43 +190,31 @@ except Exception as e:
   depends_on = [google_storage_bucket.weights]
 }
 
-# Fetch cluster credentials then deploy the workload via helm CLI.
-# The Terraform helm provider cannot be used when the cluster is created in the
-# same apply: the provider initialises at plan time (before any resources exist)
-# and fails with "invalid configuration" when no kubeconfig is present.
-resource "null_resource" "deploy_workload" {
-  depends_on = [google_container_node_pool.gpu_pool, google_container_node_pool.cpu_pool, null_resource.stage_model_weights]
-
+# Fix: configure credentials for helm provider
+resource "null_resource" "cluster_credentials" {
+  depends_on = [google_container_node_pool.gpu_pool, google_container_node_pool.cpu_pool]
   provisioner "local-exec" {
-    command = <<-EOT
-      # Ensure we are authenticated
-      if [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
-        if grep -q "external_account" "$GOOGLE_APPLICATION_CREDENTIALS" 2>/dev/null; then
-          gcloud auth login --cred-file="$GOOGLE_APPLICATION_CREDENTIALS" --quiet
-        else
-          gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS" --quiet
-        fi
-      fi
+    command = "gcloud container clusters get-credentials ${google_container_cluster.main.name} --region ${var.region} --project ${var.project_id}"
+  }
+}
 
-      # Ensure gke-gcloud-auth-plugin is installed
-      if ! which gke-gcloud-auth-plugin >/dev/null 2>&1; then
-        echo "Installing gke-gcloud-auth-plugin..."
-        echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg && sudo apt-get update && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin || true
-      fi
+resource "helm_release" "workload" {
+  name             = "release-inference" # Use unique name to avoid conflict with workflow
+  chart            = "${path.module}/workload"
+  namespace        = "default"
+  create_namespace = true
+  wait             = false # Don't block terraform apply
+  timeout          = 1800
 
-      gcloud container clusters get-credentials ${google_container_cluster.main.name} \
-        --region ${var.region} --project ${var.project_id}
-      
-      # Helm wait might fail if model loading takes too long, so we increase timeout
-      helm upgrade --install release ${path.module}/workload \
-        --namespace default --create-namespace --wait --timeout 30m \
-        --set bucketName=${google_storage_bucket.weights.name} \
-        --set serviceAccountEmail=${local.workload_sa_email}
-    EOT
+  set {
+    name  = "bucketName"
+    value = google_storage_bucket.weights.name
   }
 
-  provisioner "local-exec" {
-    when    = destroy
-    command = "helm uninstall release --namespace default --ignore-not-found || true"
+  set {
+    name  = "serviceAccountEmail"
+    value = local.workload_sa_email
   }
+
+  depends_on = [null_resource.cluster_credentials, null_resource.stage_model_weights]
 }
