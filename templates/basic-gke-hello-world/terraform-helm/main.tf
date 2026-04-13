@@ -17,14 +17,11 @@ provider "google" {
   region  = var.region
 }
 
-data "google_client_config" "default" {}
-
 provider "helm" {
-  kubernetes {
-    host                   = "https://${google_container_cluster.primary.endpoint}"
-    token                  = data.google_client_config.default.access_token
-    cluster_ca_certificate = base64decode(google_container_cluster.primary.master_auth[0].cluster_ca_certificate)
-  }
+  # Uses ~/.kube/config written by null_resource.cluster_credentials below.
+  # Do not configure the kubernetes {} block with computed cluster attributes —
+  # the endpoint is unknown during plan when the cluster is created from scratch,
+  # causing "invalid configuration: no configuration has been provided".
 }
 
 # VPC Network
@@ -78,11 +75,20 @@ resource "google_container_cluster" "primary" {
   }
 }
 
+# Configure kubectl after the cluster is ready; helm provider uses this kubeconfig.
+resource "null_resource" "cluster_credentials" {
+  depends_on = [google_container_cluster.primary]
+
+  provisioner "local-exec" {
+    command = "gcloud container clusters get-credentials ${google_container_cluster.primary.name} --region ${var.region} --project ${var.project_id}"
+  }
+}
+
 # Hello World workload via Helm
 resource "helm_release" "hello_world" {
   name             = "basic-gke"
   chart            = "${path.module}/workload"
   namespace        = "hello-world"
   create_namespace = true
-  depends_on       = [google_container_cluster.primary]
+  depends_on       = [null_resource.cluster_credentials]
 }
