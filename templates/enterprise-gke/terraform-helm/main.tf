@@ -25,8 +25,8 @@ provider "google-beta" {
 data "google_client_config" "default" {}
 
 data "google_container_cluster" "cluster_data" {
-  name     = var.cluster_name
-  location = var.region
+  name       = var.cluster_name
+  location   = var.region
   depends_on = [google_container_cluster.enterprise_cluster]
 }
 
