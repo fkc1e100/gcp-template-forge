@@ -160,8 +160,8 @@ resource "google_service_account_iam_member" "workload_identity_binding" {
 }
 
 resource "helm_release" "release" {
-  wait      = false
-  timeout   = 1200
+  wait      = true
+  timeout   = 1800
   name      = "release"
   chart     = "${path.module}/workload"
   namespace = "default"

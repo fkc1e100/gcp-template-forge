@@ -58,7 +58,7 @@ kubectl wait --for=condition=Ready containercluster/gke-llm-inference-kcc -n for
 gcloud container clusters get-credentials gke-llm-inference-kcc --region us-central1
 
 # Apply workload
-kubectl apply -f workload/manifests.yaml
+kubectl apply -f ../kcc-workload/manifests.yaml
 ```
 
 ## Endpoint Validation
@@ -100,7 +100,7 @@ terraform destroy -auto-approve \
 
 ### Config Connector
 ```bash
-kubectl delete -f workload/manifests.yaml
+kubectl delete -f ../kcc-workload/manifests.yaml
 kubectl delete -f bucket.yaml
 kubectl delete -f cluster.yaml
 kubectl delete -f network.yaml
