@@ -311,7 +311,7 @@ jobs:
           if [ -z "$CHARTS" ]; then echo "No Helm charts found -- skipping"; exit 0; fi
           for chart in $CHARTS; do
             echo "=== Helm deploy: $chart ==="
-            helm upgrade --install release "$chart" --wait --timeout=10m
+            helm upgrade --install release "$chart" --wait --timeout=30m
           done
 
       - name: Security scan — GCP native (On-Demand Scanning + Security Posture)
