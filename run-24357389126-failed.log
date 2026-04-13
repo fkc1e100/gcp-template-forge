@@ -1,0 +1,559 @@
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	﻿2026-04-13T17:31:46.2828822Z Current runner version: '2.333.1'
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:46.2852630Z ##[group]Runner Image Provisioner
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:46.2853490Z Hosted Compute Agent
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:46.2854109Z Version: 20260213.493
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:46.2854675Z Commit: 5c115507f6dd24b8de37d8bbe0bb4509d0cc0fa3
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:46.2855393Z Build Date: 2026-02-13T00:28:41Z
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:46.2856019Z Worker ID: {45129165-403f-4159-921d-bcd60cc80e9a}
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:46.2856695Z Azure Region: northcentralus
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:46.2857214Z ##[endgroup]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:46.2859219Z ##[group]Operating System
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:46.2859836Z Ubuntu
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:46.2860257Z 24.04.4
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:46.2860856Z LTS
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:46.2861273Z ##[endgroup]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:46.2861762Z ##[group]Runner Image
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:46.2862372Z Image: ubuntu-24.04
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:46.2862891Z Version: 20260406.80.1
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:46.2864338Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260406.80/images/ubuntu/Ubuntu2404-Readme.md
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:46.2865822Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260406.80
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:46.2866697Z ##[endgroup]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:46.2868119Z ##[group]GITHUB_TOKEN Permissions
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:46.2870206Z Contents: write
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:46.2870791Z Metadata: read
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:46.2871327Z PullRequests: write
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:46.2871843Z ##[endgroup]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:46.2873890Z Secret source: Actions
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:46.2874828Z Prepare workflow directory
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:46.3382745Z Prepare all required actions
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:46.3434985Z Getting action download info
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:48.0184933Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:48.1758821Z Download action repository 'google-github-actions/auth@v2' (SHA:c200f3691d83b41bf9bbd8638997a462592937ed)
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:48.5585721Z Download action repository 'hashicorp/setup-terraform@v3' (SHA:b9cd54a3c349d3f38e8881555d616ced269862dd)
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:49.0009161Z Download action repository 'google-github-actions/get-gke-credentials@v2' (SHA:64bc7249bbcf78056bb92f14d3cedc2da193946c)
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:49.4356383Z Download action repository 'azure/setup-helm@v4' (SHA:1a275c3b69536ee54be43f2070a358922e12c8d4)
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:49.7848553Z Download action repository 'actions/github-script@v7' (SHA:f28e40c7f34bde8b3046d885e986cb6290c5673b)
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.2914321Z Complete job name: Deploy & Test TF+Helm (templates/gke-llm-inference)
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.3582906Z ##[group]Run actions/checkout@v4
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.3583459Z with:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.3583671Z   repository: fkc1e100/gcp-template-forge
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.3584074Z   token: ***
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.3584258Z   ssh-strict: true
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.3584442Z   ssh-user: git
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.3584629Z   persist-credentials: true
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.3584851Z   clean: true
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.3585051Z   sparse-checkout-cone-mode: true
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.3585289Z   fetch-depth: 1
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.3585485Z   fetch-tags: false
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.3585666Z   show-progress: true
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.3585851Z   lfs: false
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.3586010Z   submodules: false
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.3586201Z   set-safe-directory: true
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.3586591Z env:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.3586777Z   PROJECT_ID: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.3587011Z   KCC_CLUSTER: krmapihost-kcc-instance
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.3587262Z   KCC_REGION: us-central1
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.3587511Z   KCC_NAMESPACE: forge-management
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.3588199Z   WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.3588810Z   WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.3589206Z   TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.3589492Z   USE_GKE_GCLOUD_AUTH_PLUGIN: True
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.3589735Z   TF_VAR_project_id: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.3590072Z   TF_VAR_service_account: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.3590670Z ##[endgroup]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.4651105Z Syncing repository: fkc1e100/gcp-template-forge
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.4652522Z ##[group]Getting Git version info
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.4652993Z Working directory is '/home/runner/work/gcp-template-forge/gcp-template-forge'
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.4653584Z [command]/usr/bin/git version
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.4710753Z git version 2.53.0
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.4735807Z ##[endgroup]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.4749767Z Temporarily overriding HOME='/home/runner/work/_temp/129dff61-d00e-470d-b1a4-f4693174f4b2' before making global git config changes
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.4750759Z Adding repository directory to the temporary git global config as a safe directory
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.4755328Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/gcp-template-forge/gcp-template-forge
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.4787770Z Deleting the contents of '/home/runner/work/gcp-template-forge/gcp-template-forge'
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.4791653Z ##[group]Initializing the repository
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.4795903Z [command]/usr/bin/git init /home/runner/work/gcp-template-forge/gcp-template-forge
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.4883000Z hint: Using 'master' as the name for the initial branch. This default branch name
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.4884088Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.4885115Z hint: to use in all of your new repositories, which will suppress this warning,
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.4921040Z hint: call:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.4921419Z hint:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.4921854Z hint: 	git config --global init.defaultBranch <name>
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.4922186Z hint:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.4922477Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.4922969Z hint: 'development'. The just-created branch can be renamed via this command:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.4923324Z hint:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.4923513Z hint: 	git branch -m <name>
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.4923812Z hint:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.4924395Z hint: Disable this message with "git config set advice.defaultBranchName false"
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.4925538Z Initialized empty Git repository in /home/runner/work/gcp-template-forge/gcp-template-forge/.git/
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.4927477Z [command]/usr/bin/git remote add origin https://github.com/fkc1e100/gcp-template-forge
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.4930330Z ##[endgroup]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.4935734Z ##[group]Disabling automatic garbage collection
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.4936657Z [command]/usr/bin/git config --local gc.auto 0
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.4964869Z ##[endgroup]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.4965489Z ##[group]Setting up auth
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.4972934Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.5003089Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.5284113Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.5318459Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.5531366Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.5562483Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.5780708Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.5814354Z ##[endgroup]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.5814919Z ##[group]Fetching the repository
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.5823339Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +063d799674dd06151eaf0048d8d86971929029e1:refs/remotes/pull/18/merge
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.8630929Z From https://github.com/fkc1e100/gcp-template-forge
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.8631774Z  * [new ref]         063d799674dd06151eaf0048d8d86971929029e1 -> pull/18/merge
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.8659632Z ##[endgroup]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.8660281Z ##[group]Determining the checkout info
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.8662963Z ##[endgroup]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.8668983Z [command]/usr/bin/git sparse-checkout disable
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.8704928Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.8728778Z ##[group]Checking out the ref
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.8734232Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/18/merge
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.8823175Z Note: switching to 'refs/remotes/pull/18/merge'.
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.8823926Z 
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.8824552Z You are in 'detached HEAD' state. You can look around, make experimental
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.8825380Z changes and commit them, and you can discard any commits you make in this
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.8826228Z state without impacting any branches by switching back to a branch.
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.8826740Z 
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.8827077Z If you want to create a new branch to retain commits you create, you may
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.8827829Z do so (now or later) by using -c with the switch command. Example:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.8828541Z 
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.8828723Z   git switch -c <new-branch-name>
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.8829040Z 
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.8829211Z Or undo this operation with:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.8829501Z 
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.8829635Z   git switch -
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.8829882Z 
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.8830262Z Turn off this advice by setting config variable advice.detachedHead to false
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.8830778Z 
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.8831357Z HEAD is now at 063d799 Merge d74f2c6d766c7e256156c4e53bbb547607243c6e into e6d66233e2428e2e214f2f1367f0bb5b360adb24
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.8837817Z ##[endgroup]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.8876967Z [command]/usr/bin/git log -1 --format=%H
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.8900928Z 063d799674dd06151eaf0048d8d86971929029e1
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.9133403Z ##[group]Run google-github-actions/auth@v2
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.9133704Z with:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.9134179Z   workload_identity_provider: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.9134832Z   service_account: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.9135191Z   create_credentials_file: true
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.9135434Z   export_environment_variables: true
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.9135683Z   universe: googleapis.com
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.9135896Z   cleanup_credentials: true
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.9136117Z   access_token_lifetime: 3600s
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.9136458Z   access_token_scopes: https://www.googleapis.com/auth/cloud-platform
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.9136810Z   id_token_include_email: false
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.9137011Z env:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.9137178Z   PROJECT_ID: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.9137395Z   KCC_CLUSTER: krmapihost-kcc-instance
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.9137681Z   KCC_REGION: us-central1
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.9138075Z   KCC_NAMESPACE: forge-management
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.9138558Z   WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.9139155Z   WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.9139536Z   TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.9139811Z   USE_GKE_GCLOUD_AUTH_PLUGIN: True
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.9140041Z   TF_VAR_project_id: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.9140373Z   TF_VAR_service_account: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:50.9140718Z ##[endgroup]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:51.2317356Z Created credentials file at "/home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-162dbaf604e2607f.json"
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:51.3301156Z ##[group]Run hashicorp/setup-terraform@v3
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:51.3301699Z with:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:51.3302111Z   cli_config_credentials_hostname: app.terraform.io
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:51.3302944Z   terraform_version: latest
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:51.3303360Z   terraform_wrapper: true
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:51.3303777Z env:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:51.3304077Z   PROJECT_ID: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:51.3304499Z   KCC_CLUSTER: krmapihost-kcc-instance
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:51.3304973Z   KCC_REGION: us-central1
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:51.3305418Z   KCC_NAMESPACE: forge-management
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:51.3306293Z   WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:51.3307435Z   WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:51.3308415Z   TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:51.3308936Z   USE_GKE_GCLOUD_AUTH_PLUGIN: True
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:51.3309389Z   TF_VAR_project_id: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:51.3310137Z   TF_VAR_service_account: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:51.3311395Z   CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-162dbaf604e2607f.json
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:51.3313082Z   GOOGLE_APPLICATION_CREDENTIALS: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-162dbaf604e2607f.json
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:51.3314598Z   GOOGLE_GHA_CREDS_PATH: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-162dbaf604e2607f.json
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:51.3315590Z   CLOUDSDK_CORE_PROJECT: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:51.3316075Z   CLOUDSDK_PROJECT: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:51.3316511Z   GCLOUD_PROJECT: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:51.3316935Z   GCP_PROJECT: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:51.3317366Z   GOOGLE_CLOUD_PROJECT: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:51.3317795Z ##[endgroup]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:51.8829340Z [command]/usr/bin/unzip -o -q /home/runner/work/_temp/2177eb4d-23fb-4d14-8381-fe2f58de6269
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:52.6084339Z ##[group]Run gsutil rm "gs://${TF_STATE_BUCKET}/templates/gke-llm-inference/terraform-helm/default.tflock" \
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:52.6085182Z [36;1mgsutil rm "gs://${TF_STATE_BUCKET}/templates/gke-llm-inference/terraform-helm/default.tflock" \[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:52.6085821Z [36;1m  2>/dev/null && echo "Stale state lock removed" || echo "No stale lock present"[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:52.6111710Z shell: /usr/bin/bash -e {0}
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:52.6111960Z env:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:52.6112160Z   PROJECT_ID: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:52.6112409Z   KCC_CLUSTER: krmapihost-kcc-instance
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:52.6112670Z   KCC_REGION: us-central1
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:52.6112886Z   KCC_NAMESPACE: forge-management
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:52.6113380Z   WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:52.6114000Z   WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:52.6114437Z   TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:52.6114717Z   USE_GKE_GCLOUD_AUTH_PLUGIN: True
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:52.6114965Z   TF_VAR_project_id: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:52.6115325Z   TF_VAR_service_account: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:52.6116067Z   CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-162dbaf604e2607f.json
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:52.6116915Z   GOOGLE_APPLICATION_CREDENTIALS: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-162dbaf604e2607f.json
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:52.6117684Z   GOOGLE_GHA_CREDS_PATH: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-162dbaf604e2607f.json
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:52.6118534Z   CLOUDSDK_CORE_PROJECT: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:52.6118802Z   CLOUDSDK_PROJECT: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:52.6119034Z   GCLOUD_PROJECT: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:52.6119262Z   GCP_PROJECT: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:52.6119492Z   GOOGLE_CLOUD_PROJECT: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:52.6119866Z   TERRAFORM_CLI_PATH: /home/runner/work/_temp/e78166eb-75b3-4b7e-8189-429761690d43
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:52.6120244Z ##[endgroup]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:58.6410062Z No stale lock present
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:58.6960689Z ##[group]Run echo "TF_START=$(date -u +%s)" >> $GITHUB_ENV
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:58.6961157Z [36;1mecho "TF_START=$(date -u +%s)" >> $GITHUB_ENV[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:58.6961466Z [36;1mterraform init \[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:58.6961778Z [36;1m  -backend-config="bucket=$TF_STATE_BUCKET" \[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:58.6962248Z [36;1m  -backend-config="prefix=templates/gke-llm-inference/terraform-helm"[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:58.6962687Z [36;1mterraform apply -auto-approve -input=false[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:58.6983446Z shell: /usr/bin/bash -e {0}
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:58.6983687Z env:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:58.6983867Z   PROJECT_ID: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:58.6984104Z   KCC_CLUSTER: krmapihost-kcc-instance
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:58.6984361Z   KCC_REGION: us-central1
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:58.6984580Z   KCC_NAMESPACE: forge-management
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:58.6985056Z   WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:58.6985722Z   WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:58.6986130Z   TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:58.6986419Z   USE_GKE_GCLOUD_AUTH_PLUGIN: True
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:58.6986667Z   TF_VAR_project_id: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:58.6987023Z   TF_VAR_service_account: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:58.6987720Z   CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-162dbaf604e2607f.json
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:58.6988872Z   GOOGLE_APPLICATION_CREDENTIALS: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-162dbaf604e2607f.json
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:58.6989643Z   GOOGLE_GHA_CREDS_PATH: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-162dbaf604e2607f.json
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:58.6990153Z   CLOUDSDK_CORE_PROJECT: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:58.6990405Z   CLOUDSDK_PROJECT: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:58.6990641Z   GCLOUD_PROJECT: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:58.6990883Z   GCP_PROJECT: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:58.6991104Z   GOOGLE_CLOUD_PROJECT: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:58.6991467Z   TERRAFORM_CLI_PATH: /home/runner/work/_temp/e78166eb-75b3-4b7e-8189-429761690d43
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:58.6991836Z ##[endgroup]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:58.8542498Z [0m[1mInitializing the backend...[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:59.2424569Z [0m[32m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:59.2425120Z Successfully configured the backend "gcs"! Terraform will automatically
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:59.2426028Z use this backend unless the backend configuration changes.[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:59.5152157Z [0m[1mInitializing provider plugins...[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:59.5153539Z - Reusing previous version of hashicorp/kubernetes from the dependency lock file
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:59.5445664Z - Reusing previous version of hashicorp/null from the dependency lock file
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:59.5550852Z - Reusing previous version of hashicorp/google from the dependency lock file
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:59.5704349Z - Reusing previous version of hashicorp/google-beta from the dependency lock file
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:31:59.6682488Z - Installing hashicorp/kubernetes v2.38.0...
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:00.4288501Z - Installed hashicorp/kubernetes v2.38.0 (signed by HashiCorp)
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:00.5063236Z - Installing hashicorp/null v3.2.4...
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:00.7901948Z - Installed hashicorp/null v3.2.4 (signed by HashiCorp)
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:00.8553504Z - Installing hashicorp/google v6.50.0...
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:02.2633498Z - Installed hashicorp/google v6.50.0 (signed by HashiCorp)
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:02.3299117Z - Installing hashicorp/google-beta v6.50.0...
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:03.8613100Z - Installed hashicorp/google-beta v6.50.0 (signed by HashiCorp)
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:03.8613644Z 
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:03.8614295Z [0m[1m[32mTerraform has been successfully initialized![0m[32m[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:03.8614875Z [0m[32m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:03.8615327Z You may now begin working with Terraform. Try running "terraform plan" to see
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:03.8616646Z any changes that are required for your infrastructure. All Terraform commands
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:03.8617582Z should now work.
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:03.8617792Z 
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:03.8618476Z If you ever set or change modules or backend configuration for Terraform,
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:03.8619537Z rerun this command to reinitialize your working directory. If you forget, other
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:03.8620596Z commands will detect it and remind you to do so if necessary.[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:06.4986597Z [0m[1mdata.google_client_config.default: Reading...[0m[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:06.4988683Z [0m[1mgoogle_compute_network.main: Refreshing state... [id=projects/gca-gke-2025/global/networks/gke-llm-inference-tf-vpc][0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:06.4991538Z [0m[1mgoogle_storage_bucket.weights: Refreshing state... [id=gca-gke-2025-gke-llm-inference-tf-weights][0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:06.6821061Z [0m[1mdata.google_client_config.default: Read complete after 1s [id=projects/gca-gke-2025/regions/us-central1/zones/][0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:06.7588074Z [0m[1mnull_resource.stage_model_weights: Refreshing state... [id=1677682200120720587][0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:06.8724720Z [0m[1mgoogle_compute_subnetwork.main: Refreshing state... [id=projects/gca-gke-2025/regions/us-central1/subnetworks/gke-llm-inference-tf-subnet][0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:07.0526251Z [0m[1mgoogle_container_cluster.main: Refreshing state... [id=projects/gca-gke-2025/locations/us-central1/clusters/gke-llm-inference-tf][0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:07.7709469Z [0m[1mgoogle_container_node_pool.cpu_pool: Refreshing state... [id=projects/gca-gke-2025/locations/us-central1/clusters/gke-llm-inference-tf/nodePools/cpu-pool][0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:07.7711989Z [0m[1mgoogle_container_node_pool.gpu_pool: Refreshing state... [id=projects/gca-gke-2025/locations/us-central1/clusters/gke-llm-inference-tf/nodePools/gpu-pool][0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:08.4104684Z 
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:08.4105903Z Terraform used the selected providers to generate the following execution
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:08.4107052Z plan. Resource actions are indicated with the following symbols:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:08.4108427Z   [32m+[0m create[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:08.4108955Z [31m-[0m/[32m+[0m destroy and then create replacement[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:08.4109328Z 
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:08.4109462Z Terraform will perform the following actions:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:08.4109697Z 
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:08.4109908Z [1m  # null_resource.deploy_workload[0m will be created
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:08.4110407Z [0m  [32m+[0m[0m resource "null_resource" "deploy_workload" {
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:08.4110831Z       [32m+[0m[0m id = (known after apply)
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:08.4111117Z     }
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:08.4111237Z 
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:08.4111589Z [1m  # null_resource.stage_model_weights[0m is tainted, so must be [1m[31mreplaced[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:08.4112237Z [0m[31m-[0m/[32m+[0m[0m resource "null_resource" "stage_model_weights" {
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:08.4112830Z       [33m~[0m[0m id = "1677682200120720587" -> (known after apply)
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:08.4113176Z     }
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:08.4113280Z 
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:08.4113483Z [1mPlan:[0m [0m2 to add, 0 to change, 1 to destroy.
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:08.5091384Z [0m[1mnull_resource.stage_model_weights: Destroying... [id=1677682200120720587][0m[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:08.5092459Z [0m[1mnull_resource.stage_model_weights: Destruction complete after 0s[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:08.9941056Z [0m[1mnull_resource.stage_model_weights: Creating...[0m[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:08.9952691Z [0m[1mnull_resource.stage_model_weights: Provisioning with 'local-exec'...[0m[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:08.9961268Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0mExecuting: ["/bin/sh" "-c" "      # Only download if bucket is empty\n      COUNT=$(gsutil ls gs://gca-gke-2025-gke-llm-inference-tf-weights/Qwen/Qwen2.5-1.5B-Instruct/ 2>/dev/null | wc -l || echo \"0\")\n      if [ \"$COUNT\" -eq 0 ]; then\n        pip install huggingface_hub --quiet 2>/dev/null || pip3 install huggingface_hub --quiet 2>/dev/null || true\n        export HF_TOKEN=$(gcloud secrets versions access latest --secret=\"huggingface-token\" --project=\"gca-gke-2025\" 2>/dev/null || echo \"\")\n        python3 -c \"\nimport os\nfrom huggingface_hub import snapshot_download\ntoken = os.environ.get('HF_TOKEN')\nif not token:\n    print('Warning: HF_TOKEN not found, attempting download without token...')\ntry:\n    # Qwen 2.5 is not gated, so token is optional but helps with rate limits\n    snapshot_download('Qwen/Qwen2.5-1.5B-Instruct', local_dir='/tmp/model', token=token)\nexcept Exception as e:\n    print(f'Error downloading model: {e}')\n    exit(1)\n\" && gsutil -m cp -r /tmp/model/* gs://gca-gke-2025-gke-llm-inference-tf-weights/Qwen/Qwen2.5-1.5B-Instruct/\n      fi\n"]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:16.4086882Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0mFetching 10 files:   0%|          | 0/10 [00:00<?, ?it/s]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:16.5277424Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0mFetching 10 files:  10%|█         | 1/10 [00:00<00:01,  8.43it/s]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:16.6796393Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0mFetching 10 files:  20%|██        | 2/10 [00:00<00:01,  7.23it/s]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:18.9980609Z [0m[1mnull_resource.stage_model_weights: Still creating... [00m10s elapsed][0m[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:27.0309592Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0mFetching 10 files:  70%|███████   | 7/10 [00:10<00:05,  1.72s/it]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:27.0313179Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0mFetching 10 files: 100%|██████████| 10/10 [00:10<00:00,  1.07s/it]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.0930770Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0mCopying file:///tmp/model/LICENSE [Content-Type=application/octet-stream]...
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.0978645Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0m/ [0/9 files][    0.0 B/  2.9 GiB]   0% Done
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.0980671Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0mCopying file:///tmp/model/README.md [Content-Type=text/markdown]...
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.1050429Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0m/ [0/9 files][    0.0 B/  2.9 GiB]   0% Done
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.1052812Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0mCopying file:///tmp/model/config.json [Content-Type=application/json]...
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.1089828Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0m/ [0/9 files][    0.0 B/  2.9 GiB]   0% Done
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.1091646Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0mCopying file:///tmp/model/generation_config.json [Content-Type=application/json]...
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.1198782Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0m/ [0/9 files][    0.0 B/  2.9 GiB]   0% Done
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.1210947Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0mCopying file:///tmp/model/merges.txt [Content-Type=text/plain]...
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.1576504Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0m/ [0/9 files][    0.0 B/  2.9 GiB]   0% Done
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.1604909Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0mCopying file:///tmp/model/tokenizer_config.json [Content-Type=application/json]...
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.1641771Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0mCopying file:///tmp/model/model.safetensors [Content-Type=application/octet-stream]...
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.1669661Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0mCopying file:///tmp/model/tokenizer.json [Content-Type=application/json]...
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.1672220Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0mCopying file:///tmp/model/vocab.json [Content-Type=application/json]...
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.1674546Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0m/ [0/9 files][    0.0 B/  2.9 GiB]   0% Done
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.1676140Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0m/ [0/9 files][    0.0 B/  2.9 GiB]   0% Done
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.1678671Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0m/ [0/9 files][    0.0 B/  2.9 GiB]   0% Done
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.1689466Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0m/ [0/9 files][    0.0 B/  2.9 GiB]   0% Done
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.1691746Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0m==> NOTE: You are uploading one or more large file(s), which would run
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.1700356Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0msignificantly faster if you enable parallel composite uploads. This
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.1760148Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0mfeature can be enabled by editing the
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.1788902Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0m"parallel_composite_upload_threshold" value in your .boto
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.1790474Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0mconfiguration file. However, note that if you do this large files will
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.1814993Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0mbe uploaded as `composite objects
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.1839226Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0m<https://cloud.google.com/storage/docs/composite-objects>`_,which
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.1863317Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0mmeans that any user who downloads such objects will need to have a
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.1899444Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0mcompiled crcmod installed (see "gsutil help crcmod"). This is because
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.1907396Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0mwithout a compiled crcmod, computing checksums on composite objects is
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.1914947Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0mso slow that gsutil disables downloads of composite objects.
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.1915960Z 
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.2575563Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0mServiceException: 401 Anonymous caller does not have storage.objects.create access to the Google Cloud Storage object. Permission 'storage.objects.create' denied on resource (or it may not exist).
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.2593990Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0mServiceException: 401 Anonymous caller does not have storage.objects.create access to the Google Cloud Storage object. Permission 'storage.objects.create' denied on resource (or it may not exist).
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.2630439Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0mServiceException: 401 Anonymous caller does not have storage.objects.create access to the Google Cloud Storage object. Permission 'storage.objects.create' denied on resource (or it may not exist).
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.2650393Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0mServiceException: 401 Anonymous caller does not have storage.objects.create access to the Google Cloud Storage object. Permission 'storage.objects.create' denied on resource (or it may not exist).
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.3767255Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0mServiceException: 401 Anonymous caller does not have storage.objects.create access to the Google Cloud Storage object. Permission 'storage.objects.create' denied on resource (or it may not exist).
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.3904383Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0mServiceException: 401 Anonymous caller does not have storage.objects.create access to the Google Cloud Storage object. Permission 'storage.objects.create' denied on resource (or it may not exist).
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.4067632Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0mResumableUploadAbortException: 401 Anonymous caller does not have storage.objects.create access to the Google Cloud Storage object. Permission 'storage.objects.create' denied on resource (or it may not exist).
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.4369801Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0mServiceException: 401 Anonymous caller does not have storage.objects.create access to the Google Cloud Storage object. Permission 'storage.objects.create' denied on resource (or it may not exist).
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.5431900Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0mServiceException: 401 Anonymous caller does not have storage.objects.create access to the Google Cloud Storage object. Permission 'storage.objects.create' denied on resource (or it may not exist).
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.5511374Z [0m[1mnull_resource.stage_model_weights (local-exec):[0m [0mCommandException: 9 files/objects could not be transferred.
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9953622Z [31m╷[0m[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9954313Z [31m│[0m [0m[1m[31mError: [0m[0m[1mlocal-exec provisioner error[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9954896Z [31m│[0m [0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9955364Z [31m│[0m [0m[0m  with null_resource.stage_model_weights,
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9956181Z [31m│[0m [0m  on main.tf line 158, in resource "null_resource" "stage_model_weights":
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9957071Z [31m│[0m [0m 158:   provisioner "local-exec" [4m{[0m[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9957571Z [31m│[0m [0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9958292Z [31m│[0m [0mError running command '      # Only download if bucket is empty
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9959430Z [31m│[0m [0m      COUNT=$(gsutil ls gs://gca-gke-2025-gke-llm-inference-tf-weights/Qwen/Qwen2.5-1.5B-Instruct/ 2>/dev/null | wc -l || echo "0")
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9960374Z [31m│[0m [0m      if [ "$COUNT" -eq 0 ]; then
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9961242Z [31m│[0m [0m        pip install huggingface_hub --quiet 2>/dev/null || pip3 install huggingface_hub --quiet 2>/dev/null || true
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9962602Z [31m│[0m [0m        export HF_TOKEN=$(gcloud secrets versions access latest --secret="huggingface-token" --project="gca-gke-2025" 2>/dev/null || echo "")
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9963555Z [31m│[0m [0m        python3 -c "
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9963876Z [31m│[0m [0mimport os
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9964273Z [31m│[0m [0mfrom huggingface_hub import snapshot_download
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9964719Z [31m│[0m [0mtoken = os.environ.get('HF_TOKEN')
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9965077Z [31m│[0m [0mif not token:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9965506Z [31m│[0m [0m    print('Warning: HF_TOKEN not found, attempting download without token...')
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9965911Z [31m│[0m [0mtry:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9966285Z [31m│[0m [0m    # Qwen 2.5 is not gated, so token is optional but helps with rate limits
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9966910Z [31m│[0m [0m    snapshot_download('Qwen/Qwen2.5-1.5B-Instruct', local_dir='/tmp/model', token=token)
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9967385Z [31m│[0m [0mexcept Exception as e:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9967713Z [31m│[0m [0m    print(f'Error downloading model: {e}')
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9968176Z [31m│[0m [0m    exit(1)
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9968455Z [31m│[0m [0m" && gsutil -m cp -r /tmp/model/*
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9968953Z [31m│[0m [0mgs://gca-gke-2025-gke-llm-inference-tf-weights/Qwen/Qwen2.5-1.5B-Instruct/
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9969398Z [31m│[0m [0m      fi
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9969651Z [31m│[0m [0m': exit status 1. Output: 
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9969901Z Fetching 10 files:   0%|          | 0/10
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9970176Z [31m│[0m [0m[00:00<?, ?it/s]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9970480Z Fetching 10 files:  10%|█         | 1/10 [00:00<00:01,
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9970775Z [31m│[0m [0m8.43it/s]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9971098Z Fetching 10 files:  20%|██        | 2/10 [00:00<00:01,  7.23it/s]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9971557Z [31m│[0m [0mFetching 10 files:  70%|███████   | 7/10 [00:10<00:05,  1.72s/it]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9971912Z Fetching
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9972206Z [31m│[0m [0m10 files: 100%|██████████| 10/10 [00:10<00:00,  1.07s/it]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9972583Z [31m│[0m [0mCopying file:///tmp/model/LICENSE
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9972945Z [31m│[0m [0m[Content-Type=application/octet-stream]...
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9973317Z [31m│[0m [0m/ [0/9 files][    0.0 B/  2.9 GiB]   0% Done
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9974252Z [31m│[0m [0mCopying file:///tmp/model/README.md [Content-Type=text/markdown]...
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9974708Z [31m│[0m [0m/ [0/9 files][    0.0 B/  2.9 GiB]   0% Done
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9975173Z [31m│[0m [0mCopying file:///tmp/model/config.json [Content-Type=application/json]...
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9975642Z [31m│[0m [0m/ [0/9 files][    0.0 B/  2.9 GiB]   0% Done
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9976012Z [31m│[0m [0mCopying file:///tmp/model/generation_config.json
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9976384Z [31m│[0m [0m[Content-Type=application/json]...
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9976725Z [31m│[0m [0m/ [0/9 files][    0.0 B/  2.9 GiB]   0% Done
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9977148Z [31m│[0m [0mCopying file:///tmp/model/merges.txt [Content-Type=text/plain]...
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9977578Z [31m│[0m [0m/ [0/9 files][    0.0 B/  2.9 GiB]   0% Done
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9978099Z [31m│[0m [0mCopying file:///tmp/model/tokenizer_config.json
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9978464Z [31m│[0m [0m[Content-Type=application/json]...
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9978843Z [31m│[0m [0mCopying file:///tmp/model/model.safetensors
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9979218Z [31m│[0m [0m[Content-Type=application/octet-stream]...
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9979701Z [31m│[0m [0mCopying file:///tmp/model/tokenizer.json [Content-Type=application/json]...
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9980268Z [31m│[0m [0mCopying file:///tmp/model/vocab.json [Content-Type=application/json]...
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9980723Z [31m│[0m [0m/ [0/9 files][    0.0 B/  2.9 GiB]   0% Done
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9981061Z [31m│[0m [0m/ [0/9 files][    0.0 B/  2.9 GiB]   0% Done
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9981405Z [31m│[0m [0m/ [0/9 files][    0.0 B/  2.9 GiB]   0% Done
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9981762Z [31m│[0m [0m/ [0/9 files][    0.0 B/  2.9 GiB]   0% Done
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9982192Z [31m│[0m [0m==> NOTE: You are uploading one or more large file(s), which would run
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9982729Z [31m│[0m [0msignificantly faster if you enable parallel composite uploads. This
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9983183Z [31m│[0m [0mfeature can be enabled by editing the
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9983598Z [31m│[0m [0m"parallel_composite_upload_threshold" value in your .boto
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9984113Z [31m│[0m [0mconfiguration file. However, note that if you do this large files will
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9984543Z [31m│[0m [0mbe uploaded as `composite objects
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9984972Z [31m│[0m [0m<https://cloud.google.com/storage/docs/composite-objects>`_,which
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9985565Z [31m│[0m [0mmeans that any user who downloads such objects will need to have a
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9986127Z [31m│[0m [0mcompiled crcmod installed (see "gsutil help crcmod"). This is because
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9986664Z [31m│[0m [0mwithout a compiled crcmod, computing checksums on composite objects is
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9987177Z [31m│[0m [0mso slow that gsutil disables downloads of composite objects.
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9987528Z [31m│[0m [0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9988048Z [31m│[0m [0mServiceException: 401 Anonymous caller does not have storage.objects.create
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9988599Z [31m│[0m [0maccess to the Google Cloud Storage object. Permission
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9989083Z [31m│[0m [0m'storage.objects.create' denied on resource (or it may not exist).
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9989667Z [31m│[0m [0mServiceException: 401 Anonymous caller does not have storage.objects.create
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9990194Z [31m│[0m [0maccess to the Google Cloud Storage object. Permission
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9990677Z [31m│[0m [0m'storage.objects.create' denied on resource (or it may not exist).
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9991238Z [31m│[0m [0mServiceException: 401 Anonymous caller does not have storage.objects.create
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9991744Z [31m│[0m [0maccess to the Google Cloud Storage object. Permission
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9992215Z [31m│[0m [0m'storage.objects.create' denied on resource (or it may not exist).
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9992805Z [31m│[0m [0mServiceException: 401 Anonymous caller does not have storage.objects.create
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9993669Z [31m│[0m [0maccess to the Google Cloud Storage object. Permission
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9994158Z [31m│[0m [0m'storage.objects.create' denied on resource (or it may not exist).
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9994735Z [31m│[0m [0mServiceException: 401 Anonymous caller does not have storage.objects.create
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9995257Z [31m│[0m [0maccess to the Google Cloud Storage object. Permission
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9995734Z [31m│[0m [0m'storage.objects.create' denied on resource (or it may not exist).
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9996301Z [31m│[0m [0mServiceException: 401 Anonymous caller does not have storage.objects.create
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9996814Z [31m│[0m [0maccess to the Google Cloud Storage object. Permission
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9997285Z [31m│[0m [0m'storage.objects.create' denied on resource (or it may not exist).
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9997820Z [31m│[0m [0mResumableUploadAbortException: 401 Anonymous caller does not have
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9998503Z [31m│[0m [0mstorage.objects.create access to the Google Cloud Storage object.
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9999051Z [31m│[0m [0mPermission 'storage.objects.create' denied on resource (or it may not
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9999452Z [31m│[0m [0mexist).
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:28.9999858Z [31m│[0m [0mServiceException: 401 Anonymous caller does not have storage.objects.create
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.0000374Z [31m│[0m [0maccess to the Google Cloud Storage object. Permission
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.0000843Z [31m│[0m [0m'storage.objects.create' denied on resource (or it may not exist).
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.0001399Z [31m│[0m [0mServiceException: 401 Anonymous caller does not have storage.objects.create
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.0001909Z [31m│[0m [0maccess to the Google Cloud Storage object. Permission
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.0002373Z [31m│[0m [0m'storage.objects.create' denied on resource (or it may not exist).
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.0002875Z [31m│[0m [0mCommandException: 9 files/objects could not be transferred.
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.0003240Z [31m│[0m [0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.0003434Z [31m╵[0m[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2143681Z ##[error]Terraform exited with code 1.
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2163717Z ##[error]Process completed with exit code 1.
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2249367Z ##[group]Run # Destroy if TF apply itself failed (clean up partial state)
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2249877Z [36;1m# Destroy if TF apply itself failed (clean up partial state)[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2250326Z [36;1m# OR if all downstream verification passed (normal successful cleanup)[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2250802Z [36;1m# Leave cluster up if TF apply succeeded but a downstream step failed —[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2251275Z [36;1m# next push will terraform apply (no-op) and re-run the failing step.[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2251654Z [36;1mTF_APPLY="failure"[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2251884Z [36;1mTF_VERIFY="skipped"[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2252103Z [36;1mHELM="skipped"[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2252296Z [36;1m[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2252490Z [36;1mif [ "$TF_APPLY" = "failure" ]; then[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2252810Z [36;1m  echo "should_destroy=true"  >> $GITHUB_OUTPUT[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2253179Z [36;1m  echo "Reason: TF apply failed — destroying partial state"[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2253686Z [36;1melif [ "$TF_VERIFY" = "success" ] && { [ "$HELM" = "success" ] || [ "$HELM" = "skipped" ]; }; then[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2254131Z [36;1m  echo "should_destroy=true"  >> $GITHUB_OUTPUT[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2254525Z [36;1m  echo "Reason: All verification passed — performing normal teardown"[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2254872Z [36;1melse[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2255090Z [36;1m  echo "should_destroy=false" >> $GITHUB_OUTPUT[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2255960Z [36;1m  echo "::notice::Cluster left running — TF apply succeeded but a downstream step failed. Next push will skip provisioning and re-run the failing step. Cluster will be destroyed on next successful run or PR close."[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2256797Z [36;1mfi[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2277403Z shell: /usr/bin/bash -e {0}
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2277807Z env:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2278234Z   PROJECT_ID: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2278474Z   KCC_CLUSTER: krmapihost-kcc-instance
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2278737Z   KCC_REGION: us-central1
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2278963Z   KCC_NAMESPACE: forge-management
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2279440Z   WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2280067Z   WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2280469Z   TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2280749Z   USE_GKE_GCLOUD_AUTH_PLUGIN: True
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2280983Z   TF_VAR_project_id: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2281329Z   TF_VAR_service_account: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2282012Z   CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-162dbaf604e2607f.json
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2282847Z   GOOGLE_APPLICATION_CREDENTIALS: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-162dbaf604e2607f.json
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2283649Z   GOOGLE_GHA_CREDS_PATH: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-162dbaf604e2607f.json
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2284158Z   CLOUDSDK_CORE_PROJECT: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2284411Z   CLOUDSDK_PROJECT: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2284639Z   GCLOUD_PROJECT: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2284861Z   GCP_PROJECT: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2285086Z   GOOGLE_CLOUD_PROJECT: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2285436Z   TERRAFORM_CLI_PATH: /home/runner/work/_temp/e78166eb-75b3-4b7e-8189-429761690d43
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2285801Z   TF_START: 1776101518
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2285991Z ##[endgroup]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2328463Z Reason: TF apply failed — destroying partial state
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2411050Z ##[group]Run actions/github-script@v7
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2411331Z with:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2413624Z   script: const template = 'templates/gke-llm-inference';
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	const tfResult = 'skipped';
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	const helmResult = 'skipped';
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	const failed = [tfResult, helmResult].some(r => r === 'failure');
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	const body = [
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	  `### Deploy & Test TF+Helm: \`${template}\``,
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	  `| Step | Result |`,
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	  `|---|---|`,
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	  `| Terraform apply + cluster verify | **${tfResult}** |`,
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	  `| Helm deploy + verify | **${helmResult}** |`,
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	  ...(failed ? ['', `TF+Helm test failed — see [run logs](${runUrl}) for details.`] : []),
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	].join('\n');
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	github.rest.issues.createComment({
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	  issue_number: context.issue.number,
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	  owner: context.repo.owner,
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	  repo: context.repo.repo,
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	  body,
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	});
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2416116Z   github-token: ***
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2416313Z   debug: false
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2416537Z   user-agent: actions/github-script
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2416788Z   result-encoding: json
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2416983Z   retries: 0
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2417198Z   retry-exempt-status-codes: 400,401,403,404,422
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2417477Z env:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2417651Z   PROJECT_ID: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2418122Z   KCC_CLUSTER: krmapihost-kcc-instance
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2418427Z   KCC_REGION: us-central1
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2418660Z   KCC_NAMESPACE: forge-management
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2419143Z   WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2419741Z   WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2420119Z   TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2420388Z   USE_GKE_GCLOUD_AUTH_PLUGIN: True
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2420625Z   TF_VAR_project_id: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2420957Z   TF_VAR_service_account: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2421635Z   CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-162dbaf604e2607f.json
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2422669Z   GOOGLE_APPLICATION_CREDENTIALS: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-162dbaf604e2607f.json
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2423450Z   GOOGLE_GHA_CREDS_PATH: /home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-162dbaf604e2607f.json
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2423951Z   CLOUDSDK_CORE_PROJECT: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2424204Z   CLOUDSDK_PROJECT: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2424438Z   GCLOUD_PROJECT: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2424655Z   GCP_PROJECT: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2424878Z   GOOGLE_CLOUD_PROJECT: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2425237Z   TERRAFORM_CLI_PATH: /home/runner/work/_temp/e78166eb-75b3-4b7e-8189-429761690d43
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2425603Z   TF_START: 1776101518
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:29.2425801Z ##[endgroup]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:30.0994062Z Post job cleanup.
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:30.1805956Z Removed exported credentials at "/home/runner/work/gcp-template-forge/gcp-template-forge/gha-creds-162dbaf604e2607f.json".
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:30.1916832Z Post job cleanup.
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:30.2853895Z [command]/usr/bin/git version
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:30.2895953Z git version 2.53.0
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:30.2938321Z Temporarily overriding HOME='/home/runner/work/_temp/d52faccf-93a3-4365-8300-e11b00febcc6' before making global git config changes
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:30.2939364Z Adding repository directory to the temporary git global config as a safe directory
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:30.2943927Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/gcp-template-forge/gcp-template-forge
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:30.2977354Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:30.3008618Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:30.3229404Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:30.3250326Z http.https://github.com/.extraheader
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:30.3263023Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:30.3295818Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:30.3513848Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:30.3553899Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:30.3884585Z Cleaning up orphan processes
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-13T17:32:30.4161442Z ##[warning]Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/checkout@v4, actions/github-script@v7, google-github-actions/auth@v2, hashicorp/setup-terraform@v3. Actions will be forced to run with Node.js 24 by default starting June 2nd, 2026. Node.js 20 will be removed from the runner on September 16th, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

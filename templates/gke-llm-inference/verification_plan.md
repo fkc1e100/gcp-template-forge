@@ -73,6 +73,15 @@ kubectl wait nodes -l cloud.google.com/gke-nodepool=gpu-pool-kcc \
 
 # Apply workload
 kubectl apply -f ../kcc-workload/manifests.yaml
+
+# Wait for staging job to populate weights
+echo "Waiting for model staging job (up to 15 min)..."
+kubectl wait --for=condition=complete job/model-staging-job --timeout=900s
+
+# Wait for vLLM pod readiness
+echo "Waiting for vLLM pod readiness..."
+kubectl wait pod -l app=vllm-inference-server -n default \
+  --for=condition=Ready --timeout=1800s
 ```
 
 ## Endpoint Validation

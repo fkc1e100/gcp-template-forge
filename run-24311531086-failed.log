@@ -1,0 +1,337 @@
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	﻿2026-04-12T16:47:50.3995984Z Current runner version: '2.333.1'
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:50.4020576Z ##[group]Runner Image Provisioner
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:50.4021312Z Hosted Compute Agent
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:50.4022051Z Version: 20260213.493
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:50.4022666Z Commit: 5c115507f6dd24b8de37d8bbe0bb4509d0cc0fa3
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:50.4023400Z Build Date: 2026-02-13T00:28:41Z
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:50.4024034Z Worker ID: {db013eda-595a-4023-a7fd-bff397708dec}
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:50.4024726Z Azure Region: centralus
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:50.4025278Z ##[endgroup]
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:50.4026662Z ##[group]Operating System
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:50.4027304Z Ubuntu
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:50.4027780Z 24.04.4
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:50.4028210Z LTS
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:50.4028611Z ##[endgroup]
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:50.4029165Z ##[group]Runner Image
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:50.4029707Z Image: ubuntu-24.04
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:50.4030152Z Version: 20260406.80.1
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:50.4031426Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260406.80/images/ubuntu/Ubuntu2404-Readme.md
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:50.4033371Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260406.80
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:50.4034247Z ##[endgroup]
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:50.4035316Z ##[group]GITHUB_TOKEN Permissions
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:50.4037855Z Contents: read
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:50.4038431Z Metadata: read
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:50.4038897Z PullRequests: read
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:50.4039474Z ##[endgroup]
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:50.4041518Z Secret source: None
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:50.4042613Z Prepare workflow directory
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:50.4492591Z Prepare all required actions
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:50.4549095Z Getting action download info
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:50.8578295Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:50.9843820Z Download action repository 'hashicorp/setup-terraform@v3' (SHA:b9cd54a3c349d3f38e8881555d616ced269862dd)
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:51.4745436Z Download action repository 'azure/setup-helm@v4' (SHA:1a275c3b69536ee54be43f2070a358922e12c8d4)
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:51.9153265Z Download action repository 'actions/github-script@v7' (SHA:f28e40c7f34bde8b3046d885e986cb6290c5673b)
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.5141297Z Complete job name: Lint (templates/gke-llm-inference)
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.6029202Z ##[group]Run actions/checkout@v4
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.6030499Z with:
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.6031288Z   repository: fkc1e100/gcp-template-forge
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.6032999Z   token: ***
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.6033756Z   ssh-strict: true
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.6034520Z   ssh-user: git
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.6035314Z   persist-credentials: true
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.6036194Z   clean: true
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.6036994Z   sparse-checkout-cone-mode: true
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.6037952Z   fetch-depth: 1
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.6038718Z   fetch-tags: false
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.6039501Z   show-progress: true
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.6040288Z   lfs: false
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.6041007Z   submodules: false
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.6041978Z   set-safe-directory: true
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.6043138Z env:
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.6043848Z   PROJECT_ID: gca-gke-2025
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.6044803Z   KCC_CLUSTER: krmapihost-kcc-instance
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.6045812Z   KCC_REGION: us-central1
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.6046747Z   KCC_NAMESPACE: forge-management
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.6048570Z   WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.6050860Z   WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.6052593Z   TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.6053684Z   USE_GKE_GCLOUD_AUTH_PLUGIN: True
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.6054674Z   TF_VAR_project_id: gca-gke-2025
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.6056032Z   TF_VAR_service_account: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.6057435Z ##[endgroup]
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.7156489Z Syncing repository: fkc1e100/gcp-template-forge
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.7159081Z ##[group]Getting Git version info
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.7160573Z Working directory is '/home/runner/work/gcp-template-forge/gcp-template-forge'
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.7163506Z [command]/usr/bin/git version
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.7197510Z git version 2.53.0
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.7223916Z ##[endgroup]
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.7238319Z Temporarily overriding HOME='/home/runner/work/_temp/7a352a71-765f-421b-8ecc-cbdecdc08d70' before making global git config changes
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.7240986Z Adding repository directory to the temporary git global config as a safe directory
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.7244141Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/gcp-template-forge/gcp-template-forge
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.7274458Z Deleting the contents of '/home/runner/work/gcp-template-forge/gcp-template-forge'
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.7277656Z ##[group]Initializing the repository
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.7281997Z [command]/usr/bin/git init /home/runner/work/gcp-template-forge/gcp-template-forge
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.7364043Z hint: Using 'master' as the name for the initial branch. This default branch name
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.7366546Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.7368368Z hint: to use in all of your new repositories, which will suppress this warning,
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.7370063Z hint: call:
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.7371018Z hint:
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.7372175Z hint: 	git config --global init.defaultBranch <name>
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.7373329Z hint:
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.7374379Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.7376590Z hint: 'development'. The just-created branch can be renamed via this command:
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.7377970Z hint:
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.7378676Z hint: 	git branch -m <name>
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.7379505Z hint:
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.7380839Z hint: Disable this message with "git config set advice.defaultBranchName false"
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.7383369Z Initialized empty Git repository in /home/runner/work/gcp-template-forge/gcp-template-forge/.git/
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.7386706Z [command]/usr/bin/git remote add origin https://github.com/fkc1e100/gcp-template-forge
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.7407291Z ##[endgroup]
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.7408638Z ##[group]Disabling automatic garbage collection
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.7410685Z [command]/usr/bin/git config --local gc.auto 0
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.7438298Z ##[endgroup]
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.7439543Z ##[group]Setting up auth
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.7445182Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.7474469Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.7756247Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.7788784Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.8005543Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.8038142Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.8257273Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.8292739Z ##[endgroup]
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.8294850Z ##[group]Fetching the repository
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:52.8301463Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +b36c9fa9559b8926f0aec1e67ef810b9fda23b2f:refs/remotes/pull/17/merge
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.1797937Z From https://github.com/fkc1e100/gcp-template-forge
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.1801286Z  * [new ref]         b36c9fa9559b8926f0aec1e67ef810b9fda23b2f -> pull/17/merge
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.1829282Z ##[endgroup]
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.1830997Z ##[group]Determining the checkout info
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.1833440Z ##[endgroup]
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.1839954Z [command]/usr/bin/git sparse-checkout disable
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.1892048Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.1925843Z ##[group]Checking out the ref
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.1928048Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/17/merge
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2192943Z Note: switching to 'refs/remotes/pull/17/merge'.
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2194754Z 
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2196140Z You are in 'detached HEAD' state. You can look around, make experimental
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2199433Z changes and commit them, and you can discard any commits you make in this
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2202835Z state without impacting any branches by switching back to a branch.
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2204899Z 
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2206242Z If you want to create a new branch to retain commits you create, you may
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2209127Z do so (now or later) by using -c with the switch command. Example:
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2211046Z 
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2212468Z   git switch -c <new-branch-name>
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2213671Z 
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2214296Z Or undo this operation with:
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2215445Z 
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2215978Z   git switch -
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2216799Z 
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2218271Z Turn off this advice by setting config variable advice.detachedHead to false
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2220201Z 
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2223334Z HEAD is now at b36c9fa Merge b4adb9c4eee61c92df8cc079d516bffd90a51e0c into d605d223adc3f734895b909087401240dc7cb555
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2229435Z ##[endgroup]
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2263470Z [command]/usr/bin/git log -1 --format=%H
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2294672Z b36c9fa9559b8926f0aec1e67ef810b9fda23b2f
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2618414Z ##[group]Run hashicorp/setup-terraform@v3
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2619460Z with:
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2620283Z   cli_config_credentials_hostname: app.terraform.io
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2621401Z   terraform_version: latest
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2622603Z   terraform_wrapper: true
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2623441Z env:
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2624110Z   PROJECT_ID: gca-gke-2025
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2625025Z   KCC_CLUSTER: krmapihost-kcc-instance
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2625999Z   KCC_REGION: us-central1
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2626852Z   KCC_NAMESPACE: forge-management
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2628605Z   WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2630797Z   WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2632498Z   TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2633552Z   USE_GKE_GCLOUD_AUTH_PLUGIN: True
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2634496Z   TF_VAR_project_id: gca-gke-2025
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2635841Z   TF_VAR_service_account: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.2637177Z ##[endgroup]
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:53.9744709Z [command]/usr/bin/unzip -o -q /home/runner/work/_temp/58e721d9-38df-423a-a64f-ceadb8612bb2
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:54.7151237Z ##[group]Run azure/setup-helm@v4
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:54.7151512Z with:
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:54.7151678Z   version: latest
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:54.7152286Z   token: ***
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:54.7152505Z   downloadBaseURL: https://get.helm.sh
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:54.7152758Z env:
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:54.7152930Z   PROJECT_ID: gca-gke-2025
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:54.7153155Z   KCC_CLUSTER: krmapihost-kcc-instance
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:54.7153398Z   KCC_REGION: us-central1
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:54.7153607Z   KCC_NAMESPACE: forge-management
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:54.7154081Z   WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:54.7154680Z   WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:54.7155062Z   TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:54.7155328Z   USE_GKE_GCLOUD_AUTH_PLUGIN: True
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:54.7155571Z   TF_VAR_project_id: gca-gke-2025
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:54.7155969Z   TF_VAR_service_account: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:54.7156655Z   TERRAFORM_CLI_PATH: /home/runner/work/_temp/7fb2230a-d020-4de1-a5b2-d0680209eb8b
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:54.7157020Z ##[endgroup]
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:54.8751103Z ##[group]Installing v4.1.4
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:54.8762939Z Downloading 'v4.1.4' from 'https://get.helm.sh'
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:55.0523637Z [command]/usr/bin/tar xz --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/13188b59-0f0c-4918-8027-bc210b78dbf5 -f /home/runner/work/_temp/50b20b7d-4f25-42a6-adf1-581f379e9871
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:55.4905278Z ##[endgroup]
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:55.4908703Z Helm tool version 'v4.1.4' has been cached at /opt/hostedtoolcache/helm/4.1.4/x64/linux-amd64/helm
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:55.5612310Z ##[group]Run terraform init -backend=false -input=false
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:55.5612788Z [36;1mterraform init -backend=false -input=false[0m
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:55.5613104Z [36;1mterraform fmt -check -recursive[0m
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:55.5613359Z [36;1mterraform validate[0m
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:55.5637003Z shell: /usr/bin/bash -e {0}
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:55.5637241Z env:
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:55.5637453Z   PROJECT_ID: gca-gke-2025
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:55.5637726Z   KCC_CLUSTER: krmapihost-kcc-instance
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:55.5637981Z   KCC_REGION: us-central1
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:55.5638194Z   KCC_NAMESPACE: forge-management
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:55.5638669Z   WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:55.5639256Z   WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:55.5639636Z   TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:55.5639901Z   USE_GKE_GCLOUD_AUTH_PLUGIN: True
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:55.5640181Z   TF_VAR_project_id: gca-gke-2025
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:55.5640505Z   TF_VAR_service_account: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:55.5640986Z   TERRAFORM_CLI_PATH: /home/runner/work/_temp/7fb2230a-d020-4de1-a5b2-d0680209eb8b
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:55.5641340Z ##[endgroup]
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:55.7157154Z [0m[1mInitializing provider plugins...[0m
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:55.7161020Z - Finding hashicorp/kubernetes versions matching "~> 2.0"...
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:55.8495363Z - Finding hashicorp/google versions matching "~> 6.0"...
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:55.8943145Z - Finding hashicorp/google-beta versions matching "~> 6.0"...
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:55.9317309Z - Finding hashicorp/helm versions matching "~> 2.0"...
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:56.1378638Z - Installing hashicorp/kubernetes v2.38.0...
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:56.6915624Z - Installed hashicorp/kubernetes v2.38.0 (signed by HashiCorp)
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:56.8288850Z - Installing hashicorp/google v6.50.0...
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:57.8199800Z - Installed hashicorp/google v6.50.0 (signed by HashiCorp)
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:57.9557955Z - Installing hashicorp/google-beta v6.50.0...
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:58.9933393Z - Installed hashicorp/google-beta v6.50.0 (signed by HashiCorp)
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.1190124Z - Installing hashicorp/helm v2.17.0...
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.7256987Z - Installed hashicorp/helm v2.17.0 (signed by HashiCorp)
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.7258208Z Terraform has created a lock file [1m.terraform.lock.hcl[0m to record the provider
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.7260073Z selections it made above. Include this file in your version control repository
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.7260930Z so that Terraform can guarantee to make the same selections by default when
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.7261682Z you run "terraform init" in the future.[0m
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.7262385Z 
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.7263051Z [0m[1m[32mTerraform has been successfully initialized![0m[32m[0m
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.7263602Z [0m[32m
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.7264215Z You may now begin working with Terraform. Try running "terraform plan" to see
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.7265074Z any changes that are required for your infrastructure. All Terraform commands
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.7265836Z should now work.
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.7266236Z 
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.7266750Z If you ever set or change modules or backend configuration for Terraform,
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.7268040Z rerun this command to reinitialize your working directory. If you forget, other
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.7269090Z commands will detect it and remind you to do so if necessary.[0m
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.8289221Z main.tf
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.8289632Z versions.tf
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.8345621Z ##[error]Terraform exited with code 3.
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.8375575Z ##[error]Process completed with exit code 1.
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.8481184Z ##[group]Run actions/github-script@v7
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.8481461Z with:
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.8484322Z   script: const template = 'templates/gke-llm-inference';
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	github.rest.issues.createComment({
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	  issue_number: context.issue.number,
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	  owner: context.repo.owner,
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	  repo: context.repo.repo,
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	  body: [
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	    `### CI Lint failure: \`${template}\``,
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	    ``,
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	    `One or more lint checks failed — see [run logs](${runUrl}) for the exact error.`,
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	    ``,
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	    `**Common causes:**`,
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	    `- Template directory named \`Terraform_HELM/\` or similar instead of \`terraform-helm/\``,
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	    `- \`google_container_cluster\` missing \`deletion_protection = false\``,
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	    `- Terraform fmt or validate error`,
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	    `- KCC manifest YAML syntax error`,
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	    ``,
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	    `Please investigate the lint failure, fix the issue, and push a new commit.`,
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	  ].join('\n'),
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	});
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.8487135Z   github-token: ***
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.8487315Z   debug: false
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.8487500Z   user-agent: actions/github-script
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.8487733Z   result-encoding: json
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.8487923Z   retries: 0
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.8488117Z   retry-exempt-status-codes: 400,401,403,404,422
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.8488370Z env:
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.8488532Z   PROJECT_ID: gca-gke-2025
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.8488754Z   KCC_CLUSTER: krmapihost-kcc-instance
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.8488990Z   KCC_REGION: us-central1
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.8489187Z   KCC_NAMESPACE: forge-management
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.8489686Z   WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.8490271Z   WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.8490642Z   TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.8490902Z   USE_GKE_GCLOUD_AUTH_PLUGIN: True
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.8491124Z   TF_VAR_project_id: gca-gke-2025
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.8491456Z   TF_VAR_service_account: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.8492211Z   TERRAFORM_CLI_PATH: /home/runner/work/_temp/7fb2230a-d020-4de1-a5b2-d0680209eb8b
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:47:59.8492579Z ##[endgroup]
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1907779Z RequestError [HttpError]: Resource not accessible by integration
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1908596Z     at /home/runner/work/_actions/actions/github-script/v7/dist/index.js:9537:21
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1909448Z     at process.processTicksAndRejections (node:internal/process/task_queues:95:5) {
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1909941Z   status: 403,
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1910139Z   response: {
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1910506Z     url: 'https://api.github.com/repos/fkc1e100/gcp-template-forge/issues/17/comments',
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1911033Z     status: 403,
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1911324Z     headers: {
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1911636Z       'access-control-allow-origin': '*',
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1914016Z       'access-control-expose-headers': 'ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Used, X-RateLimit-Resource, X-RateLimit-Reset, X-OAuth-Scopes, X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, X-GitHub-SSO, X-GitHub-Request-Id, Deprecation, Sunset',
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1915625Z       'content-encoding': 'gzip',
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1915898Z       'content-security-policy': "default-src 'none'",
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1916226Z       'content-type': 'application/json; charset=utf-8',
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1916509Z       date: 'Sun, 12 Apr 2026 16:48:00 GMT',
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1916892Z       'referrer-policy': 'origin-when-cross-origin, strict-origin-when-cross-origin',
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1917625Z       server: 'github.com',
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1917959Z       'strict-transport-security': 'max-age=31536000; includeSubdomains; preload',
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1918340Z       'transfer-encoding': 'chunked',
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1918620Z       vary: 'Accept-Encoding, Accept, X-Requested-With',
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1919212Z       'x-accepted-github-permissions': 'issues=write; pull_requests=write',
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1919582Z       'x-content-type-options': 'nosniff',
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1919833Z       'x-frame-options': 'deny',
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1920084Z       'x-github-api-version-selected': '2022-11-28',
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1920388Z       'x-github-media-type': 'github.v3; format=json',
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1920750Z       'x-github-request-id': '7000:2F3BFD:B91ED9D:30ABE656:69DBCCC0',
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1921070Z       'x-ratelimit-limit': '5000',
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1921306Z       'x-ratelimit-remaining': '4997',
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1921547Z       'x-ratelimit-reset': '1776015536',
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1922093Z       'x-ratelimit-resource': 'core',
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1922419Z       'x-ratelimit-used': '3',
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1922639Z       'x-xss-protection': '0'
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1922834Z     },
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1922980Z     data: {
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1923199Z       message: 'Resource not accessible by integration',
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1923672Z       documentation_url: 'https://docs.github.com/rest/issues/comments#create-an-issue-comment',
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1924095Z       status: '403'
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1924260Z     }
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1924403Z   },
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1924548Z   request: {
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1924711Z     method: 'POST',
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1925032Z     url: 'https://api.github.com/repos/fkc1e100/gcp-template-forge/issues/17/comments',
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1925424Z     headers: {
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1925635Z       accept: 'application/vnd.github.v3+json',
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1926061Z       'user-agent': 'actions/github-script octokit-core.js/5.0.1 Node.js/20.20.1 (linux; x64)',
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1926518Z       authorization: 'token [REDACTED]',
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1926793Z       'content-type': 'application/json; charset=utf-8'
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1927050Z     },
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1929351Z     body: '{"body":"### CI Lint failure: `templates/gke-llm-inference`\\n\\nOne or more lint checks failed — see [run logs](https://github.com/fkc1e100/gcp-template-forge/actions/runs/24311531086) for the exact error.\\n\\n**Common causes:**\\n- Template directory named `Terraform_HELM/` or similar instead of `terraform-helm/`\\n- `google_container_cluster` missing `deletion_protection = false`\\n- Terraform fmt or validate error\\n- KCC manifest YAML syntax error\\n\\nPlease investigate the lint failure, fix the issue, and push a new commit."}',
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1931216Z     request: {
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1931384Z       agent: [Agent],
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1931577Z       fetch: [Function: proxyFetch],
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1932073Z       hook: [Function: bound bound register]
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1932310Z     }
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1932467Z   }
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1932608Z }
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.1933720Z ##[error]Unhandled error: HttpError: Resource not accessible by integration
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.2647418Z Post job cleanup.
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.3609107Z [command]/usr/bin/git version
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.3652058Z git version 2.53.0
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.3695887Z Temporarily overriding HOME='/home/runner/work/_temp/8f3041a0-78f5-409a-a7ad-20d496e8425c' before making global git config changes
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.3697175Z Adding repository directory to the temporary git global config as a safe directory
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.3702433Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/gcp-template-forge/gcp-template-forge
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.3738418Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.3772014Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.4002060Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.4024944Z http.https://github.com/.extraheader
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.4042855Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.4077562Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.4318516Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.4355540Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.4709847Z Cleaning up orphan processes
+Lint (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T16:48:00.5153499Z ##[warning]Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/checkout@v4, actions/github-script@v7, azure/setup-helm@v4, hashicorp/setup-terraform@v3. Actions will be forced to run with Node.js 24 by default starting June 2nd, 2026. Node.js 20 will be removed from the runner on September 16th, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

@@ -1,0 +1,575 @@
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	﻿2026-04-12T17:10:27.6260299Z Current runner version: '2.333.1'
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:27.6285780Z ##[group]Runner Image Provisioner
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:27.6286567Z Hosted Compute Agent
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:27.6287152Z Version: 20260213.493
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:27.6287704Z Commit: 5c115507f6dd24b8de37d8bbe0bb4509d0cc0fa3
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:27.6288304Z Build Date: 2026-02-13T00:28:41Z
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:27.6288923Z Worker ID: {776e38dd-b171-4a7d-b1b7-656b254189db}
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:27.6289511Z Azure Region: westcentralus
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:27.6290027Z ##[endgroup]
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:27.6291308Z ##[group]Operating System
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:27.6291797Z Ubuntu
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:27.6292208Z 24.04.4
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:27.6292591Z LTS
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:27.6293018Z ##[endgroup]
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:27.6293431Z ##[group]Runner Image
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:27.6294084Z Image: ubuntu-24.04
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:27.6294525Z Version: 20260406.80.1
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:27.6295587Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260406.80/images/ubuntu/Ubuntu2404-Readme.md
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:27.6296905Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260406.80
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:27.6297729Z ##[endgroup]
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:27.6298724Z ##[group]GITHUB_TOKEN Permissions
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:27.6300470Z Contents: read
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:27.6300922Z Metadata: read
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:27.6301506Z PullRequests: read
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:27.6301939Z ##[endgroup]
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:27.6304134Z Secret source: None
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:27.6304783Z Prepare workflow directory
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:27.6683173Z Prepare all required actions
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:27.6721500Z Getting action download info
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:28.0924639Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:28.1854493Z Download action repository 'google-github-actions/auth@v2' (SHA:c200f3691d83b41bf9bbd8638997a462592937ed)
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:28.9612562Z Download action repository 'google-github-actions/get-gke-credentials@v2' (SHA:64bc7249bbcf78056bb92f14d3cedc2da193946c)
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:29.6222257Z Download action repository 'actions/github-script@v7' (SHA:f28e40c7f34bde8b3046d885e986cb6290c5673b)
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.4496939Z Complete job name: Deploy & Test KCC (templates/gke-llm-inference)
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.5235868Z ##[group]Run actions/checkout@v4
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.5236400Z with:
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.5236638Z   repository: fkc1e100/gcp-template-forge
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.5237199Z   token: ***
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.5237394Z   ssh-strict: true
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.5237603Z   ssh-user: git
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.5237808Z   persist-credentials: true
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.5238043Z   clean: true
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.5238246Z   sparse-checkout-cone-mode: true
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.5238496Z   fetch-depth: 1
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.5238693Z   fetch-tags: false
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.5238904Z   show-progress: true
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.5239110Z   lfs: false
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.5239299Z   submodules: false
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.5239501Z   set-safe-directory: true
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.5239866Z env:
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.5240069Z   PROJECT_ID: gca-gke-2025
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.5240319Z   KCC_CLUSTER: krmapihost-kcc-instance
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.5240588Z   KCC_REGION: us-central1
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.5240891Z   KCC_NAMESPACE: forge-management
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.5241363Z   WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.5241973Z   WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.5242362Z   TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.5242624Z   USE_GKE_GCLOUD_AUTH_PLUGIN: True
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.5242867Z   TF_VAR_project_id: gca-gke-2025
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.5243199Z   TF_VAR_service_account: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.5243801Z ##[endgroup]
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.6541033Z Syncing repository: fkc1e100/gcp-template-forge
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.6542604Z ##[group]Getting Git version info
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.6543039Z Working directory is '/home/runner/work/gcp-template-forge/gcp-template-forge'
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.6544473Z [command]/usr/bin/git version
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.6582397Z git version 2.53.0
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.6607337Z ##[endgroup]
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.6624087Z Temporarily overriding HOME='/home/runner/work/_temp/545b8897-3489-46cc-8dc3-818068d69636' before making global git config changes
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.6625955Z Adding repository directory to the temporary git global config as a safe directory
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.6632306Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/gcp-template-forge/gcp-template-forge
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.6665824Z Deleting the contents of '/home/runner/work/gcp-template-forge/gcp-template-forge'
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.6669324Z ##[group]Initializing the repository
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.6674638Z [command]/usr/bin/git init /home/runner/work/gcp-template-forge/gcp-template-forge
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.6776113Z hint: Using 'master' as the name for the initial branch. This default branch name
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.6777712Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.6780390Z hint: to use in all of your new repositories, which will suppress this warning,
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.6781444Z hint: call:
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.6782334Z hint:
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.6782859Z hint: 	git config --global init.defaultBranch <name>
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.6783328Z hint:
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.6783964Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.6784830Z hint: 'development'. The just-created branch can be renamed via this command:
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.6785413Z hint:
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.6785714Z hint: 	git branch -m <name>
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.6786072Z hint:
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.6786577Z hint: Disable this message with "git config set advice.defaultBranchName false"
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.6787595Z Initialized empty Git repository in /home/runner/work/gcp-template-forge/gcp-template-forge/.git/
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.6791043Z [command]/usr/bin/git remote add origin https://github.com/fkc1e100/gcp-template-forge
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.6820526Z ##[endgroup]
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.6821182Z ##[group]Disabling automatic garbage collection
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.6826410Z [command]/usr/bin/git config --local gc.auto 0
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.6854474Z ##[endgroup]
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.6855302Z ##[group]Setting up auth
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.6861238Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.6888595Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.7169054Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.7202272Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.7406245Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.7445456Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.7607110Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.7635511Z ##[endgroup]
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.7636123Z ##[group]Fetching the repository
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.7645228Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +73d5d67b2c38fa88fdd228a459269fd4011ac530:refs/remotes/pull/17/merge
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2422120Z From https://github.com/fkc1e100/gcp-template-forge
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2423458Z  * [new ref]         73d5d67b2c38fa88fdd228a459269fd4011ac530 -> pull/17/merge
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2451699Z ##[endgroup]
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2452291Z ##[group]Determining the checkout info
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2454743Z ##[endgroup]
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2461030Z [command]/usr/bin/git sparse-checkout disable
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2502463Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2528489Z ##[group]Checking out the ref
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2534709Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/17/merge
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2600058Z Note: switching to 'refs/remotes/pull/17/merge'.
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2600732Z 
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2601251Z You are in 'detached HEAD' state. You can look around, make experimental
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2602030Z changes and commit them, and you can discard any commits you make in this
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2602793Z state without impacting any branches by switching back to a branch.
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2603055Z 
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2603266Z If you want to create a new branch to retain commits you create, you may
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2603876Z do so (now or later) by using -c with the switch command. Example:
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2604158Z 
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2604261Z   git switch -c <new-branch-name>
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2604441Z 
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2604539Z Or undo this operation with:
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2604707Z 
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2604788Z   git switch -
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2604944Z 
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2605140Z Turn off this advice by setting config variable advice.detachedHead to false
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2605462Z 
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2606018Z HEAD is now at 73d5d67 Merge f37791badb66e55a196fe04994c48051f5509bb6 into a104e92ed9f2b6031c4dd79540d820adf60ee195
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2607405Z ##[endgroup]
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2645194Z [command]/usr/bin/git log -1 --format=%H
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2665267Z 73d5d67b2c38fa88fdd228a459269fd4011ac530
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2899764Z ##[group]Run google-github-actions/auth@v2
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2900063Z with:
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2900522Z   workload_identity_provider: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2901155Z   service_account: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2901502Z   create_credentials_file: true
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2901730Z   export_environment_variables: true
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2901978Z   universe: googleapis.com
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2902187Z   cleanup_credentials: true
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2902407Z   access_token_lifetime: 3600s
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2902757Z   access_token_scopes: https://www.googleapis.com/auth/cloud-platform
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2903084Z   id_token_include_email: false
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2903292Z env:
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2903448Z   PROJECT_ID: gca-gke-2025
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2903820Z   KCC_CLUSTER: krmapihost-kcc-instance
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2904127Z   KCC_REGION: us-central1
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2904341Z   KCC_NAMESPACE: forge-management
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2904803Z   WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2905375Z   WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2905742Z   TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2906006Z   USE_GKE_GCLOUD_AUTH_PLUGIN: True
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2906243Z   TF_VAR_project_id: gca-gke-2025
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2906579Z   TF_VAR_service_account: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2906911Z ##[endgroup]
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.3729255Z ##[error]google-github-actions/auth failed with: gitHub Actions did not inject $ACTIONS_ID_TOKEN_REQUEST_TOKEN or $ACTIONS_ID_TOKEN_REQUEST_URL into this job. This most likely means the GitHub Actions workflow permissions are incorrect, or this job is being run from a fork. For more information, please see https://docs.github.com/en/actions/security-guides/automatic-token-authentication#permissions-for-the-github_token
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.3929969Z ##[group]Run actions/github-script@v7
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.3930272Z with:
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.3932364Z   script: const template = 'templates/gke-llm-inference';
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	const kccResult = 'skipped';
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	const failed = kccResult === 'failure';
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	const body = [
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	  `### Deploy & Test KCC: \`${template}\``,
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	  `| Step | Result |`,
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	  `|---|---|`,
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	  `| KCC apply + Ready | **${kccResult}** |`,
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	  ...(failed ? ['', `KCC test failed — see [run logs](${runUrl}) for details.`] : []),
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	].join('\n');
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	github.rest.issues.createComment({
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	  issue_number: context.issue.number,
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	  owner: context.repo.owner,
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	  repo: context.repo.repo,
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	  body,
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	});
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.3935098Z   github-token: ***
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.3935286Z   debug: false
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.3935490Z   user-agent: actions/github-script
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.3935725Z   result-encoding: json
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.3936152Z   retries: 0
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.3936463Z   retry-exempt-status-codes: 400,401,403,404,422
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.3936987Z env:
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.3937197Z   PROJECT_ID: gca-gke-2025
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.3937447Z   KCC_CLUSTER: krmapihost-kcc-instance
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.3937693Z   KCC_REGION: us-central1
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.3937918Z   KCC_NAMESPACE: forge-management
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.3938367Z   WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.3938940Z   WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.3939301Z   TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.3939565Z   USE_GKE_GCLOUD_AUTH_PLUGIN: True
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.3939900Z   TF_VAR_project_id: gca-gke-2025
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.3940221Z   TF_VAR_service_account: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.3940559Z ##[endgroup]
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8150682Z RequestError [HttpError]: Resource not accessible by integration
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8152189Z     at /home/runner/work/_actions/actions/github-script/v7/dist/index.js:9537:21
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8153442Z     at process.processTicksAndRejections (node:internal/process/task_queues:95:5) {
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8157167Z ##[error]Unhandled error: HttpError: Resource not accessible by integration
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8159401Z   status: 403,
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8159967Z   response: {
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8160758Z     url: 'https://api.github.com/repos/fkc1e100/gcp-template-forge/issues/17/comments',
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8161611Z     status: 403,
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8162061Z     headers: {
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8162589Z       'access-control-allow-origin': '*',
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8165125Z       'access-control-expose-headers': 'ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Used, X-RateLimit-Resource, X-RateLimit-Reset, X-OAuth-Scopes, X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, X-GitHub-SSO, X-GitHub-Request-Id, Deprecation, Sunset',
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8167674Z       'content-encoding': 'gzip',
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8168398Z       'content-security-policy': "default-src 'none'",
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8169170Z       'content-type': 'application/json; charset=utf-8',
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8169846Z       date: 'Sun, 12 Apr 2026 17:10:31 GMT',
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8170678Z       'referrer-policy': 'origin-when-cross-origin, strict-origin-when-cross-origin',
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8171503Z       server: 'github.com',
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8172295Z       'strict-transport-security': 'max-age=31536000; includeSubdomains; preload',
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8173154Z       'transfer-encoding': 'chunked',
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8174041Z       vary: 'Accept-Encoding, Accept, X-Requested-With',
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8174951Z       'x-accepted-github-permissions': 'issues=write; pull_requests=write',
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8175765Z       'x-content-type-options': 'nosniff',
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8176379Z       'x-frame-options': 'deny',
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8177618Z       'x-github-api-version-selected': '2022-11-28',
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8178401Z       'x-github-media-type': 'github.v3; format=json',
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8179388Z       'x-github-request-id': 'BC03:350743:40222A3:10C68853:69DBD207',
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8180106Z       'x-ratelimit-limit': '5000',
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8180704Z       'x-ratelimit-remaining': '4995',
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8181300Z       'x-ratelimit-reset': '1776015536',
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8181957Z       'x-ratelimit-resource': 'core',
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8182592Z       'x-ratelimit-used': '5',
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8183130Z       'x-xss-protection': '0'
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8183779Z     },
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8184184Z     data: {
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8184710Z       message: 'Resource not accessible by integration',
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8185759Z       documentation_url: 'https://docs.github.com/rest/issues/comments#create-an-issue-comment',
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8186686Z       status: '403'
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8187153Z     }
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8187558Z   },
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8187964Z   request: {
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8188403Z     method: 'POST',
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8189143Z     url: 'https://api.github.com/repos/fkc1e100/gcp-template-forge/issues/17/comments',
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8190059Z     headers: {
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8190590Z       accept: 'application/vnd.github.v3+json',
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8191514Z       'user-agent': 'actions/github-script octokit-core.js/5.0.1 Node.js/20.20.1 (linux; x64)',
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8192423Z       authorization: 'token [REDACTED]',
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8193140Z       'content-type': 'application/json; charset=utf-8'
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8193985Z     },
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8195031Z     body: '{"body":"### Deploy & Test KCC: `templates/gke-llm-inference`\\n| Step | Result |\\n|---|---|\\n| KCC apply + Ready | **skipped** |"}',
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8196145Z     request: {
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8196609Z       agent: [Agent],
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8197150Z       fetch: [Function: proxyFetch],
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8197780Z       hook: [Function: bound bound register]
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8198343Z     }
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8198727Z   }
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8199110Z }
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8850814Z Post job cleanup.
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.9632504Z Skipping credential cleanup - $GOOGLE_GHA_CREDS_PATH is not set.
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.9755418Z Post job cleanup.
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.0678401Z [command]/usr/bin/git version
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.0714304Z git version 2.53.0
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.0763976Z Temporarily overriding HOME='/home/runner/work/_temp/36b95359-c734-4dbf-bd70-ff4144042b79' before making global git config changes
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.0765295Z Adding repository directory to the temporary git global config as a safe directory
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.0769078Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/gcp-template-forge/gcp-template-forge
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.0802648Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.0832322Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.1012989Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.1032474Z http.https://github.com/.extraheader
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.1044618Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.1071179Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.1257340Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.1286370Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.1586667Z Cleaning up orphan processes
+Deploy & Test KCC (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.1880268Z ##[warning]Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/checkout@v4, actions/github-script@v7, google-github-actions/auth@v2. Actions will be forced to run with Node.js 24 by default starting June 2nd, 2026. Node.js 20 will be removed from the runner on September 16th, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	﻿2026-04-12T17:10:28.9133976Z Current runner version: '2.333.1'
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:28.9157076Z ##[group]Runner Image Provisioner
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:28.9158056Z Hosted Compute Agent
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:28.9158672Z Version: 20260213.493
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:28.9159293Z Commit: 5c115507f6dd24b8de37d8bbe0bb4509d0cc0fa3
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:28.9160109Z Build Date: 2026-02-13T00:28:41Z
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:28.9160821Z Worker ID: {02c6a568-aeb8-4f5c-ac84-179e86d1fbf3}
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:28.9161558Z Azure Region: westus
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:28.9162150Z ##[endgroup]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:28.9163608Z ##[group]Operating System
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:28.9164273Z Ubuntu
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:28.9164826Z 24.04.4
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:28.9165792Z LTS
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:28.9166395Z ##[endgroup]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:28.9167025Z ##[group]Runner Image
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:28.9167656Z Image: ubuntu-24.04
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:28.9168221Z Version: 20260406.80.1
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:28.9169532Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260406.80/images/ubuntu/Ubuntu2404-Readme.md
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:28.9171022Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260406.80
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:28.9172016Z ##[endgroup]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:28.9173234Z ##[group]GITHUB_TOKEN Permissions
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:28.9175111Z Contents: read
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:28.9176088Z Metadata: read
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:28.9176663Z PullRequests: read
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:28.9177225Z ##[endgroup]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:28.9179340Z Secret source: None
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:28.9180075Z Prepare workflow directory
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:28.9575070Z Prepare all required actions
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:28.9613450Z Getting action download info
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:29.5131387Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:29.6271963Z Download action repository 'google-github-actions/auth@v2' (SHA:c200f3691d83b41bf9bbd8638997a462592937ed)
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.1397541Z Download action repository 'hashicorp/setup-terraform@v3' (SHA:b9cd54a3c349d3f38e8881555d616ced269862dd)
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:30.7530839Z Download action repository 'google-github-actions/get-gke-credentials@v2' (SHA:64bc7249bbcf78056bb92f14d3cedc2da193946c)
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.2373003Z Download action repository 'azure/setup-helm@v4' (SHA:1a275c3b69536ee54be43f2070a358922e12c8d4)
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:31.8065198Z Download action repository 'actions/github-script@v7' (SHA:f28e40c7f34bde8b3046d885e986cb6290c5673b)
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.3955604Z Complete job name: Deploy & Test TF+Helm (templates/gke-llm-inference)
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.4644640Z ##[group]Run actions/checkout@v4
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.4645632Z with:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.4645872Z   repository: fkc1e100/gcp-template-forge
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.4646291Z   token: ***
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.4646489Z   ssh-strict: true
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.4646684Z   ssh-user: git
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.4646880Z   persist-credentials: true
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.4647106Z   clean: true
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.4647295Z   sparse-checkout-cone-mode: true
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.4647533Z   fetch-depth: 1
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.4647736Z   fetch-tags: false
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.4647921Z   show-progress: true
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.4648104Z   lfs: false
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.4648273Z   submodules: false
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.4648459Z   set-safe-directory: true
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.4648948Z env:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.4649134Z   PROJECT_ID: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.4649371Z   KCC_CLUSTER: krmapihost-kcc-instance
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.4649621Z   KCC_REGION: us-central1
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.4649871Z   KCC_NAMESPACE: forge-management
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.4650347Z   WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.4650951Z   WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.4651349Z   TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.4651627Z   USE_GKE_GCLOUD_AUTH_PLUGIN: True
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.4651878Z   TF_VAR_project_id: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.4652241Z   TF_VAR_service_account: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.4652842Z ##[endgroup]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.5726124Z Syncing repository: fkc1e100/gcp-template-forge
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.5727571Z ##[group]Getting Git version info
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.5728035Z Working directory is '/home/runner/work/gcp-template-forge/gcp-template-forge'
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.5728664Z [command]/usr/bin/git version
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.5772011Z git version 2.53.0
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.5799289Z ##[endgroup]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.5812877Z Temporarily overriding HOME='/home/runner/work/_temp/23249910-a077-40bc-8127-e947eff3fc93' before making global git config changes
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.5814188Z Adding repository directory to the temporary git global config as a safe directory
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.5818685Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/gcp-template-forge/gcp-template-forge
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.5850701Z Deleting the contents of '/home/runner/work/gcp-template-forge/gcp-template-forge'
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.5853901Z ##[group]Initializing the repository
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.5858386Z [command]/usr/bin/git init /home/runner/work/gcp-template-forge/gcp-template-forge
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.5940018Z hint: Using 'master' as the name for the initial branch. This default branch name
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.5940951Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.5941785Z hint: to use in all of your new repositories, which will suppress this warning,
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.5942419Z hint: call:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.5942602Z hint:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.5942883Z hint: 	git config --global init.defaultBranch <name>
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.5943188Z hint:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.5943465Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.5943951Z hint: 'development'. The just-created branch can be renamed via this command:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.5944310Z hint:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.5944494Z hint: 	git branch -m <name>
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.5944707Z hint:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.5945015Z hint: Disable this message with "git config set advice.defaultBranchName false"
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.5947637Z Initialized empty Git repository in /home/runner/work/gcp-template-forge/gcp-template-forge/.git/
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.5978951Z [command]/usr/bin/git remote add origin https://github.com/fkc1e100/gcp-template-forge
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.5984374Z ##[endgroup]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.5984807Z ##[group]Disabling automatic garbage collection
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.5991018Z [command]/usr/bin/git config --local gc.auto 0
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.6018201Z ##[endgroup]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.6018825Z ##[group]Setting up auth
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.6026043Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.6054865Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.6332974Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.6367654Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.6587835Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.6621838Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.6841976Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.6877125Z ##[endgroup]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.6877817Z ##[group]Fetching the repository
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:32.6886364Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +73d5d67b2c38fa88fdd228a459269fd4011ac530:refs/remotes/pull/17/merge
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1092245Z From https://github.com/fkc1e100/gcp-template-forge
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1092949Z  * [new ref]         73d5d67b2c38fa88fdd228a459269fd4011ac530 -> pull/17/merge
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1121915Z ##[endgroup]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1122634Z ##[group]Determining the checkout info
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1125118Z ##[endgroup]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1130667Z [command]/usr/bin/git sparse-checkout disable
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1169892Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1195141Z ##[group]Checking out the ref
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1199428Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/17/merge
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1287731Z Note: switching to 'refs/remotes/pull/17/merge'.
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1288164Z 
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1288782Z You are in 'detached HEAD' state. You can look around, make experimental
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1289636Z changes and commit them, and you can discard any commits you make in this
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1290432Z state without impacting any branches by switching back to a branch.
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1290980Z 
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1291293Z If you want to create a new branch to retain commits you create, you may
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1291960Z do so (now or later) by using -c with the switch command. Example:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1292239Z 
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1292352Z   git switch -c <new-branch-name>
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1292524Z 
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1292620Z Or undo this operation with:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1292791Z 
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1292874Z   git switch -
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1293010Z 
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1293218Z Turn off this advice by setting config variable advice.detachedHead to false
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1293512Z 
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1293839Z HEAD is now at 73d5d67 Merge f37791badb66e55a196fe04994c48051f5509bb6 into a104e92ed9f2b6031c4dd79540d820adf60ee195
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1296550Z ##[endgroup]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1331698Z [command]/usr/bin/git log -1 --format=%H
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1353351Z 73d5d67b2c38fa88fdd228a459269fd4011ac530
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1586968Z ##[group]Run google-github-actions/auth@v2
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1587272Z with:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1587758Z   workload_identity_provider: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1588425Z   service_account: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1588781Z   create_credentials_file: true
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1589023Z   export_environment_variables: true
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1589276Z   universe: googleapis.com
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1589491Z   cleanup_credentials: true
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1589713Z   access_token_lifetime: 3600s
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1590051Z   access_token_scopes: https://www.googleapis.com/auth/cloud-platform
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1590420Z   id_token_include_email: false
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1590633Z env:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1590812Z   PROJECT_ID: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1591042Z   KCC_CLUSTER: krmapihost-kcc-instance
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1591332Z   KCC_REGION: us-central1
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1591556Z   KCC_NAMESPACE: forge-management
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1592035Z   WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1592639Z   WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1593030Z   TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1593302Z   USE_GKE_GCLOUD_AUTH_PLUGIN: True
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1593534Z   TF_VAR_project_id: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1593867Z   TF_VAR_service_account: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.1594222Z ##[endgroup]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2451064Z ##[error]google-github-actions/auth failed with: gitHub Actions did not inject $ACTIONS_ID_TOKEN_REQUEST_TOKEN or $ACTIONS_ID_TOKEN_REQUEST_URL into this job. This most likely means the GitHub Actions workflow permissions are incorrect, or this job is being run from a fork. For more information, please see https://docs.github.com/en/actions/security-guides/automatic-token-authentication#permissions-for-the-github_token
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2601964Z ##[group]Run # Destroy if TF apply itself failed (clean up partial state)
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2602538Z [36;1m# Destroy if TF apply itself failed (clean up partial state)[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2603008Z [36;1m# OR if all downstream verification passed (normal successful cleanup)[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2603509Z [36;1m# Leave cluster up if TF apply succeeded but a downstream step failed —[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2604001Z [36;1m# next push will terraform apply (no-op) and re-run the failing step.[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2604371Z [36;1mTF_APPLY="skipped"[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2604592Z [36;1mTF_VERIFY="skipped"[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2604810Z [36;1mHELM="skipped"[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2605000Z [36;1m[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2605193Z [36;1mif [ "$TF_APPLY" = "failure" ]; then[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2605700Z [36;1m  echo "should_destroy=true"  >> $GITHUB_OUTPUT[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2606093Z [36;1m  echo "Reason: TF apply failed — destroying partial state"[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2606624Z [36;1melif [ "$TF_VERIFY" = "success" ] && { [ "$HELM" = "success" ] || [ "$HELM" = "skipped" ]; }; then[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2607074Z [36;1m  echo "should_destroy=true"  >> $GITHUB_OUTPUT[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2607476Z [36;1m  echo "Reason: All verification passed — performing normal teardown"[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2607828Z [36;1melse[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2608040Z [36;1m  echo "should_destroy=false" >> $GITHUB_OUTPUT[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2608916Z [36;1m  echo "::notice::Cluster left running — TF apply succeeded but a downstream step failed. Next push will skip provisioning and re-run the failing step. Cluster will be destroyed on next successful run or PR close."[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2609770Z [36;1mfi[0m
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2633275Z shell: /usr/bin/bash -e {0}
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2633527Z env:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2633712Z   PROJECT_ID: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2633976Z   KCC_CLUSTER: krmapihost-kcc-instance
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2634245Z   KCC_REGION: us-central1
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2634462Z   KCC_NAMESPACE: forge-management
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2634946Z   WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2635832Z   WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2636234Z   TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2636512Z   USE_GKE_GCLOUD_AUTH_PLUGIN: True
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2636752Z   TF_VAR_project_id: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2637092Z   TF_VAR_service_account: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2637449Z ##[endgroup]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2707020Z ##[notice]Cluster left running — TF apply succeeded but a downstream step failed. Next push will skip provisioning and re-run the failing step. Cluster will be destroyed on next successful run or PR close.
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2817519Z ##[group]Run actions/github-script@v7
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2817881Z with:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2820251Z   script: const template = 'templates/gke-llm-inference';
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	const tfResult = 'skipped';
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	const helmResult = 'skipped';
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	const failed = [tfResult, helmResult].some(r => r === 'failure');
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	const body = [
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	  `### Deploy & Test TF+Helm: \`${template}\``,
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	  `| Step | Result |`,
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	  `|---|---|`,
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	  `| Terraform apply + cluster verify | **${tfResult}** |`,
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	  `| Helm deploy + verify | **${helmResult}** |`,
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	  ...(failed ? ['', `TF+Helm test failed — see [run logs](${runUrl}) for details.`] : []),
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	].join('\n');
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	github.rest.issues.createComment({
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	  issue_number: context.issue.number,
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	  owner: context.repo.owner,
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	  repo: context.repo.repo,
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	  body,
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	});
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2823154Z   github-token: ***
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2823355Z   debug: false
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2823611Z   user-agent: actions/github-script
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2824069Z   result-encoding: json
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2824274Z   retries: 0
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2824485Z   retry-exempt-status-codes: 400,401,403,404,422
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2824759Z env:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2824934Z   PROJECT_ID: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2825172Z   KCC_CLUSTER: krmapihost-kcc-instance
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2825630Z   KCC_REGION: us-central1
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2825859Z   KCC_NAMESPACE: forge-management
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2826342Z   WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2826969Z   WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2827368Z   TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2827641Z   USE_GKE_GCLOUD_AUTH_PLUGIN: True
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2827887Z   TF_VAR_project_id: gca-gke-2025
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2828226Z   TF_VAR_service_account: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.2828598Z ##[endgroup]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7210329Z RequestError [HttpError]: Resource not accessible by integration
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7211750Z     at /home/runner/work/_actions/actions/github-script/v7/dist/index.js:9537:21
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7213216Z     at process.processTicksAndRejections (node:internal/process/task_queues:95:5) {
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7214265Z   status: 403,
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7216849Z ##[error]Unhandled error: HttpError: Resource not accessible by integration
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7218835Z   response: {
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7220071Z     url: 'https://api.github.com/repos/fkc1e100/gcp-template-forge/issues/17/comments',
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7220927Z     status: 403,
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7221258Z     headers: {
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7221625Z       'access-control-allow-origin': '*',
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7224032Z       'access-control-expose-headers': 'ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Used, X-RateLimit-Resource, X-RateLimit-Reset, X-OAuth-Scopes, X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, X-GitHub-SSO, X-GitHub-Request-Id, Deprecation, Sunset',
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7226736Z       'content-encoding': 'gzip',
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7227253Z       'content-security-policy': "default-src 'none'",
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7227887Z       'content-type': 'application/json; charset=utf-8',
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7228440Z       date: 'Sun, 12 Apr 2026 17:10:33 GMT',
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7229164Z       'referrer-policy': 'origin-when-cross-origin, strict-origin-when-cross-origin',
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7229927Z       server: 'github.com',
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7230579Z       'strict-transport-security': 'max-age=31536000; includeSubdomains; preload',
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7231332Z       'transfer-encoding': 'chunked',
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7231972Z       vary: 'Accept-Encoding, Accept, X-Requested-With',
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7232836Z       'x-accepted-github-permissions': 'issues=write; pull_requests=write',
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7234100Z       'x-content-type-options': 'nosniff',
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7234646Z       'x-frame-options': 'deny',
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7235137Z       'x-github-api-version-selected': '2022-11-28',
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7235973Z       'x-github-media-type': 'github.v3; format=json',
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7236627Z       'x-github-request-id': '0405:1EF9EB:C9D75AF:CD77444:69DBD209',
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7237213Z       'x-ratelimit-limit': '5000',
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7237667Z       'x-ratelimit-remaining': '4994',
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7238110Z       'x-ratelimit-reset': '1776015536',
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7238563Z       'x-ratelimit-resource': 'core',
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7239001Z       'x-ratelimit-used': '6',
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7239397Z       'x-xss-protection': '0'
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7239762Z     },
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7240024Z     data: {
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7240394Z       message: 'Resource not accessible by integration',
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7241239Z       documentation_url: 'https://docs.github.com/rest/issues/comments#create-an-issue-comment',
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7242331Z       status: '403'
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7242648Z     }
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7242932Z   },
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7243197Z   request: {
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7243501Z     method: 'POST',
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7244112Z     url: 'https://api.github.com/repos/fkc1e100/gcp-template-forge/issues/17/comments',
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7244903Z     headers: {
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7245554Z       accept: 'application/vnd.github.v3+json',
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7246464Z       'user-agent': 'actions/github-script octokit-core.js/5.0.1 Node.js/20.20.1 (linux; x64)',
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7247291Z       authorization: 'token [REDACTED]',
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7247836Z       'content-type': 'application/json; charset=utf-8'
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7248351Z     },
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7249660Z     body: '{"body":"### Deploy & Test TF+Helm: `templates/gke-llm-inference`\\n| Step | Result |\\n|---|---|\\n| Terraform apply + cluster verify | **skipped** |\\n| Helm deploy + verify | **skipped** |"}',
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7251201Z     request: {
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7251542Z       agent: [Agent],
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7251932Z       fetch: [Function: proxyFetch],
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7252424Z       hook: [Function: bound bound register]
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7252870Z     }
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7253154Z   }
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7253418Z }
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.7920924Z Post job cleanup.
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.8737827Z Skipping credential cleanup - $GOOGLE_GHA_CREDS_PATH is not set.
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.8868277Z Post job cleanup.
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.9804303Z [command]/usr/bin/git version
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.9847378Z git version 2.53.0
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.9890638Z Temporarily overriding HOME='/home/runner/work/_temp/583640b1-eebe-48dc-ae80-87ef25991909' before making global git config changes
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.9892819Z Adding repository directory to the temporary git global config as a safe directory
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.9898457Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/gcp-template-forge/gcp-template-forge
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.9941278Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:33.9981093Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:34.0223220Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:34.0247819Z http.https://github.com/.extraheader
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:34.0260850Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:34.0293578Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:34.0541112Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:34.0578298Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:34.0934573Z Cleaning up orphan processes
+Deploy & Test TF+Helm (templates/gke-llm-inference)	UNKNOWN STEP	2026-04-12T17:10:34.1208052Z ##[warning]Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/checkout@v4, actions/github-script@v7, google-github-actions/auth@v2. Actions will be forced to run with Node.js 24 by default starting June 2nd, 2026. Node.js 20 will be removed from the runner on September 16th, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

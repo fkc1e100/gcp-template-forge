@@ -159,7 +159,11 @@ resource "null_resource" "stage_model_weights" {
     command = <<-EOT
       # Ensure we are authenticated
       if [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
-        gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS" --project="${var.project_id}" --quiet || true
+        if grep -q "external_account" "$GOOGLE_APPLICATION_CREDENTIALS" 2>/dev/null; then
+          gcloud auth login --cred-file="$GOOGLE_APPLICATION_CREDENTIALS" --quiet
+        else
+          gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS" --quiet
+        fi
       fi
 
       # Only download if bucket is empty
@@ -201,7 +205,11 @@ resource "null_resource" "deploy_workload" {
     command = <<-EOT
       # Ensure we are authenticated
       if [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
-        gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS" --project="${var.project_id}" --quiet || true
+        if grep -q "external_account" "$GOOGLE_APPLICATION_CREDENTIALS" 2>/dev/null; then
+          gcloud auth login --cred-file="$GOOGLE_APPLICATION_CREDENTIALS" --quiet
+        else
+          gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS" --quiet
+        fi
       fi
 
       gcloud container clusters get-credentials ${google_container_cluster.main.name} \

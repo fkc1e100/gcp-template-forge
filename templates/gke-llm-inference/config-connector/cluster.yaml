@@ -76,3 +76,5 @@ spec:
       - https://www.googleapis.com/auth/cloud-platform
     workloadMetadataConfig:
       mode: GKE_METADATA
+  queuedProvisioning:
+    enabled: true
