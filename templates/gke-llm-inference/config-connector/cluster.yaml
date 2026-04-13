@@ -7,8 +7,10 @@ metadata:
     template: gke-llm-inference
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
+    cnrm.cloud.google.com/remove-default-node-pool: "true"
 spec:
   location: us-central1
+  initialNodeCount: 1
   networkRef:
     name: gke-llm-inference-kcc-vpc
   subnetworkRef:
