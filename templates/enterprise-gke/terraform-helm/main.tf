@@ -163,27 +163,23 @@ resource "google_container_node_pool" "primary_nodes" {
       enable_secure_boot          = true
       enable_integrity_monitoring = true
     }
-
     labels = {
       template = "enterprise-gke"
     }
   }
 }
 
-data "google_client_config" "default" {}
-
-data "google_container_cluster" "enterprise_cluster" {
-  name       = google_container_cluster.enterprise_cluster.name
-  location   = var.region
+# Configure kubectl after the cluster is ready; helm provider uses this kubeconfig.
+resource "null_resource" "cluster_credentials" {
   depends_on = [google_container_node_pool.primary_nodes]
+
+  provisioner "local-exec" {
+    command = "gcloud container clusters get-credentials ${google_container_cluster.enterprise_cluster.name} --region ${var.region} --project ${var.project_id}"
+  }
 }
 
 provider "helm" {
-  kubernetes {
-    host                   = "https://${data.google_container_cluster.enterprise_cluster.endpoint}"
-    token                  = data.google_client_config.default.access_token
-    cluster_ca_certificate = base64decode(data.google_container_cluster.enterprise_cluster.master_auth[0].cluster_ca_certificate)
-  }
+  # Configuration is read from ~/.kube/config populated by null_resource.cluster_credentials
 }
 
 resource "helm_release" "workload" {
@@ -191,6 +187,7 @@ resource "helm_release" "workload" {
   chart            = "${path.module}/workload"
   namespace        = "enterprise-gke"
   create_namespace = true
+  depends_on       = [null_resource.cluster_credentials]
 
   values = [
     file("${path.module}/workload/values.yaml")

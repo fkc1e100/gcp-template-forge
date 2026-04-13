@@ -18,7 +18,7 @@ set -e
 echo "Starting KCC Validation Tests..."
 
 PROJECT_ID=${PROJECT_ID:-"gca-gke-2025"}
-CLUSTER_NAME="enterprise-gke-kcc"
+CLUSTER_NAME="enterprise-gke-kcc-v2"
 NODE_POOL_NAME="enterprise-gke-kcc-pool"
 NAMESPACE="forge-management"
 NAMESPACE_WORKLOAD="enterprise-gke"
@@ -112,7 +112,7 @@ kubectl delete job test-workload-identity -n ${NAMESPACE_WORKLOAD}
 # Wait for LoadBalancer IP
 SERVICE_IP=""
 for i in {1..20}; do
-  SERVICE_IP=$(kubectl get svc enterprise-gke -o jsonpath='{.status.loadBalancer.ingress[0].ip}' -n ${NAMESPACE_WORKLOAD} || true)
+  SERVICE_IP=$(kubectl get svc -n ${NAMESPACE_WORKLOAD} -l app.kubernetes.io/instance=enterprise-gke -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}' || true)
   if [ ! -z "$SERVICE_IP" ]; then
     break
   fi

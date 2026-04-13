@@ -24,7 +24,7 @@ terraform apply -auto-approve
 3. **Endpoint Interaction:**
    ```bash
    # Get LoadBalancer IP
-   SERVICE_IP=$(kubectl get svc basic-gke-hello-world -o jsonpath='{.status.loadBalancer.ingress[0].ip}' -n hello-world)
+   SERVICE_IP=$(kubectl get svc -l app.kubernetes.io/instance=basic-gke -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}' -n hello-world)
    curl -sf http://${SERVICE_IP}:80/
    ```
 

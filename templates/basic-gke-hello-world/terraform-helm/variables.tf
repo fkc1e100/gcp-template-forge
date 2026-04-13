@@ -28,3 +28,8 @@ variable "cluster_name" {
   type        = string
   default     = "basic-gke-tf"
 }
+
+variable "service_account" {
+  description = "The service account email to use for the node pool"
+  type        = string
+}

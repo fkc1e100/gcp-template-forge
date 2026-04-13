@@ -59,7 +59,7 @@ echo "Test 4: Endpoint Interaction..."
 # Wait for LoadBalancer IP
 SERVICE_IP=""
 for i in {1..20}; do
-  SERVICE_IP=$(kubectl get svc basic-gke-hello-world -o jsonpath='{.status.loadBalancer.ingress[0].ip}' -n ${NAMESPACE_WORKLOAD} || true)
+  SERVICE_IP=$(kubectl get svc -n ${NAMESPACE_WORKLOAD} -l app.kubernetes.io/instance=basic-gke -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}' || true)
   if [ ! -z "$SERVICE_IP" ]; then
     break
   fi

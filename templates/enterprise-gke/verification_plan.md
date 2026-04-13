@@ -51,7 +51,7 @@ terraform apply -auto-approve
 3. **Endpoint Interaction:**
    ```bash
    # Get LoadBalancer IP
-   SERVICE_IP=$(kubectl get svc enterprise-gke -o jsonpath='{.status.loadBalancer.ingress[0].ip}' -n enterprise-gke)
+   SERVICE_IP=$(kubectl get svc -l app.kubernetes.io/instance=enterprise-gke -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}' -n enterprise-gke)
    curl -sf http://${SERVICE_IP}:80/
    ```
 
@@ -71,7 +71,7 @@ kubectl apply -f config-connector/ -n forge-management
 ### Verification
 1. **Resource Readiness:**
    ```bash
-   kubectl wait --for=condition=Ready containercluster/enterprise-gke-kcc -n forge-management --timeout=20m
+   kubectl wait --for=condition=Ready containercluster/enterprise-gke-kcc-v2 -n forge-management --timeout=20m
    ```
 2. **Workload Deployment & Integration:**
    The `validate.sh` script handles the deployment of the workload via Helm to the newly created cluster and performs interaction tests.
