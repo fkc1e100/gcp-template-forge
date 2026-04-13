@@ -8,13 +8,6 @@ provider "google-beta" {
   region  = var.region
 }
 
-# The empty helm provider uses ~/.kube/config set by null_resource.cluster_credentials
-provider "helm" {
-  kubernetes {
-    config_path = "~/.kube/config"
-  }
-}
-
 # VPC Network
 resource "google_compute_network" "main" {
   name                    = var.network_name
@@ -162,6 +155,15 @@ resource "google_service_account_iam_member" "workload_identity_binding" {
 resource "null_resource" "stage_model_weights" {
   provisioner "local-exec" {
     command = <<-EOT
+      # Ensure we are authenticated
+      if [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
+        if grep -q "external_account" "$GOOGLE_APPLICATION_CREDENTIALS" 2>/dev/null; then
+          gcloud auth login --cred-file="$GOOGLE_APPLICATION_CREDENTIALS" --quiet
+        else
+          gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS" --quiet
+        fi
+      fi
+
       # Only download if bucket is empty
       COUNT=$(gcloud storage ls gs://${google_storage_bucket.weights.name}/Qwen/Qwen2.5-1.5B-Instruct/ 2>/dev/null | wc -l || echo "0")
       if [ "$$COUNT" -eq 0 ]; then
@@ -190,31 +192,11 @@ except Exception as e:
   depends_on = [google_storage_bucket.weights]
 }
 
-# Fix: configure credentials for helm provider
-resource "null_resource" "cluster_credentials" {
-  depends_on = [google_container_node_pool.gpu_pool, google_container_node_pool.cpu_pool]
-  provisioner "local-exec" {
-    command = "gcloud container clusters get-credentials ${google_container_cluster.main.name} --region ${var.region} --project ${var.project_id}"
-  }
-}
-
-resource "helm_release" "workload" {
-  name             = "release-inference" # Use unique name to avoid conflict with workflow
-  chart            = "${path.module}/workload"
-  namespace        = "default"
-  create_namespace = true
-  wait             = false # Don't block terraform apply
-  timeout          = 1800
-
-  set {
-    name  = "bucketName"
-    value = google_storage_bucket.weights.name
-  }
-
-  set {
-    name  = "serviceAccountEmail"
-    value = local.workload_sa_email
-  }
-
-  depends_on = [null_resource.cluster_credentials, null_resource.stage_model_weights]
+# Generate values.yaml for the helm chart so the CI workflow can deploy it correctly.
+resource "local_file" "helm_values" {
+  filename = "${path.module}/workload/values.yaml"
+  content  = <<-EOT
+bucketName: ${google_storage_bucket.weights.name}
+serviceAccountEmail: ${local.workload_sa_email}
+EOT
 }
