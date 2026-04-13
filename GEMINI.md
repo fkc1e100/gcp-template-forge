@@ -474,11 +474,16 @@ Use spot/preemptible for all sandbox validation clusters to minimise cost.
 |---|---|---|---|
 | General GKE | `e2-standard-4` | ✓ | Default choice |
 | Memory intensive | `n2-highmem-4` | ✓ | Databases, caches |
-| GPU inference | `g2-standard-12` (L4) | **DWS** | 16 L4s available — see [GPU / AI / ML section](#gpu--ai--ml-templates) |
 | GPU inference | `n1-standard-4` (T4) | ✓ | 8 T4s available |
-| GPU training | `a2-highgpu-1g` (A100 40GB) | — | Use DWS + Kueue — see [GPU / AI / ML section](#gpu--ai--ml-templates) |
-| **❌ DO NOT USE** | `a3-highgpu` (A100 80GB) | — | **Quota = 0, will fail** |
-| **❌ DO NOT USE** | `a3-mega` (H100) | — | **Quota = 0, will fail** |
+| GPU inference/serving | `g2-standard-12` (L4) | **DWS** | 16 L4s available — see [GPU / AI / ML section](#gpu--ai--ml-templates) |
+| GPU training (A100 40GB) | `a2-highgpu-1g` | — | 16 available. Use DWS+Kueue |
+| GPU training (A100 80GB) | `a2-ultragpu-1g` | — | Quota = 0. **Build with DWS+Kueue** — queues until capacity is allocated |
+| GPU training/inference (H100 80GB SXM) | `a3-highgpu-8g` | — | Quota = 0. **Build with DWS+Kueue** — 8× H100 per node |
+| GPU training/inference (H100 SXM5 + NVLink) | `a3-megagpu-8g` | — | Quota = 0. **Build with DWS+Kueue** — highest-bandwidth H100 option |
+| GPU training/inference (H200 141GB) | `a3-ultragpu-8g` | — | Quota = 0. **Build with DWS+Kueue** — 141GB HBM3e per GPU |
+| GPU training/inference (GB200 NVL) | `a4-highgpu-8g` | — | Quota = 0. **Build with DWS+Kueue** — frontier training hardware |
+
+**Quota = 0 does not mean "do not build."** Use DWS+Kueue for all A2/A3/A4 hardware. The template architecture is valid and the DWS queue activates when GCP allocates capacity. For A3/A4 templates, CI validation may require human monitoring and could take days — document this in `verification_plan.md` and add a CI step that detects DWS pending state and posts an issue comment rather than timing out.
 
 ---
 
@@ -611,7 +616,7 @@ gcloud container ai profiles manifests create \
 4. Use the generated manifests as the baseline for the template's `workload/` directory — **do not write GPU/model-server configs from scratch**.
 5. **Build the node pool to match the accelerator type and replica count from the generated manifests.** The manifest output drives the cluster spec, not prior assumption.
 
-**Note on quota**: H100 quota is 0 in this sandbox — do not request H100. If the benchmark output recommends H100, select the next best available option from the benchmark list.
+**Note on quota**: H100, H200, and GB200 quota is currently 0. If the benchmark output recommends these accelerators, you have two options: (1) select the next best available option (L4 or T4) for immediate CI validation, or (2) build the template targeting the recommended hardware with DWS+Kueue — the architecture will be correct and will activate when quota is allocated. Document the expected hardware and the DWS wait expectation in `verification_plan.md`.
 
 **Required README section for inference templates**: Every inference template README must include a `## Performance & Cost Estimates` section populated from the benchmark output:
 
@@ -1213,6 +1218,24 @@ Format: `- **[area]** symptom → fix. (root cause)`
       path: /health
       port: 8000
   ```
+
+- **`provider "helm"` with computed cluster endpoint fails on fresh create** — configuring `provider "helm" { kubernetes { host = "https://${google_container_cluster.X.endpoint}" } }` works when the cluster already exists in state (endpoint is known from refresh), but fails with "invalid configuration: no configuration has been provided" when Terraform is creating the cluster from scratch. At plan time, `endpoint` is `(known after apply)` — an unknown value. The helm provider receives an empty host and throws the error. This happens on every CI run after a `terraform destroy` (which runs after every successful validation). **Fix: use a `null_resource` to configure kubectl after cluster creation, and configure the helm provider without an explicit kubernetes block:**
+  ```hcl
+  provider "helm" {}  # Uses ~/.kube/config set by null_resource below
+
+  resource "null_resource" "cluster_credentials" {
+    depends_on = [google_container_node_pool.primary_nodes]
+    provisioner "local-exec" {
+      command = "gcloud container clusters get-credentials ${google_container_cluster.X.name} --region ${var.region} --project ${var.project_id}"
+    }
+  }
+
+  resource "helm_release" "workload" {
+    depends_on = [null_resource.cluster_credentials]
+    # ... rest unchanged
+  }
+  ```
+  Remove `data "google_client_config" "default"` if it was only used by the helm provider block.
 
 - **`binary_authorization { evaluation_mode = "PROJECT_SINGLETON_POLICY_ENFORCE" }`** causes silent cluster provisioning failure → Kubernetes cluster unreachable / empty endpoint in helm provider. `PROJECT_SINGLETON_POLICY_ENFORCE` requires a pre-existing Binary Authorization policy at the GCP project level. If no policy exists, GKE silently fails to expose the cluster endpoint, and the `provider "helm" { kubernetes { host = ... } }` block receives an empty string, producing "invalid configuration: no configuration has been provided". Fix: set `evaluation_mode = "DISABLED"` in templates. If Binary Authorization is a template requirement, document that the prerequisite policy must be created out-of-band before CI can pass.
 
