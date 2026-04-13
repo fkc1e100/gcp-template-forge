@@ -162,7 +162,7 @@ resource "google_service_account_iam_member" "workload_identity_binding" {
 resource "helm_release" "release" {
   wait      = false
   timeout   = 1200
-  name      = "gke-llm-inference"
+  name      = "release"
   chart     = "${path.module}/workload"
   namespace = "default"
 
