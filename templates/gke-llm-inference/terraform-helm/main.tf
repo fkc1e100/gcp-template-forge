@@ -163,8 +163,8 @@ resource "null_resource" "stage_model_weights" {
       fi
 
       # Only download if bucket is empty
-      COUNT=$(gcloud storage ls gs://${google_storage_bucket.weights.name}/Qwen/Qwen2.5-1.5B-Instruct/ 2>/dev/null | wc -l || echo "0")
-      if [ "$COUNT" -eq 0 ]; then
+      $$COUNT=$(gcloud storage ls gs://${google_storage_bucket.weights.name}/Qwen/Qwen2.5-1.5B-Instruct/ 2>/dev/null | wc -l || echo "0")
+      if [ "$$COUNT" -eq 0 ]; then
         echo "Bucket is empty, staging model weights..."
         pip install huggingface_hub --quiet 2>/dev/null || pip3 install huggingface_hub --quiet 2>/dev/null || true
         export HF_TOKEN=$(gcloud secrets versions access latest --secret="huggingface-token" --project="${var.project_id}" 2>/dev/null || echo "")
