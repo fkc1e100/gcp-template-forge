@@ -5,8 +5,8 @@ metadata:
   labels:
     app: vllm-inference-server
 spec:
-  progressDeadlineSeconds: 1800
   replicas: {{ .Values.replicaCount }}
+  progressDeadlineSeconds: 1800
   selector:
     matchLabels:
       app: vllm-inference-server
@@ -17,7 +17,6 @@ spec:
       annotations:
         gke-gcsview.csi.storage.gke.io/volumes: "true"
     spec:
-  progressDeadlineSeconds: 1800
       serviceAccountName: {{ .Release.Name }}-sa
       containers:
       - name: inference-server
