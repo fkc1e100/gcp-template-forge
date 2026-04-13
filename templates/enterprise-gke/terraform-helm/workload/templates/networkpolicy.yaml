@@ -35,7 +35,7 @@ spec:
               name: default
       ports:
         - protocol: TCP
-          port: {{ .Values.service.port }}
+          port: {{ .Values.service.targetPort }}
   egress:
     - to:
         - namespaceSelector: {}
