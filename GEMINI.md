@@ -1214,6 +1214,24 @@ Format: `- **[area]** symptom → fix. (root cause)`
       port: 8000
   ```
 
+- **`provider "helm"` with computed cluster endpoint fails on fresh create** — configuring `provider "helm" { kubernetes { host = "https://${google_container_cluster.X.endpoint}" } }` works when the cluster already exists in state (endpoint is known from refresh), but fails with "invalid configuration: no configuration has been provided" when Terraform is creating the cluster from scratch. At plan time, `endpoint` is `(known after apply)` — an unknown value. The helm provider receives an empty host and throws the error. This happens on every CI run after a `terraform destroy` (which runs after every successful validation). **Fix: use a `null_resource` to configure kubectl after cluster creation, and configure the helm provider without an explicit kubernetes block:**
+  ```hcl
+  provider "helm" {}  # Uses ~/.kube/config set by null_resource below
+
+  resource "null_resource" "cluster_credentials" {
+    depends_on = [google_container_node_pool.primary_nodes]
+    provisioner "local-exec" {
+      command = "gcloud container clusters get-credentials ${google_container_cluster.X.name} --region ${var.region} --project ${var.project_id}"
+    }
+  }
+
+  resource "helm_release" "workload" {
+    depends_on = [null_resource.cluster_credentials]
+    # ... rest unchanged
+  }
+  ```
+  Remove `data "google_client_config" "default"` if it was only used by the helm provider block.
+
 - **`binary_authorization { evaluation_mode = "PROJECT_SINGLETON_POLICY_ENFORCE" }`** causes silent cluster provisioning failure → Kubernetes cluster unreachable / empty endpoint in helm provider. `PROJECT_SINGLETON_POLICY_ENFORCE` requires a pre-existing Binary Authorization policy at the GCP project level. If no policy exists, GKE silently fails to expose the cluster endpoint, and the `provider "helm" { kubernetes { host = ... } }` block receives an empty string, producing "invalid configuration: no configuration has been provided". Fix: set `evaluation_mode = "DISABLED"` in templates. If Binary Authorization is a template requirement, document that the prerequisite policy must be created out-of-band before CI can pass.
 
 - **Helm provider "Kubernetes cluster unreachable" when cluster creation fails** — if `terraform apply` creates the cluster but a downstream error (quota, API not enabled, Binary Authorization rejection) causes the apply to partially fail, the `provider "helm"` block receives an empty `host` from the not-yet-provisioned cluster and reports "invalid configuration: no configuration has been provided". This is a secondary symptom — the root cause is always a cluster creation failure. Diagnose with `terraform show | grep endpoint` — if empty, the cluster did not fully provision. Fix the cluster provisioning error first; the helm provider error resolves automatically.
