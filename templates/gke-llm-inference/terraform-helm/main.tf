@@ -10,14 +10,7 @@ provider "google-beta" {
 
 data "google_client_config" "default" {}
 
-provider "helm" {
-  kubernetes {
-    host                   = "https://${google_container_cluster.main.endpoint}"
-    token                  = data.google_client_config.default.access_token
-    cluster_ca_certificate = base64decode(google_container_cluster.main.master_auth[0].cluster_ca_certificate)
-  }
-}
-
+# VPC Network
 resource "google_compute_network" "main" {
   name                    = var.network_name
   auto_create_subnetworks = false
@@ -151,14 +144,14 @@ resource "google_storage_bucket_iam_member" "workload_reader" {
   count  = var.create_workload_sa ? 1 : 0
   bucket = google_storage_bucket.weights.name
   role   = "roles/storage.objectViewer"
-  member = "serviceAccount:${local.workload_sa_email}"
+  member = "serviceAccount:${local_workload_sa_email}"
 }
 
 resource "google_service_account_iam_member" "workload_identity_binding" {
   count              = var.create_workload_sa ? 1 : 0
   service_account_id = join("", google_service_account.workload_sa.*.name)
   role               = "roles/iam.workloadIdentityUser"
-  member             = "serviceAccount:${var.project_id}.svc.id.goog[default/${helm_release.release.name}-sa]"
+  member             = "serviceAccount:${var.project_id}.svc.id.goog[default/release-sa]"
 }
 
 resource "null_resource" "stage_model_weights" {
@@ -188,23 +181,26 @@ except Exception as e:
   depends_on = [google_storage_bucket.weights]
 }
 
-resource "helm_release" "release" {
-  wait          = false
-  wait_for_jobs = false
-  timeout       = 3600
-  name          = "release"
-  chart         = "${path.module}/workload"
-  namespace     = "default"
-
-  set {
-    name  = "bucketName"
-    value = google_storage_bucket.weights.name
-  }
-
-  set {
-    name  = "serviceAccountEmail"
-    value = local.workload_sa_email
-  }
-
+# Fetch cluster credentials then deploy the workload via helm CLI.
+# The Terraform helm provider cannot be used when the cluster is created in the
+# same apply: the provider initialises at plan time (before any resources exist)
+# and fails with "invalid configuration" when no kubeconfig is present.
+resource "null_resource" "deploy_workload" {
   depends_on = [google_container_node_pool.gpu_pool, google_container_node_pool.cpu_pool, null_resource.stage_model_weights]
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      gcloud container clusters get-credentials ${google_container_cluster.main.name} \
+        --region ${var.region} --project ${var.project_id}
+      helm upgrade --install release ${path.module}/workload \
+        --namespace default --create-namespace --wait --timeout 60m \
+        --set bucketName=${google_storage_bucket.weights.name} \
+        --set serviceAccountEmail=${local.workload_sa_email}
+    EOT
+  }
+
+  provisioner "local-exec" {
+    when    = destroy
+    command = "helm uninstall release --namespace default --ignore-not-found || true"
+  }
 }
