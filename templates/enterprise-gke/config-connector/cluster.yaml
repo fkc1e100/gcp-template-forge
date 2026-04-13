@@ -55,7 +55,7 @@ spec:
       enabled: true
   securityPostureConfig:
     mode: BASIC
-    vulnerabilityMode: VULNERABILITY_ENTERPRISE
+    vulnerabilityMode: VULNERABILITY_BASIC
   releaseChannel:
     channel: REGULAR
 # KCC validation trigger
