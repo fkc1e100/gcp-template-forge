@@ -119,7 +119,7 @@ jobs:
                   CREATE_EPOCH=$(date -d "$CREATE_TIME" +%s 2>/dev/null || echo 0)
                   NOW=$(date -u +%s)
                   AGE_S=$(( NOW - CREATE_EPOCH ))
-                  if true; then
+                  if [ "$AGE_S" -gt 7200 ]; then
                     echo "  REMOVING stale lock: $LOCK_PATH (age ${AGE_S}s)"
                     gsutil rm "$LOCK_PATH" || true
                   else
