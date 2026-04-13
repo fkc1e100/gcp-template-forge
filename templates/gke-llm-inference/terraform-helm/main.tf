@@ -167,8 +167,8 @@ resource "null_resource" "stage_model_weights" {
       # Only download if bucket is empty
       COUNT=$(gsutil ls gs://${google_storage_bucket.weights.name}/google/gemma-2-2b-it/ 2>/dev/null | wc -l || echo "0")
       if [ "$COUNT" -eq 0 ]; then
-        pip install huggingface_hub --quiet 2>/dev/null || true
-        export HF_TOKEN=$(gcloud secrets versions access latest --secret="huggingface-token" --project="gca-gke-2025" 2>/dev/null || echo "")
+        pip install huggingface_hub --quiet 2>/dev/null || pip3 install huggingface_hub --quiet 2>/dev/null || true
+        export HF_TOKEN=$(gcloud secrets versions access latest --secret="huggingface-token" --project="${var.project_id}" 2>/dev/null || echo "")
         python3 -c "
 import os
 from huggingface_hub import snapshot_download
@@ -183,17 +183,14 @@ except Exception as e:
 " && gsutil -m cp -r /tmp/model/* gs://${google_storage_bucket.weights.name}/google/gemma-2-2b-it/
       fi
     EOT
-    environment = {
-      HF_TOKEN = "" # Token is fetched via gcloud in the command
-    }
   }
 
   depends_on = [google_storage_bucket.weights]
 }
 
 resource "helm_release" "release" {
-  wait          = true
-  wait_for_jobs = true
+  wait          = false
+  wait_for_jobs = false
   timeout       = 3600
   name          = "release"
   chart         = "${path.module}/workload"
