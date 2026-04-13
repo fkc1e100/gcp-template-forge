@@ -1,7 +1,7 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerCluster
 metadata:
-  name: gke-llm-inference-kcc
+  name: gke-llm-inf-kcc
   namespace: forge-management
   labels:
     template: gke-llm-inference
@@ -24,12 +24,12 @@ spec:
       enabled: true
   securityPostureConfig:
     mode: BASIC
-    vulnerabilityMode: VULNERABILITY_ENTERPRISE
+    vulnerabilityMode: VULNERABILITY_BASIC
 ---
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
 metadata:
-  name: cpu-pool-kcc
+  name: cpu-pool-kcc-v2
   namespace: forge-management
   labels:
     template: gke-llm-inference
@@ -37,7 +37,7 @@ metadata:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   clusterRef:
-    name: gke-llm-inference-kcc
+    name: gke-llm-inf-kcc
   location: us-central1
   nodeCount: 1
   nodeConfig:
@@ -49,7 +49,7 @@ spec:
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
 metadata:
-  name: gpu-pool-kcc
+  name: gpu-pool-kcc-v2
   namespace: forge-management
   labels:
     template: gke-llm-inference
@@ -57,7 +57,7 @@ metadata:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   clusterRef:
-    name: gke-llm-inference-kcc
+    name: gke-llm-inf-kcc
   location: us-central1
   nodeLocations:
     - us-central1-c

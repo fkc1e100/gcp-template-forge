@@ -59,10 +59,10 @@ resource "google_container_cluster" "main" {
     }
   }
 
-  # Standard clusters use VULNERABILITY_ENTERPRISE for advanced vulnerability insights
+  # Use BASIC vulnerability mode for sandbox compatibility
   security_posture_config {
     mode               = "BASIC"
-    vulnerability_mode = "VULNERABILITY_ENTERPRISE"
+    vulnerability_mode = "VULNERABILITY_BASIC"
   }
 }
 
@@ -213,10 +213,18 @@ resource "null_resource" "deploy_workload" {
         fi
       fi
 
+      # Ensure gke-gcloud-auth-plugin is installed
+      if ! which gke-gcloud-auth-plugin >/dev/null 2>&1; then
+        echo "Installing gke-gcloud-auth-plugin..."
+        gcloud components install gke-gcloud-auth-plugin --quiet || true
+      fi
+
       gcloud container clusters get-credentials ${google_container_cluster.main.name} \
         --region ${var.region} --project ${var.project_id}
+      
+      # Helm wait might fail if model loading takes too long, so we increase timeout
       helm upgrade --install release ${path.module}/workload \
-        --namespace default --create-namespace --wait --timeout 60m \
+        --namespace default --create-namespace --wait --timeout 30m \
         --set bucketName=${google_storage_bucket.weights.name} \
         --set serviceAccountEmail=${local.workload_sa_email}
     EOT

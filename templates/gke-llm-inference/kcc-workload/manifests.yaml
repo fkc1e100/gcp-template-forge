@@ -4,7 +4,7 @@ metadata:
   name: vllm-sa
   namespace: default
   annotations:
-    iam.gke.io/gcp-service-account: gke-llm-inference-kcc-sa@gca-gke-2025.iam.gserviceaccount.com
+    iam.gke.io/gcp-service-account: gke-llm-inf-kcc-sa@gca-gke-2025.iam.gserviceaccount.com
 ---
 apiVersion: batch/v1
 kind: Job

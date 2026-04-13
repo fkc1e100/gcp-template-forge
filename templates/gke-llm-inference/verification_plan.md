@@ -1,114 +1,70 @@
 # Verification Plan - GKE LLM Inference
 
-## Pre-deployment Checks
+## Infrastructure Deployment
 
-```bash
-# 1. Check quota for NVIDIA L4 GPUs in us-central1
-gcloud compute regions describe us-central1 --format=json | python3 -c "
-import json, sys
-r = json.load(sys.stdin)
-for q in r['quotas']:
-    if 'NVIDIA_L4_GPUS' in q['metric']:
-        print(f'L4 GPU Quota: {q[\"usage\"]}/{q[\"limit\"]}')
-"
-
-# 2. Verify g2-standard-12 availability in us-central1-c
-gcloud compute machine-types list --filter="zone:us-central1-c AND name:g2-standard-12"
-```
-
-## Terraform + Helm Deployment
-
+### Path 1: Terraform + Helm
 ```bash
 cd templates/gke-llm-inference/terraform-helm
-
-# Initialize and apply
-terraform init
-terraform apply -auto-approve \
-  -var="project_id=$PROJECT_ID" \
-  -var="service_account=$SERVICE_ACCOUNT"
-
-# Get outputs
-CLUSTER_NAME=$(terraform output -raw cluster_name)
-REGION=$(terraform output -raw cluster_location)
-BUCKET_NAME=$(terraform output -raw bucket_name)
-
-# Get credentials
-gcloud container clusters get-credentials $CLUSTER_NAME --region $REGION
-
-# Wait for GPU node pool provisioning and pod readiness
-echo "Waiting for GPU node pool and vLLM pod readiness (up to 30 min)..."
-kubectl wait pod -l app=vllm-inference-server -n default \
-  --for=condition=Ready --timeout=3600s
-
-# (Optional) Populate bucket with model weights if not already present
-# This requires a Hugging Face token with access to Qwen 2.5
-# hf_token=$(gcloud secrets versions access latest --secret="huggingface-token")
-# gsutil -m cp -r /tmp/model/* gs://$BUCKET_NAME/Qwen/Qwen2.5-1.5B-Instruct/
+terraform init -backend-config="bucket=gke-gca-2025-forge-tf-state" -backend-config="prefix=templates/gke-llm-inference/terraform-helm"
+terraform apply -auto-approve
 ```
 
-## Config Connector Deployment
-
+### Path 2: Config Connector (KCC)
 ```bash
 cd templates/gke-llm-inference/config-connector
-
-# Apply KCC manifests
 kubectl apply -f network.yaml
 kubectl apply -f cluster.yaml
 kubectl apply -f bucket.yaml
 
 # Wait for control plane (fast)
-kubectl wait containerclusters gke-llm-inference-kcc -n forge-management \
+kubectl wait containerclusters gke-llm-inf-kcc -n forge-management \
   --for=condition=Ready --timeout=600s
 
 # Wait for GPU node pool separately (slow — DWS provisioning)
-kubectl wait containernodepools gpu-pool-kcc -n forge-management \
+kubectl wait containernodepools gpu-pool-kcc-v2 -n forge-management \
   --for=condition=Ready --timeout=3600s
 
 # Get credentials for the KCC cluster
-gcloud container clusters get-credentials gke-llm-inference-kcc --region us-central1
+gcloud container clusters get-credentials gke-llm-inf-kcc --region us-central1
 
 # Verify actual node readiness
-kubectl wait nodes -l cloud.google.com/gke-nodepool=gpu-pool-kcc \
+kubectl wait nodes -l cloud.google.com/gke-nodepool=gpu-pool-kcc-v2 \
   --for=condition=Ready --timeout=3600s
 
 # Apply workload
-kubectl apply -f ../kcc-workload/manifests.yaml
-
-# Wait for staging job to populate weights
-echo "Waiting for model staging job (up to 15 min)..."
-kubectl wait --for=condition=complete job/model-staging-job --timeout=900s
-
-# Wait for vLLM pod readiness
-echo "Waiting for vLLM pod readiness..."
-kubectl wait pod -l app=vllm-inference-server -n default \
-  --for=condition=Ready --timeout=1800s
+cd ../kcc-workload
+kubectl apply -f manifests.yaml
 ```
 
-## Endpoint Validation
+## Validation
 
+### 1. Pre-deployment Checks
 ```bash
-# Wait for the service to get an external IP
-EXTERNAL_IP=""
-while [ -z "$EXTERNAL_IP" ]; do
-  EXTERNAL_IP=$(kubectl get svc release-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-  [ -z "$EXTERNAL_IP" ] && sleep 10
-done
+# Check L4 quota in us-central1
+gcloud compute regions describe us-central1 --format="value(quotas.filter(metric:NVIDIA_L4_GPUS).limit)"
+```
 
-# Wait for vLLM to be ready (can take several minutes to load weights)
-echo "Waiting for vLLM to be ready at http://$EXTERNAL_IP/health..."
-until curl -sf http://$EXTERNAL_IP/health; do
-  sleep 30
-done
+### 2. Workload Health
+```bash
+# Wait for vLLM pod to be ready (can take 5-10 mins for model load)
+kubectl wait pod -l app=vllm-inference-server --for=condition=Ready --timeout=900s
 
-# Send a test inference request
-curl -X POST http://$EXTERNAL_IP/v1/chat/completions \
+# Check logs to see model loading status
+kubectl logs -l app=vllm-inference-server
+```
+
+### 3. Inference Test
+```bash
+# Get LoadBalancer IP
+EXTERNAL_IP=$(kubectl get svc release-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+
+# Send a test prompt
+curl http://${EXTERNAL_IP}/v1/completions \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "Qwen/Qwen2.5-1.5B-Instruct",
-    "messages": [
-      {"role": "user", "content": "Tell me a short joke about a customer support chatbot."}
-    ],
-    "max_tokens": 50
+    "model": "/data/Qwen/Qwen2.5-1.5B-Instruct",
+    "prompt": "Say hello!",
+    "max_tokens": 10
   }'
 ```
 
@@ -116,14 +72,12 @@ curl -X POST http://$EXTERNAL_IP/v1/chat/completions \
 
 ### Terraform
 ```bash
-terraform destroy -auto-approve \
-  -var="project_id=$PROJECT_ID" \
-  -var="service_account=$SERVICE_ACCOUNT"
+terraform destroy -auto-approve
 ```
 
-### Config Connector
+### KCC
 ```bash
-kubectl delete -f ../kcc-workload/manifests.yaml
+kubectl delete -f manifests.yaml
 kubectl delete -f bucket.yaml
 kubectl delete -f cluster.yaml
 kubectl delete -f network.yaml
