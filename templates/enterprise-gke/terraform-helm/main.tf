@@ -75,7 +75,7 @@ resource "google_container_cluster" "enterprise_cluster" {
   deletion_protection = false
 
   resource_labels = {
-    project = "gcp-template-forge"
+    project  = "gcp-template-forge"
     template = "enterprise-gke"
   }
 
