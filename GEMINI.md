@@ -474,11 +474,16 @@ Use spot/preemptible for all sandbox validation clusters to minimise cost.
 |---|---|---|---|
 | General GKE | `e2-standard-4` | ✓ | Default choice |
 | Memory intensive | `n2-highmem-4` | ✓ | Databases, caches |
-| GPU inference | `g2-standard-12` (L4) | **DWS** | 16 L4s available — see [GPU / AI / ML section](#gpu--ai--ml-templates) |
 | GPU inference | `n1-standard-4` (T4) | ✓ | 8 T4s available |
-| GPU training | `a2-highgpu-1g` (A100 40GB) | — | Use DWS + Kueue — see [GPU / AI / ML section](#gpu--ai--ml-templates) |
-| **❌ DO NOT USE** | `a3-highgpu` (A100 80GB) | — | **Quota = 0, will fail** |
-| **❌ DO NOT USE** | `a3-mega` (H100) | — | **Quota = 0, will fail** |
+| GPU inference/serving | `g2-standard-12` (L4) | **DWS** | 16 L4s available — see [GPU / AI / ML section](#gpu--ai--ml-templates) |
+| GPU training (A100 40GB) | `a2-highgpu-1g` | — | 16 available. Use DWS+Kueue |
+| GPU training (A100 80GB) | `a2-ultragpu-1g` | — | Quota = 0. **Build with DWS+Kueue** — queues until capacity is allocated |
+| GPU training/inference (H100 80GB SXM) | `a3-highgpu-8g` | — | Quota = 0. **Build with DWS+Kueue** — 8× H100 per node |
+| GPU training/inference (H100 SXM5 + NVLink) | `a3-megagpu-8g` | — | Quota = 0. **Build with DWS+Kueue** — highest-bandwidth H100 option |
+| GPU training/inference (H200 141GB) | `a3-ultragpu-8g` | — | Quota = 0. **Build with DWS+Kueue** — 141GB HBM3e per GPU |
+| GPU training/inference (GB200 NVL) | `a4-highgpu-8g` | — | Quota = 0. **Build with DWS+Kueue** — frontier training hardware |
+
+**Quota = 0 does not mean "do not build."** Use DWS+Kueue for all A2/A3/A4 hardware. The template architecture is valid and the DWS queue activates when GCP allocates capacity. For A3/A4 templates, CI validation may require human monitoring and could take days — document this in `verification_plan.md` and add a CI step that detects DWS pending state and posts an issue comment rather than timing out.
 
 ---
 
@@ -611,7 +616,7 @@ gcloud container ai profiles manifests create \
 4. Use the generated manifests as the baseline for the template's `workload/` directory — **do not write GPU/model-server configs from scratch**.
 5. **Build the node pool to match the accelerator type and replica count from the generated manifests.** The manifest output drives the cluster spec, not prior assumption.
 
-**Note on quota**: H100 quota is 0 in this sandbox — do not request H100. If the benchmark output recommends H100, select the next best available option from the benchmark list.
+**Note on quota**: H100, H200, and GB200 quota is currently 0. If the benchmark output recommends these accelerators, you have two options: (1) select the next best available option (L4 or T4) for immediate CI validation, or (2) build the template targeting the recommended hardware with DWS+Kueue — the architecture will be correct and will activate when quota is allocated. Document the expected hardware and the DWS wait expectation in `verification_plan.md`.
 
 **Required README section for inference templates**: Every inference template README must include a `## Performance & Cost Estimates` section populated from the benchmark output:
 
