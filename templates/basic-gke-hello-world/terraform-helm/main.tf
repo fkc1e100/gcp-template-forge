@@ -80,7 +80,7 @@ resource "google_container_cluster" "primary" {
 
 # Hello World workload via Helm
 resource "helm_release" "hello_world" {
-  name             = "hello-world"
+  name             = "basic-gke"
   chart            = "${path.module}/workload"
   namespace        = "hello-world"
   create_namespace = true

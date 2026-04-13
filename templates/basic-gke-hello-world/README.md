@@ -28,15 +28,18 @@ Provisions VPC + subnet + GKE Autopilot, then deploys the `hello-world` Helm cha
 kubectl apply -n <KCC_NAMESPACE> -f config-connector/
 ```
 
-Creates `ComputeNetwork`, `ComputeSubnetwork`, and `ContainerCluster` (Autopilot mode) as KCC resources managed by the Config Connector operator.
+Creates `ComputeNetwork`, `ComputeSubnetwork`, and `ContainerCluster` (Autopilot mode) as KCC resources managed by the Config Connector operator. Workload is deployed and verified via the `validate.sh` script.
 
 ## Resource Naming
 
-| Resource | Name |
-|---|---|
-| VPC | `basic-gke-vpc` |
-| Subnet | `basic-gke-subnet` |
-| GKE cluster | `basic-gke` |
+| Resource | Path | Name |
+|---|---|---|
+| VPC | TF | `basic-gke-tf-vpc` |
+| VPC | KCC | `basic-gke-kcc-vpc` |
+| Subnet | TF | `basic-gke-tf-subnet` |
+| Subnet | KCC | `basic-gke-kcc-subnet` |
+| GKE cluster | TF | `basic-gke-tf` |
+| GKE cluster | KCC | `basic-gke-kcc` |
 
 ## Performance & Cost Estimates
 
@@ -65,13 +68,13 @@ kubectl delete -n <KCC_NAMESPACE> -f config-connector/ --wait=true
 
 |  | Terraform + Helm | Config Connector |
 | --- | --- | --- |
-| **Status** | success | skipped |
-| **Date** | 2026-04-11 | 2026-04-11 |
-| **Duration** | 9m 39s | n/a |
+| **Status** | success | pending |
+| **Date** | 2026-04-11 | |
+| **Duration** | 9m 39s | |
 | **Region** | us-central1 | us-central1 (KCC cluster) |
 | **Zones** | us-central1-a,us-central1-b,us-central1-c,us-central1-f | forge-management namespace |
-| **Cluster** | basic-gke-tf | krmapihost-kcc-instance |
+| **Cluster** | basic-gke-tf | basic-gke-kcc |
 | **Agent tokens** | not recorded | (shared session) |
 | **Estimated cost** | - | -- |
-| **Commit** | 2c375256 | 2c375256 |
+| **Commit** | 2c375256 | |
 
