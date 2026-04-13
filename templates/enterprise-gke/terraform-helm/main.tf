@@ -170,26 +170,29 @@ resource "google_container_node_pool" "primary_nodes" {
   }
 }
 
-# Configure kubectl after the cluster is ready; helm provider uses this kubeconfig.
-resource "null_resource" "cluster_credentials" {
-  depends_on = [google_container_node_pool.primary_nodes]
+data "google_client_config" "default" {}
 
-  # Fetch cluster credentials then deploy the workload via helm CLI.
-  # The Terraform helm provider cannot be used when the cluster is created in the
-  # same apply: the provider initialises at plan time (before any resources exist)
-  # and fails with "invalid configuration" when no kubeconfig is present.
-  provisioner "local-exec" {
-    command = <<-EOT
-      gcloud container clusters get-credentials ${google_container_cluster.enterprise_cluster.name} \
-        --region ${var.region} --project ${var.project_id}
-      helm upgrade --install enterprise-gke ${path.module}/workload \
-        --namespace enterprise-gke --create-namespace --wait --timeout 10m \
-        --set secrets.enabled=false
-    EOT
+provider "helm" {
+  kubernetes {
+    host                   = "https://${google_container_cluster.enterprise_cluster.endpoint}"
+    token                  = data.google_client_config.default.access_token
+    cluster_ca_certificate = base64decode(google_container_cluster.enterprise_cluster.master_auth[0].cluster_ca_certificate)
   }
+}
 
-  provisioner "local-exec" {
-    when    = destroy
-    command = "helm uninstall enterprise-gke --namespace enterprise-gke --ignore-not-found || true"
+resource "helm_release" "workload" {
+  name             = "enterprise-gke"
+  chart            = "${path.module}/workload"
+  namespace        = "enterprise-gke"
+  create_namespace = true
+  depends_on       = [google_container_node_pool.primary_nodes]
+
+  values = [
+    file("${path.module}/workload/values.yaml")
+  ]
+
+  set {
+    name  = "secrets.enabled"
+    value = "false"
   }
 }
