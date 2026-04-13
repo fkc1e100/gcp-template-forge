@@ -171,8 +171,8 @@ resource "google_container_node_pool" "primary_nodes" {
 }
 
 data "google_container_cluster" "enterprise_cluster" {
-  name     = google_container_cluster.enterprise_cluster.name
-  location = var.region
+  name       = google_container_cluster.enterprise_cluster.name
+  location   = var.region
   depends_on = [google_container_node_pool.primary_nodes]
 }
 
