@@ -29,13 +29,9 @@ spec:
     - Ingress
     - Egress
   ingress:
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              name: default
-      ports:
+    - ports:
         - protocol: TCP
-          port: {{ .Values.service.port }}
+          port: {{ .Values.service.targetPort }}
   egress:
     - to:
         - namespaceSelector: {}

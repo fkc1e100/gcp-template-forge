@@ -18,6 +18,7 @@ metadata:
   name: enterprise-gke-kcc-vpc
   namespace: forge-management
   labels:
+    project: gcp-template-forge
     template: enterprise-gke
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
@@ -30,17 +31,18 @@ metadata:
   name: enterprise-gke-kcc-subnet
   namespace: forge-management
   labels:
+    project: gcp-template-forge
     template: enterprise-gke
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
-  ipCidrRange: 10.6.0.0/20
+  ipCidrRange: 10.16.0.0/20
   region: us-central1
   networkRef:
     name: enterprise-gke-kcc-vpc
   privateIpGoogleAccess: true
   secondaryIpRange:
     - rangeName: pods
-      ipCidrRange: 10.16.0.0/16
+      ipCidrRange: 10.20.0.0/14
     - rangeName: services
-      ipCidrRange: 172.16.0.0/20
+      ipCidrRange: 10.24.0.0/20

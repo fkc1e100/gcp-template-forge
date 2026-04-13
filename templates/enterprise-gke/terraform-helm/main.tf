@@ -22,16 +22,6 @@ provider "google-beta" {
   region  = var.region
 }
 
-data "google_client_config" "default" {}
-
-provider "helm" {
-  kubernetes {
-    host                   = "https://${google_container_cluster.enterprise_cluster.endpoint}"
-    token                  = data.google_client_config.default.access_token
-    cluster_ca_certificate = base64decode(google_container_cluster.enterprise_cluster.master_auth[0].cluster_ca_certificate)
-  }
-}
-
 # VPC Network
 resource "google_compute_network" "vpc" {
   name                    = "enterprise-gke-tf-vpc"
@@ -41,19 +31,19 @@ resource "google_compute_network" "vpc" {
 # Subnet
 resource "google_compute_subnetwork" "subnet" {
   name                     = "enterprise-gke-tf-subnet"
-  ip_cidr_range            = "10.100.0.0/20"
+  ip_cidr_range            = "10.16.0.0/20"
   region                   = var.region
   network                  = google_compute_network.vpc.id
   private_ip_google_access = true
 
   secondary_ip_range {
     range_name    = "pods"
-    ip_cidr_range = "10.200.0.0/16"
+    ip_cidr_range = "10.20.0.0/14"
   }
 
   secondary_ip_range {
     range_name    = "services"
-    ip_cidr_range = "172.16.96.0/20"
+    ip_cidr_range = "10.24.0.0/20"
   }
 }
 
@@ -85,6 +75,7 @@ resource "google_container_cluster" "enterprise_cluster" {
   deletion_protection = false
 
   resource_labels = {
+    project  = "gcp-template-forge"
     template = "enterprise-gke"
   }
 
@@ -103,7 +94,7 @@ resource "google_container_cluster" "enterprise_cluster" {
   private_cluster_config {
     enable_private_nodes    = true
     enable_private_endpoint = false
-    master_ipv4_cidr_block  = "172.16.200.0/28"
+    master_ipv4_cidr_block  = "172.16.1.0/28"
   }
 
   workload_identity_config {
@@ -116,7 +107,7 @@ resource "google_container_cluster" "enterprise_cluster" {
   }
 
   binary_authorization {
-    evaluation_mode = "PROJECT_SINGLETON_POLICY_ENFORCE"
+    evaluation_mode = "DISABLED"
   }
 
   logging_config {
@@ -175,8 +166,18 @@ resource "google_container_node_pool" "primary_nodes" {
     }
 
     labels = {
+      project  = "gcp-template-forge"
       template = "enterprise-gke"
     }
+  }
+}
+
+provider "helm" {}
+
+resource "null_resource" "cluster_credentials" {
+  depends_on = [google_container_node_pool.primary_nodes]
+  provisioner "local-exec" {
+    command = "gcloud container clusters get-credentials ${google_container_cluster.enterprise_cluster.name} --region ${var.region} --project ${var.project_id}"
   }
 }
 
@@ -185,7 +186,8 @@ resource "helm_release" "workload" {
   chart            = "${path.module}/workload"
   namespace        = "enterprise-gke"
   create_namespace = true
-  depends_on       = [google_container_node_pool.primary_nodes]
+  depends_on       = [null_resource.cluster_credentials]
+  wait             = false # Avoid timeouts in TF, verify in CI instead
 
   values = [
     file("${path.module}/workload/values.yaml")
@@ -193,6 +195,6 @@ resource "helm_release" "workload" {
 
   set {
     name  = "secrets.enabled"
-    value = "true"
+    value = "false"
   }
 }

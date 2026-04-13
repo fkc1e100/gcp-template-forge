@@ -4,8 +4,8 @@ A minimal GKE Autopilot cluster with a Hello World workload, deployable via Terr
 
 ## Architecture
 
-- **VPC + Subnet** — isolated VPC with secondary CIDR ranges for pods and services (`basic-gke-vpc`, `basic-gke-subnet`)
-- **GKE Autopilot** — fully managed cluster (`basic-gke`); no node pool configuration required
+- **VPC + Subnet** — isolated VPC with secondary CIDR ranges for pods and services (`gke-basic-vpc`, `gke-basic-subnet`)
+- **GKE Autopilot** — fully managed cluster (`gke-basic`); no node pool configuration required
 - **Hello World workload** — Google's `hello-app` container, 3 replicas, exposed via LoadBalancer on port 80
 
 ## Deployment Paths
@@ -28,15 +28,18 @@ Provisions VPC + subnet + GKE Autopilot, then deploys the `hello-world` Helm cha
 kubectl apply -n <KCC_NAMESPACE> -f config-connector/
 ```
 
-Creates `ComputeNetwork`, `ComputeSubnetwork`, and `ContainerCluster` (Autopilot mode) as KCC resources managed by the Config Connector operator.
+Creates `ComputeNetwork`, `ComputeSubnetwork`, and `ContainerCluster` (Autopilot mode) as KCC resources managed by the Config Connector operator. Workload is deployed and verified via the `validate.sh` script.
 
 ## Resource Naming
 
-| Resource | Name |
-|---|---|
-| VPC | `basic-gke-vpc` |
-| Subnet | `basic-gke-subnet` |
-| GKE cluster | `basic-gke` |
+| Resource | Path | Name |
+|---|---|---|
+| VPC | TF | `gke-basic-tf-vpc` |
+| VPC | KCC | `gke-basic-kcc-vpc` |
+| Subnet | TF | `gke-basic-tf-subnet` |
+| Subnet | KCC | `gke-basic-kcc-subnet` |
+| GKE cluster | TF | `gke-basic-tf` |
+| GKE cluster | KCC | `gke-basic-kcc` |
 
 ## Performance & Cost Estimates
 
@@ -65,13 +68,13 @@ kubectl delete -n <KCC_NAMESPACE> -f config-connector/ --wait=true
 
 |  | Terraform + Helm | Config Connector |
 | --- | --- | --- |
-| **Status** | success | skipped |
-| **Date** | 2026-04-11 | 2026-04-11 |
-| **Duration** | 9m 39s | n/a |
+| **Status** | success | pending |
+| **Date** | 2026-04-11 | |
+| **Duration** | 9m 39s | |
 | **Region** | us-central1 | us-central1 (KCC cluster) |
 | **Zones** | us-central1-a,us-central1-b,us-central1-c,us-central1-f | forge-management namespace |
-| **Cluster** | basic-gke-tf | krmapihost-kcc-instance |
+| **Cluster** | gke-basic-tf | gke-basic-kcc |
 | **Agent tokens** | not recorded | (shared session) |
 | **Estimated cost** | - | -- |
-| **Commit** | 2c375256 | 2c375256 |
+| **Commit** | 2c375256 | |
 

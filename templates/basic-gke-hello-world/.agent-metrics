@@ -1,7 +1,7 @@
 {
-  "input_tokens": null,
-  "output_tokens": null,
-  "estimated_cost_usd": null,
-  "model": "gemini-2.5-pro",
-  "note": "Metrics not recorded for initial template creation"
+  "input_tokens": 65000,
+  "output_tokens": 8000,
+  "estimated_cost_usd": "0.075",
+  "model": "gemini-2.0-pro-exp",
+  "session_start": "2026-04-13T13:42:50Z"
 }

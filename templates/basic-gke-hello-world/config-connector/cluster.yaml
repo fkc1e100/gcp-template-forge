@@ -15,22 +15,27 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerCluster
 metadata:
-  name: basic-gke-kcc
+  name: gke-basic-kcc-v2
   namespace: forge-management
   labels:
+    project: gcp-template-forge
     template: basic-gke-hello-world
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
+    cnrm.cloud.google.com/remove-default-node-pool: "true"
 spec:
   location: us-central1
-  enableAutopilot: true
+  # GKE Standard cluster — explicit node pool defined in nodepool.yaml
+  initialNodeCount: 1
   networkRef:
-    name: basic-gke-kcc-vpc
+    name: gke-basic-kcc-v2-vpc
   subnetworkRef:
-    name: basic-gke-kcc-subnet
+    name: gke-basic-kcc-v2-subnet
   ipAllocationPolicy:
     clusterSecondaryRangeName: pods
     servicesSecondaryRangeName: services
+  workloadIdentityConfig:
+    workloadPool: gca-gke-2025.svc.id.goog
   releaseChannel:
     channel: REGULAR
   securityPostureConfig:

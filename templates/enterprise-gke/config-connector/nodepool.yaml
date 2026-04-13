@@ -18,6 +18,7 @@ metadata:
   name: enterprise-gke-kcc-pool
   namespace: forge-management
   labels:
+    project: gcp-template-forge
     template: enterprise-gke
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
@@ -32,8 +33,6 @@ spec:
     diskSizeGb: 50
     diskType: pd-standard
     imageType: COS_CONTAINERD
-    serviceAccountRef:
-      external: forge-builder@gca-gke-2025.iam.gserviceaccount.com
     oauthScopes:
       - "https://www.googleapis.com/auth/cloud-platform"
     workloadMetadataConfig:
