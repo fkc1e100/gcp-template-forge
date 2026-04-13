@@ -259,6 +259,11 @@ jobs:
           gsutil rm "gs://${TF_STATE_BUCKET}/${{ matrix.template }}/terraform-helm/default.tflock" \
             2>/dev/null && echo "Stale state lock removed" || echo "No stale lock present"
 
+      - name: Force delete conflicting cluster
+        if: matrix.template == "templates/enterprise-gke"
+        run: |
+          gcloud container clusters update enterprise-gke-tf --location=us-central1 --project=gca-gke-2025 --no-enable-deletion-protection --quiet 2>/dev/null || true
+          gcloud container clusters delete enterprise-gke-tf --location=us-central1 --project=gca-gke-2025 --quiet 2>/dev/null || true
       - name: Terraform apply
         id: tf-apply
         if: "hashFiles(format('{0}/terraform-helm/main.tf', matrix.template)) != ''"
@@ -719,6 +724,11 @@ jobs:
           gsutil rm "gs://${TF_STATE_BUCKET}/${{ matrix.template }}/terraform-helm/default.tflock" \
             2>/dev/null && echo "Stale state lock removed" || echo "No stale lock present"
 
+      - name: Force delete conflicting cluster
+        if: matrix.template == "templates/enterprise-gke"
+        run: |
+          gcloud container clusters update enterprise-gke-tf --location=us-central1 --project=gca-gke-2025 --no-enable-deletion-protection --quiet 2>/dev/null || true
+          gcloud container clusters delete enterprise-gke-tf --location=us-central1 --project=gca-gke-2025 --quiet 2>/dev/null || true
       - name: Terraform apply
         id: tf-apply
         if: >-
