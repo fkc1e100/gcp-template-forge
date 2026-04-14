@@ -23,13 +23,12 @@ spec:
       serviceAccountName: {{ .Release.Name }}-sa
       initContainers:
       - name: model-loader
-        image: python:3.10-slim
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         command:
         - bash
         - -c
         - |
           set -e
-          pip install huggingface_hub --quiet
           python3 -c "
           import os
           from huggingface_hub import snapshot_download
