@@ -48,7 +48,7 @@ gcloud compute regions describe us-central1 --format="value(quotas.filter(metric
 ```bash
 # Wait for vLLM deployment to be ready (can take 15-20 mins for model load)
 kubectl wait deployment release-deployment --for=condition=Available --timeout=1800s
-```
+
 # Check logs to see model loading status
 kubectl logs -l app=vllm-inference-server
 ```
