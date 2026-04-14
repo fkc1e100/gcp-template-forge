@@ -155,15 +155,6 @@ resource "google_service_account_iam_member" "workload_identity_binding" {
 resource "null_resource" "stage_model_weights" {
   provisioner "local-exec" {
     command = <<-EOT
-      # Ensure we are authenticated
-      if [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
-        if grep -q "external_account" "$GOOGLE_APPLICATION_CREDENTIALS" 2>/dev/null; then
-          gcloud auth login --cred-file="$GOOGLE_APPLICATION_CREDENTIALS" --quiet
-        else
-          gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS" --quiet
-        fi
-      fi
-
       # Only download if bucket is empty
       COUNT=$(gcloud storage ls gs://${google_storage_bucket.weights.name}/Qwen/Qwen2.5-1.5B-Instruct/ 2>/dev/null | wc -l || echo "0")
       if [ "$$COUNT" -eq 0 ]; then
@@ -242,7 +233,12 @@ resource "null_resource" "deploy_workload" {
 
   provisioner "local-exec" {
     command = <<-EOT
-      gcloud container clusters get-credentials ${google_container_cluster.main.name} --region ${var.region} --project ${var.project_id}
+      export KUBECONFIG=/tmp/kubeconfig
+      echo "${google_container_cluster.main.master_auth[0].cluster_ca_certificate}" | base64 -d > /tmp/ca.crt
+      kubectl config set-cluster cluster --server="https://${google_container_cluster.main.endpoint}" --certificate-authority=/tmp/ca.crt --embed-certs=true
+      kubectl config set-credentials user --token=$(gcloud auth print-access-token)
+      kubectl config set-context context --cluster=cluster --user=user
+      kubectl config use-context context
       helm upgrade --install release ${path.module}/workload --wait --timeout 30m
     EOT
   }
