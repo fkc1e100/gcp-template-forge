@@ -154,6 +154,9 @@ resource "google_storage_bucket_iam_member" "workload_admin" {
 }
 
 resource "null_resource" "cluster_credentials" {
+  triggers = {
+    always_run = timestamp()
+  }
   depends_on = [google_container_node_pool.cpu_pool]
   provisioner "local-exec" {
     command = <<-EOT
