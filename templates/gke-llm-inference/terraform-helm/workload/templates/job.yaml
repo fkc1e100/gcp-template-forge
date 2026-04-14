@@ -1,0 +1,48 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-model-staging
+  labels:
+    app: vllm-model-staging
+spec:
+  template:
+    metadata:
+      labels:
+        app: vllm-model-staging
+      annotations:
+        gke-gcsfuse/volumes: "true"
+    spec:
+      serviceAccountName: {{ .Release.Name }}-sa
+      containers:
+      - name: stager
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        command:
+        - /bin/bash
+        - -c
+        - |
+          set -e
+          python3 -c "
+          import os
+          from huggingface_hub import snapshot_download
+          model_id = '{{ .Values.model.id }}'
+          bucket_path = '/data/' + model_id
+          
+          if not os.path.exists(bucket_path) or not os.listdir(bucket_path):
+              print(f'Bucket is empty or missing model, staging model weights for {model_id}...')
+              snapshot_download(model_id, local_dir=bucket_path)
+              print('Staging complete.')
+          else:
+              print(f'Weights for {model_id} already present in bucket.')
+          "
+        volumeMounts:
+        - mountPath: /data
+          name: gcs-fuse-csi-ephemeral
+      volumes:
+      - name: gcs-fuse-csi-ephemeral
+        csi:
+          driver: gcsfuse.csi.storage.gke.io
+          volumeAttributes:
+            bucketName: {{ .Values.model.bucketName }}
+            mountOptions: "implicit-dirs"
+      restartPolicy: OnFailure
+  backoffLimit: 2

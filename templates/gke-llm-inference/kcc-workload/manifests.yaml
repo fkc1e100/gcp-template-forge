@@ -1,0 +1,148 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vllm-sa
+  namespace: default
+  annotations:
+    iam.gke.io/gcp-service-account: gke-llm-inference-kcc-sa@gca-gke-2025.iam.gserviceaccount.com
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: model-staging-job
+  namespace: default
+spec:
+  template:
+    metadata:
+      annotations:
+        gke-gcsfuse/volumes: "true"
+    spec:
+      serviceAccountName: vllm-sa
+      containers:
+      - name: stager
+        image: vllm/vllm-openai:v0.7.2
+        command:
+        - /bin/bash
+        - -c
+        - |
+          set -e
+          python3 -c "
+          import os
+          from huggingface_hub import snapshot_download
+          model_id = 'Qwen/Qwen2.5-1.5B-Instruct'
+          bucket_path = '/data/' + model_id
+          
+          if not os.path.exists(bucket_path) or not os.listdir(bucket_path):
+              print(f'Bucket is empty or missing model, staging model weights for {model_id}...')
+              snapshot_download(model_id, local_dir=bucket_path)
+              print('Staging complete.')
+          else:
+              print(f'Weights for {model_id} already present in bucket.')
+          "
+        volumeMounts:
+        - mountPath: /data
+          name: gcs-fuse-csi-ephemeral
+      volumes:
+      - name: gcs-fuse-csi-ephemeral
+        csi:
+          driver: gcsfuse.csi.storage.gke.io
+          volumeAttributes:
+            bucketName: gke-llm-inference-kcc-weights
+            mountOptions: "implicit-dirs"
+      restartPolicy: OnFailure
+  backoffLimit: 2
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: release-deployment
+  namespace: default
+  labels:
+    app: vllm-inference-server
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: vllm-inference-server
+  template:
+    metadata:
+      labels:
+        app: vllm-inference-server
+      annotations:
+        gke-gcsfuse/volumes: "true"
+    spec:
+      serviceAccountName: vllm-sa
+      containers:
+      - name: inference-server
+        image: vllm/vllm-openai:v0.7.2
+        command:
+        - python3
+        - -m
+        - vllm.entrypoints.openai.api_server
+        args:
+        - --model=/data/Qwen/Qwen2.5-1.5B-Instruct
+        - --tensor-parallel-size=1
+        - --max-num-seqs=1024
+        ports:
+        - containerPort: 8000
+          name: http
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+          requests:
+            nvidia.com/gpu: 1
+        volumeMounts:
+        - mountPath: /dev/shm
+          name: dshm
+        - mountPath: /data
+          name: gcs-fuse-csi-ephemeral
+          readOnly: true
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 15
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          failureThreshold: 120
+      nodeSelector:
+        cloud.google.com/gke-accelerator: nvidia-l4
+      tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Exists"
+        effect: "NoSchedule"
+      volumes:
+      - name: dshm
+        emptyDir:
+          medium: Memory
+      - name: gcs-fuse-csi-ephemeral
+        csi:
+          driver: gcsfuse.csi.storage.gke.io
+          volumeAttributes:
+            bucketName: gke-llm-inference-kcc-weights
+            mountOptions: "implicit-dirs"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: release-service
+  namespace: default
+  labels:
+    app: vllm-inference-server
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 8000
+      protocol: TCP
+      name: http
+  selector:
+    app: vllm-inference-server
