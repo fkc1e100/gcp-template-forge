@@ -5,6 +5,8 @@ metadata:
   namespace: forge-management
   labels:
     template: gke-llm-inference
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   autoCreateSubnetworks: false
 ---
@@ -15,6 +17,8 @@ metadata:
   namespace: forge-management
   labels:
     template: gke-llm-inference
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   ipCidrRange: 10.32.0.0/20
   region: us-central1
@@ -22,7 +26,7 @@ spec:
     name: gke-llm-inference-kcc-vpc
   privateIpGoogleAccess: true
   secondaryIpRange:
-    - rangeName: pods
-      ipCidrRange: 10.36.0.0/14
-    - rangeName: services
-      ipCidrRange: 10.40.0.0/20
+  - rangeName: pods
+    ipCidrRange: 10.36.0.0/14
+  - rangeName: services
+    ipCidrRange: 10.40.0.0/20

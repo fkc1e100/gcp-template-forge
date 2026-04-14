@@ -6,7 +6,8 @@ metadata:
   labels:
     template: gke-llm-inference
   annotations:
-    cnrm.cloud.google.com/remove-default-node-pool: "true"
+    cnrm.cloud.google.com/remove-default-node-pool: 'true'
+    cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   location: us-central1
   initialNodeCount: 1
@@ -36,6 +37,8 @@ metadata:
   namespace: forge-management
   labels:
     template: gke-llm-inference
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   clusterRef:
     name: gke-llm-inference-kcc
@@ -47,7 +50,7 @@ spec:
     serviceAccountRef:
       name: gke-llm-inference-kcc-sa
     oauthScopes:
-      - https://www.googleapis.com/auth/cloud-platform
+    - https://www.googleapis.com/auth/cloud-platform
 ---
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
@@ -56,12 +59,14 @@ metadata:
   namespace: forge-management
   labels:
     template: gke-llm-inference
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   clusterRef:
     name: gke-llm-inference-kcc
   location: us-central1
   nodeLocations:
-    - us-central1-c
+  - us-central1-c
   autoscaling:
     minNodeCount: 0
     maxNodeCount: 1
@@ -73,9 +78,11 @@ spec:
     serviceAccountRef:
       name: gke-llm-inference-kcc-sa
     guestAccelerator:
-      - type: nvidia-l4
-        count: 1
+    - type: nvidia-l4
+      count: 1
     oauthScopes:
-      - https://www.googleapis.com/auth/cloud-platform
+    - https://www.googleapis.com/auth/cloud-platform
     workloadMetadataConfig:
       mode: GKE_METADATA
+  queuedProvisioning:
+    enabled: true

@@ -90,6 +90,10 @@ resource "google_container_node_pool" "gpu_pool" {
     max_node_count = 1
   }
 
+  queued_provisioning {
+    enabled = true
+  }
+
   node_config {
     machine_type = "g2-standard-12"
     spot         = false # DWS Flex-Start is NOT spot
