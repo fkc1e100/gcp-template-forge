@@ -19,7 +19,7 @@ spec:
     channel: RAPID
   ipAllocationPolicy:
     clusterSecondaryRangeName: pods
-    servicesSecondaryRangeName: services
+    services_secondary_range_name: services
   workloadIdentityConfig:
     workloadPool: gca-gke-2025.svc.id.goog
   addonsConfig:
@@ -65,8 +65,6 @@ spec:
   autoscaling:
     minNodeCount: 0
     maxNodeCount: 1
-  queuedProvisioning:
-    enabled: true
   nodeConfig:
     machineType: g2-standard-12
     spot: false
