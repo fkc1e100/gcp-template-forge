@@ -17,7 +17,7 @@ spec:
       labels:
         app: vllm-inference-server
       annotations:
-        gke-gcsview.csi.storage.gke.io/volumes: "true"
+        gke-gcsfuse.csi.storage.gke.io/volumes: "true"
         force-rollout: {{ now | unixEpoch | quote }}
     spec:
       serviceAccountName: {{ .Release.Name }}-sa
