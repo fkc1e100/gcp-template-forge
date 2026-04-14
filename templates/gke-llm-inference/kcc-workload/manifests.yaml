@@ -6,45 +6,6 @@ metadata:
   annotations:
     iam.gke.io/gcp-service-account: gke-llm-inference-kcc-sa@gca-gke-2025.iam.gserviceaccount.com
 ---
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: model-staging-job
-  namespace: default
-spec:
-  template:
-    spec:
-      serviceAccountName: vllm-sa
-      containers:
-      - name: stager
-        image: google/cloud-sdk:slim
-        command:
-        - /bin/bash
-        - -c
-        - |
-          set -e
-          # Only download if bucket is empty
-          COUNT=$(gcloud storage ls gs://gca-gke-2025-gke-llm-inference-kcc-weights/Qwen/Qwen2.5-1.5B-Instruct/ 2>/dev/null | wc -l || echo "0")
-          if [ "$COUNT" -eq 0 ]; then
-            echo "Bucket is empty, staging model weights..."
-            apt-get update && apt-get install -y python3-pip
-            pip3 install huggingface_hub --quiet
-            python3 -c "
-from huggingface_hub import snapshot_download
-import os
-try:
-    snapshot_download('Qwen/Qwen2.5-1.5B-Instruct', local_dir='/tmp/model')
-except Exception as e:
-    print(f'Error: {e}')
-    exit(1)
-"
-            gcloud storage cp -r /tmp/model/* gs://gca-gke-2025-gke-llm-inference-kcc-weights/Qwen/Qwen2.5-1.5B-Instruct/
-          else
-            echo "Weights already present."
-          fi
-      restartPolicy: OnFailure
-  backoffLimit: 2
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -54,6 +15,8 @@ metadata:
     app: vllm-inference-server
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: vllm-inference-server
@@ -65,6 +28,27 @@ spec:
         gke-gcsfuse/volumes: "true"
     spec:
       serviceAccountName: vllm-sa
+      initContainers:
+      - name: model-loader
+        image: vllm/vllm-openai:v0.7.2
+        command:
+        - bash
+        - -c
+        - |
+          set -e
+          python3 -c "
+          import os
+          from huggingface_hub import snapshot_download
+          model_path = '/data/Qwen/Qwen2.5-1.5B-Instruct'
+          if not os.path.exists(model_path) or not os.listdir(model_path):
+              print(f'Model missing at {model_path}, downloading...')
+              snapshot_download('Qwen/Qwen2.5-1.5B-Instruct', local_dir=model_path)
+          else:
+              print(f'Model already present at {model_path}')
+          "
+        volumeMounts:
+        - mountPath: /data
+          name: gcs-fuse-csi-ephemeral
       containers:
       - name: inference-server
         image: vllm/vllm-openai:v0.7.2

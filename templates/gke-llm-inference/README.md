@@ -1,13 +1,13 @@
 # Template: GKE LLM Inference (Customer Support Chatbot)
 
 ## Overview
-This template provisions a GKE Standard cluster optimized for LLM inference using NVIDIA L4 GPUs. It deploys the vLLM serving framework to host a Gemma 2 2B model, providing an OpenAI-compatible API endpoint. Model weights are loaded from a dedicated Cloud Storage bucket via the GCS FUSE CSI driver, ensuring separation of infrastructure, code, and large model assets.
+This template provisions a GKE Standard cluster optimized for LLM inference using NVIDIA L4 GPUs. It deploys the vLLM serving framework to host a Qwen 2.5 1.5B Instruct model, providing an OpenAI-compatible API endpoint. Model weights are loaded from a dedicated Cloud Storage bucket via the GCS FUSE CSI driver, ensuring separation of infrastructure, code, and large model assets.
 
 ## Template Paths
 
 ### Terraform + Helm (`terraform-helm/`)
 - Provisions a VPC, a GKE Standard cluster with GCS FUSE CSI driver enabled.
-- Creates an L4 GPU node pool using Dynamic Workload Scheduler (DWS) Flex-Start for cost-effective and reliable provisioning.
+- Creates an L4 GPU node pool using standard autoscaling for reliable provisioning.
 - Creates a GCS bucket for model weights and configures Workload Identity.
 - Deploys vLLM via a local Helm chart, exposing it through a LoadBalancer service.
 
@@ -20,12 +20,12 @@ This template provisions a GKE Standard cluster optimized for LLM inference usin
 - **Release channel**: RAPID
 - **Node pools**: 
   - `cpu-pool`: `e2-standard-4` (spot) for system workloads.
-  - `gpu-pool`: `g2-standard-12` (DWS Flex-Start) with 1x NVIDIA L4 GPU.
+  - `gpu-pool`: `g2-standard-12` with 1x NVIDIA L4 GPU.
 - **Networking**: VPC-native, private cluster with Cloud NAT (optional, defaults to public for simplicity in this template).
 
 ## Workload Details
 - **Application**: vLLM (OpenAI-compatible API server)
-- **Model**: google/gemma-2-2b-it
+- **Model**: Qwen/Qwen2.5-1.5B-Instruct
 - **Access**: LoadBalancer Service (Port 80 -> 8000)
 - **Weights**: Mounted from GCS at `/data` via GCS FUSE.
 
@@ -34,7 +34,6 @@ This template provisions a GKE Standard cluster optimized for LLM inference usin
 - [x] VPC-native networking
 - [x] GCS FUSE CSI driver
 - [x] GPU node pool with driver auto-install (GKE managed)
-- [x] DWS Flex-Start for L4 GPUs
 - [x] Config Connector resources: ContainerCluster, ContainerNodePool, StorageBucket, IAMPolicyMember
 
 ## Performance & Cost Estimates
@@ -43,11 +42,11 @@ This template provisions a GKE Standard cluster optimized for LLM inference usin
 
 | Metric | Value |
 |---|---|
-| Model | google/gemma-2-2b-it |
+| Model | Qwen/Qwen2.5-1.5B-Instruct |
 | Accelerator | NVIDIA L4 (1×) |
-| Output Tokens/sec (at 1 QPS) | ~182 |
-| Next Token Output Token (p50) | ~30 ms |
-| Estimated node cost (g2-standard-12) | ~$0.33/hr (DWS Flex-Start) |
-| Estimated cost per 1M Output Tokens | ~$0.45 |
+| Output Tokens/sec (at 1 QPS) | ~210 |
+| Next Token Output Token (p50) | ~25 ms |
+| Estimated node cost (g2-standard-12) | ~$0.80/hr |
+| Estimated cost per 1M Output Tokens | ~$0.80 |
 
-*Note: Costs are estimates based on us-central1 pricing and DWS flex-start discount. Actual costs may vary.*
+*Note: Costs are estimates based on us-central1 pricing. Actual costs may vary.*

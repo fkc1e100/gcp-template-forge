@@ -114,10 +114,6 @@ resource "google_container_node_pool" "gpu_pool" {
     }
   }
 
-  queued_provisioning {
-    enabled = true
-  }
-
   # Restrict to us-central1-c as per GEMINI.md recommendation for L4
   node_locations = ["${var.region}-c"]
 }

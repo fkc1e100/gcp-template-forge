@@ -20,7 +20,7 @@ kubectl apply -f bucket.yaml
 kubectl wait containerclusters gke-llm-inference-kcc -n forge-management \
   --for=condition=Ready --timeout=600s
 
-# Wait for GPU node pool separately (slow — DWS provisioning)
+# Wait for GPU node pool separately
 kubectl wait containernodepools gke-llm-inference-kcc-gpu-pool -n forge-management \
   --for=condition=Ready --timeout=3600s
 
@@ -49,8 +49,11 @@ gcloud compute regions describe us-central1 --format="value(quotas.filter(metric
 # Wait for vLLM deployment to be ready (can take 15-20 mins for model load)
 kubectl wait deployment release-deployment --for=condition=Available --timeout=1800s
 
-# Check logs to see model loading status
-kubectl logs -l app=vllm-inference-server
+# Check logs to see model loading status (initContainer)
+kubectl logs -l app=vllm-inference-server -c model-loader -f
+
+# Check logs to see vLLM server status (after initContainer completes)
+kubectl logs -l app=vllm-inference-server -c inference-server -f
 ```
 
 ### 3. Inference Test
