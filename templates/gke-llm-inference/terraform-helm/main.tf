@@ -233,12 +233,7 @@ resource "null_resource" "deploy_workload" {
 
   provisioner "local-exec" {
     command = <<-EOT
-      export KUBECONFIG=/tmp/kubeconfig
-      echo "${google_container_cluster.main.master_auth[0].cluster_ca_certificate}" | base64 -d > /tmp/ca.crt
-      kubectl config set-cluster cluster --server="https://${google_container_cluster.main.endpoint}" --certificate-authority=/tmp/ca.crt --embed-certs=true
-      kubectl config set-credentials user --token=$(gcloud auth print-access-token)
-      kubectl config set-context context --cluster=cluster --user=user
-      kubectl config use-context context
+      gcloud container clusters get-credentials ${google_container_cluster.main.name} --region ${var.region} --project ${var.project_id}
       helm upgrade --install release ${path.module}/workload --wait=false
       kubectl wait --for=condition=Available deployment/release-deployment --timeout=5400s || {
         echo "Deployment failed to become available. Diagnostics:"
