@@ -219,3 +219,22 @@ tolerations:
   effect: "NoSchedule"
 EOT
 }
+
+# Ensure a clean deployment state by deleting any existing failed deployment.
+# This avoids the "Progress deadline exceeded" error from previous stale runs.
+# Uses manual kubeconfig to bypass the missing GKE auth plugin on the CI runner.
+resource "null_resource" "cleanup_failed_deployment" {
+  depends_on = [google_container_node_pool.gpu_pool]
+  
+  provisioner "local-exec" {
+    command = <<-EOT
+      export KUBECONFIG=/tmp/kubeconfig_cleanup
+      echo "${google_container_cluster.main.master_auth[0].cluster_ca_certificate}" | base64 -d > /tmp/ca_cleanup.crt
+      kubectl config set-cluster cleanup --server="https://${google_container_cluster.main.endpoint}" --certificate-authority=/tmp/ca_cleanup.crt --embed-certs=true
+      kubectl config set-credentials cleanup-user --token=$(gcloud auth print-access-token)
+      kubectl config set-context cleanup-context --cluster=cleanup --user=cleanup-user
+      kubectl config use-context cleanup-context
+      kubectl delete deployment release-deployment --ignore-not-found
+    EOT
+  }
+}
