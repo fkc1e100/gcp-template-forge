@@ -142,9 +142,11 @@ resource "null_resource" "clear_helm_lock" {
 
   provisioner "local-exec" {
     command = <<-EOT
-      # Install gke-gcloud-auth-plugin if missing using apt-get (gcloud component manager is disabled)
+      # Install gke-gcloud-auth-plugin if missing
       if ! which gke-gcloud-auth-plugin >/dev/null 2>&1; then
-        echo "Installing gke-gcloud-auth-plugin via apt..."
+        echo "Adding Google Cloud SDK repo and installing auth plugin..."
+        curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
+        echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
         sudo apt-get update && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
       fi
       gcloud container clusters get-credentials ${google_container_cluster.main.name} --region ${var.region} --project ${var.project_id}
