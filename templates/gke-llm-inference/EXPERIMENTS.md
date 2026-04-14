@@ -11,4 +11,6 @@
 | 7 | Disable create_workload_sa, remove KCC queuedProvisioning, and strictly follow TF/Helm separation. | | CI service account lacks iam.serviceAccounts.create permission; KCC v1beta1 lacks queuedProvisioning; local-exec in main.tf is prohibited. | Wait for CI |
 | 8 | Add Cloud NAT, enable TF queued_provisioning, fix local-exec auth plugin issue. | ❌ TF Path | gke-gcloud-auth-plugin missing in Terraform environment. | Use vllm image and gcsfuse for robust staging. |
 | 9 | Use vllm image and gcsfuse for robust model staging in Job. | | Eliminates apt/pip/gcloud dependencies in staging job. | Wait for CI |
+| 10 | Clean start from main, apply all previous fixes (Cloud NAT, DWS, robust staging). | ❌ CI Fail | Broken workflow on main: Install GKE Auth Plugin fails due to missing repo. | Fix workflow in PR branch. |
+| 11 | Fix broken workflow in PR branch (add cloud-sdk repo) and increase KCC timeout. | | Restores CI functionality and allows enough time for GPU cluster provisioning. | Wait for CI |
 
