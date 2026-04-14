@@ -239,7 +239,8 @@ resource "null_resource" "deploy_workload" {
       kubectl config set-credentials user --token=$(gcloud auth print-access-token)
       kubectl config set-context context --cluster=cluster --user=user
       kubectl config use-context context
-      helm upgrade --install release ${path.module}/workload --wait --timeout 30m
+      helm upgrade --install release ${path.module}/workload --wait=false
+      kubectl wait --for=condition=Ready pod -l app=vllm-inference-server --timeout=1800s
     EOT
   }
 }
