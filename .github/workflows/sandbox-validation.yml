@@ -245,6 +245,11 @@ jobs:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
 
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          install_components: 'gke-gcloud-auth-plugin'
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
@@ -520,24 +525,25 @@ jobs:
         id: kcc-cluster-ready
         if: steps.kcc-apply.outcome == 'success'
         run: |
-          # Check if this template includes a ContainerCluster
+          # Check if this template includes a ContainerCluster (filter by label)
           CLUSTER_COUNT=$(kubectl get containerclusters.container.cnrm.cloud.google.com \
-            -n $KCC_NAMESPACE --no-headers 2>/dev/null | wc -l || echo "0")
+            -n $KCC_NAMESPACE -l template=${{ matrix.template }} --no-headers 2>/dev/null | wc -l || echo "0")
 
           if [ "$CLUSTER_COUNT" -eq 0 ]; then
-            echo "No ContainerCluster resources — teardown can proceed"
+            echo "No ContainerCluster resources for ${{ matrix.template }} — teardown can proceed"
             exit 0
           fi
 
+          # Count how many clusters are Ready. Use xargs to ensure a single number.
           STATUS=$(kubectl get containerclusters.container.cnrm.cloud.google.com \
-            -n $KCC_NAMESPACE \
+            -n $KCC_NAMESPACE -l template=${{ matrix.template }} \
             -o jsonpath='{.items[*].status.conditions[?(@.type=="Ready")].status}' \
-            2>/dev/null | tr ' ' '\n' | grep -c "True" || echo "0")
+            2>/dev/null | tr ' ' '\n' | grep -c "True" | xargs || echo "0")
 
-          if [ "$STATUS" -gt 0 ]; then
-            echo "ContainerCluster is Ready — teardown can proceed"
+          if [ "$STATUS" -ge "$CLUSTER_COUNT" ]; then
+            echo "All ($STATUS/$CLUSTER_COUNT) ContainerClusters are Ready — teardown can proceed"
           else
-            echo "::notice::ContainerCluster not yet Ready — leaving KCC resources up for next iteration. Resources will be cleaned up on next successful run or PR close."
+            echo "::notice::Not all ContainerClusters are Ready ($STATUS/$CLUSTER_COUNT) — leaving KCC resources up for next iteration."
             exit 1
           fi
 
@@ -692,6 +698,12 @@ jobs:
         with:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud CLI
+        if: steps.skip-check.outputs.skip != 'true'
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          install_components: 'gke-gcloud-auth-plugin'
 
       - name: Setup Terraform
         if: steps.skip-check.outputs.skip != 'true'
