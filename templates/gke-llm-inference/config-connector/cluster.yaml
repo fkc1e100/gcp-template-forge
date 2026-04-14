@@ -19,7 +19,7 @@ spec:
     channel: RAPID
   ipAllocationPolicy:
     clusterSecondaryRangeName: pods
-    services_secondary_range_name: services
+    servicesSecondaryRangeName: services
   workloadIdentityConfig:
     workloadPool: gca-gke-2025.svc.id.goog
   addonsConfig:
