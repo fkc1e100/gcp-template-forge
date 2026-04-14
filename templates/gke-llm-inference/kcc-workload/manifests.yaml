@@ -65,7 +65,7 @@ spec:
       labels:
         app: vllm-inference-server
       annotations:
-        gke-gcsfuse.csi.storage.gke.io/volumes: "true"
+        gke-gcsfuse/volumes: "true"
     spec:
       serviceAccountName: vllm-sa
       containers:
