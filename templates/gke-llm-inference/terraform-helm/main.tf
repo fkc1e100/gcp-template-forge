@@ -138,6 +138,10 @@ resource "google_storage_bucket_iam_member" "workload_admin" {
 # Robust cleanup for stale Helm locks.
 # This ensures that even if a previous CI run was interrupted, the next one can proceed.
 resource "null_resource" "clear_helm_lock" {
+  triggers = {
+    always_run = timestamp()
+  }
+
   depends_on = [google_container_node_pool.cpu_pool]
 
   provisioner "local-exec" {

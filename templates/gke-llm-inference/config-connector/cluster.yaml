@@ -65,6 +65,8 @@ spec:
   autoscaling:
     minNodeCount: 0
     maxNodeCount: 1
+  queuedProvisioning:
+    enabled: true
   nodeConfig:
     machineType: g2-standard-12
     spot: false
