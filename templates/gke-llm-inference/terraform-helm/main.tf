@@ -33,6 +33,20 @@ resource "google_compute_subnetwork" "main" {
   }
 }
 
+resource "google_compute_router" "router" {
+  name    = "${var.network_name}-router"
+  region  = var.region
+  network = google_compute_network.main.id
+}
+
+resource "google_compute_router_nat" "nat" {
+  name                               = "${var.network_name}-nat"
+  router                             = google_compute_router.router.name
+  region                             = var.region
+  nat_ip_allocate_option             = "AUTO_ONLY"
+  source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
+}
+
 resource "google_container_cluster" "main" {
   name                     = var.cluster_name
   location                 = var.region
@@ -150,13 +164,6 @@ resource "null_resource" "clear_helm_lock" {
 
   provisioner "local-exec" {
     command = <<-EOT
-      # Install gke-gcloud-auth-plugin if missing
-      if ! which gke-gcloud-auth-plugin >/dev/null 2>&1; then
-        echo "Adding Google Cloud SDK repo and installing auth plugin..."
-        curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
-        echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
-        sudo apt-get update && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
-      fi
       gcloud container clusters get-credentials ${google_container_cluster.main.name} --region ${var.region} --project ${var.project_id}
       kubectl delete secret -n default -l owner=helm,name=release,status=pending-upgrade --ignore-not-found
       kubectl delete secret -n default -l owner=helm,name=release,status=pending-install --ignore-not-found

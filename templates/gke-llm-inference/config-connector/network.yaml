@@ -26,7 +26,33 @@ spec:
     name: gke-llm-inference-kcc-vpc
   privateIpGoogleAccess: true
   secondaryIpRange:
-  - rangeName: pods
-    ipCidrRange: 10.36.0.0/14
-  - rangeName: services
-    ipCidrRange: 10.40.0.0/20
+    - rangeName: pods
+      ipCidrRange: 10.36.0.0/14
+    - rangeName: services
+      ipCidrRange: 10.40.0.0/20
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRouter
+metadata:
+  name: gke-llm-inference-kcc-router
+  namespace: forge-management
+  labels:
+    template: gke-llm-inference
+spec:
+  region: us-central1
+  networkRef:
+    name: gke-llm-inference-kcc-vpc
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRouterNAT
+metadata:
+  name: gke-llm-inference-kcc-nat
+  namespace: forge-management
+  labels:
+    template: gke-llm-inference
+spec:
+  region: us-central1
+  routerRef:
+    name: gke-llm-inference-kcc-router
+  natIpAllocateOption: AUTO_ONLY
+  sourceSubnetworkIpRangesToNat: ALL_SUBNETWORKS_ALL_IP_RANGES
