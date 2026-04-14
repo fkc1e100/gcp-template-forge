@@ -130,26 +130,13 @@ resource "google_storage_bucket" "weights" {
 }
 
 locals {
-  workload_sa_email = var.create_workload_sa ? join("", google_service_account.workload_sa.*.email) : (var.workload_service_account_email != "" ? var.workload_service_account_email : var.service_account)
-}
-
-resource "google_service_account" "workload_sa" {
-  count        = var.create_workload_sa ? 1 : 0
-  account_id   = "gke-llm-inference-workload"
-  display_name = "GKE LLM Inference Workload Service Account"
+  workload_sa_email = var.workload_service_account_email != "" ? var.workload_service_account_email : var.service_account
 }
 
 resource "google_storage_bucket_iam_member" "workload_admin" {
   bucket = google_storage_bucket.weights.name
   role   = "roles/storage.objectAdmin"
   member = "serviceAccount:${local.workload_sa_email}"
-}
-
-resource "google_service_account_iam_member" "workload_identity_binding" {
-  count              = var.create_workload_sa ? 1 : 0
-  service_account_id = google_service_account.workload_sa[0].name
-  role               = "roles/iam.workloadIdentityUser"
-  member             = "serviceAccount:${var.project_id}.svc.id.goog[default/release-sa]"
 }
 
 # Generate values.yaml for the helm chart so the CI workflow can deploy it correctly.
