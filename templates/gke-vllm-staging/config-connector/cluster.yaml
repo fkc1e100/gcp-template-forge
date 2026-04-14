@@ -1,0 +1,84 @@
+apiVersion: container.cnrm.cloud.google.com/v1beta1
+kind: ContainerCluster
+metadata:
+  name: gke-vllm-staging-kcc
+  namespace: forge-management
+  labels:
+    template: gke-vllm-staging
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
+    cnrm.cloud.google.com/remove-default-node-pool: "true"
+spec:
+  location: us-central1
+  initialNodeCount: 1
+  networkingMode: VPC_NATIVE
+  networkRef:
+    name: gke-vllm-staging-kcc-vpc
+  subnetworkRef:
+    name: gke-vllm-staging-kcc-subnet
+  ipAllocationPolicy:
+    clusterSecondaryRangeName: pods
+    servicesSecondaryRangeName: services
+  workloadIdentityConfig:
+    workloadPool: gca-gke-2025.svc.id.goog
+  addonsConfig:
+    gcsFuseCsiDriverConfig:
+      enabled: true
+  securityPostureConfig:
+    mode: BASIC
+    vulnerabilityMode: VULNERABILITY_BASIC
+---
+apiVersion: container.cnrm.cloud.google.com/v1beta1
+kind: ContainerNodePool
+metadata:
+  name: gke-vllm-staging-kcc-cpu-pool
+  namespace: forge-management
+  labels:
+    template: gke-vllm-staging
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
+spec:
+  clusterRef:
+    name: gke-vllm-staging-kcc
+  location: us-central1
+  nodeCount: 1
+  nodeConfig:
+    machineType: e2-standard-4
+    spot: true
+    serviceAccountRef:
+      external: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+    oauthScopes:
+      - https://www.googleapis.com/auth/cloud-platform
+---
+apiVersion: container.cnrm.cloud.google.com/v1beta1
+kind: ContainerNodePool
+metadata:
+  name: gke-vllm-staging-kcc-gpu-pool
+  namespace: forge-management
+  labels:
+    template: gke-vllm-staging
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
+spec:
+  clusterRef:
+    name: gke-vllm-staging-kcc
+  location: us-central1
+  nodeLocations:
+    - us-central1-c
+  autoscaling:
+    minNodeCount: 0
+    maxNodeCount: 1
+  nodeConfig:
+    machineType: g2-standard-12
+    spot: false
+    # KCC v1beta1 does NOT support queuedProvisioning. 
+    # Fallback to standard on-demand for KCC path.
+    reservationAffinity:
+      consumeReservationType: NO_RESERVATION
+    guestAccelerator:
+      - type: nvidia-l4
+        count: 1
+    serviceAccountRef:
+      external: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+    oauthScopes:
+      - https://www.googleapis.com/auth/cloud-platform

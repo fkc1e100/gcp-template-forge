@@ -1,0 +1,6 @@
+apiVersion: v2
+name: gke-vllm-staging
+description: vLLM serving with GCS model staging
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

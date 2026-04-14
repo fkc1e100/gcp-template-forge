@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "gke-vllm-staging.fullname" . }}
+  labels:
+    {{- include "gke-vllm-staging.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "gke-vllm-staging.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        gke-gcsfuse/volumes: "true"
+      labels:
+        {{- include "gke-vllm-staging.selectorLabels" . | nindent 8 }}
+    spec:
+      initContainers:
+      - name: wait-for-staging
+        image: bitnami/kubectl:latest
+        command:
+        - /bin/bash
+        - -c
+        - |
+          echo "Waiting for staging job to complete..."
+          kubectl wait --for=condition=complete job/{{ .Values.staging.jobName }} --timeout=3600s
+          echo "Staging complete. Starting vLLM."
+      containers:
+      - name: vllm
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        args:
+        - --model=/data/{{ .Values.model.id }}
+        - --tensor-parallel-size=1
+        env:
+        - name: MODEL_ID
+          value: {{ .Values.model.id }}
+        ports:
+        - name: http
+          containerPort: 8000
+          protocol: TCP
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+        volumeMounts:
+        - name: gcs-fuse
+          mountPath: /data
+        - name: dshm
+          mountPath: /dev/shm
+      nodeSelector:
+        {{- toYaml .Values.nodeSelector | nindent 8 }}
+      tolerations:
+        {{- toYaml .Values.tolerations | nindent 8 }}
+      volumes:
+      - name: gcs-fuse
+        csi:
+          driver: gcsfuse.csi.storage.gke.io
+          volumeAttributes:
+            bucketName: {{ .Values.model.bucket }}
+            mountOptions: "implicit-dirs"
+      - name: dshm
+        emptyDir:
+          medium: Memory

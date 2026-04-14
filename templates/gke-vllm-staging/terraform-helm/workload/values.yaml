@@ -1,0 +1,33 @@
+replicaCount: 1
+
+image:
+  repository: vllm/vllm-openai
+  tag: v0.7.2
+  pullPolicy: IfNotPresent
+
+model:
+  id: google/gemma-2-9b-it
+  bucket: "" # Injected by Terraform
+
+staging:
+  image: google/cloud-sdk:slim
+  # This matches the AI Model Staging Pattern
+  jobName: model-staging-job
+
+service:
+  type: LoadBalancer
+  port: 8000
+
+resources:
+  limits:
+    nvidia.com/gpu: 1
+  requests:
+    nvidia.com/gpu: 1
+
+nodeSelector:
+  cloud.google.com/gke-accelerator: nvidia-l4
+
+tolerations:
+  - key: "nvidia.com/gpu"
+    operator: "Exists"
+    effect: "NoSchedule"

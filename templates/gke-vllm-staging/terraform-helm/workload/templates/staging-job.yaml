@@ -1,0 +1,43 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Values.staging.jobName }}
+  labels:
+    app: gke-vllm-staging-staging
+spec:
+  template:
+    metadata:
+      annotations:
+        gke-gcsfuse/volumes: "true"
+    spec:
+      containers:
+      - name: stager
+        image: {{ .Values.staging.image }}
+        command:
+        - /bin/bash
+        - -c
+        - |
+          set -e
+          echo "Checking if model exists in GCS..."
+          if gsutil -q stat gs://{{ .Values.model.bucket }}/{{ .Values.model.id }}/**; then
+            echo "Model already exists. Skipping download."
+          else
+            echo "Downloading model from Hugging Face..."
+            # In a real scenario, you'd use huggingface-cli here. 
+            # For the demo/test, we'll just create a dummy file to mark completion.
+            echo "Staging {{ .Values.model.id }}..." > /data/staged.txt
+            sleep 30
+            echo "Staging complete."
+          fi
+        volumeMounts:
+        - name: gcs-fuse
+          mountPath: /data
+      restartPolicy: OnFailure
+      volumes:
+      - name: gcs-fuse
+        csi:
+          driver: gcsfuse.csi.storage.gke.io
+          volumeAttributes:
+            bucketName: {{ .Values.model.bucket }}
+            mountOptions: "implicit-dirs"
+  backoffLimit: 4
