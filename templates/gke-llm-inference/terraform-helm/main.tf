@@ -225,7 +225,7 @@ EOT
 # Uses manual kubeconfig to bypass the missing GKE auth plugin on the CI runner.
 resource "null_resource" "cleanup_failed_deployment" {
   depends_on = [google_container_node_pool.gpu_pool]
-  
+
   provisioner "local-exec" {
     command = <<-EOT
       export KUBECONFIG=/tmp/kubeconfig_cleanup
