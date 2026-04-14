@@ -8,6 +8,8 @@ provider "google-beta" {
   region  = var.region
 }
 
+provider "helm" {}
+
 # VPC Network
 resource "google_compute_network" "main" {
   name                    = var.network_name
@@ -220,21 +222,18 @@ tolerations:
 EOT
 }
 
-# Ensure a clean deployment state by deleting any existing failed deployment.
-# This avoids the "Progress deadline exceeded" error from previous stale runs.
-# Uses manual kubeconfig to bypass the missing GKE auth plugin on the CI runner.
-resource "null_resource" "cleanup_failed_deployment" {
-  depends_on = [google_container_node_pool.gpu_pool]
-
+# Configure kubectl and helm credentials for the CI runner
+resource "null_resource" "cluster_credentials" {
+  depends_on = [google_container_node_pool.cpu_pool, google_container_node_pool.gpu_pool]
   provisioner "local-exec" {
-    command = <<-EOT
-      export KUBECONFIG=/tmp/kubeconfig_cleanup
-      echo "${google_container_cluster.main.master_auth[0].cluster_ca_certificate}" | base64 -d > /tmp/ca_cleanup.crt
-      kubectl config set-cluster cleanup --server="https://${google_container_cluster.main.endpoint}" --certificate-authority=/tmp/ca_cleanup.crt --embed-certs=true
-      kubectl config set-credentials cleanup-user --token=$(gcloud auth print-access-token)
-      kubectl config set-context cleanup-context --cluster=cleanup --user=cleanup-user
-      kubectl config use-context cleanup-context
-      kubectl delete deployment release-deployment --ignore-not-found
-    EOT
+    command = "gcloud container clusters get-credentials ${google_container_cluster.main.name} --region ${var.region} --project ${var.project_id}"
   }
+}
+
+resource "helm_release" "vllm" {
+  name       = "release"
+  chart      = "${path.module}/workload"
+  namespace  = "default"
+  wait       = false # Avoid timeouts in TF, verify separately
+  depends_on = [null_resource.cluster_credentials, null_resource.stage_model_weights, local_file.helm_values]
 }
