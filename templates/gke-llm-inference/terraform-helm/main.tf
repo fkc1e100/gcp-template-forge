@@ -135,6 +135,20 @@ resource "google_storage_bucket_iam_member" "workload_admin" {
   member = "serviceAccount:${local.workload_sa_email}"
 }
 
+# Robust cleanup for stale Helm locks.
+# This ensures that even if a previous CI run was interrupted, the next one can proceed.
+resource "null_resource" "clear_helm_lock" {
+  depends_on = [google_container_node_pool.cpu_pool]
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      gcloud container clusters get-credentials ${google_container_cluster.main.name} --region ${var.region} --project ${var.project_id}
+      kubectl delete secret -n default -l owner=helm,name=release,status=pending-upgrade --ignore-not-found
+      kubectl delete secret -n default -l owner=helm,name=release,status=pending-install --ignore-not-found
+    EOT
+  }
+}
+
 # Generate values.yaml for the helm chart so the CI workflow can deploy it correctly.
 # This file is ignored by git to avoid dirty working tree issues.
 resource "local_file" "helm_values" {
