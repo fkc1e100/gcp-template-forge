@@ -163,6 +163,8 @@ resource "null_resource" "cluster_credentials" {
       TOKEN=$(gcloud auth print-access-token)
       kubectl --server="https://${google_container_cluster.main.endpoint}" --token="$TOKEN" --insecure-skip-tls-verify delete secret -n default -l owner=helm,name=release,status=pending-upgrade --ignore-not-found
       kubectl --server="https://${google_container_cluster.main.endpoint}" --token="$TOKEN" --insecure-skip-tls-verify delete secret -n default -l owner=helm,name=release,status=pending-install --ignore-not-found
+      kubectl --server="https://${google_container_cluster.main.endpoint}" --token="$TOKEN" --insecure-skip-tls-verify delete job -n default -l app=vllm-model-staging --ignore-not-found
+      kubectl --server="https://${google_container_cluster.main.endpoint}" --token="$TOKEN" --insecure-skip-tls-verify delete job -n default release-model-staging --ignore-not-found
     EOT
   }
 }
