@@ -240,8 +240,8 @@ resource "null_resource" "deploy_workload" {
       kubectl config set-context context --cluster=cluster --user=user
       kubectl config use-context context
       helm upgrade --install release ${path.module}/workload --wait=false
-      kubectl wait --for=condition=Ready pod -l app=vllm-inference-server --timeout=5400s || {
-        echo "Pod failed to become ready. Diagnostics:"
+      kubectl wait --for=condition=Available deployment/release-deployment --timeout=5400s || {
+        echo "Deployment failed to become available. Diagnostics:"
         kubectl get nodes
         kubectl get pods
         kubectl describe pod -l app=vllm-inference-server
