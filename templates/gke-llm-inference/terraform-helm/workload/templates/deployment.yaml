@@ -21,6 +21,28 @@ spec:
         force-rollout: {{ now | unixEpoch | quote }}
     spec:
       serviceAccountName: {{ .Release.Name }}-sa
+      initContainers:
+      - name: model-loader
+        image: python:3.10-slim
+        command:
+        - bash
+        - -c
+        - |
+          set -e
+          pip install huggingface_hub --quiet
+          python3 -c "
+          import os
+          from huggingface_hub import snapshot_download
+          model_path = '/data/{{ .Values.model.id }}'
+          if not os.path.exists(model_path) or not os.listdir(model_path):
+              print(f'Model missing at {model_path}, downloading...')
+              snapshot_download('{{ .Values.model.id }}', local_dir=model_path)
+          else:
+              print(f'Model already present at {model_path}')
+          "
+        volumeMounts:
+        - mountPath: /data
+          name: gcs-fuse-csi-ephemeral
       containers:
       - name: inference-server
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"

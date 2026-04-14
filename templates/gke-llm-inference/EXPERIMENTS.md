@@ -7,4 +7,6 @@
 | 3 | 90m timeout, get-credentials auth, Recreate strategy | | Recreate strategy avoids GPU quota conflicts; get-credentials ensures robust auth for diagnostics | Wait for CI |
 | 4 | Add helm_release with wait=false, use GEMINI.md get-credentials pattern, and set startupProbe threshold to 120 | | wait=false avoids TF timeout; robust credentials avoid Unauthorized; probe fits within 60m CI timeout | Wait for CI |
 | 5 | Combine get-credentials and helm upgrade in a single null_resource with triggers | ✅ TF Path | Ensures credentials are set in fresh CI runners even if resource exists in state; triggers ensure re-deployment on value changes. | Done |
-| 6 | Add queuedProvisioning to KCC GPU node pool and align startupProbe threshold | | Align KCC GPU pool with TF/DWS requirements and ensure consistent timeouts across paths. | Wait for CI |
+| 6 | Add queuedProvisioning to KCC GPU node pool and align startupProbe threshold | ❌ KCC Path | KCC version v1beta1 does not support spec.queuedProvisioning. | Remove it. |
+| 7 | Disable create_workload_sa, remove KCC queuedProvisioning, and strictly follow TF/Helm separation. | | CI service account lacks iam.serviceAccounts.create permission; KCC v1beta1 lacks queuedProvisioning; local-exec in main.tf is prohibited. | Wait for CI |
+

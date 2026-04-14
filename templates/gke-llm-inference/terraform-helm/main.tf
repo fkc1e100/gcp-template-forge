@@ -139,57 +139,17 @@ resource "google_service_account" "workload_sa" {
   display_name = "GKE LLM Inference Workload Service Account"
 }
 
-resource "google_storage_bucket_iam_member" "workload_reader" {
-  count  = var.create_workload_sa ? 1 : 0
+resource "google_storage_bucket_iam_member" "workload_admin" {
   bucket = google_storage_bucket.weights.name
-  role   = "roles/storage.objectViewer"
+  role   = "roles/storage.objectAdmin"
   member = "serviceAccount:${local.workload_sa_email}"
 }
 
 resource "google_service_account_iam_member" "workload_identity_binding" {
   count              = var.create_workload_sa ? 1 : 0
-  service_account_id = join("", google_service_account.workload_sa.*.name)
+  service_account_id = google_service_account.workload_sa[0].name
   role               = "roles/iam.workloadIdentityUser"
   member             = "serviceAccount:${var.project_id}.svc.id.goog[default/release-sa]"
-}
-
-resource "null_resource" "stage_model_weights" {
-  provisioner "local-exec" {
-    command = <<-EOT
-      set -e
-      if [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ] && [ -f "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
-        if grep -q "service_account" "$GOOGLE_APPLICATION_CREDENTIALS"; then
-          gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS" --quiet
-        else
-          gcloud auth login --cred-file="$GOOGLE_APPLICATION_CREDENTIALS" --quiet
-        fi
-      fi
-      # Only download if bucket is empty
-      COUNT=$(gcloud storage ls gs://${google_storage_bucket.weights.name}/Qwen/Qwen2.5-1.5B-Instruct/ 2>/dev/null | wc -l || echo "0")
-      if [ "$$COUNT" -eq 0 ]; then
-        echo "Bucket is empty, staging model weights..."
-        pip install huggingface_hub --quiet 2>/dev/null || pip3 install huggingface_hub --quiet 2>/dev/null || true
-        export HF_TOKEN=$(gcloud secrets versions access latest --secret="huggingface-token" --project="${var.project_id}" 2>/dev/null || echo "")
-        python3 -c "
-import os
-from huggingface_hub import snapshot_download
-token = os.environ.get('HF_TOKEN')
-if not token:
-    print('Warning: HF_TOKEN not found, attempting download without token...')
-try:
-    # Qwen 2.5 is not gated, so token is optional but helps with rate limits
-    snapshot_download('Qwen/Qwen2.5-1.5B-Instruct', local_dir='/tmp/model', token=token)
-except Exception as e:
-    print(f'Error downloading model: {e}')
-    exit(1)
-" && gcloud storage cp -r /tmp/model/* gs://${google_storage_bucket.weights.name}/Qwen/Qwen2.5-1.5B-Instruct/
-      else
-        echo "Model weights already present in bucket."
-      fi
-    EOT
-  }
-
-  depends_on = [google_storage_bucket.weights]
 }
 
 # Generate values.yaml for the helm chart so the CI workflow can deploy it correctly.
@@ -229,35 +189,3 @@ tolerations:
 EOT
 }
 
-# Deploy the workload using local-exec to handle fresh CI runners correctly
-resource "null_resource" "deploy_workload" {
-  depends_on = [
-    google_container_node_pool.cpu_pool,
-    google_container_node_pool.gpu_pool,
-    null_resource.stage_model_weights,
-    local_file.helm_values
-  ]
-
-  triggers = {
-    # Ensure it re-deploys when values change OR cluster changes
-    values_hash = sha256(local_file.helm_values.content)
-    cluster_id  = google_container_cluster.main.id
-  }
-
-  provisioner "local-exec" {
-    command = <<-EOT
-      set -e
-      if [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ] && [ -f "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
-        if grep -q "service_account" "$GOOGLE_APPLICATION_CREDENTIALS"; then
-          gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS" --quiet
-        else
-          gcloud auth login --cred-file="$GOOGLE_APPLICATION_CREDENTIALS" --quiet
-        fi
-      fi
-      gcloud container clusters get-credentials ${google_container_cluster.main.name} --region ${var.region} --project ${var.project_id}
-      helm upgrade --install release ${path.module}/workload \
-        --namespace default \
-        --values ${local_file.helm_values.filename}
-    EOT
-  }
-}
