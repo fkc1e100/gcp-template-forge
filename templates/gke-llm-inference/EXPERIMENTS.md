@@ -13,5 +13,6 @@
 | 9 | Use vllm image and gcsfuse for robust model staging in Job. | | Eliminates apt/pip/gcloud dependencies in staging job. | Wait for CI |
 | 10 | Clean start from main, apply all previous fixes (Cloud NAT, DWS, robust staging). | ❌ CI Fail | Broken workflow on main: Install GKE Auth Plugin fails due to missing repo. | Fix workflow in PR branch. |
 | 11 | Fix broken workflow in PR branch (add cloud-sdk repo) and increase KCC timeout. | | Restores CI functionality and allows enough time for GPU cluster provisioning. | Wait for CI |
-| 12 | Restore Helm lock cleanup using token-based kubectl in main.tf. | | Resolves "another operation in progress" Helm errors without depending on gke-gcloud-auth-plugin during apply. | Wait for CI |
+| 12 | Restore Helm lock cleanup using token-based kubectl in main.tf. | ❌ TF Path | null_resource missing triggers, so it didn't run on repeat attempts. | Add triggers = { always_run = timestamp() }. |
+| 13 | Add always_run trigger to cluster_credentials to ensure lock cleanup on every run. | | Ensures robust recovery from cancelled/interrupted Helm deployments. | Wait for CI |
 
