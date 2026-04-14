@@ -136,6 +136,7 @@ resource "google_storage_bucket_iam_member" "workload_admin" {
 }
 
 # Generate values.yaml for the helm chart so the CI workflow can deploy it correctly.
+# This file is ignored by git to avoid dirty working tree issues.
 resource "local_file" "helm_values" {
   filename = "${path.module}/workload/values.yaml"
   content  = <<-EOT

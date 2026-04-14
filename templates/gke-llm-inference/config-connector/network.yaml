@@ -5,8 +5,6 @@ metadata:
   namespace: forge-management
   labels:
     template: gke-llm-inference
-  annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   autoCreateSubnetworks: false
 ---
@@ -17,8 +15,6 @@ metadata:
   namespace: forge-management
   labels:
     template: gke-llm-inference
-  annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   ipCidrRange: 10.32.0.0/20
   region: us-central1

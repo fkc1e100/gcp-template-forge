@@ -45,9 +45,6 @@ jobs:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
 
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-
       - name: Delete GKE clusters tagged template:* older than 2h
         run: |
           NOW=$(date -u +%s)
@@ -108,12 +105,9 @@ jobs:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
 
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-
-      - name: Remove .tflock files
+      - name: Remove .tflock files older than 2h
         run: |
-          echo "=== Scanning for TF state locks ==="
+          echo "=== Scanning for stale TF state locks ==="
 
           gsutil ls -r "gs://${{ env.TF_STATE_BUCKET }}/**" 2>/dev/null \
             | grep '\.tflock$' \
@@ -125,9 +119,12 @@ jobs:
                   CREATE_EPOCH=$(date -d "$CREATE_TIME" +%s 2>/dev/null || echo 0)
                   NOW=$(date -u +%s)
                   AGE_S=$(( NOW - CREATE_EPOCH ))
-                  # Force removal of all locks for this session
-                  echo "  REMOVING lock: $LOCK_PATH (age ${AGE_S}s)"
-                  gsutil rm "$LOCK_PATH" || true
+                  if [ "$AGE_S" -gt 7200 ]; then
+                    echo "  REMOVING stale lock: $LOCK_PATH (age ${AGE_S}s)"
+                    gsutil rm "$LOCK_PATH" || true
+                  else
+                    echo "  OK: $LOCK_PATH (age ${AGE_S}s — recent, leaving)"
+                  fi
                 fi
               done
 
@@ -144,9 +141,6 @@ jobs:
         with:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
-
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
 
       - name: Get KCC cluster credentials
         uses: google-github-actions/get-gke-credentials@v2

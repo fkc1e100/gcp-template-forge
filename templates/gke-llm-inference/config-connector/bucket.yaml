@@ -1,12 +1,10 @@
 apiVersion: storage.cnrm.cloud.google.com/v1beta1
 kind: StorageBucket
 metadata:
-  name: gca-gke-2025-gke-llm-inference-kcc-weights
+  name: gke-llm-inference-kcc-weights
   namespace: forge-management
   labels:
     template: gke-llm-inference
-  annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   location: us-central1
   uniformBucketLevelAccess: true
@@ -18,8 +16,6 @@ metadata:
   namespace: forge-management
   labels:
     template: gke-llm-inference
-  annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   displayName: GKE LLM Inference KCC Workload Service Account
 ---
@@ -30,8 +26,6 @@ metadata:
   namespace: forge-management
   labels:
     template: gke-llm-inference
-  annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   resourceRef:
     apiVersion: iam.cnrm.cloud.google.com/v1beta1
@@ -47,12 +41,10 @@ metadata:
   namespace: forge-management
   labels:
     template: gke-llm-inference
-  annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   resourceRef:
     apiVersion: storage.cnrm.cloud.google.com/v1beta1
     kind: StorageBucket
-    name: gca-gke-2025-gke-llm-inference-kcc-weights
+    name: gke-llm-inference-kcc-weights
   role: roles/storage.objectAdmin
   member: serviceAccount:gke-llm-inference-kcc-sa@gca-gke-2025.iam.gserviceaccount.com
