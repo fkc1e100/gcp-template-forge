@@ -9,4 +9,6 @@
 | 5 | Combine get-credentials and helm upgrade in a single null_resource with triggers | ✅ TF Path | Ensures credentials are set in fresh CI runners even if resource exists in state; triggers ensure re-deployment on value changes. | Done |
 | 6 | Add queuedProvisioning to KCC GPU node pool and align startupProbe threshold | ❌ KCC Path | KCC version v1beta1 does not support spec.queuedProvisioning. | Remove it. |
 | 7 | Disable create_workload_sa, remove KCC queuedProvisioning, and strictly follow TF/Helm separation. | | CI service account lacks iam.serviceAccounts.create permission; KCC v1beta1 lacks queuedProvisioning; local-exec in main.tf is prohibited. | Wait for CI |
+| 8 | Add Cloud NAT, enable TF queued_provisioning, fix local-exec auth plugin issue. | ❌ TF Path | gke-gcloud-auth-plugin missing in Terraform environment. | Use vllm image and gcsfuse for robust staging. |
+| 9 | Use vllm image and gcsfuse for robust model staging in Job. | | Eliminates apt/pip/gcloud dependencies in staging job. | Wait for CI |
 
