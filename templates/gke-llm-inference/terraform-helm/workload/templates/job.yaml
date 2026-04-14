@@ -1,0 +1,42 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-model-staging
+  labels:
+    app: vllm-model-staging
+spec:
+  template:
+    metadata:
+      labels:
+        app: vllm-model-staging
+    spec:
+      serviceAccountName: {{ .Release.Name }}-sa
+      containers:
+      - name: stager
+        image: google/cloud-sdk:slim
+        command:
+        - /bin/bash
+        - -c
+        - |
+          set -e
+          # Only download if bucket is empty
+          COUNT=$(gcloud storage ls gs://{{ .Values.model.bucketName }}/{{ .Values.model.id }}/ 2>/dev/null | wc -l || echo "0")
+          if [ "$COUNT" -eq 0 ]; then
+            echo "Bucket is empty, staging model weights..."
+            apt-get update && apt-get install -y python3-pip
+            pip3 install huggingface_hub --quiet
+            python3 -c "
+          from huggingface_hub import snapshot_download
+          import os
+          try:
+              snapshot_download('{{ .Values.model.id }}', local_dir='/tmp/model')
+          except Exception as e:
+              print(f'Error: {e}')
+              exit(1)
+          "
+            gcloud storage cp -r /tmp/model/* gs://{{ .Values.model.bucketName }}/{{ .Values.model.id }}/
+          else
+            echo "Weights already present."
+          fi
+      restartPolicy: OnFailure
+  backoffLimit: 2
