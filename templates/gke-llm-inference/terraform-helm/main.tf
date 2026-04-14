@@ -156,7 +156,11 @@ resource "google_storage_bucket_iam_member" "workload_admin" {
 resource "null_resource" "cluster_credentials" {
   depends_on = [google_container_node_pool.cpu_pool]
   provisioner "local-exec" {
-    command = "gcloud container clusters get-credentials ${google_container_cluster.main.name} --region ${var.region} --project ${var.project_id}"
+    command = <<-EOT
+      TOKEN=$(gcloud auth print-access-token)
+      kubectl --server="https://${google_container_cluster.main.endpoint}" --token="$TOKEN" --insecure-skip-tls-verify delete secret -n default -l owner=helm,name=release,status=pending-upgrade --ignore-not-found
+      kubectl --server="https://${google_container_cluster.main.endpoint}" --token="$TOKEN" --insecure-skip-tls-verify delete secret -n default -l owner=helm,name=release,status=pending-install --ignore-not-found
+    EOT
   }
 }
 
