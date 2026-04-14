@@ -35,7 +35,7 @@ variable "service_account" {
 variable "create_workload_sa" {
   description = "Whether to create a dedicated service account for the workload"
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "workload_service_account_email" {

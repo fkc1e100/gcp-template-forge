@@ -1,7 +1,7 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerCluster
 metadata:
-  name: gke-llm-inf-kcc
+  name: gke-llm-inference-kcc
   namespace: forge-management
   labels:
     template: gke-llm-inference
@@ -31,7 +31,7 @@ spec:
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
 metadata:
-  name: cpu-pool-kcc-v2
+  name: gke-llm-inference-kcc-cpu-pool
   namespace: forge-management
   labels:
     template: gke-llm-inference
@@ -39,7 +39,7 @@ metadata:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   clusterRef:
-    name: gke-llm-inf-kcc
+    name: gke-llm-inference-kcc
   location: us-central1
   nodeCount: 1
   nodeConfig:
@@ -51,7 +51,7 @@ spec:
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
 metadata:
-  name: gpu-pool-kcc-v2
+  name: gke-llm-inference-kcc-gpu-pool
   namespace: forge-management
   labels:
     template: gke-llm-inference
@@ -59,7 +59,7 @@ metadata:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   clusterRef:
-    name: gke-llm-inf-kcc
+    name: gke-llm-inference-kcc
   location: us-central1
   nodeLocations:
     - us-central1-c

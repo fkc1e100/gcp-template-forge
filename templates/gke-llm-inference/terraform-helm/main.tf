@@ -156,6 +156,14 @@ resource "google_service_account_iam_member" "workload_identity_binding" {
 resource "null_resource" "stage_model_weights" {
   provisioner "local-exec" {
     command = <<-EOT
+      set -e
+      if [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ] && [ -f "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
+        if grep -q "service_account" "$GOOGLE_APPLICATION_CREDENTIALS"; then
+          gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS" --quiet
+        else
+          gcloud auth login --cred-file="$GOOGLE_APPLICATION_CREDENTIALS" --quiet
+        fi
+      fi
       # Only download if bucket is empty
       COUNT=$(gcloud storage ls gs://${google_storage_bucket.weights.name}/Qwen/Qwen2.5-1.5B-Instruct/ 2>/dev/null | wc -l || echo "0")
       if [ "$$COUNT" -eq 0 ]; then
@@ -238,6 +246,14 @@ resource "null_resource" "deploy_workload" {
 
   provisioner "local-exec" {
     command = <<-EOT
+      set -e
+      if [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ] && [ -f "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
+        if grep -q "service_account" "$GOOGLE_APPLICATION_CREDENTIALS"; then
+          gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS" --quiet
+        else
+          gcloud auth login --cred-file="$GOOGLE_APPLICATION_CREDENTIALS" --quiet
+        fi
+      fi
       gcloud container clusters get-credentials ${google_container_cluster.main.name} --region ${var.region} --project ${var.project_id}
       helm upgrade --install release ${path.module}/workload \
         --namespace default \

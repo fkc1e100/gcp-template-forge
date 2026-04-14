@@ -4,7 +4,7 @@ metadata:
   name: vllm-sa
   namespace: default
   annotations:
-    iam.gke.io/gcp-service-account: gke-llm-inf-kcc-sa@gca-gke-2025.iam.gserviceaccount.com
+    iam.gke.io/gcp-service-account: gke-llm-inference-kcc-sa@gca-gke-2025.iam.gserviceaccount.com
 ---
 apiVersion: batch/v1
 kind: Job
@@ -29,9 +29,6 @@ spec:
             echo "Bucket is empty, staging model weights..."
             apt-get update && apt-get install -y python3-pip
             pip3 install huggingface_hub --quiet
-            # Qwen 2.5 is not gated, so we don't strictly need a token, but we try to get it from secret if available
-            # In this sandbox, the HF token is in a GCP secret, but we might not have IAM to read it from the workload SA.
-            # However, for Qwen it's fine without token.
             python3 -c "
 from huggingface_hub import snapshot_download
 import os

@@ -17,18 +17,18 @@ kubectl apply -f cluster.yaml
 kubectl apply -f bucket.yaml
 
 # Wait for control plane (fast)
-kubectl wait containerclusters gke-llm-inf-kcc -n forge-management \
+kubectl wait containerclusters gke-llm-inference-kcc -n forge-management \
   --for=condition=Ready --timeout=600s
 
 # Wait for GPU node pool separately (slow — DWS provisioning)
-kubectl wait containernodepools gpu-pool-kcc-v2 -n forge-management \
+kubectl wait containernodepools gke-llm-inference-kcc-gpu-pool -n forge-management \
   --for=condition=Ready --timeout=3600s
 
 # Get credentials for the KCC cluster
-gcloud container clusters get-credentials gke-llm-inf-kcc --region us-central1
+gcloud container clusters get-credentials gke-llm-inference-kcc --region us-central1
 
 # Verify actual node readiness
-kubectl wait nodes -l cloud.google.com/gke-nodepool=gpu-pool-kcc-v2 \
+kubectl wait nodes -l cloud.google.com/gke-nodepool=gke-llm-inference-kcc-gpu-pool \
   --for=condition=Ready --timeout=3600s
 
 # Apply workload
