@@ -8,7 +8,6 @@ provider "google-beta" {
   region  = var.region
 }
 
-provider "helm" {}
 
 # VPC Network
 resource "google_compute_network" "main" {
@@ -230,10 +229,14 @@ resource "null_resource" "cluster_credentials" {
   }
 }
 
-resource "helm_release" "vllm" {
-  name       = "release"
-  chart      = "${path.module}/workload"
-  namespace  = "default"
-  wait       = false # Avoid timeouts in TF, verify separately
+resource "null_resource" "deploy_workload" {
   depends_on = [null_resource.cluster_credentials, null_resource.stage_model_weights, local_file.helm_values]
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      helm upgrade --install release ${path.module}/workload \
+        --namespace default \
+        --values ${local_file.helm_values.filename}
+    EOT
+  }
 }
