@@ -221,19 +221,24 @@ tolerations:
 EOT
 }
 
-# Configure kubectl and helm credentials for the CI runner
-resource "null_resource" "cluster_credentials" {
-  depends_on = [google_container_node_pool.cpu_pool, google_container_node_pool.gpu_pool]
-  provisioner "local-exec" {
-    command = "gcloud container clusters get-credentials ${google_container_cluster.main.name} --region ${var.region} --project ${var.project_id}"
-  }
-}
-
+# Deploy the workload using local-exec to handle fresh CI runners correctly
 resource "null_resource" "deploy_workload" {
-  depends_on = [null_resource.cluster_credentials, null_resource.stage_model_weights, local_file.helm_values]
+  depends_on = [
+    google_container_node_pool.cpu_pool,
+    google_container_node_pool.gpu_pool,
+    null_resource.stage_model_weights,
+    local_file.helm_values
+  ]
+
+  triggers = {
+    # Ensure it re-deploys when values change OR cluster changes
+    values_hash = sha256(local_file.helm_values.content)
+    cluster_id  = google_container_cluster.main.id
+  }
 
   provisioner "local-exec" {
     command = <<-EOT
+      gcloud container clusters get-credentials ${google_container_cluster.main.name} --region ${var.region} --project ${var.project_id}
       helm upgrade --install release ${path.module}/workload \
         --namespace default \
         --values ${local_file.helm_values.filename}
