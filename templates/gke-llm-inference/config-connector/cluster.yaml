@@ -5,9 +5,7 @@ metadata:
   namespace: forge-management
   labels:
     template: gke-llm-inference
-  annotations:
     cnrm.cloud.google.com/remove-default-node-pool: 'true'
-    cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   location: us-central1
   initialNodeCount: 1
@@ -37,8 +35,6 @@ metadata:
   namespace: forge-management
   labels:
     template: gke-llm-inference
-  annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   clusterRef:
     name: gke-llm-inference-kcc
@@ -59,8 +55,6 @@ metadata:
   namespace: forge-management
   labels:
     template: gke-llm-inference
-  annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   clusterRef:
     name: gke-llm-inference-kcc
@@ -84,5 +78,3 @@ spec:
     - https://www.googleapis.com/auth/cloud-platform
     workloadMetadataConfig:
       mode: GKE_METADATA
-  queuedProvisioning:
-    enabled: true
