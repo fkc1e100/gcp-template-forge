@@ -245,6 +245,9 @@ jobs:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
 
+      - name: Install GKE Auth Plugin
+        run: sudo apt-get update && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
@@ -309,9 +312,13 @@ jobs:
         run: |
           CHARTS=$(find ${{ matrix.template }}/terraform-helm -name Chart.yaml -exec dirname {} \; 2>/dev/null)
           if [ -z "$CHARTS" ]; then echo "No Helm charts found -- skipping"; exit 0; fi
+          TIMEOUT="60m"
+          if [ -f "${{ matrix.template }}/.timeout" ]; then
+            TIMEOUT=$(cat ${{ matrix.template }}/.timeout)
+          fi
           for chart in $CHARTS; do
             echo "=== Helm deploy: $chart ==="
-            helm upgrade --install release "$chart" --wait --timeout=10m
+            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT"
           done
 
       - name: Security scan — GCP native (On-Demand Scanning + Security Posture)
@@ -482,6 +489,9 @@ jobs:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
 
+      - name: Install GKE Auth Plugin
+        run: sudo apt-get update && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
+
       - name: Get KCC cluster credentials
         uses: google-github-actions/get-gke-credentials@v2
         with:
@@ -589,6 +599,9 @@ jobs:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
 
+      - name: Install GKE Auth Plugin
+        run: sudo apt-get update && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
+
       # ── TF cleanup ──────────────────────────────────────────────────────────
       - name: Setup Terraform
         if: "hashFiles(format('{0}/terraform-helm/main.tf', matrix.template)) != ''"
@@ -686,6 +699,9 @@ jobs:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
 
+      - name: Install GKE Auth Plugin
+        run: sudo apt-get update && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
+
       - name: Setup Terraform
         if: steps.skip-check.outputs.skip != 'true'
         uses: hashicorp/setup-terraform@v3
@@ -749,6 +765,26 @@ jobs:
           kubectl get nodes
           gcloud container clusters describe $CLUSTER --location=$LOCATION \
             --format="value(status)" | grep -q RUNNING
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Helm deploy and verify
+        id: helm-deploy
+        if: >-
+          steps.tf-verify.outcome == 'success' &&
+          hashFiles(format('{0}/terraform-helm', matrix.template)) != ''
+        run: |
+          CHARTS=$(find ${{ matrix.template }}/terraform-helm -name Chart.yaml -exec dirname {} \; 2>/dev/null)
+          if [ -z "$CHARTS" ]; then echo "No Helm charts found -- skipping"; exit 0; fi
+          TIMEOUT="60m"
+          if [ -f "${{ matrix.template }}/.timeout" ]; then
+            TIMEOUT=$(cat ${{ matrix.template }}/.timeout)
+          fi
+          for chart in $CHARTS; do
+            echo "=== Helm deploy: $chart ==="
+            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT"
+          done
 
       - name: Security scan — GCP native (On-Demand Scanning + Security Posture)
         id: security-scan
@@ -919,6 +955,9 @@ jobs:
         with:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+
+      - name: Install GKE Auth Plugin
+        run: sudo apt-get update && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
 
       - name: Get KCC cluster credentials
         if: steps.skip-check.outputs.skip != 'true'
