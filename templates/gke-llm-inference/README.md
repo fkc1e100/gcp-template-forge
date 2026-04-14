@@ -50,3 +50,4 @@ This template provisions a GKE Standard cluster optimized for LLM inference usin
 | Estimated cost per 1M Output Tokens | ~$0.80 |
 
 *Note: Costs are estimates based on us-central1 pricing. Actual costs may vary.*
+# Trigger
