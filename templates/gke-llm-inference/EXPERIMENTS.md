@@ -2,4 +2,6 @@
 
 | Attempt | Change | CI Result | Hypothesis | Next step |
 |---|---|---|---|---|
-| 1 | Set wait=false on helm upgrade and increased timeouts (1800s) | | Helm 30m timeout is too short for GPU provisioning + model load | Wait for CI |
+| 1 | Set wait=false on helm upgrade and increased timeouts (1800s) | ❌ Timeout | Pod failed to become ready in 30 min | Increase timeout to 60 min |
+| 2 | Increased timeout to 3600s and added diagnostics | ❌ Timeout | Pod failed to become ready in 60 min; diagnostics failed due to Unauthorized | Increase timeout to 90 min, switch to get-credentials for robust auth, and use Recreate strategy |
+| 3 | 90m timeout, get-credentials auth, Recreate strategy | | Recreate strategy avoids GPU quota conflicts; get-credentials ensures robust auth for diagnostics | Wait for CI |
