@@ -544,6 +544,135 @@ jobs:
             exit 1
           fi
 
+      - name: Get KCC Workload Cluster Info
+        id: kcc-workload-info
+        if: steps.kcc-wait.outcome == 'success' || steps.kcc-cluster-ready.outcome == 'success'
+        run: |
+          CLUSTER_COUNT=$(kubectl get containerclusters.container.cnrm.cloud.google.com \
+            -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }}) --no-headers 2>/dev/null | wc -l || echo "0")
+          if [ "$CLUSTER_COUNT" -eq 0 ]; then
+             CLUSTER_COUNT=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(len(docs))")
+          fi
+          if [ "$CLUSTER_COUNT" -eq 0 ]; then
+            echo "has_cluster=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }}) -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
+          LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }}) -o jsonpath='{.items[0].spec.location}' 2>/dev/null || true)
+          if [ -z "$CLUSTER_NAME" ]; then
+             CLUSTER_NAME=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(docs[0]['metadata']['name'] if docs else '')")
+             LOCATION=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(docs[0]['spec']['location'] if docs else '')")
+          fi
+          echo "has_cluster=true" >> $GITHUB_OUTPUT
+          echo "cluster_name=${CLUSTER_NAME}" >> $GITHUB_OUTPUT
+          echo "location=${LOCATION}" >> $GITHUB_OUTPUT
+
+      - name: Get KCC Workload Cluster Credentials
+        id: kcc-workload-creds
+        if: steps.kcc-workload-info.outputs.has_cluster == 'true'
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ steps.kcc-workload-info.outputs.cluster_name }}
+          location: ${{ steps.kcc-workload-info.outputs.location }}
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Set up Helm (KCC)
+        uses: azure/setup-helm@v4
+        if: steps.kcc-workload-creds.outcome == 'success'
+
+      - name: Helm deploy and verify (KCC)
+        id: helm-deploy-kcc
+        if: steps.kcc-workload-creds.outcome == 'success' && hashFiles(format('{0}/terraform-helm', matrix.template)) != ''
+        run: |
+          CHARTS=$(find ${{ matrix.template }}/terraform-helm -name Chart.yaml -exec dirname {} \; 2>/dev/null)
+          if [ -z "$CHARTS" ]; then echo "No Helm charts found -- skipping"; exit 0; fi
+          TIMEOUT="60m"
+          if [ -f "${{ matrix.template }}/.timeout" ]; then
+            TIMEOUT=$(cat ${{ matrix.template }}/.timeout)
+          fi
+          for chart in $CHARTS; do
+            echo "=== Helm deploy: $chart ==="
+            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT"
+          done
+
+      - name: Security scan — GCP native (On-Demand Scanning + Security Posture) (KCC)
+        id: security-scan-kcc
+        continue-on-error: true
+        if: steps.kcc-workload-creds.outcome == 'success'
+        run: |
+          CLUSTER="${{ steps.kcc-workload-info.outputs.cluster_name }}"
+          LOCATION="${{ steps.kcc-workload-info.outputs.location }}"
+          PROJECT="${{ env.PROJECT_ID }}"
+          SCAN_WARNINGS=0
+
+          echo "=== GKE Security Posture configuration ==="
+          gcloud container clusters describe "$CLUSTER" --location="$LOCATION" \
+            --project="$PROJECT" --format="yaml(securityPostureConfig)"
+
+          echo "=== GKE Security Posture findings (HIGH/CRITICAL) ==="
+          POSTURE_OUT=$(gcloud beta container clusters list-security-posture-findings \
+            "$CLUSTER" --location="$LOCATION" --project="$PROJECT" \
+            --filter="severity=HIGH OR severity=CRITICAL" \
+            --format="table(severity,findingType,resourceUri,description)" 2>/dev/null || true)
+          echo "$POSTURE_OUT"
+          if echo "$POSTURE_OUT" | grep -qiE 'HIGH|CRITICAL'; then
+            echo "::warning::GKE Security Posture HIGH/CRITICAL findings detected"
+            SCAN_WARNINGS=1
+          fi
+
+          echo "=== On-Demand Scanning: workload images ==="
+          gcloud services enable ondemandscanning.googleapis.com \
+            --project="$PROJECT" --quiet 2>/dev/null || true
+
+          IMAGES=$(kubectl get pods --all-namespaces -o json 2>/dev/null \
+            | jq -r '.items[] | select(.metadata.namespace | IN("kube-system","kube-public","kube-node-lease","gke-gmp-system","gke-managed-metrics-server","config-management-system") | not) | [(.spec.containers//[]),(.spec.initContainers//[])] | add//[] | .[].image' 2>/dev/null \
+            | sort -u) || true
+
+          if [ -z "$IMAGES" ]; then
+            echo "No workload images found outside system namespaces — skipping image scan"
+          else
+            echo "Images to scan:"
+            echo "$IMAGES"
+            while IFS= read -r IMAGE; do
+              [ -z "$IMAGE" ] && continue
+              echo "--- Scanning: $IMAGE ---"
+              SCAN_OUT=$(gcloud artifacts docker images scan "$IMAGE" --remote \
+                --project="$PROJECT" --quiet 2>&1) || {
+                echo "::warning::On-Demand Scan failed for $IMAGE"
+                continue
+              }
+              echo "$SCAN_OUT"
+              SCAN_NAME=$(echo "$SCAN_OUT" | grep '^name:' | head -1 | awk '{print $2}' || true)
+              if [ -n "$SCAN_NAME" ]; then
+                VULNS=$(gcloud artifacts docker images list-vulnerabilities "$SCAN_NAME" \
+                  --project="$PROJECT" \
+                  --filter="vulnerability.effectiveSeverity=HIGH OR vulnerability.effectiveSeverity=CRITICAL" \
+                  --format="table(vulnerability.effectiveSeverity,vulnerability.packageIssue[0].affectedPackage,vulnerability.shortDescription)" \
+                  2>/dev/null || true)
+                if [ -n "$VULNS" ]; then
+                  echo "$VULNS"
+                  echo "::warning::HIGH/CRITICAL vulnerabilities in $IMAGE"
+                  SCAN_WARNINGS=1
+                else
+                  echo "No HIGH/CRITICAL vulnerabilities found in $IMAGE"
+                fi
+              fi
+            done <<< "$IMAGES"
+          fi
+          echo ""
+          [ "$SCAN_WARNINGS" -eq 0 ] \
+            && echo "Security scan complete — no HIGH/CRITICAL findings." \
+            || echo "::warning::Security findings detected — review output above (non-blocking)"
+
+      - name: Restore KCC Management Cluster Credentials
+        id: kcc-mgmt-creds-restore
+        if: always() && (steps.kcc-wait.outcome == 'success' || steps.kcc-cluster-ready.outcome == 'success')
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ env.KCC_CLUSTER }}
+          location: ${{ env.KCC_REGION }}
+          project_id: ${{ env.PROJECT_ID }}
+
       - name: Delete KCC resources
         if: steps.kcc-cluster-ready.outcome == 'success'
         run: |
@@ -993,6 +1122,135 @@ jobs:
       - name: KCC drift and revert test
         if: steps.kcc-wait.outcome == 'success'
         run: echo "Drift test placeholder -- template-specific tests go here."
+
+      - name: Get KCC Workload Cluster Info
+        id: kcc-workload-info
+        if: steps.kcc-wait.outcome == 'success' || steps.kcc-cluster-ready.outcome == 'success'
+        run: |
+          CLUSTER_COUNT=$(kubectl get containerclusters.container.cnrm.cloud.google.com \
+            -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }}) --no-headers 2>/dev/null | wc -l || echo "0")
+          if [ "$CLUSTER_COUNT" -eq 0 ]; then
+             CLUSTER_COUNT=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(len(docs))")
+          fi
+          if [ "$CLUSTER_COUNT" -eq 0 ]; then
+            echo "has_cluster=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }}) -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
+          LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }}) -o jsonpath='{.items[0].spec.location}' 2>/dev/null || true)
+          if [ -z "$CLUSTER_NAME" ]; then
+             CLUSTER_NAME=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(docs[0]['metadata']['name'] if docs else '')")
+             LOCATION=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(docs[0]['spec']['location'] if docs else '')")
+          fi
+          echo "has_cluster=true" >> $GITHUB_OUTPUT
+          echo "cluster_name=${CLUSTER_NAME}" >> $GITHUB_OUTPUT
+          echo "location=${LOCATION}" >> $GITHUB_OUTPUT
+
+      - name: Get KCC Workload Cluster Credentials
+        id: kcc-workload-creds
+        if: steps.kcc-workload-info.outputs.has_cluster == 'true'
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ steps.kcc-workload-info.outputs.cluster_name }}
+          location: ${{ steps.kcc-workload-info.outputs.location }}
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Set up Helm (KCC)
+        uses: azure/setup-helm@v4
+        if: steps.kcc-workload-creds.outcome == 'success'
+
+      - name: Helm deploy and verify (KCC)
+        id: helm-deploy-kcc
+        if: steps.kcc-workload-creds.outcome == 'success' && hashFiles(format('{0}/terraform-helm', matrix.template)) != ''
+        run: |
+          CHARTS=$(find ${{ matrix.template }}/terraform-helm -name Chart.yaml -exec dirname {} \; 2>/dev/null)
+          if [ -z "$CHARTS" ]; then echo "No Helm charts found -- skipping"; exit 0; fi
+          TIMEOUT="60m"
+          if [ -f "${{ matrix.template }}/.timeout" ]; then
+            TIMEOUT=$(cat ${{ matrix.template }}/.timeout)
+          fi
+          for chart in $CHARTS; do
+            echo "=== Helm deploy: $chart ==="
+            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT"
+          done
+
+      - name: Security scan — GCP native (On-Demand Scanning + Security Posture) (KCC)
+        id: security-scan-kcc
+        continue-on-error: true
+        if: steps.kcc-workload-creds.outcome == 'success'
+        run: |
+          CLUSTER="${{ steps.kcc-workload-info.outputs.cluster_name }}"
+          LOCATION="${{ steps.kcc-workload-info.outputs.location }}"
+          PROJECT="${{ env.PROJECT_ID }}"
+          SCAN_WARNINGS=0
+
+          echo "=== GKE Security Posture configuration ==="
+          gcloud container clusters describe "$CLUSTER" --location="$LOCATION" \
+            --project="$PROJECT" --format="yaml(securityPostureConfig)"
+
+          echo "=== GKE Security Posture findings (HIGH/CRITICAL) ==="
+          POSTURE_OUT=$(gcloud beta container clusters list-security-posture-findings \
+            "$CLUSTER" --location="$LOCATION" --project="$PROJECT" \
+            --filter="severity=HIGH OR severity=CRITICAL" \
+            --format="table(severity,findingType,resourceUri,description)" 2>/dev/null || true)
+          echo "$POSTURE_OUT"
+          if echo "$POSTURE_OUT" | grep -qiE 'HIGH|CRITICAL'; then
+            echo "::warning::GKE Security Posture HIGH/CRITICAL findings detected"
+            SCAN_WARNINGS=1
+          fi
+
+          echo "=== On-Demand Scanning: workload images ==="
+          gcloud services enable ondemandscanning.googleapis.com \
+            --project="$PROJECT" --quiet 2>/dev/null || true
+
+          IMAGES=$(kubectl get pods --all-namespaces -o json 2>/dev/null \
+            | jq -r '.items[] | select(.metadata.namespace | IN("kube-system","kube-public","kube-node-lease","gke-gmp-system","gke-managed-metrics-server","config-management-system") | not) | [(.spec.containers//[]),(.spec.initContainers//[])] | add//[] | .[].image' 2>/dev/null \
+            | sort -u) || true
+
+          if [ -z "$IMAGES" ]; then
+            echo "No workload images found outside system namespaces — skipping image scan"
+          else
+            echo "Images to scan:"
+            echo "$IMAGES"
+            while IFS= read -r IMAGE; do
+              [ -z "$IMAGE" ] && continue
+              echo "--- Scanning: $IMAGE ---"
+              SCAN_OUT=$(gcloud artifacts docker images scan "$IMAGE" --remote \
+                --project="$PROJECT" --quiet 2>&1) || {
+                echo "::warning::On-Demand Scan failed for $IMAGE"
+                continue
+              }
+              echo "$SCAN_OUT"
+              SCAN_NAME=$(echo "$SCAN_OUT" | grep '^name:' | head -1 | awk '{print $2}' || true)
+              if [ -n "$SCAN_NAME" ]; then
+                VULNS=$(gcloud artifacts docker images list-vulnerabilities "$SCAN_NAME" \
+                  --project="$PROJECT" \
+                  --filter="vulnerability.effectiveSeverity=HIGH OR vulnerability.effectiveSeverity=CRITICAL" \
+                  --format="table(vulnerability.effectiveSeverity,vulnerability.packageIssue[0].affectedPackage,vulnerability.shortDescription)" \
+                  2>/dev/null || true)
+                if [ -n "$VULNS" ]; then
+                  echo "$VULNS"
+                  echo "::warning::HIGH/CRITICAL vulnerabilities in $IMAGE"
+                  SCAN_WARNINGS=1
+                else
+                  echo "No HIGH/CRITICAL vulnerabilities found in $IMAGE"
+                fi
+              fi
+            done <<< "$IMAGES"
+          fi
+          echo ""
+          [ "$SCAN_WARNINGS" -eq 0 ] \
+            && echo "Security scan complete — no HIGH/CRITICAL findings." \
+            || echo "::warning::Security findings detected — review output above (non-blocking)"
+
+      - name: Restore KCC Management Cluster Credentials
+        id: kcc-mgmt-creds-restore
+        if: always() && (steps.kcc-wait.outcome == 'success' || steps.kcc-cluster-ready.outcome == 'success')
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ env.KCC_CLUSTER }}
+          location: ${{ env.KCC_REGION }}
+          project_id: ${{ env.PROJECT_ID }}
 
       - name: Delete KCC resources
         id: kcc-delete
