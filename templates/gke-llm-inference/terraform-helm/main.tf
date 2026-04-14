@@ -219,30 +219,3 @@ tolerations:
   effect: "NoSchedule"
 EOT
 }
-
-# Explicitly deploy the workload during terraform apply with a longer timeout
-# to handle slow GPU provisioning and model loading. This ensures the CI
-# workflow's subsequent manual helm deploy step (which has a shorter 10m
-# timeout) succeeds immediately as the release will already be Ready.
-resource "null_resource" "deploy_workload" {
-  depends_on = [
-    google_container_node_pool.gpu_pool,
-    null_resource.stage_model_weights,
-    local_file.helm_values
-  ]
-
-  provisioner "local-exec" {
-    command = <<-EOT
-      gcloud container clusters get-credentials ${google_container_cluster.main.name} --region ${var.region} --project ${var.project_id}
-      helm upgrade --install release ${path.module}/workload --wait=false
-      kubectl wait --for=condition=Available deployment/release-deployment --timeout=5400s || {
-        echo "Deployment failed to become available. Diagnostics:"
-        kubectl get nodes
-        kubectl get pods
-        kubectl describe pod -l app=vllm-inference-server
-        kubectl get events --sort-by='.lastTimestamp' | tail -n 20
-        exit 1
-      }
-    EOT
-  }
-}
