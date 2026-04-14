@@ -13,35 +13,42 @@ metadata:
   namespace: default
 spec:
   template:
+    metadata:
+      annotations:
+        gke-gcsfuse/volumes: "true"
     spec:
       serviceAccountName: vllm-sa
       containers:
       - name: stager
-        image: google/cloud-sdk:slim
+        image: vllm/vllm-openai:v0.7.2
         command:
         - /bin/bash
         - -c
         - |
           set -e
-          # Only download if bucket is empty
-          COUNT=$(gcloud storage ls gs://gke-llm-inference-kcc-weights/Qwen/Qwen2.5-1.5B-Instruct/ 2>/dev/null | wc -l || echo "0")
-          if [ "$COUNT" -eq 0 ]; then
-            echo "Bucket is empty, staging model weights..."
-            apt-get update && apt-get install -y python3-pip
-            pip3 install huggingface_hub --quiet
-            python3 -c "
-from huggingface_hub import snapshot_download
-import os
-try:
-    snapshot_download('Qwen/Qwen2.5-1.5B-Instruct', local_dir='/tmp/model')
-except Exception as e:
-    print(f'Error: {e}')
-    exit(1)
-"
-            gcloud storage cp -r /tmp/model/* gs://gke-llm-inference-kcc-weights/Qwen/Qwen2.5-1.5B-Instruct/
-          else
-            echo "Weights already present."
-          fi
+          python3 -c "
+          import os
+          from huggingface_hub import snapshot_download
+          model_id = 'Qwen/Qwen2.5-1.5B-Instruct'
+          bucket_path = '/data/' + model_id
+          
+          if not os.path.exists(bucket_path) or not os.listdir(bucket_path):
+              print(f'Bucket is empty or missing model, staging model weights for {model_id}...')
+              snapshot_download(model_id, local_dir=bucket_path)
+              print('Staging complete.')
+          else:
+              print(f'Weights for {model_id} already present in bucket.')
+          "
+        volumeMounts:
+        - mountPath: /data
+          name: gcs-fuse-csi-ephemeral
+      volumes:
+      - name: gcs-fuse-csi-ephemeral
+        csi:
+          driver: gcsfuse.csi.storage.gke.io
+          volumeAttributes:
+            bucketName: gke-llm-inference-kcc-weights
+            mountOptions: "implicit-dirs"
       restartPolicy: OnFailure
   backoffLimit: 2
 ---
