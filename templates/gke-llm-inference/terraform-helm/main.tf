@@ -142,10 +142,10 @@ resource "null_resource" "clear_helm_lock" {
 
   provisioner "local-exec" {
     command = <<-EOT
-      # Install gke-gcloud-auth-plugin if missing
+      # Install gke-gcloud-auth-plugin if missing using apt-get (gcloud component manager is disabled)
       if ! which gke-gcloud-auth-plugin >/dev/null 2>&1; then
-        echo "Installing gke-gcloud-auth-plugin..."
-        gcloud components install gke-gcloud-auth-plugin --quiet || true
+        echo "Installing gke-gcloud-auth-plugin via apt..."
+        sudo apt-get update && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
       fi
       gcloud container clusters get-credentials ${google_container_cluster.main.name} --region ${var.region} --project ${var.project_id}
       kubectl delete secret -n default -l owner=helm,name=release,status=pending-upgrade --ignore-not-found
