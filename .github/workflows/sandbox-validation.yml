@@ -267,9 +267,11 @@ jobs:
         working-directory: ${{ matrix.template }}/terraform-helm
         run: |
           echo "TF_START=$(date -u +%s)" >> $GITHUB_ENV
+          UID_SUFFIX=$(echo ${{ github.sha }} | cut -c1-5)
+          export TF_VAR_cluster_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}"
           terraform init \
             -backend-config="bucket=$TF_STATE_BUCKET" \
-            -backend-config="prefix=${{ matrix.template }}/terraform-helm"
+            -backend-config="prefix=${{ matrix.template }}-${{ github.run_id }}/terraform-helm"
           terraform apply -auto-approve -input=false
 
       - name: Capture Terraform outputs
@@ -541,7 +543,7 @@ jobs:
           fi
 
           STATUS=$(kubectl get containerclusters.container.cnrm.cloud.google.com \
-            -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }}) \
+            -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-$(echo ${{ github.sha }} | cut -c1-5) \
             -o jsonpath='{.items[*].status.conditions[?(@.type=="Ready")].status}' \
             2>/dev/null | tr ' ' '\n' | grep -c "True" || echo "0")
 
@@ -557,7 +559,7 @@ jobs:
         if: steps.kcc-wait.outcome == 'success' || steps.kcc-cluster-ready.outcome == 'success'
         run: |
           CLUSTER_COUNT=$(kubectl get containerclusters.container.cnrm.cloud.google.com \
-            -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }}) --no-headers 2>/dev/null | wc -l || echo "0")
+            -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-$(echo ${{ github.sha }} | cut -c1-5) --no-headers 2>/dev/null | wc -l || echo "0")
           if [ "$CLUSTER_COUNT" -eq 0 ]; then
              CLUSTER_COUNT=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(len(docs))")
           fi
@@ -565,8 +567,8 @@ jobs:
             echo "has_cluster=false" >> $GITHUB_OUTPUT
             exit 0
           fi
-          CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }}) -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
-          LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }}) -o jsonpath='{.items[0].spec.location}' 2>/dev/null || true)
+          CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-$(echo ${{ github.sha }} | cut -c1-5) -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
+          LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-$(echo ${{ github.sha }} | cut -c1-5) -o jsonpath='{.items[0].spec.location}' 2>/dev/null || true)
           if [ -z "$CLUSTER_NAME" ]; then
              CLUSTER_NAME=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(docs[0]['metadata']['name'] if docs else '')")
              LOCATION=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(docs[0]['spec']['location'] if docs else '')")
@@ -754,9 +756,11 @@ jobs:
         if: "hashFiles(format('{0}/terraform-helm/main.tf', matrix.template)) != ''"
         working-directory: ${{ matrix.template }}/terraform-helm
         run: |
+          UID_SUFFIX=$(echo ${{ github.sha }} | cut -c1-5)
+          export TF_VAR_cluster_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}"
           terraform init \
             -backend-config="bucket=${{ env.TF_STATE_BUCKET }}" \
-            -backend-config="prefix=${{ matrix.template }}/terraform-helm" \
+            -backend-config="prefix=${{ matrix.template }}-${{ github.run_id }}/terraform-helm" \
             -input=false -no-color 2>/dev/null || exit 0
 
           CLUSTER=$(terraform output -raw cluster_name 2>/dev/null || true)
@@ -867,9 +871,11 @@ jobs:
         working-directory: ${{ matrix.template }}/terraform-helm
         run: |
           echo "TF_START=$(date -u +%s)" >> $GITHUB_ENV
+          UID_SUFFIX=$(echo ${{ github.sha }} | cut -c1-5)
+          export TF_VAR_cluster_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}"
           terraform init \
             -backend-config="bucket=$TF_STATE_BUCKET" \
-            -backend-config="prefix=${{ matrix.template }}/terraform-helm"
+            -backend-config="prefix=${{ matrix.template }}-${{ github.run_id }}/terraform-helm"
           terraform apply -auto-approve -input=false
 
       - name: Capture Terraform outputs
@@ -1148,7 +1154,7 @@ jobs:
         if: steps.kcc-wait.outcome == 'success' || steps.kcc-cluster-ready.outcome == 'success'
         run: |
           CLUSTER_COUNT=$(kubectl get containerclusters.container.cnrm.cloud.google.com \
-            -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }}) --no-headers 2>/dev/null | wc -l || echo "0")
+            -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-$(echo ${{ github.sha }} | cut -c1-5) --no-headers 2>/dev/null | wc -l || echo "0")
           if [ "$CLUSTER_COUNT" -eq 0 ]; then
              CLUSTER_COUNT=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(len(docs))")
           fi
@@ -1156,8 +1162,8 @@ jobs:
             echo "has_cluster=false" >> $GITHUB_OUTPUT
             exit 0
           fi
-          CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }}) -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
-          LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }}) -o jsonpath='{.items[0].spec.location}' 2>/dev/null || true)
+          CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-$(echo ${{ github.sha }} | cut -c1-5) -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
+          LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-$(echo ${{ github.sha }} | cut -c1-5) -o jsonpath='{.items[0].spec.location}' 2>/dev/null || true)
           if [ -z "$CLUSTER_NAME" ]; then
              CLUSTER_NAME=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(docs[0]['metadata']['name'] if docs else '')")
              LOCATION=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(docs[0]['spec']['location'] if docs else '')")
