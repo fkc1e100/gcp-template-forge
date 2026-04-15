@@ -1,5 +1,4 @@
-# Baseline values for helm lint. 
-# Terraform will overwrite this file during deployment with dynamic values.
+# Baseline values for helm deployment.
 replicaCount: 1
 
 image:
@@ -7,15 +6,15 @@ image:
   tag: v0.7.2
   pullPolicy: IfNotPresent
 
-serviceAccountEmail: ""
+serviceAccountEmail: "forge-builder@gca-gke-2025.iam.gserviceaccount.com"
 
 model:
   id: Qwen/Qwen2.5-1.5B-Instruct
-  bucketName: ""
+  bucketName: "gca-gke-2025-gke-llm-inference-tf-weights"
 
 service:
-  type: LoadBalancer
-  port: 80
+  type: ClusterIP
+  port: 8000
 
 resources:
   limits:

@@ -13,10 +13,6 @@ provider "google-beta" {
 resource "google_compute_network" "main" {
   name                    = var.network_name
   auto_create_subnetworks = false
-
-  labels = {
-    project = "gcp-template-forge"
-  }
 }
 
 resource "google_compute_subnetwork" "main" {
@@ -25,10 +21,6 @@ resource "google_compute_subnetwork" "main" {
   region                   = var.region
   network                  = google_compute_network.main.id
   private_ip_google_access = true
-
-  labels = {
-    project = "gcp-template-forge"
-  }
 
   secondary_ip_range {
     range_name    = "pods"
@@ -101,7 +93,11 @@ resource "google_container_node_pool" "cpu_pool" {
     machine_type    = "e2-standard-4"
     spot            = true
     service_account = var.service_account
-    oauth_scopes    = ["https://www.googleapis.com/auth/cloud-platform"]
+    oauth_scopes = [
+      "https://www.googleapis.com/auth/logging.write",
+      "https://www.googleapis.com/auth/monitoring",
+      "https://www.googleapis.com/auth/devstorage.read_only",
+    ]
   }
 }
 
@@ -130,8 +126,11 @@ resource "google_container_node_pool" "gpu_pool" {
     }
 
     service_account = var.service_account
-    oauth_scopes    = ["https://www.googleapis.com/auth/cloud-platform"]
-
+    oauth_scopes = [
+      "https://www.googleapis.com/auth/logging.write",
+      "https://www.googleapis.com/auth/monitoring",
+      "https://www.googleapis.com/auth/devstorage.read_only",
+    ]
     # L4 GPUs
     guest_accelerator {
       type  = "nvidia-l4"
@@ -177,58 +176,3 @@ resource "google_service_account_iam_member" "workload_identity" {
   member             = "serviceAccount:${var.project_id}.svc.id.goog[default/release-sa]"
 }
 
-resource "null_resource" "cluster_credentials" {
-  triggers = {
-    always_run = timestamp()
-  }
-  depends_on = [google_container_node_pool.cpu_pool]
-  provisioner "local-exec" {
-    command = <<-EOT
-      TOKEN=$(gcloud auth print-access-token)
-      kubectl --server="https://${google_container_cluster.main.endpoint}" --token="$TOKEN" --insecure-skip-tls-verify delete secret -n default -l owner=helm,name=release,status=pending-upgrade --ignore-not-found
-      kubectl --server="https://${google_container_cluster.main.endpoint}" --token="$TOKEN" --insecure-skip-tls-verify delete secret -n default -l owner=helm,name=release,status=pending-install --ignore-not-found
-      kubectl --server="https://${google_container_cluster.main.endpoint}" --token="$TOKEN" --insecure-skip-tls-verify delete job -n default -l app=vllm-model-staging --ignore-not-found
-      kubectl --server="https://${google_container_cluster.main.endpoint}" --token="$TOKEN" --insecure-skip-tls-verify delete job -n default release-model-staging --ignore-not-found
-    EOT
-  }
-}
-
-# Generate values.yaml for the helm chart so the CI workflow can deploy it correctly.
-# This file is ignored by git to avoid dirty working tree issues.
-resource "local_file" "helm_values" {
-  filename = "${path.module}/workload/values.yaml"
-  content  = <<-EOT
-replicaCount: 1
-
-image:
-  repository: vllm/vllm-openai
-  tag: v0.7.2
-  pullPolicy: IfNotPresent
-
-serviceAccountEmail: ${local.workload_sa_email}
-
-model:
-  id: Qwen/Qwen2.5-1.5B-Instruct
-  bucketName: ${google_storage_bucket.weights.name}
-
-service:
-  type: LoadBalancer
-  port: 80
-
-resources:
-  limits:
-    nvidia.com/gpu: 1
-  requests:
-    nvidia.com/gpu: 1
-
-nodeSelector:
-  cloud.google.com/gke-accelerator: nvidia-l4
-
-tolerations:
-- key: "nvidia.com/gpu"
-  operator: "Exists"
-  effect: "NoSchedule"
-EOT
-}
-
-# Force CI trigger
