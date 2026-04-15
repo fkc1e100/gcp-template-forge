@@ -533,7 +533,7 @@ jobs:
           fi
 
           STATUS=$(kubectl get containerclusters.container.cnrm.cloud.google.com \
-            -n $KCC_NAMESPACE \
+            -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }}) \
             -o jsonpath='{.items[*].status.conditions[?(@.type=="Ready")].status}' \
             2>/dev/null | tr ' ' '\n' | grep -c "True" || echo "0")
 
