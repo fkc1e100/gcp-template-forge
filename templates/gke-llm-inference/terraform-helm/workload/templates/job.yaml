@@ -22,12 +22,19 @@ spec:
         - |
           set -e
           echo "Starting model staging for {{ .Values.model.id }}..."
-          # Use huggingface-cli for more robust download on GCS FUSE
-          # Disable symlinks as they don't work well on GCS FUSE without specific flags
-          export HUGGINGFACE_HUB_CACHE=/tmp/hf-cache
-          mkdir -p /tmp/hf-cache
-          huggingface-cli download {{ .Values.model.id }}             --local-dir /data/{{ .Values.model.id }}             --local-dir-use-symlinks False
-          echo "Staging complete."
+          python3 -c "
+          import os
+          from huggingface_hub import snapshot_download
+          model_id = '{{ .Values.model.id }}'
+          bucket_path = '/data/' + model_id
+          
+          if not os.path.exists(bucket_path) or not os.listdir(bucket_path):
+              print(f'Staging model weights for {model_id} to {bucket_path}...')
+              snapshot_download(model_id, local_dir=bucket_path, local_dir_use_symlinks=False)
+              print('Staging complete.')
+          else:
+              print(f'Weights for {model_id} already present in bucket.')
+          "
         volumeMounts:
         - mountPath: /data
           name: gcs-fuse-csi-ephemeral

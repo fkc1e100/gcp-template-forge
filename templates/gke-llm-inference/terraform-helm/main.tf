@@ -13,6 +13,10 @@ provider "google-beta" {
 resource "google_compute_network" "main" {
   name                    = var.network_name
   auto_create_subnetworks = false
+
+  labels = {
+    project = "gcp-template-forge"
+  }
 }
 
 resource "google_compute_subnetwork" "main" {
@@ -21,6 +25,10 @@ resource "google_compute_subnetwork" "main" {
   region                   = var.region
   network                  = google_compute_network.main.id
   private_ip_google_access = true
+
+  labels = {
+    project = "gcp-template-forge"
+  }
 
   secondary_ip_range {
     range_name    = "pods"
@@ -55,6 +63,10 @@ resource "google_container_cluster" "main" {
   remove_default_node_pool = true
   initial_node_count       = 1
   deletion_protection      = false
+
+  resource_labels = {
+    project = "gcp-template-forge"
+  }
 
   networking_mode = "VPC_NATIVE"
   ip_allocation_policy {
@@ -141,6 +153,10 @@ resource "google_storage_bucket" "weights" {
   location                    = var.region
   force_destroy               = true
   uniform_bucket_level_access = true
+
+  labels = {
+    project = "gcp-template-forge"
+  }
 }
 
 locals {
@@ -151,6 +167,14 @@ resource "google_storage_bucket_iam_member" "workload_admin" {
   bucket = google_storage_bucket.weights.name
   role   = "roles/storage.objectAdmin"
   member = "serviceAccount:${local.workload_sa_email}"
+}
+
+# Workload Identity IAM binding
+resource "google_service_account_iam_member" "workload_identity" {
+  count              = var.workload_service_account_email != "" ? 1 : 0
+  service_account_id = "projects/${var.project_id}/serviceAccounts/${local.workload_sa_email}"
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "serviceAccount:${var.project_id}.svc.id.goog[default/release-sa]"
 }
 
 resource "null_resource" "cluster_credentials" {
