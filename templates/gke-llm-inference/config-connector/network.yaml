@@ -4,6 +4,7 @@ metadata:
   name: gke-llm-inference-kcc-vpc
   namespace: forge-management
   labels:
+    project: gcp-template-forge
     template: gke-llm-inference
 spec:
   autoCreateSubnetworks: false
@@ -14,6 +15,7 @@ metadata:
   name: gke-llm-inference-kcc-subnet
   namespace: forge-management
   labels:
+    project: gcp-template-forge
     template: gke-llm-inference
 spec:
   ipCidrRange: 10.32.0.0/20
@@ -33,6 +35,7 @@ metadata:
   name: gke-llm-inference-kcc-router
   namespace: forge-management
   labels:
+    project: gcp-template-forge
     template: gke-llm-inference
 spec:
   region: us-central1
@@ -45,6 +48,7 @@ metadata:
   name: gke-llm-inference-kcc-nat
   namespace: forge-management
   labels:
+    project: gcp-template-forge
     template: gke-llm-inference
 spec:
   region: us-central1

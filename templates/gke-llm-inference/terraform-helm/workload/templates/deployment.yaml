@@ -21,6 +21,15 @@ spec:
         force-rollout: {{ now | unixEpoch | quote }}
     spec:
       serviceAccountName: {{ .Release.Name }}-sa
+      initContainers:
+      - name: wait-for-staging
+        image: bitnami/kubectl:latest
+        command:
+        - /bin/bash
+        - -c
+        - |
+          set -e
+          kubectl wait job {{ .Release.Name }}-model-staging --for=condition=complete --timeout=3600s
       containers:
       - name: inference-server
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"

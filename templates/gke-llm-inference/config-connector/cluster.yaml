@@ -4,6 +4,7 @@ metadata:
   name: gke-llm-inference-kcc
   namespace: forge-management
   labels:
+    project: gcp-template-forge
     template: gke-llm-inference
     cnrm.cloud.google.com/remove-default-node-pool: 'true'
 spec:
@@ -34,6 +35,7 @@ metadata:
   name: gke-llm-inference-kcc-cpu-pool
   namespace: forge-management
   labels:
+    project: gcp-template-forge
     template: gke-llm-inference
 spec:
   clusterRef:
@@ -54,6 +56,7 @@ metadata:
   name: gke-llm-inference-kcc-gpu-pool
   namespace: forge-management
   labels:
+    project: gcp-template-forge
     template: gke-llm-inference
 spec:
   clusterRef:
