@@ -812,7 +812,6 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.detect-changes.outputs.has_templates == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 120
-    timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
@@ -1083,7 +1082,6 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.detect-changes.outputs.has_templates == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 120
-    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
