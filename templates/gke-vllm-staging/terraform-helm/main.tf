@@ -1,10 +1,3 @@
-terraform {
-  backend "gcs" {}
-  required_providers {
-    google      = { source = "hashicorp/google", version = "~> 6.0" }
-    google-beta = { source = "hashicorp/google-beta", version = "~> 6.0" }
-  }
-}
 
 provider "google" {
   project = var.project_id
@@ -85,10 +78,10 @@ resource "google_container_node_pool" "cpu_pool" {
   node_count = 1
 
   node_config {
-    machine_type = "e2-standard-4"
-    spot         = true
+    machine_type    = "e2-standard-4"
+    spot            = true
     service_account = var.service_account
-    oauth_scopes = ["https://www.googleapis.com/auth/cloud-platform"]
+    oauth_scopes    = ["https://www.googleapis.com/auth/cloud-platform"]
   }
 }
 
