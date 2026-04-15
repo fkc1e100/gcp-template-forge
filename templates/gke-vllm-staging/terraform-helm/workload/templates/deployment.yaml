@@ -6,6 +6,7 @@ metadata:
     {{- include "gke-vllm-staging.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
+  progressDeadlineSeconds: 3600
   selector:
     matchLabels:
       {{- include "gke-vllm-staging.selectorLabels" . | nindent 6 }}

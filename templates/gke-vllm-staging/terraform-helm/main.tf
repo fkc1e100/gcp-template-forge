@@ -118,10 +118,6 @@ resource "google_container_node_pool" "gpu_pool" {
     guest_accelerator {
       type  = "nvidia-l4"
       count = 1
-      gpu_sharing_config {
-        gpu_sharing_strategy       = "TIME_SHARING"
-        max_shared_clients_per_gpu = 1
-      }
     }
 
     service_account = var.service_account
