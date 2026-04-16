@@ -24,13 +24,13 @@ provider "google-beta" {
 
 # VPC Network
 resource "google_compute_network" "vpc" {
-  name                    = "latest-gke-features-vpc"
+  name                    = var.network_name
   auto_create_subnetworks = false
 }
 
 # Subnet
 resource "google_compute_subnetwork" "subnet" {
-  name                     = "latest-gke-features-subnet"
+  name                     = var.subnet_name
   ip_cidr_range            = "10.32.0.0/20"
   region                   = var.region
   network                  = google_compute_network.vpc.id
@@ -49,13 +49,13 @@ resource "google_compute_subnetwork" "subnet" {
 
 # Cloud NAT for private nodes
 resource "google_compute_router" "router" {
-  name    = "latest-gke-features-router"
+  name    = "${var.cluster_name}-router"
   region  = var.region
   network = google_compute_network.vpc.id
 }
 
 resource "google_compute_router_nat" "nat" {
-  name                               = "latest-gke-features-nat"
+  name                               = "${var.cluster_name}-nat"
   router                             = google_compute_router.router.name
   region                             = var.region
   nat_ip_allocate_option             = "AUTO_ONLY"
@@ -153,7 +153,7 @@ resource "google_container_cluster" "latest_features_cluster" {
     }
   }
 
-  min_master_version = "1.35.3-gke.1234000"
+  min_master_version = "1.31"
 
   release_channel {
     channel = "RAPID"
@@ -168,7 +168,7 @@ resource "google_container_cluster" "latest_features_cluster" {
 
 # Primary Node Pool with Latest Features
 resource "google_container_node_pool" "primary_nodes" {
-  name       = "latest-features-pool"
+  name       = "${var.cluster_name}-pool"
   location   = var.region
   cluster    = google_container_cluster.latest_features_cluster.name
   node_count = 1

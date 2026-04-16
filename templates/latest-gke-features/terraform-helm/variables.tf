@@ -29,6 +29,18 @@ variable "cluster_name" {
   default     = "latest-gke-features-tf"
 }
 
+variable "network_name" {
+  description = "The name of the VPC network"
+  type        = string
+  default     = "latest-gke-features-vpc"
+}
+
+variable "subnet_name" {
+  description = "The name of the subnet"
+  type        = string
+  default     = "latest-gke-features-subnet"
+}
+
 variable "service_account" {
   description = "The service account email to use for the node pool"
   type        = string

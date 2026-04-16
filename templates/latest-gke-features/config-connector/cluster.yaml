@@ -40,11 +40,11 @@ spec:
     masterIpv4CidrBlock: "172.16.2.16/28"
   workloadIdentityConfig:
     workloadPool: "gca-gke-2025.svc.id.goog"
-  minMasterVersion: "1.35.3-gke.1234000"
+  minMasterVersion: "1.31"
   releaseChannel:
     channel: RAPID
   securityPostureConfig:
     mode: BASIC
     vulnerabilityMode: VULNERABILITY_ENTERPRISE
-  # KCC might not support gatewayApiConfig yet in all environments, omitting for safety in KCC path
-  # but it is present in the Terraform path which is the primary "Latest Features" showcase.
+  gatewayApiConfig:
+    channel: CHANNEL_STANDARD

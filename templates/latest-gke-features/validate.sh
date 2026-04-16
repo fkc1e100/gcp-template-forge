@@ -18,9 +18,9 @@ set -e
 echo "Starting Latest GKE Features Validation Tests..."
 
 PROJECT_ID=${PROJECT_ID:-"gca-gke-2025"}
-CLUSTER_NAME="latest-gke-features-tf"
-REGION="us-central1"
-NAMESPACE="latest-features"
+CLUSTER_NAME=${CLUSTER_NAME:-"latest-gke-features-tf"}
+REGION=${REGION:-"us-central1"}
+NAMESPACE=${NAMESPACE:-"default"}
 
 # Isolate KUBECONFIG
 export KUBECONFIG=$(mktemp)
@@ -34,12 +34,14 @@ echo "Connectivity passed."
 
 # 2. Workload Readiness
 echo "Test 2: Workload Readiness..."
-kubectl wait --for=condition=available deployment -l app=latest-features-latest-features-workload -n ${NAMESPACE} --timeout=10m
+# Deployment name from fullname helper: <release-name>-<chart-name>
+# In CI, release name is 'release', chart name is 'latest-features-workload'
+kubectl wait --for=condition=available deployment/release-latest-features-workload -n ${NAMESPACE} --timeout=10m
 echo "Workload is available."
 
 # 3. Native Sidecar Validation
 echo "Test 3: Native Sidecar Validation..."
-POD_NAME=$(kubectl get pods -n ${NAMESPACE} -l app=latest-features-latest-features-workload -o jsonpath='{.items[0].metadata.name}')
+POD_NAME=$(kubectl get pods -n ${NAMESPACE} -l app=latest-features-workload -o jsonpath='{.items[0].metadata.name}')
 RESTART_POLICY=$(kubectl get pod ${POD_NAME} -n ${NAMESPACE} -o jsonpath='{.spec.initContainers[0].restartPolicy}')
 if [ "$RESTART_POLICY" != "Always" ]; then
   echo "Native Sidecar check failed! restartPolicy is $RESTART_POLICY, expected Always."
@@ -79,7 +81,9 @@ done
 # 5. Image Streaming Check
 echo "Test 5: Image Streaming Check..."
 # Verify GCFS is enabled on the node pool
-GCFS_ENABLED=$(gcloud container node-pools describe latest-features-pool --cluster ${CLUSTER_NAME} --region ${REGION} --project ${PROJECT_ID} --format="value(config.gcfsConfig.enabled)")
+# Use the dynamic pool name (in TF it is ${CLUSTER_NAME}-pool)
+NODE_POOL_NAME="${CLUSTER_NAME}-pool"
+GCFS_ENABLED=$(gcloud container node-pools describe ${NODE_POOL_NAME} --cluster ${CLUSTER_NAME} --region ${REGION} --project ${PROJECT_ID} --format="value(config.gcfsConfig.enabled)")
 if [ "$GCFS_ENABLED" != "True" ]; then
   echo "Image Streaming (GCFS) check failed! Enabled: $GCFS_ENABLED"
   exit 1
