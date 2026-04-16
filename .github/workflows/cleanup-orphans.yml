@@ -1,7 +1,7 @@
 name: Cleanup Orphaned Infrastructure
 on:
   schedule:
-    - cron: '0 */3 * * *' # Runs every 3 hours
+    - cron: '*/10 * * * *' # Runs every 3 hours
   workflow_dispatch: # Allows manual triggering from the GitHub Actions UI
 
 jobs:
@@ -59,6 +59,8 @@ jobs:
 
           if [ -n "$TF_CLUSTERS" ]; then
             for CLUSTER in $TF_CLUSTERS; do
+              echo "Disabling deletion protection for $CLUSTER..."
+              gcloud container clusters update $CLUSTER --project=gca-gke-2025 --region=us-central1 --no-enable-deletion-protection --quiet || true
               echo "Deleting orphaned TF cluster: $CLUSTER"
               gcloud container clusters delete $CLUSTER \
                 --project=gca-gke-2025 \
