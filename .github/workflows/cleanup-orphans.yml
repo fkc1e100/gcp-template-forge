@@ -80,7 +80,7 @@ jobs:
           echo "Searching for orphaned Terraform clusters..."
           TF_CLUSTERS=$(gcloud container clusters list \
             --project=$PROJECT \
-            --filter="resourceLabels.project=gcp-template-forge OR name ~ latest-gke-features- OR name ~ enterprise-gke- OR name ~ basic-gke-" \
+            --filter="(resourceLabels.project=gcp-template-forge OR name ~ latest-gke-features- OR name ~ enterprise-gke- OR name ~ basic-gke-) AND name != krmapihost-kcc-instance" \
             --format="value(name, zone.scope())")
 
           while read -r CLUSTER C_LOC; do
@@ -133,7 +133,7 @@ jobs:
           echo "Listing all networks in project..."
           gcloud compute networks list --project=$PROJECT
 
-          NETWORKS=$(gcloud compute networks list --project=$PROJECT --filter="name ~ latest-gke-features- OR name ~ enterprise-gke- OR name ~ basic-gke-")
+          NETWORKS=$(gcloud compute networks list --project=$PROJECT --filter="name ~ latest-gke-features- OR name ~ enterprise-gke- OR name ~ basic-gke-" --format="value(name)")
           for N in $NETWORKS; do
             echo "Deleting network $N"
             gcloud compute networks delete $N --project=$PROJECT --quiet || true
