@@ -128,7 +128,7 @@ resource "google_container_cluster" "latest_features_cluster" {
     }
     auto_provisioning_defaults {
       service_account = var.service_account
-      oauth_scopes = var.oauth_scopes
+      oauth_scopes    = var.oauth_scopes
       management {
         auto_repair  = true
         auto_upgrade = true
