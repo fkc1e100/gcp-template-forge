@@ -430,14 +430,14 @@ jobs:
 
       - name: Terraform destroy
         id: tf-destroy
-        if: steps.teardown-check.outputs.should_destroy == 'true' && steps.tf-apply.outcome != 'skipped'
+        if: always() && steps.teardown-check.outputs.should_destroy == 'true' && steps.tf-apply.outcome != 'skipped'
         working-directory: ${{ matrix.template }}/terraform-helm
         run: |
           terraform destroy -auto-approve -input=false || \
           terraform destroy -auto-approve -input=false
 
       - name: Fallback gcloud cluster delete
-        if: steps.teardown-check.outputs.should_destroy == 'true' && steps.tf-destroy.outcome == 'failure' && steps.tf-outputs.outputs.tf_cluster != ''
+        if: always() && steps.teardown-check.outputs.should_destroy == 'true' && steps.tf-destroy.outcome == 'failure' && steps.tf-outputs.outputs.tf_cluster != ''
         run: |
           echo "terraform destroy failed — falling back to gcloud for cluster deletion"
           gcloud container clusters delete "${{ steps.tf-outputs.outputs.tf_cluster }}" \
@@ -685,7 +685,7 @@ jobs:
           project_id: ${{ env.PROJECT_ID }}
 
       - name: Delete KCC resources
-        if: steps.kcc-cluster-ready.outcome == 'success'
+        if: always() && steps.kcc-apply.outcome == 'success'
         run: |
           kubectl delete \
             -n $KCC_NAMESPACE \
