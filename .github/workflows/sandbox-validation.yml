@@ -423,8 +423,8 @@ jobs:
             echo "should_destroy=true"  >> $GITHUB_OUTPUT
             echo "Reason: All verification passed — performing normal teardown"
           else
-            echo "should_destroy=false" >> $GITHUB_OUTPUT
-            echo "::notice::Cluster left running — TF apply succeeded but a downstream step failed. Next push will skip provisioning and re-run the failing step. Cluster will be destroyed on next successful run or PR close."
+            echo "should_destroy=true" >> $GITHUB_OUTPUT
+            echo "::notice::Forcing cluster teardown on failure. Deployments are now dynamic per commit."
           fi
 
       - name: Disable cluster deletion protection before destroy
