@@ -1,0 +1,13 @@
+{{- if .Values.gateway.enabled }}
+kind: HTTPRoute
+apiVersion: gateway.networking.k8s.io/v1beta1
+metadata:
+  name: {{ include "latest-features.fullname" . }}
+spec:
+  parentRefs:
+  - name: {{ .Values.gateway.name }}
+  rules:
+  - backendRefs:
+    - name: {{ include "latest-features.fullname" . }}
+      port: 80
+{{- end }}
