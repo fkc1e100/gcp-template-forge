@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: container.cnrm.cloud.google.com/v1beta1
-kind: ContainerNodePool
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRouter
 metadata:
-  name: latest-gke-features-pool
+  name: latest-gke-features-router
   namespace: forge-management
   labels:
     project: gcp-template-forge
@@ -23,26 +23,26 @@ metadata:
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
-  clusterRef:
-    name: latest-gke-features-kcc
-  location: us-central1
-  nodeCount: 1
-  nodeConfig:
-    machineType: e2-standard-4
-    diskSizeGb: 50
-    diskType: pd-standard
-    imageType: COS_CONTAINERD
-    spot: true
-    serviceAccountRef:
-      external: forge-kcc-admin@gca-gke-2025.iam.gserviceaccount.com
-    oauthScopes:
-      - https://www.googleapis.com/auth/cloud-platform
-    shieldedInstanceConfig:
-      enableSecureBoot: true
-      enableIntegrityMonitoring: true
-    labels:
-      project: gcp-template-forge
-      template: latest-gke-features
-    # LATEST FEATURE: Image Streaming (GCFS)
-    gcfsConfig:
-      enabled: true
+  region: us-central1
+  networkRef:
+    name: latest-gke-features-vpc
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRouterNAT
+metadata:
+  name: latest-gke-features-nat
+  namespace: forge-management
+  labels:
+    project: gcp-template-forge
+    template: latest-gke-features
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
+spec:
+  region: us-central1
+  routerRef:
+    name: latest-gke-features-router
+  natIpAllocateOption: AUTO_ONLY
+  sourceSubnetworkIpRangesToNat: ALL_SUBNETWORKS_ALL_IP_RANGES
+  logConfig:
+    enable: true
+    filter: ERRORS_ONLY
