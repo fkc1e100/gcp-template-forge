@@ -18,6 +18,7 @@ metadata:
   labels:
     app: {{ include "latest-features.name" . }}
 spec:
+  progressDeadlineSeconds: 1200
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
