@@ -11,6 +11,7 @@
 
 - [basic-gke-hello-world](templates/basic-gke-hello-world/) — Minimal GKE cluster with HTTP workload; reference implementation for new templates
 - [enterprise-gke](templates/enterprise-gke/) — Private GKE cluster with VPC, Cloud NAT, Workload Identity, security posture
+- [latest-gke-features](templates/latest-gke-features/) — Advanced GKE features (Gateway API, NAP, Native Sidecars, Image Streaming)
 
 ## External Documentation (fetch before writing code)
 
