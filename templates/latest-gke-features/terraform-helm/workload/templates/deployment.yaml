@@ -59,7 +59,7 @@ spec:
       volumes:
       - name: logs
         emptyDir:
-          sizeLimit: 1Gi
+          sizeLimit: 500Mi
 
       # LATEST FEATURE: Pod Topology Spread Constraints
       topologySpreadConstraints:
