@@ -14,12 +14,22 @@ spec:
       labels:
         app: {{ include "latest-features.name" . }}
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 2000
       # LATEST FEATURE: Native Sidecar Containers (requires K8s 1.29+)
       initContainers:
       - name: logger-sidecar
         image: {{ .Values.sidecar.image }}:{{ .Values.sidecar.tag }}
         restartPolicy: Always
         command: ["sh", "-c", "while true; do echo \"$(date) - heartbeat from native sidecar\" >> /var/log/app.log; sleep 30; done"]
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          privileged: false
         resources:
           {{- toYaml .Values.sidecarResources | nindent 10 }}
         volumeMounts:
@@ -29,8 +39,15 @@ spec:
       containers:
       - name: web-app
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          privileged: false
         ports:
-        - containerPort: 80
+        - name: http
+          containerPort: 80
         resources:
           {{- toYaml .Values.resources | nindent 10 }}
         volumeMounts:

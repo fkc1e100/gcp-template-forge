@@ -41,6 +41,14 @@ variable "subnet_name" {
   default     = "latest-gke-features-subnet"
 }
 
+variable "oauth_scopes" {
+  description = "The set of Google API scopes to be made available on all of the node VMs"
+  type        = list(string)
+  default = [
+    "https://www.googleapis.com/auth/cloud-platform"
+  ]
+}
+
 variable "service_account" {
   description = "The service account email to use for the node pool"
   type        = string

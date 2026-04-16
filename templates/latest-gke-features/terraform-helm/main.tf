@@ -128,9 +128,7 @@ resource "google_container_cluster" "latest_features_cluster" {
     }
     auto_provisioning_defaults {
       service_account = var.service_account
-      oauth_scopes = [
-        "https://www.googleapis.com/auth/cloud-platform"
-      ]
+      oauth_scopes = var.oauth_scopes
       management {
         auto_repair  = true
         auto_upgrade = true
@@ -183,9 +181,7 @@ resource "google_container_node_pool" "primary_nodes" {
 
     service_account = var.service_account
 
-    oauth_scopes = [
-      "https://www.googleapis.com/auth/cloud-platform"
-    ]
+    oauth_scopes = var.oauth_scopes
 
     workload_metadata_config {
       mode = "GKE_METADATA"
