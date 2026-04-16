@@ -28,7 +28,7 @@ Execute the `validate.sh` script to perform in-cluster tests:
 
 ### 3. Manual Inspection
 - **Gateway API**: `kubectl get gateway,httproute -n latest-features`
-- **Sidecar**: `kubectl describe pod -l app=latest-features-latest-features-workload -n latest-features`
+- **Sidecar**: `kubectl describe pod -l app=latest-features-workload -o jsonpath='{.items[0].metadata.name}'`
 - **NAP**: `gcloud container clusters describe latest-gke-features-tf --region us-central1 --format="value(autoscaling.enableNodeAutoprovisioning)"`
 
 ### 4. Cleanup
