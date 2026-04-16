@@ -473,7 +473,7 @@ jobs:
   # ── 3b. PR: KCC deploy → wait → delete (parallel with deploy-test-tf) ─────
   deploy-test-kcc:
     name: "Deploy & Test KCC (${{ matrix.template }})"
-    needs: [ detect-changes, lint ]
+    needs: [ detect-changes, lint, deploy-test-tf ]
     if: >-
       github.event_name == 'pull_request' &&
       needs.detect-changes.outputs.has_templates == 'true' &&
