@@ -40,7 +40,6 @@ spec:
     masterIpv4CidrBlock: "172.16.100.16/28"
   workloadIdentityConfig:
     workloadPool: "gca-gke-2025.svc.id.goog"
-  minMasterVersion: "1.35.3-gke.1234000"
   releaseChannel:
     channel: RAPID
   securityPostureConfig:
