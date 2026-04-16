@@ -70,7 +70,7 @@ jobs:
           echo "Searching for orphaned Terraform clusters..."
           TF_CLUSTERS=$(gcloud container clusters list \
             --project=$PROJECT \
-            --filter="resourceLabels.project=gcp-template-forge OR name ~ ^latest-gke-features- OR name ~ ^enterprise-gke- OR name ~ ^basic-gke-" \
+            --filter="resourceLabels.project=gcp-template-forge OR name ~ latest-gke-features- OR name ~ enterprise-gke- OR name ~ basic-gke-" \
             --format="value(name, zone.scope())")
 
           while read -r CLUSTER C_LOC; do
@@ -83,8 +83,8 @@ jobs:
           # 3. Clean up Networking resources (matching pattern)
           echo "Cleaning up orphaned Networking resources (matching pattern)..."
           
-          # Firewalls
-          FIREWALLS=$(gcloud compute firewall-rules list --project=$PROJECT --format="value(name)" --filter="name ~ ^latest-gke-features- OR name ~ ^enterprise-gke- OR name ~ ^basic-gke-")
+          # Firewalls (BROADER PATTERN to catch gke- prefix)
+          FIREWALLS=$(gcloud compute firewall-rules list --project=$PROJECT --format="value(name)" --filter="name ~ latest-gke-features- OR name ~ enterprise-gke- OR name ~ basic-gke-")
           for F in $FIREWALLS; do
             echo "Deleting firewall: $F"
             gcloud compute firewall-rules delete $F --project=$PROJECT --quiet || true
@@ -94,7 +94,7 @@ jobs:
           echo "Cleaning up routers across all regions..."
           REGIONS=$(gcloud compute regions list --project=$PROJECT --format="value(name)")
           for RGN in $REGIONS; do
-            ROUTERS=$(gcloud compute routers list --project=$PROJECT --regions=$RGN --format="value(name)" --filter="name ~ ^latest-gke-features- OR name ~ ^enterprise-gke- OR name ~ ^basic-gke-")
+            ROUTERS=$(gcloud compute routers list --project=$PROJECT --regions=$RGN --format="value(name)" --filter="name ~ latest-gke-features- OR name ~ enterprise-gke- OR name ~ basic-gke-")
             for R in $ROUTERS; do
               echo "Checking NATs for router $R in $RGN"
               NATS=$(gcloud compute routers describe $R --project=$PROJECT --region=$RGN --format="value(nats.name)" | tr ';' ' ')
@@ -112,7 +112,7 @@ jobs:
           # Subnets across all regions
           echo "Cleaning up subnets across all regions..."
           for RGN in $REGIONS; do
-            SUBNETS=$(gcloud compute networks subnets list --project=$PROJECT --regions=$RGN --format="value(name)" --filter="name ~ ^latest-gke-features- OR name ~ ^enterprise-gke- OR name ~ ^basic-gke-")
+            SUBNETS=$(gcloud compute networks subnets list --project=$PROJECT --regions=$RGN --format="value(name)" --filter="name ~ latest-gke-features- OR name ~ enterprise-gke- OR name ~ ^basic-gke-")
             for S in $SUBNETS; do
               echo "Deleting subnet $S in $RGN"
               gcloud compute networks subnets delete $S --region=$RGN --project=$PROJECT --quiet || true
@@ -123,7 +123,7 @@ jobs:
           echo "Listing all networks in project..."
           gcloud compute networks list --project=$PROJECT
 
-          NETWORKS=$(gcloud compute networks list --project=$PROJECT --filter="name ~ ^latest-gke-features- OR name ~ ^enterprise-gke- OR name ~ ^basic-gke-" --format="value(name)")
+          NETWORKS=$(gcloud compute networks list --project=$PROJECT --filter="name ~ latest-gke-features- OR name ~ enterprise-gke- OR name ~ basic-gke-")
           for N in $NETWORKS; do
             echo "Deleting network $N"
             gcloud compute networks delete $N --project=$PROJECT --quiet || true
