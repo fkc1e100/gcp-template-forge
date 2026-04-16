@@ -17,6 +17,8 @@ kind: HTTPRoute
 apiVersion: gateway.networking.k8s.io/v1
 metadata:
   name: {{ include "latest-features.fullname" . }}
+  labels:
+{{ include "latest-features.labels" . | nindent 4 }}
 spec:
   parentRefs:
   - name: {{ .Values.gateway.name }}

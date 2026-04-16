@@ -17,7 +17,7 @@ kind: Service
 metadata:
   name: {{ include "latest-features.fullname" . }}
   labels:
-    {{- include "latest-features.labels" . | nindent 4 }}
+{{ include "latest-features.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -26,4 +26,4 @@ spec:
       protocol: TCP
       name: http
   selector:
-    {{- include "latest-features.selectorLabels" . | nindent 4 }}
+{{ include "latest-features.selectorLabels" . | nindent 4 }}
