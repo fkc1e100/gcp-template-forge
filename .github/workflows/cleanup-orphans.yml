@@ -1,7 +1,7 @@
 name: Cleanup Orphaned Infrastructure
 on:
   schedule:
-    - cron: '*/10 * * * *' # Runs every 3 hours
+    - cron: '*/10 * * * *' # Runs every 10 minutes
   workflow_dispatch: # Allows manual triggering from the GitHub Actions UI
 
 jobs:
@@ -10,7 +10,6 @@ jobs:
     permissions:
       contents: read
       id-token: write
-      actions: read # Required to list workflow runs
 
     steps:
       - name: Checkout Repository
@@ -32,59 +31,60 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
 
-      - name: Find and Delete Orphaned Clusters
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Clean up GKE Clusters and Networks
         run: |
-          echo "Checking for active GitHub Actions runs..."
-          # Count in_progress or queued runs
-          ACTIVE_RUNS=$(gh run list --status in_progress --json databaseId -q '. | length')
-          QUEUED_RUNS=$(gh run list --status queued --json databaseId -q '. | length')
-          TOTAL_ACTIVE=$((ACTIVE_RUNS + QUEUED_RUNS))
-          
-          if [ "$TOTAL_ACTIVE" -gt 0 ]; then
-            echo "Found $TOTAL_ACTIVE active/queued runs. Skipping cleanup to avoid interrupting active deployments."
-            exit 0
-          fi
+          PROJECT="gca-gke-2025"
+          REGION="us-central1"
 
-          echo "No active runs found. Proceeding with cleanup of orphaned resources..."
-          
-          # 1. Clean up Terraform-provisioned GKE Clusters
-          echo "Searching for Terraform clusters labeled with project=gcp-template-forge..."
-          TF_CLUSTERS=$(gcloud container clusters list \
-            --project=gca-gke-2025 \
-            --region=us-central1 \
-            --filter="resourceLabels.project=gcp-template-forge" \
-            --format="value(name)")
-
-          if [ -n "$TF_CLUSTERS" ]; then
-            for CLUSTER in $TF_CLUSTERS; do
-              echo "Disabling deletion protection for $CLUSTER..."
-              
-              echo "Deleting orphaned TF cluster: $CLUSTER"
-              gcloud container clusters delete $CLUSTER \
-                --project=gca-gke-2025 \
-                --region=us-central1 \
-                --quiet --async
-            done
-          else
-            echo "No orphaned Terraform clusters found."
-          fi
-
-          # 2. Clean up KCC-provisioned ContainerClusters
+          # 1. Clean up KCC-provisioned ContainerClusters FIRST (so they don't immediately rebuild)
           echo "Connecting to Management Cluster (krmapihost-kcc-instance)..."
-          gcloud container clusters get-credentials krmapihost-kcc-instance \
-            --region us-central1 \
-            --project gca-gke-2025
-          
-          echo "Searching for KCC ContainerClusters labeled with project=gcp-template-forge..."
-          # The label was added to KCC manifests as 'project: gcp-template-forge'
+          gcloud container clusters get-credentials krmapihost-kcc-instance --region us-central1 --project $PROJECT
           KCC_CLUSTERS=$(kubectl get containercluster -n forge-management -l project=gcp-template-forge -o name || true)
-          
           if [ -n "$KCC_CLUSTERS" ]; then
             echo "Deleting orphaned KCC resources..."
-            # Using --wait=false so the action finishes quickly and KCC handles the deletion in the background
             kubectl delete $KCC_CLUSTERS -n forge-management --wait=false
-          else
-            echo "No orphaned KCC clusters found."
           fi
+
+          # 2. Clean up GKE Clusters (Terraform & Leftover KCC nodes)
+          echo "Searching for orphaned GKE clusters..."
+          # Delete any cluster with the project label OR containing the word "-tf" or "-kcc"
+          CLUSTERS=$(gcloud container clusters list --project=$PROJECT --region=$REGION --format="value(name)" | grep -E "latest-gke|enterprise-gke|basic-gke|-tf|-kcc" || true)
+
+          for CLUSTER in $CLUSTERS; do
+            echo "Disabling deletion protection for $CLUSTER..."
+            gcloud container clusters update $CLUSTER --location=$REGION --project=$PROJECT --no-deletion-protection --quiet || true
+            echo "Deleting cluster: $CLUSTER"
+            gcloud container clusters delete $CLUSTER --location=$REGION --project=$PROJECT --quiet --async || true
+          done
+
+          # 3. Clean up Networking Resources
+          # We run these with || true so that if a cluster is still spinning down, the network delete fails silently and will be picked up on the next 10min cron loop.
+          echo "Cleaning up orphaned Networking resources..."
+          
+          # Delete Firewalls
+          FIREWALLS=$(gcloud compute firewall-rules list --project=$PROJECT --format="value(name)" | grep -E "gke-latest-gke|gke-enterprise-gke|gke-basic-gke" || true)
+          for FW in $FIREWALLS; do
+            gcloud compute firewall-rules delete $FW --project=$PROJECT --quiet || true
+          done
+
+          # Delete Routers and NATs
+          ROUTERS=$(gcloud compute routers list --project=$PROJECT --format="value(name, region)" | grep -E "latest-gke|enterprise-gke|basic-gke" || true)
+          while read -r R R_REGION; do
+            [ -z "$R" ] && continue
+            gcloud compute routers delete $R --region=$R_REGION --project=$PROJECT --quiet || true
+          done <<< "$ROUTERS"
+
+          # Delete Subnets
+          SUBNETS=$(gcloud compute networks subnets list --project=$PROJECT --format="value(name, region)" | grep -E "latest-gke|enterprise-gke|basic-gke" || true)
+          while read -r S S_REGION; do
+            [ -z "$S" ] && continue
+            gcloud compute networks subnets delete $S --region=$S_REGION --project=$PROJECT --quiet || true
+          done <<< "$SUBNETS"
+
+          # Delete VPC Networks
+          NETWORKS=$(gcloud compute networks list --project=$PROJECT --format="value(name)" | grep -E "latest-gke|enterprise-gke|basic-gke" || true)
+          for N in $NETWORKS; do
+            gcloud compute networks delete $N --project=$PROJECT --quiet || true
+          done
+          
+          echo "Cleanup complete."
