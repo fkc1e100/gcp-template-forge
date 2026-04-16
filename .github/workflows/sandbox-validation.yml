@@ -21,6 +21,7 @@ permissions:
   contents: write
   id-token: write
   pull-requests: write
+  actions: write
 
 env:
   PROJECT_ID: gca-gke-2025
@@ -470,10 +471,14 @@ jobs:
               body,
             });
 
+      - name: Cancel workflow on failure
+        if: failure()
+        run: gh run cancel ${{ github.run_id }}
+
   # ── 3b. PR: KCC deploy → wait → delete (parallel with deploy-test-tf) ─────
   deploy-test-kcc:
     name: "Deploy & Test KCC (${{ matrix.template }})"
-    needs: [ detect-changes, lint, deploy-test-tf ]
+    needs: [ detect-changes, lint ]
     if: >-
       github.event_name == 'pull_request' &&
       needs.detect-changes.outputs.has_templates == 'true' &&
@@ -714,6 +719,10 @@ jobs:
               repo: context.repo.repo,
               body,
             });
+
+      - name: Cancel workflow on failure
+        if: failure()
+        run: gh run cancel ${{ github.run_id }}
 
   # ── 3c. PR close: destroy any cluster left up by failed deploy-test runs ────
   cleanup-pr-infra:
