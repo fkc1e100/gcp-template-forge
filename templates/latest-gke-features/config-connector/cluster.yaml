@@ -15,7 +15,7 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerCluster
 metadata:
-  name: latest-features-kcc
+  name: latest-gke-features-kcc
   namespace: forge-management
   labels:
     project: gcp-template-forge
@@ -28,9 +28,9 @@ spec:
   initialNodeCount: 1
   networkingMode: VPC_NATIVE
   networkRef:
-    name: latest-features-kcc-vpc
+    name: latest-gke-features-vpc
   subnetworkRef:
-    name: latest-features-kcc-subnet
+    name: latest-gke-features-subnet
   ipAllocationPolicy:
     clusterSecondaryRangeName: pods
     servicesSecondaryRangeName: services
@@ -40,7 +40,7 @@ spec:
     masterIpv4CidrBlock: "172.16.2.16/28"
   workloadIdentityConfig:
     workloadPool: "gca-gke-2025.svc.id.goog"
-  minMasterVersion: "1.31"
+  minMasterVersion: "1.35.3-gke.1234000"
   releaseChannel:
     channel: RAPID
   securityPostureConfig:
