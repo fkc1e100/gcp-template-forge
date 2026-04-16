@@ -271,9 +271,9 @@ jobs:
         run: |
           echo "TF_START=$(date -u +%s)" >> $GITHUB_ENV
           UID_SUFFIX=$(echo ${{ github.sha }} | cut -c1-5)
-          export TF_VAR_cluster_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}"
-          export TF_VAR_network_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-vpc"
-          export TF_VAR_subnet_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-subnet"
+          export TF_VAR_cluster_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf"
+          export TF_VAR_network_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf-vpc"
+          export TF_VAR_subnet_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf-subnet"
           terraform init \
             -backend-config="bucket=$TF_STATE_BUCKET" \
             -backend-config="prefix=${{ matrix.template }}-${{ github.run_id }}/terraform-helm"
@@ -766,9 +766,9 @@ jobs:
         working-directory: ${{ matrix.template }}/terraform-helm
         run: |
           UID_SUFFIX=$(echo ${{ github.sha }} | cut -c1-5)
-          export TF_VAR_cluster_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}"
-          export TF_VAR_network_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-vpc"
-          export TF_VAR_subnet_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-subnet"
+          export TF_VAR_cluster_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf"
+          export TF_VAR_network_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf-vpc"
+          export TF_VAR_subnet_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf-subnet"
           terraform init \
             -backend-config="bucket=${{ env.TF_STATE_BUCKET }}" \
             -backend-config="prefix=${{ matrix.template }}-${{ github.run_id }}/terraform-helm" \
@@ -883,9 +883,9 @@ jobs:
         run: |
           echo "TF_START=$(date -u +%s)" >> $GITHUB_ENV
           UID_SUFFIX=$(echo ${{ github.sha }} | cut -c1-5)
-          export TF_VAR_cluster_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}"
-          export TF_VAR_network_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-vpc"
-          export TF_VAR_subnet_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-subnet"
+          export TF_VAR_cluster_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf"
+          export TF_VAR_network_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf-vpc"
+          export TF_VAR_subnet_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf-subnet"
           terraform init \
             -backend-config="bucket=$TF_STATE_BUCKET" \
             -backend-config="prefix=${{ matrix.template }}-${{ github.run_id }}/terraform-helm"
