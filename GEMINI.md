@@ -334,3 +334,21 @@ To prevent Kubernetes node caching issues, the AI environment runs on a specific
 *   Monitor Pull Request **#29 (Issue #28)**. The agent is actively validating its `latest-gke-features` template.
 *   Once PR 29 passes CI and merges, proceed to the backlog. There are 5 new complex AI/Networking template issues sitting in the GitHub repository (Issues #30 through #34) labeled with `hold`. To trigger the agent to start designing them, simply remove the `hold` label via the GitHub CLI or UI.
  29 passes CI and merges, proceed to the backlog. There are 5 new complex AI/Networking template issues sitting in the GitHub repository (Issues #30 through #34) labeled with `hold`. To trigger the agent to start designing them, simply remove the `hold` label via the GitHub CLI or UI.
+
+### 6. Operator Architecture & Mechanics (Repo-Agent & Overseer)
+To debug or expand the autonomous loop, the next agent must understand how the two primary Kubernetes operators interact:
+
+*   **RepoWatch Controller (`repo-agent-system` namespace):**
+    *   Watches the GitHub repository for new Issues and PRs based on the `RepoWatch` CRD.
+    *   When an Issue is opened (and does not have the `hold` label), it creates a `Sandbox` pod and a `SandboxTask` (type: `fix-issue`) in the `fkc1e100` namespace.
+    *   It also handles human PR comments/reviews (type: `address-feedback`).
+    *   *Critical Routing:* The controller only dispatches gRPC commands to the sandbox pod if the `SandboxTask` has the label `review.gemini.google.com/repowatch: gcp-template-forge`. (We patched the Go code to ensure this label inherits properly).
+*   **Overseer Controller (`overseer-system` namespace):**
+    *   Watches GitHub Actions CI/CD pipelines for deployment failures.
+    *   *Trigger Condition:* It ONLY activates if the original GitHub Issue has the **`overseer`** label. If this label is missing, CI failures will NOT self-heal.
+    *   When a CI run fails, Overseer generates a `SandboxTask` (type: `investigate-failures`), injects the raw GitHub Actions logs into the task, and sends it to the agent so it can autonomously rewrite its code.
+*   **Agent Sandboxes (`repo-sandbox` image):**
+    *   The sandboxes are the ephemeral pods where the Gemini CLI actually executes. They run in a `while` loop. If an agent crashes (e.g., due to a Gemini API `429 Too Many Requests` quota limit), the Overseer will mark the task as failed, and spawn a new task to retry on its next polling cycle.
+*   **The UI Dashboard (`pr-review-ui` / `pr-review-api`):**
+    *   Hosted at `http://34.30.138.59/`. 
+    *   *Warning:* The dashboard API hardcodes its queries to the authenticated user's derived namespace (e.g., `fkcurrie` for user `fkc1e100`). The actual autonomous CI/CD sandboxes run in the `fkc1e100` namespace, so they will **not** show up in the UI. The UI is strictly for the parallel PR-review agent flow. Do not delete the `fkcurrie` RepoWatch CRD.
