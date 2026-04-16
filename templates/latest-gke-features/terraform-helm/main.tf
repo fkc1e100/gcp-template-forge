@@ -74,6 +74,7 @@ resource "google_compute_router_nat" "nat" {
 }
 
 # GKE Cluster with Latest Features
+# Note: google-beta provider is used to ensure support for newest features like Gateway API and Security Posture
 resource "google_container_cluster" "latest_features_cluster" {
   provider = google-beta
   name     = var.cluster_name

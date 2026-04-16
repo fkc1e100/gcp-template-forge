@@ -16,5 +16,5 @@ apiVersion: v2
 name: latest-features-workload
 description: A Helm chart for GKE latest features workload
 type: application
-version: 0.1.0
+version: 0.1.1
 appVersion: "1.0.0"
