@@ -22,6 +22,7 @@ spec:
       initContainers:
       - name: logger-sidecar
         image: {{ .Values.sidecar.image }}:{{ .Values.sidecar.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
         restartPolicy: Always
         command: ["sh", "-c", "while true; do echo \"$(date) - heartbeat from native sidecar\" >> /var/log/app.log; sleep 30; done"]
         securityContext:
@@ -39,6 +40,7 @@ spec:
       containers:
       - name: web-app
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
