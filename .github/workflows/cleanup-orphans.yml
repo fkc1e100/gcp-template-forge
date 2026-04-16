@@ -8,8 +8,9 @@ jobs:
   sweep:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      id-token: write
+      contents: 'read'
+      id-token: 'write'
+      actions: 'read'
 
     steps:
       - name: Checkout Repository
@@ -18,11 +19,13 @@ jobs:
       - name: Authenticate to GCP
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
-          service_account: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+          workload_identity_provider: 'projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github'
+          service_account: 'forge-builder@gca-gke-2025.iam.gserviceaccount.com'
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
+        with:
+          version: 'latest'
 
       - name: Install gke-gcloud-auth-plugin
         run: |
@@ -31,60 +34,94 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
 
-      - name: Clean up GKE Clusters and Networks
+      - name: Find and Delete Orphaned Resources
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           PROJECT="gca-gke-2025"
           REGION="us-central1"
 
-          # 1. Clean up KCC-provisioned ContainerClusters FIRST (so they don't immediately rebuild)
-          echo "Connecting to Management Cluster (krmapihost-kcc-instance)..."
-          gcloud container clusters get-credentials krmapihost-kcc-instance --region us-central1 --project $PROJECT
-          KCC_CLUSTERS=$(kubectl get containercluster -n forge-management -l project=gcp-template-forge -o name || true)
-          if [ -n "$KCC_CLUSTERS" ]; then
-            echo "Deleting orphaned KCC resources..."
-            kubectl delete $KCC_CLUSTERS -n forge-management --wait=false
+          gcloud version
+
+          echo "Checking for active GitHub Actions runs..."
+          # Get list of active/queued runs to avoid deleting their resources
+          ACTIVE_RUNS=$(gh run list --status in_progress --json databaseId -q '.[].databaseId')
+          QUEUED_RUNS=$(gh run list --status queued --json databaseId -q '.[].databaseId')
+          ALL_ACTIVE="$ACTIVE_RUNS $QUEUED_RUNS"
+
+          if [ -n "$ALL_ACTIVE" ]; then
+            echo "Found active/queued runs: $ALL_ACTIVE. Cleanup will proceed but be careful."
           fi
 
-          # 2. Clean up GKE Clusters (Terraform & Leftover KCC nodes)
-          echo "Searching for orphaned GKE clusters..."
-          # Delete any cluster with the project label OR containing the word "-tf" or "-kcc"
-          CLUSTERS=$(gcloud container clusters list --project=$PROJECT --region=$REGION --format="value(name)" | grep -E "latest-gke|enterprise-gke|basic-gke|-tf|-kcc" || true)
+          # 1. Clean up KCC Clusters and other resources FIRST
+          echo "Connecting to Management Cluster..."
+          gcloud container clusters get-credentials krmapihost-kcc-instance --region $REGION --project $PROJECT
+          
+          echo "Deleting all KCC-managed resources with project=gcp-template-forge label..."
+          KCC_TYPES="containercluster,computenetwork,computevpc,computesubnetwork,computerouter,computerouternat,computefirewall"
+          KCC_RESOURCES=$(kubectl get $KCC_TYPES -n forge-management -l project=gcp-template-forge -o name || true)
+          
+          if [ -n "$KCC_RESOURCES" ]; then
+            echo "Deleting orphaned KCC resources: $KCC_RESOURCES"
+            kubectl delete $KCC_RESOURCES -n forge-management --wait=false
+          fi
 
-          for CLUSTER in $CLUSTERS; do
-            echo "Disabling deletion protection for $CLUSTER..."
-            gcloud container clusters update $CLUSTER --location=$REGION --project=$PROJECT --no-deletion-protection --quiet || true
-            echo "Deleting cluster: $CLUSTER"
+          # 2. Clean up GKE Clusters (Terraform)
+          echo "Searching for orphaned Terraform clusters..."
+          TF_CLUSTERS=$(gcloud container clusters list \
+            --project=$PROJECT \
+            --location=$REGION \
+            --filter="resourceLabels.project=gcp-template-forge OR name ~ ^latest-gke-features- OR name ~ ^enterprise-gke- OR name ~ ^basic-gke-" \
+            --format="value(name)")
+
+          for CLUSTER in $TF_CLUSTERS; do
+            echo "Deleting orphaned TF cluster: $CLUSTER"
+            gcloud beta container clusters update $CLUSTER --location=$REGION --project=$PROJECT --no-deletion-protection --quiet || true
             gcloud container clusters delete $CLUSTER --location=$REGION --project=$PROJECT --quiet --async || true
           done
 
-          # 3. Clean up Networking Resources
-          # We run these with || true so that if a cluster is still spinning down, the network delete fails silently and will be picked up on the next 10min cron loop.
-          echo "Cleaning up orphaned Networking resources..."
+          # 3. Clean up Networking resources (matching pattern)
+          echo "Cleaning up orphaned Networking resources (matching pattern)..."
           
-          # Delete Firewalls
-          FIREWALLS=$(gcloud compute firewall-rules list --project=$PROJECT --format="value(name)" | grep -E "gke-latest-gke|gke-enterprise-gke|gke-basic-gke" || true)
-          for FW in $FIREWALLS; do
-            gcloud compute firewall-rules delete $FW --project=$PROJECT --quiet || true
+          # Firewalls
+          FIREWALLS=$(gcloud compute firewall-rules list --project=$PROJECT --format="value(name)" --filter="name ~ ^latest-gke-features- OR name ~ ^enterprise-gke- OR name ~ ^basic-gke-")
+          for F in $FIREWALLS; do
+            echo "Deleting firewall: $F"
+            gcloud compute firewall-rules delete $F --project=$PROJECT --quiet || true
           done
 
-          # Delete Routers and NATs
-          ROUTERS=$(gcloud compute routers list --project=$PROJECT --format="value(name, region)" | grep -E "latest-gke|enterprise-gke|basic-gke" || true)
+          # Routers and NATs
+          ROUTERS=$(gcloud compute routers list --project=$PROJECT --format="value(name, region.scope())" --filter="name ~ ^latest-gke-features- OR name ~ ^enterprise-gke- OR name ~ ^basic-gke-")
           while read -r R R_REGION; do
             [ -z "$R" ] && continue
+            echo "Checking NATs for router $R in $R_REGION"
+            NATS=$(gcloud compute routers describe $R --project=$PROJECT --region=$R_REGION --format="value(nats.name)" | tr ';' ' ')
+            if [ -n "$NATS" ]; then
+              for NAT in $NATS; do
+                echo "Deleting NAT $NAT from router $R"
+                gcloud compute routers nats delete $NAT --router=$R --region=$R_REGION --project=$PROJECT --quiet || true
+              done
+            fi
+            echo "Deleting router $R"
             gcloud compute routers delete $R --region=$R_REGION --project=$PROJECT --quiet || true
           done <<< "$ROUTERS"
 
-          # Delete Subnets
-          SUBNETS=$(gcloud compute networks subnets list --project=$PROJECT --format="value(name, region)" | grep -E "latest-gke|enterprise-gke|basic-gke" || true)
+          # Subnets
+          SUBNETS=$(gcloud compute networks subnets list --project=$PROJECT --format="value(name, region.scope())" --filter="name ~ ^latest-gke-features- OR name ~ ^enterprise-gke- OR name ~ ^basic-gke-")
           while read -r S S_REGION; do
             [ -z "$S" ] && continue
+            echo "Deleting subnet $S in $S_REGION"
             gcloud compute networks subnets delete $S --region=$S_REGION --project=$PROJECT --quiet || true
           done <<< "$SUBNETS"
 
-          # Delete VPC Networks
-          NETWORKS=$(gcloud compute networks list --project=$PROJECT --format="value(name)" | grep -E "latest-gke|enterprise-gke|basic-gke" || true)
+          # Networks (VPCs)
+          echo "Listing all networks in project..."
+          gcloud compute networks list --project=$PROJECT
+
+          NETWORKS=$(gcloud compute networks list --project=$PROJECT --filter="name ~ ^latest-gke-features- OR name ~ ^enterprise-gke- OR name ~ ^basic-gke-" --format="value(name)")
           for N in $NETWORKS; do
+            echo "Deleting network $N"
             gcloud compute networks delete $N --project=$PROJECT --quiet || true
           done
-          
+
           echo "Cleanup complete."
