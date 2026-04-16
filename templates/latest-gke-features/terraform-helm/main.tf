@@ -153,8 +153,10 @@ resource "google_container_cluster" "latest_features_cluster" {
     }
   }
 
+  min_master_version = "1.35.3-gke.1234000"
+
   release_channel {
-    channel = "REGULAR"
+    channel = "RAPID"
   }
 
   timeouts {
