@@ -64,7 +64,7 @@ jobs:
                 echo "  DELETING: $NAME ($LOCATION, age ${AGE_H}h)"
                 gcloud container clusters update "$NAME" --location="$LOCATION" \
                   --project="${{ env.PROJECT_ID }}" \
-                  --no-enable-deletion-protection --quiet 2>/dev/null || true
+                  --no-deletion-protection --quiet 2>/dev/null || true
                 gcloud container clusters delete "$NAME" \
                   --location="$LOCATION" \
                   --project="${{ env.PROJECT_ID }}" \
