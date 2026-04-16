@@ -533,7 +533,7 @@ jobs:
             -n $KCC_NAMESPACE \
             --for=condition=Ready \
             --all \
-            --timeout=1800s \
+            --timeout=3600s \
             -f ${{ matrix.template }}/config-connector/ || true
           echo "kcc_duration=$(( $(date -u +%s) - ${KCC_START} ))" >> $GITHUB_OUTPUT
 
