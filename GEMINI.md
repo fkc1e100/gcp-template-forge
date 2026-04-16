@@ -277,3 +277,16 @@ CI failure on PR
 **Do not force Helm to wait for massive model downloads.** For AI workloads (like vLLM) that download 10GB+ weights from Hugging Face into a GCS bucket, the `Deployment` will fail its readiness probe and cause `helm upgrade` to timeout.
 *   **The Standard Pattern:** Deploy a Kubernetes `Job` *first* to stage the model weights to the bucket. The actual `Deployment` (e.g., vLLM) must use an init-container that simply waits for the `Job` to complete before starting the vLLM server. This decouples the slow download from the workload's readiness probe, preventing Helm from timing out.
 *   **Progress Deadline:** By default, Kubernetes marks a `Deployment` as failed if it does not progress within 600 seconds (10 minutes). If your model download takes longer, Helm will fail with "Progress deadline exceeded". You MUST explicitly set `progressDeadlineSeconds: 3600` on any AI model serving `Deployment` spec to allow sufficient time for the init-container to complete.
+
+## Handling GCP Quota Errors (NETWORKS, CPUs, etc.)
+If your CI run fails with a quota limit error (e.g., `Quota 'NETWORKS' exceeded. Limit: 30.0 globally` or similar stockout/limit messages), it means previous CI runs have left orphaned resources clogging up the project. You must not attempt to modify your template code if the only failure is a quota limit. 
+
+Instead, execute the following command in your terminal to manually trigger the garbage collector workflow:
+```bash
+gh workflow run cleanup-orphans.yml --repo fkc1e100/gcp-template-forge
+```
+After running this command, wait 2 to 3 minutes for the backend infrastructure to be deleted, then push an empty commit to your branch to re-trigger your CI pipeline:
+```bash
+git commit --allow-empty -m "ci: retry after quota cleanup"
+git push origin HEAD
+```
