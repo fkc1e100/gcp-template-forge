@@ -28,9 +28,9 @@ spec:
   initialNodeCount: 1
   networkingMode: VPC_NATIVE
   networkRef:
-    name: latest-gke-features-vpc
+    name: latest-gke-features-kcc-vpc
   subnetworkRef:
-    name: latest-gke-features-subnet
+    name: latest-gke-features-kcc-subnet
   ipAllocationPolicy:
     clusterSecondaryRangeName: pods
     servicesSecondaryRangeName: services
