@@ -4,12 +4,28 @@ replicaCount: 2
 image:
   repository: nginx
   pullPolicy: IfNotPresent
-  tag: "latest"
+  tag: "1.25.3"
 
 sidecar:
   enabled: true
   image: busybox
-  tag: latest
+  tag: "1.36.1"
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+sidecarResources:
+  limits:
+    cpu: 100m
+    memory: 64Mi
+  requests:
+    cpu: 50m
+    memory: 32Mi
 
 service:
   type: ClusterIP

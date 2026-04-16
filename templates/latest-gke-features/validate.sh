@@ -22,6 +22,10 @@ CLUSTER_NAME="latest-gke-features-tf"
 REGION="us-central1"
 NAMESPACE="latest-features"
 
+# Isolate KUBECONFIG
+export KUBECONFIG=$(mktemp)
+trap 'rm -f "$KUBECONFIG"' EXIT
+
 # 1. Cluster Connectivity
 echo "Test 1: Cluster Connectivity..."
 gcloud container clusters get-credentials ${CLUSTER_NAME} --region ${REGION} --project ${PROJECT_ID}
@@ -30,7 +34,7 @@ echo "Connectivity passed."
 
 # 2. Workload Readiness
 echo "Test 2: Workload Readiness..."
-kubectl wait --for=condition=available deployment/latest-features-latest-features-workload -n ${NAMESPACE} --timeout=10m
+kubectl wait --for=condition=available deployment -l app=latest-features-latest-features-workload -n ${NAMESPACE} --timeout=10m
 echo "Workload is available."
 
 # 3. Native Sidecar Validation
@@ -60,7 +64,7 @@ fi
 echo "Testing endpoint http://${GATEWAY_IP}/..."
 # Retry curl as the LB might take a few moments to actually start serving
 for i in {1..12}; do
-  if curl -sf http://${GATEWAY_IP}/; then
+  if curl -sf --connect-timeout 5 --max-time 10 http://${GATEWAY_IP}/; then
     echo "Gateway endpoint test passed!"
     break
   fi

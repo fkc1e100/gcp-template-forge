@@ -156,6 +156,12 @@ resource "google_container_cluster" "latest_features_cluster" {
   release_channel {
     channel = "REGULAR"
   }
+
+  timeouts {
+    create = "30m"
+    update = "30m"
+    delete = "30m"
+  }
 }
 
 # Primary Node Pool with Latest Features
@@ -198,26 +204,4 @@ resource "google_container_node_pool" "primary_nodes" {
       template = "latest-gke-features"
     }
   }
-}
-
-provider "helm" {}
-
-resource "null_resource" "cluster_credentials" {
-  depends_on = [google_container_node_pool.primary_nodes]
-  provisioner "local-exec" {
-    command = "gcloud container clusters get-credentials ${google_container_cluster.latest_features_cluster.name} --region ${var.region} --project ${var.project_id}"
-  }
-}
-
-resource "helm_release" "workload" {
-  name             = "latest-features"
-  chart            = "${path.module}/workload"
-  namespace        = "latest-features"
-  create_namespace = true
-  depends_on       = [null_resource.cluster_credentials]
-  wait             = false
-
-  values = [
-    file("${path.module}/workload/values.yaml")
-  ]
 }

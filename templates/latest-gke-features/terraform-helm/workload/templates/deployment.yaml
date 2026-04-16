@@ -15,12 +15,13 @@ spec:
         app: {{ include "latest-features.name" . }}
     spec:
       # LATEST FEATURE: Native Sidecar Containers (requires K8s 1.29+)
-      # These are initContainers with restartPolicy: Always
       initContainers:
       - name: logger-sidecar
         image: {{ .Values.sidecar.image }}:{{ .Values.sidecar.tag }}
         restartPolicy: Always
         command: ["sh", "-c", "while true; do echo \"$(date) - heartbeat from native sidecar\" >> /var/log/app.log; sleep 30; done"]
+        resources:
+          {{- toYaml .Values.sidecarResources | nindent 10 }}
         volumeMounts:
         - name: logs
           mountPath: /var/log
@@ -30,13 +31,16 @@ spec:
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         ports:
         - containerPort: 80
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
         volumeMounts:
         - name: logs
           mountPath: /var/log
       
       volumes:
       - name: logs
-        emptyDir: {}
+        emptyDir:
+          sizeLimit: 1Gi
 
       # LATEST FEATURE: Pod Topology Spread Constraints
       topologySpreadConstraints:
