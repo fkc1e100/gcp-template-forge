@@ -1,0 +1,20 @@
+# Default values for latest-features-workload.
+replicaCount: 2
+
+image:
+  repository: nginx
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+sidecar:
+  enabled: true
+  image: busybox
+  tag: latest
+
+service:
+  type: ClusterIP
+  port: 80
+
+gateway:
+  enabled: true
+  name: latest-features-gateway

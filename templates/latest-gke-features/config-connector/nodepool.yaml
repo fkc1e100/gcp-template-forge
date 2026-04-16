@@ -1,0 +1,43 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: container.cnrm.cloud.google.com/v1beta1
+kind: ContainerNodePool
+metadata:
+  name: latest-features-kcc-pool
+  namespace: forge-management
+  labels:
+    project: gcp-template-forge
+    template: latest-gke-features
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
+spec:
+  clusterRef:
+    name: latest-features-kcc
+  location: us-central1
+  nodeCount: 1
+  nodeConfig:
+    machineType: e2-standard-4
+    diskSizeGb: 50
+    diskType: pd-standard
+    imageType: COS_CONTAINERD
+    spot: true
+    serviceAccountRef:
+      external: forge-kcc-admin@gca-gke-2025.iam.gserviceaccount.com
+    oauthScopes:
+      - https://www.googleapis.com/auth/cloud-platform
+    shieldedInstanceConfig:
+      enableSecureBoot: true
+      enableIntegrityMonitoring: true
+    # Image Streaming (GCFS) might not be in KCC v1beta1 yet, omitting for safety
