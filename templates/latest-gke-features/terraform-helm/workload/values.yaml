@@ -2,9 +2,9 @@
 replicaCount: 2
 
 image:
-  repository: nginx
+  repository: nginxinc/nginx-unprivileged
   pullPolicy: IfNotPresent
-  tag: "1.25.3"
+  tag: "1.25"
 
 sidecar:
   enabled: true
