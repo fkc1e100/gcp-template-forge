@@ -427,13 +427,6 @@ jobs:
             echo "::notice::Forcing cluster teardown on failure. Deployments are now dynamic per commit."
           fi
 
-      - name: Disable cluster deletion protection before destroy
-        if: steps.teardown-check.outputs.should_destroy == 'true' && steps.tf-outputs.outputs.tf_cluster != ''
-        run: |
-          gcloud container clusters update "${{ steps.tf-outputs.outputs.tf_cluster }}" \
-            --location="${{ steps.tf-outputs.outputs.tf_location }}" \
-            --project="${{ env.PROJECT_ID }}" \
-            --no-enable-deletion-protection --quiet 2>/dev/null || true
 
       - name: Terraform destroy
         id: tf-destroy
@@ -1023,13 +1016,6 @@ jobs:
             && echo "Security scan complete — no HIGH/CRITICAL findings." \
             || echo "::warning::Security findings detected — review output above (non-blocking)"
 
-      - name: Disable cluster deletion protection before destroy
-        if: always() && steps.tf-outputs.outputs.tf_cluster != ''
-        run: |
-          gcloud container clusters update "${{ steps.tf-outputs.outputs.tf_cluster }}" \
-            --location="${{ steps.tf-outputs.outputs.tf_location }}" \
-            --project="${{ env.PROJECT_ID }}" \
-            --no-enable-deletion-protection --quiet 2>/dev/null || true
 
       - name: Terraform destroy
         id: tf-destroy

@@ -60,7 +60,7 @@ jobs:
           if [ -n "$TF_CLUSTERS" ]; then
             for CLUSTER in $TF_CLUSTERS; do
               echo "Disabling deletion protection for $CLUSTER..."
-              gcloud container clusters update $CLUSTER --project=gca-gke-2025 --region=us-central1 --no-enable-deletion-protection --quiet || true
+              
               echo "Deleting orphaned TF cluster: $CLUSTER"
               gcloud container clusters delete $CLUSTER \
                 --project=gca-gke-2025 \
