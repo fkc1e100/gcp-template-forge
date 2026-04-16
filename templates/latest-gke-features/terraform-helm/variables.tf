@@ -32,13 +32,13 @@ variable "cluster_name" {
 variable "network_name" {
   description = "The name of the VPC network"
   type        = string
-  default     = "latest-gke-features-vpc"
+  default     = "latest-gke-features-tf-vpc"
 }
 
 variable "subnet_name" {
   description = "The name of the subnet"
   type        = string
-  default     = "latest-gke-features-subnet"
+  default     = "latest-gke-features-tf-subnet"
 }
 
 variable "oauth_scopes" {

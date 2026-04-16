@@ -26,6 +26,9 @@ provider "google-beta" {
 resource "google_compute_network" "vpc" {
   name                    = var.network_name
   auto_create_subnetworks = false
+
+  # Mandatory labels for resource tracking
+  # Note: google_compute_network DOES NOT support labels in current provider version.
 }
 
 # Subnet
@@ -35,6 +38,9 @@ resource "google_compute_subnetwork" "subnet" {
   region                   = var.region
   network                  = google_compute_network.vpc.id
   private_ip_google_access = true
+
+  # Mandatory labels for resource tracking
+  # Note: google_compute_subnetwork DOES NOT support labels in current provider version.
 
   secondary_ip_range {
     range_name    = "pods"

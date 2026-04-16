@@ -15,7 +15,7 @@
 apiVersion: compute.cnrm.cloud.google.com/v1beta1
 kind: ComputeNetwork
 metadata:
-  name: latest-gke-features-vpc
+  name: latest-gke-features-kcc-vpc
   namespace: forge-management
   labels:
     project: gcp-template-forge
@@ -28,7 +28,7 @@ spec:
 apiVersion: compute.cnrm.cloud.google.com/v1beta1
 kind: ComputeSubnetwork
 metadata:
-  name: latest-gke-features-subnet
+  name: latest-gke-features-kcc-subnet
   namespace: forge-management
   labels:
     project: gcp-template-forge
@@ -39,7 +39,7 @@ spec:
   ipCidrRange: 10.44.0.0/20
   region: us-central1
   networkRef:
-    name: latest-gke-features-vpc
+    name: latest-gke-features-kcc-vpc
   privateIpGoogleAccess: true
   secondaryIpRange:
     - rangeName: pods
