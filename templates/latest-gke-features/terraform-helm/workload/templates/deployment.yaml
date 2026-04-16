@@ -11,22 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "latest-features.fullname" . }}
   labels:
-{{ include "latest-features.labels" . | nindent 4 }}
+    app: {{ include "latest-features.name" . }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-{{ include "latest-features.selectorLabels" . | nindent 6 }}
+      app: {{ include "latest-features.name" . }}
   template:
     metadata:
       labels:
-{{ include "latest-features.labels" . | nindent 8 }}
+        app: {{ include "latest-features.name" . }}
     spec:
       securityContext:
         runAsNonRoot: true
@@ -94,10 +93,10 @@ spec:
         whenUnsatisfiable: ScheduleAnyway
         labelSelector:
           matchLabels:
-{{ include "latest-features.selectorLabels" . | nindent 12 }}
+            app: {{ include "latest-features.name" . }}
       - maxSkew: 1
         topologyKey: topology.kubernetes.io/zone
         whenUnsatisfiable: ScheduleAnyway
         labelSelector:
           matchLabels:
-{{ include "latest-features.selectorLabels" . | nindent 12 }}
+            app: {{ include "latest-features.name" . }}
