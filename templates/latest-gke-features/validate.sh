@@ -90,4 +90,23 @@ if [ "$GCFS_ENABLED" != "True" ]; then
 fi
 echo "Image Streaming (GCFS) validated."
 
+# 6. Node Pool Auto-provisioning (NAP) Check
+echo "Test 6: Node Pool Auto-provisioning (NAP) Check..."
+NAP_ENABLED=$(gcloud container clusters describe ${CLUSTER_NAME} --region ${REGION} --project ${PROJECT_ID} --format="value(autoscaling.enableNodeAutoprovisioning)")
+if [ "$NAP_ENABLED" != "True" ]; then
+  echo "NAP check failed! Enabled: $NAP_ENABLED"
+  exit 1
+fi
+echo "Node Pool Auto-provisioning (NAP) validated."
+
+# 7. Security Posture Check
+echo "Test 7: Security Posture Check..."
+SECURITY_POSTURE_MODE=$(gcloud container clusters describe ${CLUSTER_NAME} --region ${REGION} --project ${PROJECT_ID} --format="value(securityPostureConfig.mode)")
+VULNERABILITY_MODE=$(gcloud container clusters describe ${CLUSTER_NAME} --region ${REGION} --project ${PROJECT_ID} --format="value(securityPostureConfig.vulnerabilityMode)")
+if [ "$SECURITY_POSTURE_MODE" != "BASIC" ] || [ "$VULNERABILITY_MODE" != "VULNERABILITY_ENTERPRISE" ]; then
+  echo "Security Posture check failed! Mode: $SECURITY_POSTURE_MODE, Vulnerability: $VULNERABILITY_MODE"
+  exit 1
+fi
+echo "Security Posture validated (Enterprise Vulnerability scanning enabled)."
+
 echo "All Latest GKE Features Validation Tests passed successfully!"
