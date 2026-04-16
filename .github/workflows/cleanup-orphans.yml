@@ -61,10 +61,20 @@ jobs:
           KCC_TYPES="containercluster,computenetwork,computevpc,computesubnetwork,computerouter,computerouternat,computefirewall"
           KCC_RESOURCES=$(kubectl get $KCC_TYPES -n forge-management -l project=gcp-template-forge -o name || true)
           
-          if [ -n "$KCC_RESOURCES" ]; then
-            echo "Deleting orphaned KCC resources: $KCC_RESOURCES"
-            kubectl delete $KCC_RESOURCES -n forge-management --wait=false
-          fi
+          for RES in $KCC_RESOURCES; do
+            SKIP=false
+            for RUN_ID in $ALL_ACTIVE; do
+              if [[ "$RES" == *"$RUN_ID"* ]]; then
+                echo "Skipping active resource: $RES"
+                SKIP=true
+                break
+              fi
+            done
+            if [ "$SKIP" = false ]; then
+              echo "Deleting orphaned KCC resource: $RES"
+              kubectl delete $RES -n forge-management --wait=false
+            fi
+          done
 
           # 2. Clean up GKE Clusters (Terraform)
           echo "Searching for orphaned Terraform clusters..."
