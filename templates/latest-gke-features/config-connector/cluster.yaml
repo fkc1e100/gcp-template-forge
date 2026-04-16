@@ -37,7 +37,7 @@ spec:
   privateClusterConfig:
     enablePrivateNodes: true
     enablePrivateEndpoint: false
-    masterIpv4CidrBlock: "172.16.200.16/28"
+    masterIpv4CidrBlock: "172.16.210.16/28"
   workloadIdentityConfig:
     workloadPool: "gca-gke-2025.svc.id.goog"
   releaseChannel:
