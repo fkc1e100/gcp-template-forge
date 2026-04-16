@@ -15,7 +15,7 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
 metadata:
-  name: latest-features-kcc-pool
+  name: latest-gke-features-pool
   namespace: forge-management
   labels:
     project: gcp-template-forge
@@ -24,7 +24,7 @@ metadata:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   clusterRef:
-    name: latest-features-kcc
+    name: latest-gke-features-kcc
   location: us-central1
   nodeCount: 1
   nodeConfig:
@@ -40,4 +40,6 @@ spec:
     shieldedInstanceConfig:
       enableSecureBoot: true
       enableIntegrityMonitoring: true
-    # Image Streaming (GCFS) might not be in KCC v1beta1 yet, omitting for safety
+    # LATEST FEATURE: Image Streaming (GCFS)
+    gcfsConfig:
+      enabled: true
