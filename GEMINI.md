@@ -293,16 +293,44 @@ git push origin HEAD
 
 ---
 
-## Current State & Handoff (April 16, 2026)
+## Comprehensive Handoff Configuration State (April 16, 2026)
 
-**Agent Infrastructure Fixes Applied:**
-1. **GitHub Forking Disabled:** The `repowatch-controller` setup scripts have been permanently patched to stop trying to `gh repo fork` the upstream repository. The agent now correctly relies on its direct "Push" (Write) permissions.
-2. **Dynamic Provisioning Names:** CI/CD now appends `-tf` dynamically to Terraform cluster and VPC names to prevent naming collisions with Config Connector paths.
-3. **Aggressive Cleanup Script:** The `.github/workflows/cleanup-orphans.yml` workflow was upgraded. It now runs every **10 minutes** (down from 3 hours), systematically strips GCP deletion protection (`--no-deletion-protection`), and recursively wipes all orphaned GKE Clusters, VPCs, Subnets, Routers, NATs, and auto-generated Firewalls across the project using robust `grep -E` filtering.
-4. **Self-Healing API Loop:** The agent has been taught to automatically execute `gh workflow run cleanup-orphans.yml` and retry whenever it hits a `NETWORKS` (Quota) limit, meaning it handles GCP stockouts gracefully.
+**To the Next Agent:** This is the current, working configuration of the entire autonomous loop. 
 
-**Active Workloads:**
-*   **PR 29 (Issue 28 - Latest GKE Features):** The agent autonomously designed this template. It successfully healed itself from two initial CI failures (missing KCC CRDs and bad TF Helm provider). It is currently running in the validation pipeline.
+### 1. GCP Project & Clusters
+*   **GCP Project ID:** `gca-gke-2025`
+*   **GCP Region:** `us-central1`
+*   **Workload/Agent Cluster:** `repo-agent-standard`
+    *   **Context String:** `gke_gca-gke-2025_us-central1_repo-agent-standard`
+    *   **Role:** Runs the operator deployments, the UI Dashboard, and the actual AI agent sandboxes (Sandbox/SandboxTask CRDs).
+*   **Management/KCC Cluster:** `krmapihost-kcc-instance`
+    *   **Context String:** `gke_gca-gke-2025_us-central1_krmapihost-kcc-instance`
+    *   **Role:** Hosts Config Connector (`cnrm-system`) which creates physical GCP resources from YAMLs applied to the `forge-management` namespace.
 
-**Next Steps / Backlog:**
-There are 5 new complex AI/Networking template issues sitting in the GitHub repository (Issues #30 through #34). All are currently labeled with `hold`. To trigger the agent to start designing them, simply remove the `hold` label from one of the issues, and the RepoWatch controller will automatically spin up a new sandbox!
+### 2. Core Repository Mapping (Local)
+*   **Template Forge Repo:** `/home/fcurrie/Projects/gcp-template-forge`
+    *   *Role:* The target repository. This is where the CI templates (`latest-gke-features`, `enterprise-gke`, etc.), CI workflows (`sandbox-validation.yml`, `cleanup-orphans.yml`), and Issues (#30 - #34) live. 
+*   **Agent Infrastructure Repo:** `/home/fcurrie/Projects/gke-labs`
+    *   *Role:* The source code for the AI agent, bash task scripts, and Kubernetes operators (`repowatch` and `overseer`). If the agent's behavior or setup scripts (like `fix_issue.sh` or `investigate_failures.sh`) need to be changed, modify the Go templates in `gke-labs/repo-agent/pkg/tasks/`, build a new Docker image, and restart the controllers.
+
+### 3. Agent Docker Images & Artifact Registry
+To prevent Kubernetes node caching issues, the AI environment runs on a specifically tagged Docker image.
+*   **Active Agent Image:** `us-central1-docker.pkg.dev/gca-gke-2025/repo-agent-images/repo-sandbox:v2`
+*   **Active RepoWatch Controller:** `us-central1-docker.pkg.dev/gca-gke-2025/repo-agent-images/repowatch-controller:latest`
+*   If you need to rebuild these, I have left two Cloud Build configs in `/home/fcurrie/Projects/gke-labs/`:
+    *   `gcloud builds submit . --config=cloudbuild-sandbox.yaml --project=gca-gke-2025`
+    *   `gcloud builds submit . --config=cloudbuild-repowatch.yaml --project=gca-gke-2025`
+*   *Note: After building, you MUST restart the controllers:*
+    *   `kubectl --context gke_gca-gke-2025_us-central1_repo-agent-standard rollout restart statefulset repowatch-controller -n repo-agent-system`
+    *   `kubectl --context gke_gca-gke-2025_us-central1_repo-agent-standard rollout restart deployment overseer-controller -n overseer-system`
+
+### 4. Active Workload Context & Namespaces
+*   **Agent Sandboxes:** The `repowatch-controller` and `overseer` controllers actively monitor the GitHub repository and spawn agent pods (Sandbox CRDs) in the **`fkc1e100`** namespace on the `repo-agent-standard` cluster. 
+    *   *Command to view active agents:* `kubectl --context gke_gca-gke-2025_us-central1_repo-agent-standard get sandboxes,sandboxtasks -n fkc1e100`
+    *   *Command to view logs:* `kubectl --context gke_gca-gke-2025_us-central1_repo-agent-standard logs -n fkc1e100 gcp-template-forge-issue-28 --tail 100`
+*   **CI Pipeline & Quota:** The CI validations run dynamic deployments appending `-tf` to resource names. If the GCP `NETWORKS` quota is hit (Limit: 30), the AI agent now knows how to self-heal by triggering `gh workflow run cleanup-orphans.yml`. This script forcefully strips deletion protection and wipes all matching clusters and orphaned VPCs every 10 minutes.
+
+### 5. Immediate Next Steps for the Next Agent
+*   Monitor Pull Request **#29 (Issue #28)**. The agent is actively validating its `latest-gke-features` template.
+*   Once PR 29 passes CI and merges, proceed to the backlog. There are 5 new complex AI/Networking template issues sitting in the GitHub repository (Issues #30 through #34) labeled with `hold`. To trigger the agent to start designing them, simply remove the `hold` label via the GitHub CLI or UI.
+ 29 passes CI and merges, proceed to the backlog. There are 5 new complex AI/Networking template issues sitting in the GitHub repository (Issues #30 through #34) labeled with `hold`. To trigger the agent to start designing them, simply remove the `hold` label via the GitHub CLI or UI.
