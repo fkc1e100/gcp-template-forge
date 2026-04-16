@@ -290,3 +290,19 @@ After running this command, wait 2 to 3 minutes for the backend infrastructure t
 git commit --allow-empty -m "ci: retry after quota cleanup"
 git push origin HEAD
 ```
+
+---
+
+## Current State & Handoff (April 16, 2026)
+
+**Agent Infrastructure Fixes Applied:**
+1. **GitHub Forking Disabled:** The `repowatch-controller` setup scripts have been permanently patched to stop trying to `gh repo fork` the upstream repository. The agent now correctly relies on its direct "Push" (Write) permissions.
+2. **Dynamic Provisioning Names:** CI/CD now appends `-tf` dynamically to Terraform cluster and VPC names to prevent naming collisions with Config Connector paths.
+3. **Aggressive Cleanup Script:** The `.github/workflows/cleanup-orphans.yml` workflow was upgraded. It now runs every **10 minutes** (down from 3 hours), systematically strips GCP deletion protection (`--no-deletion-protection`), and recursively wipes all orphaned GKE Clusters, VPCs, Subnets, Routers, NATs, and auto-generated Firewalls across the project using robust `grep -E` filtering.
+4. **Self-Healing API Loop:** The agent has been taught to automatically execute `gh workflow run cleanup-orphans.yml` and retry whenever it hits a `NETWORKS` (Quota) limit, meaning it handles GCP stockouts gracefully.
+
+**Active Workloads:**
+*   **PR 29 (Issue 28 - Latest GKE Features):** The agent autonomously designed this template. It successfully healed itself from two initial CI failures (missing KCC CRDs and bad TF Helm provider). It is currently running in the validation pipeline.
+
+**Next Steps / Backlog:**
+There are 5 new complex AI/Networking template issues sitting in the GitHub repository (Issues #30 through #34). All are currently labeled with `hold`. To trigger the agent to start designing them, simply remove the `hold` label from one of the issues, and the RepoWatch controller will automatically spin up a new sandbox!
