@@ -17,16 +17,16 @@ kind: Deployment
 metadata:
   name: {{ include "latest-features.fullname" . }}
   labels:
-    app: {{ include "latest-features.name" . }}
+    {{- include "latest-features.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ include "latest-features.name" . }}
+      {{- include "latest-features.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        app: {{ include "latest-features.name" . }}
+        {{- include "latest-features.labels" . | nindent 8 }}
     spec:
       securityContext:
         runAsNonRoot: true
@@ -94,10 +94,10 @@ spec:
         whenUnsatisfiable: ScheduleAnyway
         labelSelector:
           matchLabels:
-            app: {{ include "latest-features.name" . }}
+            {{- include "latest-features.selectorLabels" . | nindent 12 }}
       - maxSkew: 1
         topologyKey: topology.kubernetes.io/zone
         whenUnsatisfiable: ScheduleAnyway
         labelSelector:
           matchLabels:
-            app: {{ include "latest-features.name" . }}
+            {{- include "latest-features.selectorLabels" . | nindent 12 }}
