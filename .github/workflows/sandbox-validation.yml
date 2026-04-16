@@ -473,6 +473,8 @@ jobs:
 
       - name: Cancel workflow on failure
         if: failure()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh run cancel ${{ github.run_id }}
 
   # ── 3b. PR: KCC deploy → wait → delete (parallel with deploy-test-tf) ─────
@@ -722,6 +724,8 @@ jobs:
 
       - name: Cancel workflow on failure
         if: failure()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh run cancel ${{ github.run_id }}
 
   # ── 3c. PR close: destroy any cluster left up by failed deploy-test runs ────
