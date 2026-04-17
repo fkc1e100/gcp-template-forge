@@ -64,6 +64,7 @@ If the dashboard is inaccessible from specific devices or networks:
 *   **Resource Labeling:** ALL infrastructure resources (GKE clusters, subnets, etc.) created by the agent MUST include the label `project: gcp-template-forge`. This ensures clear ownership and easier cleanup.
 *   **Timeouts:** Always use a minimum of 30-minute timeouts when waiting for GKE cluster readiness.
 *   **Separation of Concerns (Terraform vs. Helm):** NEVER use `local-exec` provisioners or the Terraform Helm provider to deploy Helm charts or Kubernetes manifests within `main.tf`. Terraform's sole responsibility is infrastructure provisioning. The CI/CD pipeline (`sandbox-validation.yml`) contains a dedicated, authenticated `Helm deploy and verify` step that automatically handles workload deployment. Use `local_file` in Terraform to dynamically generate a `values.yaml` file for the downstream Helm step to consume.
+*   **KCC Resource Waits:** NEVER use `|| true` or ignore failures when waiting for KCC resources to become ready in CI pipelines or scripts. If KCC fails to provision resources, the task must fail loudly to avoid cascade failures. Use the provided `agent-infra/check-kcc-ready.sh` script in the sandbox to verify readiness.
 
 #### `fkcurrie/gcp-template-forge` (dashboard namespace, drives what you see in the UI)
 ```yaml
