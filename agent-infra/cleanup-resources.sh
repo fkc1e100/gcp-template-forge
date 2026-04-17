@@ -27,6 +27,9 @@ gcloud version
 echo "Capturing Quota Status before cleanup..."
 gcloud compute project-info describe --project=$PROJECT --format="json" > /tmp/quota_before.json || true
 
+echo "Current Quota Status (Before Cleanup):"
+python3 -c "import sys, json; data = json.load(open('/tmp/quota_before.json')); print(f\"{'Metric':<40} {'Usage':<10} {'Limit':<10}\"); print('-'*60); [print(f\"{q.get('metric','N/A'):<40} {q.get('usage',0):<10.1f} {q.get('limit',0):<10.1f}\") for q in data.get('quotas', []) if q.get('usage', 0) > 0]" || true
+
 # Get list of active/queued runs to avoid deleting their resources if GH_TOKEN is provided
 ALL_ACTIVE=""
 if [ -n "$GITHUB_TOKEN" ]; then
