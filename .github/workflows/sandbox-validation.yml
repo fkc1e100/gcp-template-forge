@@ -53,6 +53,7 @@ jobs:
       - name: Find changed template directories
         id: find
         run: |
+          git fetch origin ${{ github.base_ref }}
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             PR_HEAD="${{ github.event.pull_request.head.sha }}"
             BASE=$(git merge-base "origin/${{ github.base_ref }}" "$PR_HEAD")
@@ -536,8 +537,14 @@ jobs:
             --for=condition=Ready \
             --all \
             --timeout=3600s \
-            -f ${{ matrix.template }}/config-connector/ || true
+            -f ${{ matrix.template }}/config-connector/
           echo "kcc_duration=$(( $(date -u +%s) - ${KCC_START} ))" >> $GITHUB_OUTPUT
+
+      - name: Dump KCC Resource Status on Failure
+        if: failure() && steps.kcc-wait.outcome == 'failure'
+        run: |
+          echo "KCC Wait failed. Dumping resource status..."
+          kubectl get -n $KCC_NAMESPACE -f ${{ matrix.template }}/config-connector/ -o custom-columns=KIND:.kind,NAME:.metadata.name,READY:.status.conditions[?(@.type=="Ready")].status,REASON:.status.conditions[?(@.type=="Ready")].reason || true
 
       - name: Verify KCC ContainerCluster Ready
         id: kcc-cluster-ready
