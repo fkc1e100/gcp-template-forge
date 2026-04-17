@@ -43,3 +43,4 @@ This template demonstrates some of the latest and most advanced features of Goog
 | --- | --- | --- |
 | **Status** | validating (GKE 1.35.2-gke.1485000) | validating (GKE 1.35.2-gke.1485000) |
 | **Date** | 2026-04-17 | 2026-04-17 |
+<!-- force CI run 3 -->
