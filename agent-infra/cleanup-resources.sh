@@ -71,9 +71,9 @@ echo "Connecting to Management Cluster..."
 gcloud container clusters get-credentials $KCC_CLUSTER --region $REGION --project $PROJECT 2>/dev/null || echo "Failed to get KCC credentials, skipping KCC cleanup"
 
 if kubectl cluster-info &>/dev/null; then
-  echo "Deleting all KCC-managed resources with project=gcp-template-forge label..."
+  echo "Deleting all KCC-managed resources for orphaned environments..."
   KCC_TYPES="containercluster,computenetwork,computevpc,computesubnetwork,computerouter,computerouternat,computefirewall"
-  KCC_RESOURCES=$(kubectl get $KCC_TYPES -n $KCC_NAMESPACE -l project=gcp-template-forge -o name | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
+  KCC_RESOURCES=$(kubectl get $KCC_TYPES -n $KCC_NAMESPACE -o name | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-llm-inference-|gke-vllm-staging-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
   
   for RES in $KCC_RESOURCES; do
     SKIP=false
