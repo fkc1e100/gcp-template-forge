@@ -272,7 +272,9 @@ CI failure on PR
 ```
 
 ## KCC Limitations vs Terraform
-**NEVER use Terraform attributes in KCC manifests.** Config Connector is usually 6 to 12 months behind Terraform in feature parity. If a feature does not exist in the Config Connector sample repository, assume it is unsupported and use standard configurations. For example, KCC v1beta1 `ContainerNodePool` does NOT support `queuedProvisioning` — if asked to use DWS flex-start, you must fall back to standard `spot = false` and `machineType` for KCC, while using `queued_provisioning` in the Terraform path.
+**NEVER use Terraform attributes in KCC manifests.** Config Connector is usually 6 to 12 months behind Terraform in feature parity. If a feature does not exist in the Config Connector sample repository, assume it is unsupported and use standard configurations. For example, KCC v1beta1 `ContainerNodePool` does NOT support `queuedProvisioning`.
+
+**Plan to Fix:** We are tracking this limitation and aim to enable support for `queuedProvisioning` in KCC. Since KCC generates code from the Terraform provider, this requires updating the vendored `terraform-provider-google-beta` in the KCC repository or adding manual support. We will create an issue on the KCC repo to outline this requirement once we have a clear path forward.
 
 ## AI Model Staging Pattern
 **Do not force Helm to wait for massive model downloads.** For AI workloads (like vLLM) that download 10GB+ weights from Hugging Face into a GCS bucket, the `Deployment` will fail its readiness probe and cause `helm upgrade` to timeout.
