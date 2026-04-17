@@ -26,7 +26,7 @@ metadata:
 spec:
   location: us-central1
   initialNodeCount: 1
-  minMasterVersion: 1.35.2-gke.1485000
+  minMasterVersion: 1.35.3-gke.1389000
   networkingMode: VPC_NATIVE
   networkRef:
     name: latest-gke-features-kcc-vpc
