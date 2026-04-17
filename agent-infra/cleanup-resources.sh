@@ -25,8 +25,11 @@ gcloud version
 
 # 0. Quota Check
 echo "Checking NETWORKS quota..."
-USAGE=$(gcloud compute project-info describe --project=$PROJECT --format="json(quotas)" | jq '.quotas[] | select(.metric == "NETWORKS") | .usage' | cut -d'.' -f1)
-LIMIT=$(gcloud compute project-info describe --project=$PROJECT --format="json(quotas)" | jq '.quotas[] | select(.metric == "NETWORKS") | .limit' | cut -d'.' -f1)
+QUOTAS=$(gcloud compute project-info describe --project=$PROJECT --format="json(quotas)")
+USAGE=$(echo "$QUOTAS" | jq -r '.quotas[] | select(.metric == "NETWORKS") | .usage' | cut -d'.' -f1)
+LIMIT=$(echo "$QUOTAS" | jq -r '.quotas[] | select(.metric == "NETWORKS") | .limit' | cut -d'.' -f1)
+if [ -z "$USAGE" ]; then USAGE="unknown"; fi
+if [ -z "$LIMIT" ]; then LIMIT="unknown"; fi
 echo "Current NETWORKS usage: $USAGE / $LIMIT"
 
 # Get list of active/queued runs to avoid deleting their resources if GH_TOKEN is provided
@@ -73,6 +76,7 @@ TF_CLUSTERS=$(gcloud container clusters list \
   --filter="(resourceLabels.project=gcp-template-forge OR name ~ latest-gke-features- OR name ~ enterprise-gke- OR name ~ basic-gke- OR name ~ gke-) AND name != $KCC_CLUSTER" \
   --format="value(name, zone.scope())")
 
+DELETED_CLUSTERS=false
 while read -r CLUSTER C_LOC; do
   [ -z "$CLUSTER" ] && continue
   
@@ -89,8 +93,22 @@ while read -r CLUSTER C_LOC; do
     echo "Deleting orphaned TF cluster: $CLUSTER in $C_LOC"
     gcloud beta container clusters update $CLUSTER --location=$C_LOC --project=$PROJECT --no-deletion-protection --quiet &>/dev/null || true
     gcloud container clusters delete $CLUSTER --location=$C_LOC --project=$PROJECT --quiet --async || true
+    DELETED_CLUSTERS=true
   fi
 done <<< "$TF_CLUSTERS"
+
+if [ "$DELETED_CLUSTERS" = true ]; then
+  echo "Waiting for clusters to be deleted (up to 10 minutes)..."
+  for i in {1..20}; do
+    STILL_THERE=$(gcloud container clusters list --project=$PROJECT --filter="(resourceLabels.project=gcp-template-forge OR name ~ latest-gke-features- OR name ~ enterprise-gke- OR name ~ basic-gke- OR name ~ gke-) AND name != $KCC_CLUSTER" --format="value(name)" 2>/dev/null | wc -l || echo "0")
+    if [ "$STILL_THERE" -le 0 ]; then
+      echo "All clusters deleted."
+      break
+    fi
+    echo "Waiting... ($STILL_THERE clusters remaining)"
+    sleep 30
+  done
+fi
 
 # 3. Clean up Networking resources
 echo "Cleaning up orphaned Networking resources..."
