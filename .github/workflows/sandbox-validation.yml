@@ -344,7 +344,7 @@ jobs:
           fi
           for chart in $CHARTS; do
             echo "=== Helm deploy: $chart ==="
-            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT"
+            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT" --debug
           done
 
           # Run template-specific validation if present
