@@ -45,3 +45,4 @@ This template demonstrates some of the latest and most advanced features of Goog
 | **Date** | 2026-04-17 | 2026-04-17 |
 <!-- force CI run 3 -->
 Re-triggering validation for latest-gke-features
+<!-- force CI run 4 -->
