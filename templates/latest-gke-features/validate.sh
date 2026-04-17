@@ -42,6 +42,12 @@ echo "Workload is available."
 # 3. Native Sidecar Validation
 echo "Test 3: Native Sidecar Validation..."
 POD_NAME=$(kubectl get pods -n ${NAMESPACE} -l app.kubernetes.io/name=latest-features-workload -o jsonpath='{.items[0].metadata.name}')
+
+if [ -z "$POD_NAME" ]; then
+  echo "Native Sidecar check failed! No pods found with label app.kubernetes.io/name=latest-features-workload."
+  exit 1
+fi
+
 RESTART_POLICY=$(kubectl get pod ${POD_NAME} -n ${NAMESPACE} -o jsonpath='{.spec.initContainers[0].restartPolicy}')
 if [ "$RESTART_POLICY" != "Always" ]; then
   echo "Native Sidecar check failed! restartPolicy is $RESTART_POLICY, expected Always."
