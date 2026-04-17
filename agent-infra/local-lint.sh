@@ -15,16 +15,27 @@
 
 set -e
 
-echo "=== Running Local Linting ==="
+TARGET_DIR=${1:-"."}
+
+echo "=== Running Local Linting on ${TARGET_DIR} ==="
 
 # 0. Template structure check
-echo "Checking template structure..."
-for template in templates/*; do
-  [ -d "$template" ] || continue
+if [ "$TARGET_DIR" == "." ]; then
+  echo "Checking all template structures..."
+  TEMPLATES=$(find templates -maxdepth 1 -mindepth 1 -type d | sort)
+else
+  if [[ "$TARGET_DIR" == templates/* ]]; then
+    TEMPLATES="$TARGET_DIR"
+  else
+    TEMPLATES=""
+  fi
+fi
+
+for template in $TEMPLATES; do
   template_name=$(basename "$template")
   [ "$template_name" == "README.md" ] && continue
   
-  echo "--- Checking $template_name ---"
+  echo "--- Checking structure of $template_name ---"
   MISSING=""
   [ ! -d "${template}/terraform-helm" ] && MISSING="${MISSING} terraform-helm/"
   [ ! -d "${template}/config-connector" ] && MISSING="${MISSING} config-connector/"
@@ -44,7 +55,7 @@ done
 
 # 1. Terraform fmt and validate + Mandates
 echo "Checking Terraform and Mandates..."
-for dir in $(find templates agent-infra -name "*.tf" -exec dirname {} \; | sort -u); do
+find "$TARGET_DIR" -name "*.tf" -not -path "*/.*" -exec dirname {} \; | sort -u | while read -r dir; do
   echo "--- Linting TF in $dir ---"
   (
     cd "$dir"
@@ -52,26 +63,27 @@ for dir in $(find templates agent-infra -name "*.tf" -exec dirname {} \; | sort 
     terraform fmt -check
     terraform validate
 
+    # Mandate checks (only for templates, agent-infra has some exceptions but we'll try to follow)
     # Mandate: deletion_protection = false for GKE clusters
-    if grep -r "google_container_cluster" *.tf > /dev/null 2>&1; then
-      if ! grep -r "deletion_protection\s*=\s*false" *.tf > /dev/null 2>&1; then
+    if grep -q "google_container_cluster" *.tf; then
+      if ! grep -q "deletion_protection\s*=\s*false" *.tf; then
         echo "ERROR: GKE cluster in $dir missing 'deletion_protection = false'"
         exit 1
       fi
       
       # Mandate: 30m timeouts
-      if ! grep -r "create\s*=\s*\"30m\"" *.tf > /dev/null 2>&1; then
+      if ! grep -q "create\s*=\s*\"30m\"" *.tf; then
         echo "ERROR: GKE cluster in $dir missing '30m' create timeout"
         exit 1
       fi
     fi
 
-    # Mandate: No helm provider or local-exec
-    if grep -r "provider \"helm\"" *.tf > /dev/null 2>&1; then
+    # Mandate: No helm provider or local-exec (except in local-lint.sh itself which we are not linting as TF)
+    if grep -q "provider \"helm\"" *.tf; then
       echo "ERROR: Restricted 'helm' provider found in $dir"
       exit 1
     fi
-    if grep -r "local-exec" *.tf > /dev/null 2>&1; then
+    if grep -q "local-exec" *.tf; then
       echo "ERROR: Restricted 'local-exec' provisioner found in $dir"
       exit 1
     fi
@@ -80,7 +92,7 @@ done
 
 # 2. Helm lint
 echo "Checking Helm..."
-for chart in $(find templates -name "Chart.yaml" -exec dirname {} \; | sort -u); do
+find "$TARGET_DIR" -name "Chart.yaml" -not -path "*/.*" -exec dirname {} \; | sort -u | while read -r chart; do
   echo "--- Linting Helm chart in $chart ---"
   helm lint "$chart"
   helm template release "$chart" > /dev/null
@@ -91,10 +103,12 @@ echo "Checking YAML syntax (excluding Helm templates)..."
 python3 -c "
 import yaml, sys, pathlib
 errors = []
-for p in pathlib.Path('.').rglob('*.yaml'):
+target = '$TARGET_DIR'
+for p in pathlib.Path(target).rglob('*.yaml'):
     if '.terraform' in str(p): continue
     # Skip Helm templates as they contain Go template directives
-    if 'templates/' in str(p) and any(x in str(p) for x in ['terraform-helm', 'workload']): continue
+    path_str = str(p)
+    if 'templates' in path_str and 'workload' in path_str and 'templates' in path_str: continue
     try:
         with open(p, 'r') as f:
             list(yaml.safe_load_all(f))
@@ -106,7 +120,7 @@ if errors:
 "
 
 # 4. Actionlint for workflows
-if [ -f "./actionlint" ]; then
+if [ "$TARGET_DIR" == "." ] && [ -f "./actionlint" ]; then
   echo "Checking GitHub Actions..."
   ./actionlint
 fi

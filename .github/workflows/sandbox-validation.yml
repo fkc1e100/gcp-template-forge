@@ -71,6 +71,18 @@ jobs:
           echo "Changed templates: $DIRS"
 
   # ── 2. Lint / static analysis (PR + push) ────────────────────────────────
+  lint-agent-infra:
+    name: "Lint Agent Infra"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+      - name: Run Thorough Linting
+        run: |
+          chmod +x agent-infra/local-lint.sh
+          ./agent-infra/local-lint.sh agent-infra
+
   lint:
     name: "Lint (${{ matrix.template }})"
     needs: detect-changes
@@ -91,48 +103,10 @@ jobs:
       - name: Set up Helm
         uses: azure/setup-helm@v4
 
-      - name: Terraform fmt + validate
-        if: "hashFiles(format('{0}/terraform-helm/main.tf', matrix.template)) != ''"
-        working-directory: ${{ matrix.template }}/terraform-helm
+      - name: Run Thorough Linting
         run: |
-          terraform init -backend=false -input=false
-          terraform fmt -check -recursive
-          terraform validate
-
-      - name: Enforce both terraform-helm/ and config-connector/ exist
-        run: |
-          TEMPLATE="${{ matrix.template }}"
-          MISSING=""
-          [ ! -d "${TEMPLATE}/terraform-helm" ] && MISSING="${MISSING} terraform-helm/"
-          [ ! -d "${TEMPLATE}/config-connector" ] && MISSING="${MISSING} config-connector/"
-          if [ -n "$MISSING" ]; then
-            echo "ERROR: Template '${TEMPLATE}' is missing required directories:${MISSING}"
-            echo "Every template must provide both deployment paths:"
-            echo "  terraform-helm/   (Terraform + Helm)"
-            echo "  config-connector/ (Config Connector / KCC)"
-            exit 1
-          fi
-          echo "Both deployment paths present: terraform-helm/ ✓  config-connector/ ✓"
-          # Fail if non-standard Helm/TF directories exist (agents sometimes use wrong names)
-          for bad in Terraform_HELM terraform_helm terraform-HELM helm Helm terraform manifests; do
-            if [ -d "${TEMPLATE}/${bad}" ]; then
-              echo "ERROR: Found non-standard directory '${bad}/' -- use 'terraform-helm/' and 'config-connector/' per template spec"
-              exit 1
-            fi
-          done
-
-      - name: Helm lint
-        if: "hashFiles(format('{0}/terraform-helm', matrix.template)) != ''"
-        run: |
-          CHARTS=$(find ${{ matrix.template }}/terraform-helm -name Chart.yaml -exec dirname {} \; 2>/dev/null)
-          if [ -z "$CHARTS" ]; then
-            echo "No Helm charts found under terraform-helm/ -- skipping"
-            exit 0
-          fi
-          for chart in $CHARTS; do
-            echo "=== helm lint: $chart ==="
-            helm lint "$chart"
-          done
+          chmod +x agent-infra/local-lint.sh
+          ./agent-infra/local-lint.sh ${{ matrix.template }}
 
       - name: Helm template (render + validate YAML)
         if: "hashFiles(format('{0}/terraform-helm', matrix.template)) != ''"
