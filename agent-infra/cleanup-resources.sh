@@ -207,7 +207,7 @@ done
 NETWORKS=$(gcloud compute networks list --project=$PROJECT --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
 for N in $NETWORKS; do
   echo "Initiating deletion of network $N..."
-  gcloud compute networks delete $N --project=$PROJECT --quiet --async || true
+  gcloud compute networks delete $N --project=$PROJECT --quiet || true
 done
 
 echo "Waiting for networks to be fully deleted..."
