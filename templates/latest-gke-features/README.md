@@ -39,5 +39,5 @@ This template demonstrates some of the latest and most advanced features of Goog
 
 |  | Terraform + Helm | Config Connector |
 | --- | --- | --- |
-| **Status** | validating (GKE 1.35.3-gke.1234000) | validating (GKE 1.35.3-gke.1234000) |
-| **Date** | 2026-04-16 | 2026-04-16 |
+| **Status** | validating (GKE 1.35.2-gke.1485000) | validating (GKE 1.35.2-gke.1485000) |
+| **Date** | 2026-04-17 | 2026-04-17 |

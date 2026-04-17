@@ -25,6 +25,9 @@ metadata:
     cnrm.cloud.google.com/remove-default-node-pool: "true"
 spec:
   location: us-central1
+  resourceLabels:
+    project: gcp-template-forge
+    template: latest-gke-features
   initialNodeCount: 1
   minMasterVersion: 1.35.2-gke.1485000
   networkingMode: VPC_NATIVE
