@@ -38,6 +38,9 @@ spec:
     workloadPool: gca-gke-2025.svc.id.goog
   releaseChannel:
     channel: REGULAR
+  loggingConfig:
+    enableComponents:
+      - SYSTEM_COMPONENTS
   securityPostureConfig:
     mode: BASIC
     vulnerabilityMode: VULNERABILITY_BASIC

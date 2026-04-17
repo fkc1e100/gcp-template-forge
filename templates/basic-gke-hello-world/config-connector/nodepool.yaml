@@ -36,3 +36,6 @@ spec:
       - https://www.googleapis.com/auth/cloud-platform
     workloadMetadataConfig:
       mode: GKE_METADATA
+    labels:
+      project: gcp-template-forge
+      template: basic-gke-hello-world

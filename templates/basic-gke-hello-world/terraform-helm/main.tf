@@ -44,14 +44,15 @@ resource "google_compute_subnetwork" "subnet" {
 
 # GKE Standard Cluster
 resource "google_container_cluster" "primary" {
-  resource_labels = {
-    project = "gcp-template-forge"
-  }
-
   name     = var.cluster_name
   location = var.region
 
   deletion_protection = false
+
+  resource_labels = {
+    project  = "gcp-template-forge"
+    template = "basic-gke-hello-world"
+  }
 
   # Remove default node pool; managed separately below
   remove_default_node_pool = true
@@ -110,6 +111,11 @@ resource "google_container_node_pool" "primary_nodes" {
 
     labels = {
       project = "gcp-template-forge"
+    }
+
+    resource_labels = {
+      project  = "gcp-template-forge"
+      template = "basic-gke-hello-world"
     }
   }
 }

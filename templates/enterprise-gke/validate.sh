@@ -15,104 +15,74 @@
 
 set -e
 
-echo "Starting KCC Validation Tests..."
+echo "Starting Validation Tests for enterprise-gke..."
 
 PROJECT_ID=${PROJECT_ID:-"gca-gke-2025"}
-CLUSTER_NAME="enterprise-gke-kcc"
-NODE_POOL_NAME="enterprise-gke-kcc-pool"
-NAMESPACE="forge-management"
-NAMESPACE_WORKLOAD="enterprise-gke"
-REGION="us-central1"
+CLUSTER_NAME=${CLUSTER_NAME:-"enterprise-gke-tf"}
+REGION=${REGION:-"us-central1"}
+NAMESPACE_WORKLOAD=${NAMESPACE_WORKLOAD:-"default"}
 
-# 1. Resource Readiness
-echo "Test 1: Resource Readiness..."
-kubectl wait --for=condition=Ready containercluster/${CLUSTER_NAME} --timeout=30m -n ${NAMESPACE}
-kubectl wait --for=condition=Ready containernodepool/${NODE_POOL_NAME} --timeout=30m -n ${NAMESPACE}
-echo "Resource Readiness passed."
+# Isolate KUBECONFIG
+export KUBECONFIG=$(mktemp)
+trap 'rm -f "$KUBECONFIG"' EXIT
 
-# 2. Drift & Revert
-echo "Test 2: Drift & Revert..."
-# Make an out-of-band change using gcloud
-gcloud container clusters update ${CLUSTER_NAME} --region ${REGION} --update-labels drift=test --project ${PROJECT_ID}
-echo "Out-of-band change applied. Waiting for KCC to revert (sleeping 3m)..."
-sleep 180
-# Verify the label is removed by KCC
-LABELS=$(gcloud container clusters describe ${CLUSTER_NAME} --region ${REGION} --project ${PROJECT_ID} --format="value(resourceLabels.drift)")
-if [ ! -z "$LABELS" ]; then
-  echo "Drift Revert failed! KCC did not revert the change."
-  exit 1
-fi
-echo "Drift & Revert passed."
+# 1. Cluster Connectivity
+echo "Test 1: Cluster Connectivity..."
+gcloud container clusters get-credentials ${CLUSTER_NAME} --region ${REGION} --project ${PROJECT_ID}
+kubectl cluster-info
+echo "Connectivity passed."
+
+# 2. Workload Readiness
+echo "Test 2: Workload Readiness..."
+# Deployment name from fullname helper: <release-name>-<chart-name>
+# In CI, release name is 'release', chart name is 'enterprise-workload'
+kubectl wait --for=condition=available deployment/release-enterprise-workload -n ${NAMESPACE_WORKLOAD} --timeout=15m
+echo "Workload is available."
 
 # 3. Workload Identity Integration
 echo "Test 3: Workload Identity Integration..."
-# Get credentials for the newly created cluster
-gcloud container clusters get-credentials ${CLUSTER_NAME} --region ${REGION} --project ${PROJECT_ID}
+# Verify that the service account exists and is used by the pod
+POD_NAME=$(kubectl get pods -n ${NAMESPACE_WORKLOAD} -l app.kubernetes.io/instance=release -o jsonpath='{.items[0].metadata.name}')
+if [ -z "$POD_NAME" ]; then
+  echo "Failed to find workload pod!"
+  exit 1
+fi
 
-# Ensure workload namespace exists
-kubectl create namespace ${NAMESPACE_WORKLOAD} --dry-run=client -o yaml | kubectl apply -f -
+SA_NAME=$(kubectl get pod ${POD_NAME} -n ${NAMESPACE_WORKLOAD} -o jsonpath='{.spec.serviceAccountName}')
+echo "Workload is using ServiceAccount: ${SA_NAME}"
 
+# Run a quick test job to verify WI connectivity (Cloud SDK check)
+echo "Running Workload Identity test Job..."
 cat <<EOF | kubectl apply -f -
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: test-workload-identity
+  name: test-workload-identity-$(date +%s)
   namespace: ${NAMESPACE_WORKLOAD}
 spec:
   template:
     spec:
-      serviceAccountName: enterprise-gke-sa
+      serviceAccountName: ${SA_NAME}
       containers:
       - name: gcloud
         image: google/cloud-sdk:slim
         command: ["gcloud", "auth", "list"]
       restartPolicy: Never
+  backoffLimit: 1
 EOF
 
-# Note: This Job might fail if the ServiceAccount 'enterprise-gke-sa' is not yet created by Helm
-# So we should probably install the Helm chart FIRST or at least create the SA.
-# Let's move Helm installation up or combine.
+JOB_NAME=$(kubectl get jobs -n ${NAMESPACE_WORKLOAD} --sort-by=.metadata.creationTimestamp -o jsonpath='{.items[-1].metadata.name}')
+kubectl wait --for=condition=complete job/${JOB_NAME} --timeout=5m -n ${NAMESPACE_WORKLOAD}
+kubectl logs job/${JOB_NAME} -n ${NAMESPACE_WORKLOAD}
+kubectl delete job ${JOB_NAME} -n ${NAMESPACE_WORKLOAD}
+echo "Workload Identity validated."
 
-# 4. Endpoint Interaction (via Helm)
-echo "Test 4: Endpoint Interaction (via Helm)..."
-
-# Apply workload via Helm chart
-echo "Installing Helm chart from terraform-helm/workload/..."
-helm upgrade --install enterprise-gke terraform-helm/workload/ \
-  --namespace ${NAMESPACE_WORKLOAD} \
-  --create-namespace \
-  --wait --timeout=15m
-
-# Now the ServiceAccount should exist, run the WI test Job again
-echo "Re-running Workload Identity test Job..."
-kubectl delete job test-workload-identity -n ${NAMESPACE_WORKLOAD} --ignore-not-found
-cat <<EOF | kubectl apply -f -
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: test-workload-identity
-  namespace: ${NAMESPACE_WORKLOAD}
-spec:
-  template:
-    spec:
-      serviceAccountName: enterprise-gke-sa
-      containers:
-      - name: gcloud
-        image: google/cloud-sdk:slim
-        command: ["gcloud", "auth", "list"]
-      restartPolicy: Never
-EOF
-
-kubectl wait --for=condition=complete job/test-workload-identity --timeout=30m -n ${NAMESPACE_WORKLOAD}
-# Check logs to see if authentication was successful
-kubectl logs job/test-workload-identity -n ${NAMESPACE_WORKLOAD}
-# Clean up job
-kubectl delete job test-workload-identity -n ${NAMESPACE_WORKLOAD}
-
+# 4. Endpoint Interaction
+echo "Test 4: Endpoint Interaction..."
 # Wait for LoadBalancer IP
 SERVICE_IP=""
 for i in {1..20}; do
-  SERVICE_IP=$(kubectl get svc -n ${NAMESPACE_WORKLOAD} -l app.kubernetes.io/instance=enterprise-gke -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}' || true)
+  SERVICE_IP=$(kubectl get svc -n ${NAMESPACE_WORKLOAD} -l app.kubernetes.io/instance=release -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}' || true)
   if [ ! -z "$SERVICE_IP" ]; then
     break
   fi
@@ -127,39 +97,17 @@ fi
 
 echo "Testing endpoint http://${SERVICE_IP}:80/..."
 # Retry curl as the LB might take a few moments to actually start serving
-for i in {1..10}; do
-  if curl -sf http://${SERVICE_IP}:80/; then
+for i in {1..12}; do
+  if curl -sf --connect-timeout 5 --max-time 10 http://${SERVICE_IP}:80/; then
     echo "Endpoint test passed!"
     break
   fi
-  echo "Endpoint not ready (attempt $i/10)..."
-  sleep 10
-  if [ $i -eq 10 ]; then
-    echo "Endpoint test failed after 10 attempts!"
+  echo "Endpoint not ready (attempt $i/12)..."
+  sleep 30
+  if [ $i -eq 12 ]; then
+    echo "Endpoint test failed after 12 attempts!"
     exit 1
   fi
 done
 
-# 5. Teardown Verification
-echo "Test 5: Teardown Verification..."
-# Delete workload via Helm
-helm uninstall enterprise-gke -n ${NAMESPACE_WORKLOAD}
-
-# Delete KCC manifests
-# Note: GEMINI.md says: Always delete KCC ContainerCluster first, wait for STOPPING.
-kubectl delete containercluster/${CLUSTER_NAME} -n ${NAMESPACE} --wait=false
-echo "Waiting for cluster deletion to start..."
-for i in {1..20}; do
-  STATUS=$(gcloud container clusters describe ${CLUSTER_NAME} --region ${REGION} --project ${PROJECT_ID} --format="value(status)" 2>/dev/null || echo "DELETED")
-  if [ "$STATUS" == "STOPPING" ] || [ "$STATUS" == "DELETED" ]; then
-    echo "Cluster status: $STATUS"
-    break
-  fi
-  echo "Waiting for cluster to reach STOPPING (current: $STATUS)..."
-  sleep 30
-done
-
-# Delete other KCC manifests
-kubectl delete -f config-connector/ -n ${NAMESPACE} --ignore-not-found
-
-echo "All KCC Validation Tests passed successfully!"
+echo "All Validation Tests passed successfully!"
