@@ -38,7 +38,7 @@ spec:
         image: {{ .Values.sidecar.image }}:{{ .Values.sidecar.tag }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         restartPolicy: Always
-        command: ["sh", "-c", "while true; do echo \"$(date) - heartbeat from native sidecar\" >> /var/log/app.log; if [ $(stat -c%s /var/log/app.log) -gt 1048576 ]; then tail -n 100 /var/log/app.log > /var/log/app.log.tmp && mv /var/log/app.log.tmp /var/log/app.log; fi; sleep 30; done"]
+        command: ["sh", "-c", "mkdir -p /var/log/nginx && while true; do echo \"$(date) - heartbeat from native sidecar\" >> /var/log/app.log; if [ $(stat -c%s /var/log/app.log) -gt 1048576 ]; then tail -n 100 /var/log/app.log > /var/log/app.log.tmp && mv /var/log/app.log.tmp /var/log/app.log; fi; sleep 30; done"]
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
