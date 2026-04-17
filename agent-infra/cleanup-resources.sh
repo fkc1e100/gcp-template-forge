@@ -24,13 +24,35 @@ echo "=== Starting Orphaned Resource Cleanup ==="
 gcloud version
 
 # 0. Quota Check
-echo "Checking NETWORKS quota..."
-QUOTAS=$(gcloud compute project-info describe --project=$PROJECT --format="json(quotas)")
-USAGE=$(echo "$QUOTAS" | jq -r '.quotas[] | select(.metric == "NETWORKS") | .usage' | cut -d'.' -f1)
-LIMIT=$(echo "$QUOTAS" | jq -r '.quotas[] | select(.metric == "NETWORKS") | .limit' | cut -d'.' -f1)
-if [ -z "$USAGE" ]; then USAGE="unknown"; fi
-if [ -z "$LIMIT" ]; then LIMIT="unknown"; fi
-echo "Current NETWORKS usage: $USAGE / $LIMIT"
+echo "=== Fetching Quotas ==="
+GLOBAL_QUOTAS=$(gcloud compute project-info describe --project=$PROJECT --format="json(quotas)")
+REGIONAL_QUOTAS=$(gcloud compute regions describe $REGION --project=$PROJECT --format="json(quotas)")
+
+print_quota() {
+  METRIC=$1
+  SOURCE=$2
+  
+  USAGE=$(echo "$SOURCE" | jq -r --arg m "$METRIC" '.quotas[] | select(.metric == $m) | .usage' | cut -d'.' -f1)
+  LIMIT=$(echo "$SOURCE" | jq -r --arg m "$METRIC" '.quotas[] | select(.metric == $m) | .limit' | cut -d'.' -f1)
+  
+  if [ -z "$USAGE" ]; then USAGE="0"; fi
+  if [ -z "$LIMIT" ]; then LIMIT="0"; fi
+  
+  echo "  $METRIC: $USAGE / $LIMIT"
+}
+
+echo "Global Networking Quotas:"
+print_quota "NETWORKS" "$GLOBAL_QUOTAS"
+print_quota "FIREWALLS" "$GLOBAL_QUOTAS"
+print_quota "ROUTERS" "$GLOBAL_QUOTAS"
+print_quota "VPN_TUNNELS" "$GLOBAL_QUOTAS"
+print_quota "SUBNETWORKS" "$GLOBAL_QUOTAS"
+print_quota "FORWARDING_RULES" "$GLOBAL_QUOTAS"
+
+echo "Regional Quotas ($REGION):"
+print_quota "CPUS" "$REGIONAL_QUOTAS"
+print_quota "PREEMPTIBLE_CPUS" "$REGIONAL_QUOTAS"
+echo "========================"
 
 # Get list of active/queued runs to avoid deleting their resources if GH_TOKEN is provided
 ALL_ACTIVE=""
