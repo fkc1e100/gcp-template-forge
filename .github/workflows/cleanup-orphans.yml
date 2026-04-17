@@ -47,6 +47,26 @@ jobs:
           echo "Current Quota Status:"
           gcloud compute project-info describe --project=$PROJECT --format="json" | python3 -c "import sys, json; data = json.load(sys.stdin); print(f\"{'Metric':<40} {'Usage':<10} {'Limit':<10}\"); print('-'*60); [print(f\"{q.get('metric','N/A'):<40} {q.get('usage',0):<10.1f} {q.get('limit',0):<10.1f}\") for q in data.get('quotas', []) if q.get('usage', 0) > 0]" || true
 
+          # Helper function to delete resources and ignore benign errors
+          delete_resource() {
+            local cmd="$1"
+            local desc="$2"
+            echo "Attempting to delete $desc..."
+            local out
+            out=$($cmd 2>&1)
+            local status=$?
+            if [ $status -ne 0 ]; then
+              if [[ "$out" =~ "Could not fetch resource" || "$out" =~ "not found" || "$out" =~ "is already being used" || "$out" =~ "running incompatible operation" || "$out" =~ "is not ready" || "$out" =~ "permission" ]]; then
+                echo "Ignored benign error for $desc: $out"
+              else
+                echo "ERROR deleting $desc: $out"
+                ERROR_FOUND=true
+              fi
+            else
+              echo "Successfully deleted $desc"
+            fi
+          }
+
           echo "Checking for active GitHub Actions runs..."
           # Get list of active/queued runs to avoid deleting their resources
           ACTIVE_RUNS=$(gh run list --status in_progress --json databaseId -q '.[].databaseId')
@@ -97,7 +117,7 @@ jobs:
             fi
 
             echo "Deleting orphaned TF cluster: $CLUSTER in $C_LOC"
-            gcloud container clusters delete $CLUSTER --location=$C_LOC --project=$PROJECT --quiet --async || ERROR_FOUND=true
+            delete_resource "gcloud container clusters delete $CLUSTER --location=$C_LOC --project=$PROJECT --quiet --async" "cluster $CLUSTER"
           done <<< "$TF_CLUSTERS"
 
           # 3. Clean up Networking resources (matching pattern)
@@ -106,8 +126,7 @@ jobs:
           # Firewalls (BROADER PATTERN to catch gke- prefix)
           FIREWALLS=$(gcloud compute firewall-rules list --project=$PROJECT --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
           for F in $FIREWALLS; do
-            echo "Deleting firewall: $F"
-            gcloud compute firewall-rules delete $F --project=$PROJECT --quiet || ERROR_FOUND=true
+            delete_resource "gcloud compute firewall-rules delete $F --project=$PROJECT --quiet" "firewall $F"
           done
 
           # Routers and NATs across all regions
@@ -122,12 +141,10 @@ jobs:
               NATS=$(gcloud compute routers describe $R --project=$PROJECT --region=$RGN --format="value(nats.name)" | tr ';' ' ')
               if [ -n "$NATS" ]; then
                 for NAT in $NATS; do
-                  echo "Deleting NAT $NAT from router $R"
-                  gcloud compute routers nats delete $NAT --router=$R --region=$RGN --project=$PROJECT --quiet || ERROR_FOUND=true
+                  delete_resource "gcloud compute routers nats delete $NAT --router=$R --region=$RGN --project=$PROJECT --quiet" "NAT $NAT on router $R"
                 done
               fi
-              echo "Deleting router $R"
-              gcloud compute routers delete $R --region=$RGN --project=$PROJECT --quiet || ERROR_FOUND=true
+              delete_resource "gcloud compute routers delete $R --region=$RGN --project=$PROJECT --quiet" "router $R"
             done
           done
 
@@ -138,8 +155,7 @@ jobs:
           for RGN in $REGIONS; do
             SUBNETS=$(echo "$ALL_SUBNETS" | grep "$RGN" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" | awk '{print $1}' || true)
             for S in $SUBNETS; do
-              echo "Deleting subnet $S in $RGN"
-              gcloud compute networks subnets delete $S --region=$RGN --project=$PROJECT --quiet || ERROR_FOUND=true
+              delete_resource "gcloud compute networks subnets delete $S --region=$RGN --project=$PROJECT --quiet" "subnet $S"
             done
           done
 
@@ -149,8 +165,7 @@ jobs:
 
           NETWORKS=$(gcloud compute networks list --project=$PROJECT --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
           for N in $NETWORKS; do
-            echo "Deleting network $N"
-            gcloud compute networks delete $N --project=$PROJECT --quiet || ERROR_FOUND=true
+            delete_resource "gcloud compute networks delete $N --project=$PROJECT --quiet" "network $N"
           done
 
           echo "Cleanup complete."
