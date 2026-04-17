@@ -85,8 +85,14 @@ jobs:
 
           while read -r CLUSTER C_LOC; do
             [ -z "$CLUSTER" ] && continue
+            
+            # Check safe-list
+            if [[ "$CLUSTER" =~ "repo-agent-standard" || "$CLUSTER" =~ "krmapihost-kcc-instance" || "$CLUSTER" =~ "kcc-dash-dont-delete" ]]; then
+              echo "Skipping protected cluster: $CLUSTER"
+              continue
+            fi
+
             echo "Deleting orphaned TF cluster: $CLUSTER in $C_LOC"
-            gcloud beta container clusters update $CLUSTER --location=$C_LOC --project=$PROJECT --no-deletion-protection --quiet || true
             gcloud container clusters delete $CLUSTER --location=$C_LOC --project=$PROJECT --quiet --async || true
           done <<< "$TF_CLUSTERS"
 
