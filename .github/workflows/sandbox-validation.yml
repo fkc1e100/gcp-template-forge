@@ -67,6 +67,7 @@ jobs:
             DIFF_HEAD=${{ github.sha }}
           fi
           DIRS=$(git diff --name-only "$BASE" "$DIFF_HEAD" \
+            | grep -v '\.md$' \
             | grep '^templates/' \
             | awk -F/ '{print $1"/"$2}' \
             | sort -u \
