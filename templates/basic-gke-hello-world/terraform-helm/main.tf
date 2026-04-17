@@ -19,13 +19,13 @@ provider "google" {
 
 # VPC Network
 resource "google_compute_network" "vpc" {
-  name                    = "gke-basic-tf-vpc"
+  name                    = var.network_name
   auto_create_subnetworks = false
 }
 
 # Subnet with secondary ranges for VPC-native GKE
 resource "google_compute_subnetwork" "subnet" {
-  name                     = "gke-basic-tf-subnet"
+  name                     = var.subnet_name
   ip_cidr_range            = "10.0.0.0/20"
   region                   = var.region
   network                  = google_compute_network.vpc.id
@@ -77,6 +77,12 @@ resource "google_container_cluster" "primary" {
     mode               = "BASIC"
     vulnerability_mode = "VULNERABILITY_BASIC"
   }
+
+  timeouts {
+    create = "30m"
+    update = "30m"
+    delete = "30m"
+  }
 }
 
 # Node pool — spot e2-standard-2 for cost-efficient sandbox validation
@@ -106,22 +112,4 @@ resource "google_container_node_pool" "primary_nodes" {
       project = "gcp-template-forge"
     }
   }
-}
-
-provider "helm" {}
-
-resource "null_resource" "cluster_credentials" {
-  depends_on = [google_container_node_pool.primary_nodes]
-  provisioner "local-exec" {
-    command = "gcloud container clusters get-credentials ${google_container_cluster.primary.name} --region ${var.region} --project ${var.project_id}"
-  }
-}
-
-resource "helm_release" "hello_world" {
-  name             = "hello-world"
-  chart            = "${path.module}/workload"
-  namespace        = "hello-world"
-  create_namespace = true
-  depends_on       = [null_resource.cluster_credentials]
-  wait             = false # Avoid timeouts in TF, verify in CI instead
 }

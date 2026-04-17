@@ -24,13 +24,13 @@ provider "google-beta" {
 
 # VPC Network
 resource "google_compute_network" "vpc" {
-  name                    = "enterprise-gke-tf-vpc"
+  name                    = var.network_name
   auto_create_subnetworks = false
 }
 
 # Subnet
 resource "google_compute_subnetwork" "subnet" {
-  name                     = "enterprise-gke-tf-subnet"
+  name                     = var.subnet_name
   ip_cidr_range            = "10.16.0.0/20"
   region                   = var.region
   network                  = google_compute_network.vpc.id
@@ -49,13 +49,13 @@ resource "google_compute_subnetwork" "subnet" {
 
 # Cloud NAT for private nodes
 resource "google_compute_router" "router" {
-  name    = "enterprise-gke-router"
+  name    = "${var.cluster_name}-router"
   region  = var.region
   network = google_compute_network.vpc.id
 }
 
 resource "google_compute_router_nat" "nat" {
-  name                               = "enterprise-gke-nat"
+  name                               = "${var.cluster_name}-nat"
   router                             = google_compute_router.router.name
   region                             = var.region
   nat_ip_allocate_option             = "AUTO_ONLY"
@@ -133,6 +133,12 @@ resource "google_container_cluster" "enterprise_cluster" {
   release_channel {
     channel = "REGULAR"
   }
+
+  timeouts {
+    create = "30m"
+    update = "30m"
+    delete = "30m"
+  }
 }
 
 resource "google_container_node_pool" "primary_nodes" {
@@ -172,29 +178,3 @@ resource "google_container_node_pool" "primary_nodes" {
   }
 }
 
-provider "helm" {}
-
-resource "null_resource" "cluster_credentials" {
-  depends_on = [google_container_node_pool.primary_nodes]
-  provisioner "local-exec" {
-    command = "gcloud container clusters get-credentials ${google_container_cluster.enterprise_cluster.name} --region ${var.region} --project ${var.project_id}"
-  }
-}
-
-resource "helm_release" "workload" {
-  name             = "enterprise-gke"
-  chart            = "${path.module}/workload"
-  namespace        = "enterprise-gke"
-  create_namespace = true
-  depends_on       = [null_resource.cluster_credentials]
-  wait             = false # Avoid timeouts in TF, verify in CI instead
-
-  values = [
-    file("${path.module}/workload/values.yaml")
-  ]
-
-  set {
-    name  = "secrets.enabled"
-    value = "false"
-  }
-}
