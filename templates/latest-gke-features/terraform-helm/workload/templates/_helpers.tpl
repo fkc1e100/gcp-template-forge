@@ -50,9 +50,9 @@ Common labels
 {{- define "latest-features.labels" -}}
 helm.sh/chart: {{ include "latest-features.chart" . }}
 {{ include "latest-features.selectorLabels" . }}
-{{- if .Chart.AppVersion -}}
+{{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-{{- end -}}
+{{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 project: gcp-template-forge
 template: latest-gke-features
