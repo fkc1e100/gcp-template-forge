@@ -227,11 +227,10 @@ jobs:
   # ── 3. Pre-deploy Quota Cleanup ──────────────────────────────────────────
   pre-cleanup:
     name: "Quota Cleanup"
-    needs: [ detect-changes, lint ]
+    needs: [ detect-changes ]
     if: >-
       github.event_name == 'pull_request' &&
-      needs.detect-changes.outputs.has_templates == 'true' &&
-      needs.lint.result == 'success'
+      needs.detect-changes.outputs.has_templates == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

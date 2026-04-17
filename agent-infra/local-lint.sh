@@ -17,15 +17,64 @@ set -e
 
 echo "=== Running Local Linting ==="
 
-# 1. Terraform fmt and validate
-echo "Checking Terraform..."
+# 0. Template structure check
+echo "Checking template structure..."
+for template in templates/*; do
+  [ -d "$template" ] || continue
+  template_name=$(basename "$template")
+  [ "$template_name" == "README.md" ] && continue
+  
+  echo "--- Checking $template_name ---"
+  MISSING=""
+  [ ! -d "${template}/terraform-helm" ] && MISSING="${MISSING} terraform-helm/"
+  [ ! -d "${template}/config-connector" ] && MISSING="${MISSING} config-connector/"
+  if [ -n "$MISSING" ]; then
+    echo "ERROR: Template '${template_name}' is missing required directories:${MISSING}"
+    exit 1
+  fi
+
+  # Check for non-standard directories
+  for bad in Terraform_HELM terraform_helm terraform-HELM helm Helm terraform manifests; do
+    if [ -d "${template}/${bad}" ]; then
+      echo "ERROR: Found non-standard directory '${template_name}/${bad}/' -- use 'terraform-helm/' and 'config-connector/'"
+      exit 1
+    fi
+  done
+done
+
+# 1. Terraform fmt and validate + Mandates
+echo "Checking Terraform and Mandates..."
 for dir in $(find templates agent-infra -name "*.tf" -exec dirname {} \; | sort -u); do
   echo "--- Linting TF in $dir ---"
   (
     cd "$dir"
-    terraform init -backend=false -input=false
+    terraform init -backend=false -input=false > /dev/null
     terraform fmt -check
     terraform validate
+
+    # Mandate: deletion_protection = false for GKE clusters
+    if grep -r "google_container_cluster" *.tf > /dev/null 2>&1; then
+      if ! grep -r "deletion_protection\s*=\s*false" *.tf > /dev/null 2>&1; then
+        echo "ERROR: GKE cluster in $dir missing 'deletion_protection = false'"
+        exit 1
+      fi
+      
+      # Mandate: 30m timeouts
+      if ! grep -r "create\s*=\s*\"30m\"" *.tf > /dev/null 2>&1; then
+        echo "ERROR: GKE cluster in $dir missing '30m' create timeout"
+        exit 1
+      fi
+    fi
+
+    # Mandate: No helm provider or local-exec
+    if grep -r "provider \"helm\"" *.tf > /dev/null 2>&1; then
+      echo "ERROR: Restricted 'helm' provider found in $dir"
+      exit 1
+    fi
+    if grep -r "local-exec" *.tf > /dev/null 2>&1; then
+      echo "ERROR: Restricted 'local-exec' provisioner found in $dir"
+      exit 1
+    fi
   )
 done
 

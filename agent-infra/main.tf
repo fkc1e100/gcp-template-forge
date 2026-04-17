@@ -22,6 +22,9 @@ resource "google_container_cluster" "template_forge_cluster" {
   name     = "gcp-template-forge"
   location = "us-central1"
 
+  # MANDATORY for CI/CD environments
+  deletion_protection = false
+
   # We need Standard to support privileged pods for security scanning
   remove_default_node_pool = true
   initial_node_count       = 1
@@ -31,6 +34,12 @@ resource "google_container_cluster" "template_forge_cluster" {
 
   release_channel {
     channel = "REGULAR"
+  }
+
+  timeouts {
+    create = "30m"
+    update = "30m"
+    delete = "30m"
   }
 }
 

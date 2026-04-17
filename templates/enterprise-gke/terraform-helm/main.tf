@@ -133,6 +133,12 @@ resource "google_container_cluster" "enterprise_cluster" {
   release_channel {
     channel = "REGULAR"
   }
+
+  timeouts {
+    create = "30m"
+    update = "30m"
+    delete = "30m"
+  }
 }
 
 resource "google_container_node_pool" "primary_nodes" {
@@ -172,29 +178,3 @@ resource "google_container_node_pool" "primary_nodes" {
   }
 }
 
-provider "helm" {}
-
-resource "null_resource" "cluster_credentials" {
-  depends_on = [google_container_node_pool.primary_nodes]
-  provisioner "local-exec" {
-    command = "gcloud container clusters get-credentials ${google_container_cluster.enterprise_cluster.name} --region ${var.region} --project ${var.project_id}"
-  }
-}
-
-resource "helm_release" "workload" {
-  name             = "enterprise-gke"
-  chart            = "${path.module}/workload"
-  namespace        = "enterprise-gke"
-  create_namespace = true
-  depends_on       = [null_resource.cluster_credentials]
-  wait             = false # Avoid timeouts in TF, verify in CI instead
-
-  values = [
-    file("${path.module}/workload/values.yaml")
-  ]
-
-  set {
-    name  = "secrets.enabled"
-    value = "false"
-  }
-}
