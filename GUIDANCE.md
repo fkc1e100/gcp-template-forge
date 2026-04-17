@@ -129,15 +129,21 @@ If Jetski encounters an error, it must follow these resolution paths rather than
 ### **5.3. Code Quality & Standards**
 
 * **Formatting:** All Terraform code must pass terraform fmt and terraform validate before being committed.  
+* **Local Linting:** Agents should run `agent-infra/local-lint.sh` before pushing any code to ensure compliance with all standards (TF, Helm, YAML).
 * **Idempotency:** All generated code must be idempotent. Re-running the pipeline on the same intent should yield zero changes.  
 * **Documentation:** Every generated templates/ folder must include an auto-generated README.md explaining the architecture, prerequisites, and deployment instructions.
 
-### **5.4. Git Workflow Strategy**
+### **5.4. Resource Management & Quota**
+
+* **Quota Awareness:** The sandbox environment has limits (e.g., 30 VPC Networks). If quota errors occur, agents should manually trigger the `cleanup-orphans.yml` workflow.
+* **Proactive Cleanup:** The CI pipeline automatically runs `agent-infra/cleanup-resources.sh` before deployments. Agents can also run this script locally if they have sufficient permissions.
+
+### **5.5. Git Workflow Strategy**
 
 * **Branching:** Do not commit directly to main during development. Always create a new branch feature/agent-infra or feature/github-actions.  
 * **Publishing Templates:** When the pipeline successfully validates an architecture, the agent should commit the code to a new branch (e.g., template/issue-\#) and open a Pull Request against main for human review, rather than force-pushing directly.
 
-### **5.5. Security & Secret Management (CRITICAL)**
+### **5.6. Security & Secret Management (CRITICAL)**
 
 * **Zero Hardcoded Secrets:** Jetski must NEVER hardcode API keys, database passwords, private keys, or GitHub tokens in Terraform, Helm values, or Config Connector manifests.  
 * **Secret Injection:** All required credentials for the pipeline must be referenced via GCP Secret Manager data sources in Terraform or injected securely via Workload Identity in GKE.
