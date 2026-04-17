@@ -78,3 +78,4 @@ kubectl delete -n <KCC_NAMESPACE> -f config-connector/ --wait=true
 | **Estimated cost** | - | -- |
 | **Commit** | 2c375256 | |
 
+<!-- force CI run 3 -->
