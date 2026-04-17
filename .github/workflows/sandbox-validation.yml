@@ -1145,6 +1145,11 @@ jobs:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
 
+      - name: List existing clusters
+        if: steps.skip-check.outputs.skip != 'true'
+        run: |
+          gcloud container clusters list --project gca-gke-2025
+
       - name: Install GKE Auth Plugin
         run: |
           curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --yes --batch --dearmor -o /usr/share/keyrings/cloud.google.gpg
@@ -1176,14 +1181,25 @@ jobs:
         id: kcc-wait
         if: steps.kcc-apply.outcome == 'success'
         run: |
-          kubectl wait \
-            -n $KCC_NAMESPACE \
-            --for=condition=Ready \
-            --all \
-            --timeout=1800s \
-            -f ${{ matrix.template }}/config-connector/ || true
+          echo "Waiting for KCC resources to be Ready (up to 30 minutes)..."
+          KCC_START=$(date -u +%s)
+          for i in {1..30}; do
+            echo "=== Minute $i ==="
+            kubectl get containercluster,computenetwork,computesubnetwork,computerouter -n $KCC_NAMESPACE || true
+            if kubectl wait -n $KCC_NAMESPACE --for=condition=Ready --all --timeout=60s -f ${{ matrix.template }}/config-connector/ &>/dev/null; then
+              echo "All resources are Ready!"
+              break
+            fi
+            sleep 60
+          done
           KCC_DURATION=$(( $(date -u +%s) - ${KCC_START} ))
           echo "kcc_duration=${KCC_DURATION}" >> $GITHUB_OUTPUT
+
+      - name: Dump KCC Resource Status
+        if: always() && steps.kcc-apply.outcome == 'success'
+        run: |
+          echo "=== Final KCC Resource Status ==="
+          kubectl get containercluster,computenetwork,computesubnetwork,computerouter -n $KCC_NAMESPACE || true
 
       - name: KCC drift and revert test
         if: steps.kcc-wait.outcome == 'success'

@@ -1,6 +1,6 @@
-# Template: Latest GKE Features Cluster and Workload
+# Template: Latest GKE Features Template
 
-<!-- force CI run -->
+<!-- force CI run 2 -->
 
 ## Overview
 This template demonstrates some of the latest and most advanced features of Google Kubernetes Engine (GKE), released in 2024, 2025, and 2026. It showcases both cluster-level infrastructure improvements and modern workload deployment patterns.
