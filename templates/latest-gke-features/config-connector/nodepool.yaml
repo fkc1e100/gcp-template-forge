@@ -40,6 +40,8 @@ spec:
     shieldedInstanceConfig:
       enableSecureBoot: true
       enableIntegrityMonitoring: true
+    workloadMetadataConfig:
+      mode: GKE_METADATA
     labels:
       project: gcp-template-forge
       template: latest-gke-features
