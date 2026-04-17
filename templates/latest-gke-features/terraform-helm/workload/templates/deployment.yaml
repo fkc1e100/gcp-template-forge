@@ -94,10 +94,10 @@ spec:
         whenUnsatisfiable: ScheduleAnyway
         labelSelector:
           matchLabels:
-            app: {{ include "latest-features.name" . }}
+            app.kubernetes.io/name: {{ include "latest-features.name" . }}
       - maxSkew: 1
         topologyKey: topology.kubernetes.io/zone
         whenUnsatisfiable: ScheduleAnyway
         labelSelector:
           matchLabels:
-            app: {{ include "latest-features.name" . }}
+            app.kubernetes.io/name: {{ include "latest-features.name" . }}
