@@ -69,12 +69,17 @@ jobs:
 
           echo "Checking for active GitHub Actions runs..."
           # Get list of active/queued runs to avoid deleting their resources
-          ACTIVE_RUNS=$(gh run list --status in_progress --json databaseId -q '.[].databaseId')
-          QUEUED_RUNS=$(gh run list --status queued --json databaseId -q '.[].databaseId')
-          ALL_ACTIVE="$ACTIVE_RUNS $QUEUED_RUNS"
+          ACTIVE_RUNS=$(gh run list --status in_progress --json databaseId -q '.[].databaseId' || true)
+          QUEUED_RUNS=$(gh run list --status queued --json databaseId -q '.[].databaseId' || true)
+          
+          # Also get commit SHAs for active runs (Terraform uses SHA prefix)
+          ACTIVE_SHAS=$(gh run list --status in_progress --json headSha -q '.[].headSha' | cut -c1-5 || true)
+          QUEUED_SHAS=$(gh run list --status queued --json headSha -q '.[].headSha' | cut -c1-5 || true)
+          
+          ALL_ACTIVE="$ACTIVE_RUNS $QUEUED_RUNS $ACTIVE_SHAS $QUEUED_SHAS"
 
           if [ -n "$ALL_ACTIVE" ]; then
-            echo "Found active/queued runs: $ALL_ACTIVE. Cleanup will proceed but be careful."
+            echo "Found active/queued runs/patterns: $ALL_ACTIVE. Cleanup will skip these."
           fi
 
           # 1. Clean up KCC Clusters and other resources FIRST
@@ -116,6 +121,17 @@ jobs:
               continue
             fi
 
+            # Check active runs
+            SKIP=false
+            for PAT in $ALL_ACTIVE; do
+              if [ -n "$PAT" ] && [[ "$CLUSTER" == *"$PAT"* ]]; then
+                echo "Skipping active cluster: $CLUSTER (matches $PAT)"
+                SKIP=true
+                break
+              fi
+            done
+            [ "$SKIP" = true ] && continue
+
             echo "Deleting orphaned TF cluster: $CLUSTER in $C_LOC"
             delete_resource "gcloud container clusters delete $CLUSTER --location=$C_LOC --project=$PROJECT --quiet" "cluster $CLUSTER"
           done <<< "$TF_CLUSTERS"
@@ -126,6 +142,16 @@ jobs:
           # Firewalls (BROADER PATTERN to catch gke- prefix)
           FIREWALLS=$(gcloud compute firewall-rules list --project=$PROJECT --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
           for F in $FIREWALLS; do
+            SKIP=false
+            for PAT in $ALL_ACTIVE; do
+              if [ -n "$PAT" ] && [[ "$F" == *"$PAT"* ]]; then
+                echo "Skipping active firewall: $F"
+                SKIP=true
+                break
+              fi
+            done
+            [ "$SKIP" = true ] && continue
+            
             delete_resource "gcloud compute firewall-rules delete $F --project=$PROJECT --quiet" "firewall $F"
           done
 
@@ -137,6 +163,16 @@ jobs:
           for RGN in $REGIONS; do
             ROUTERS=$(echo "$ALL_ROUTERS" | grep "$RGN" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" | awk '{print $1}' || true)
             for R in $ROUTERS; do
+              SKIP=false
+              for PAT in $ALL_ACTIVE; do
+                if [ -n "$PAT" ] && [[ "$R" == *"$PAT"* ]]; then
+                  echo "Skipping active router: $R"
+                  SKIP=true
+                  break
+                fi
+              done
+              [ "$SKIP" = true ] && continue
+
               echo "Checking NATs for router $R in $RGN"
               NATS=$(gcloud compute routers describe $R --project=$PROJECT --region=$RGN --format="value(nats.name)" | tr ';' ' ')
               if [ -n "$NATS" ]; then
@@ -155,6 +191,16 @@ jobs:
           for RGN in $REGIONS; do
             SUBNETS=$(echo "$ALL_SUBNETS" | grep "$RGN" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" | awk '{print $1}' || true)
             for S in $SUBNETS; do
+              SKIP=false
+              for PAT in $ALL_ACTIVE; do
+                if [ -n "$PAT" ] && [[ "$S" == *"$PAT"* ]]; then
+                  echo "Skipping active subnet: $S"
+                  SKIP=true
+                  break
+                fi
+              done
+              [ "$SKIP" = true ] && continue
+
               delete_resource "gcloud compute networks subnets delete $S --region=$RGN --project=$PROJECT --quiet" "subnet $S"
             done
           done
@@ -165,6 +211,16 @@ jobs:
 
           NETWORKS=$(gcloud compute networks list --project=$PROJECT --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
           for N in $NETWORKS; do
+            SKIP=false
+            for PAT in $ALL_ACTIVE; do
+              if [ -n "$PAT" ] && [[ "$N" == *"$PAT"* ]]; then
+                echo "Skipping active network: $N"
+                SKIP=true
+                break
+              fi
+            done
+            [ "$SKIP" = true ] && continue
+
             delete_resource "gcloud compute networks delete $N --project=$PROJECT --quiet" "network $N"
           done
 
