@@ -45,7 +45,7 @@ jobs:
           gcloud version
 
           echo "Current Quota Status:"
-          gcloud compute project-info describe --project=$PROJECT --format="yaml(quotas)" || true
+          gcloud compute project-info describe --project=$PROJECT --format="json" | python3 -c "import sys, json; data = json.load(sys.stdin); print(f\"{'Metric':<40} {'Usage':<10} {'Limit':<10}\"); print('-'*60); [print(f\"{q.get('metric','N/A'):<40} {q.get('usage',0):<10.1f} {q.get('limit',0):<10.1f}\") for q in data.get('quotas', []) if q.get('usage', 0) > 0]" || true
 
           echo "Checking for active GitHub Actions runs..."
           # Get list of active/queued runs to avoid deleting their resources
@@ -113,8 +113,10 @@ jobs:
           # Routers and NATs across all regions
           echo "Cleaning up routers across all regions..."
           REGIONS=$(gcloud compute regions list --project=$PROJECT --format="value(name)")
+          ALL_ROUTERS=$(gcloud compute routers list --project=$PROJECT --format="value(name, region)")
+          
           for RGN in $REGIONS; do
-            ROUTERS=$(gcloud compute routers list --project=$PROJECT --filter="region=$RGN" --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
+            ROUTERS=$(echo "$ALL_ROUTERS" | grep "$RGN" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" | awk '{print $1}' || true)
             for R in $ROUTERS; do
               echo "Checking NATs for router $R in $RGN"
               NATS=$(gcloud compute routers describe $R --project=$PROJECT --region=$RGN --format="value(nats.name)" | tr ';' ' ')
@@ -131,8 +133,10 @@ jobs:
 
           # Subnets across all regions
           echo "Cleaning up subnets across all regions..."
+          ALL_SUBNETS=$(gcloud compute networks subnets list --project=$PROJECT --format="value(name, region)")
+          
           for RGN in $REGIONS; do
-            SUBNETS=$(gcloud compute networks subnets list --project=$PROJECT --filter="region=$RGN" --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
+            SUBNETS=$(echo "$ALL_SUBNETS" | grep "$RGN" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" | awk '{print $1}' || true)
             for S in $SUBNETS; do
               echo "Deleting subnet $S in $RGN"
               gcloud compute networks subnets delete $S --region=$RGN --project=$PROJECT --quiet || ERROR_FOUND=true
