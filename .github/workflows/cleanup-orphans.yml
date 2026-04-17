@@ -117,7 +117,7 @@ jobs:
             fi
 
             echo "Deleting orphaned TF cluster: $CLUSTER in $C_LOC"
-            delete_resource "gcloud container clusters delete $CLUSTER --location=$C_LOC --project=$PROJECT --quiet --async" "cluster $CLUSTER"
+            delete_resource "gcloud container clusters delete $CLUSTER --location=$C_LOC --project=$PROJECT --quiet" "cluster $CLUSTER"
           done <<< "$TF_CLUSTERS"
 
           # 3. Clean up Networking resources (matching pattern)
