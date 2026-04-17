@@ -260,8 +260,12 @@ jobs:
       - name: Break stale TF state lock (if any)
         if: "hashFiles(format('{0}/terraform-helm/**', matrix.template)) != ''"
         run: |
-          gsutil rm "gs://${TF_STATE_BUCKET}/${{ matrix.template }}-${{ github.run_id }}/terraform-helm/default.tflock" \
-            2>/dev/null && echo "Stale state lock removed" || echo "No stale lock present"
+          if gsutil ls "gs://${TF_STATE_BUCKET}/${{ matrix.template }}-${{ github.run_id }}/terraform-helm/default.tflock" &>/dev/null; then
+            echo "Stale lock found, attempting to remove..."
+            gsutil rm "gs://${TF_STATE_BUCKET}/${{ matrix.template }}-${{ github.run_id }}/terraform-helm/default.tflock"
+          else
+            echo "No stale lock present"
+          fi
 
       - name: Terraform apply
         id: tf-apply
@@ -915,8 +919,12 @@ jobs:
           steps.skip-check.outputs.skip != 'true' &&
           hashFiles(format('{0}/terraform-helm/**', matrix.template)) != ''
         run: |
-          gsutil rm "gs://${TF_STATE_BUCKET}/${{ matrix.template }}-${{ github.run_id }}/terraform-helm/default.tflock" \
-            2>/dev/null && echo "Stale state lock removed" || echo "No stale lock present"
+          if gsutil ls "gs://${TF_STATE_BUCKET}/${{ matrix.template }}-${{ github.run_id }}/terraform-helm/default.tflock" &>/dev/null; then
+            echo "Stale lock found, attempting to remove..."
+            gsutil rm "gs://${TF_STATE_BUCKET}/${{ matrix.template }}-${{ github.run_id }}/terraform-helm/default.tflock"
+          else
+            echo "No stale lock present"
+          fi
 
       - name: Terraform apply
         id: tf-apply
