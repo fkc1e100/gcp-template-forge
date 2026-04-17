@@ -315,6 +315,21 @@ jobs:
         run: |
           curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
+      - name: Wait for Gateway API CRDs
+        if: steps.tf-verify.outcome == 'success'
+        run: |
+          echo "Waiting for Gateway API CRDs to be installed by GKE..."
+          for i in {1..30}; do
+            if kubectl get crd gateways.gateway.networking.k8s.io &>/dev/null; then
+              echo "Gateway API CRDs found!"
+              exit 0
+            fi
+            echo "Waiting... ($i/30)"
+            sleep 10
+          done
+          echo "Timed out waiting for Gateway API CRDs"
+          exit 1
+
       - name: Helm deploy and verify
         id: helm-deploy
         if: >-
