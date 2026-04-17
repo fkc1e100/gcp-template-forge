@@ -43,6 +43,3 @@ spec:
     labels:
       project: gcp-template-forge
       template: enterprise-gke
-    resourceLabels:
-      project: gcp-template-forge
-      template: enterprise-gke

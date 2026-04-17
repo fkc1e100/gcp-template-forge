@@ -25,9 +25,6 @@ metadata:
     cnrm.cloud.google.com/remove-default-node-pool: "true"
 spec:
   location: us-central1
-  resourceLabels:
-    project: gcp-template-forge
-    template: basic-gke-hello-world
   # GKE Standard cluster — explicit node pool defined in nodepool.yaml
   initialNodeCount: 1
   networkRef:
