@@ -20,7 +20,7 @@ echo "Starting Validation Tests for enterprise-gke..."
 PROJECT_ID=${PROJECT_ID:-"gca-gke-2025"}
 CLUSTER_NAME=${CLUSTER_NAME:-"enterprise-gke-tf"}
 REGION=${REGION:-"us-central1"}
-NAMESPACE_WORKLOAD=${NAMESPACE_WORKLOAD:-"enterprise-gke"}
+NAMESPACE_WORKLOAD=${NAMESPACE_WORKLOAD:-"default"}
 
 # Isolate KUBECONFIG
 export KUBECONFIG=$(mktemp)
