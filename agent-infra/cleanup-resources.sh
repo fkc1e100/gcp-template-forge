@@ -90,15 +90,8 @@ while read -r CLUSTER C_LOC; do
   if [ "$SKIP" = false ]; then
     STATUS=$(gcloud container clusters describe $CLUSTER --location=$C_LOC --project=$PROJECT --format="value(status)" 2>/dev/null || echo "UNKNOWN")
     if [ "$STATUS" = "PROVISIONING" ]; then
-      echo "Cluster $CLUSTER is still PROVISIONING. Waiting for it to finish..."
-      for i in {1..30}; do
-        sleep 60
-        STATUS=$(gcloud container clusters describe $CLUSTER --location=$C_LOC --project=$PROJECT --format="value(status)" 2>/dev/null || echo "UNKNOWN")
-        echo "Status is $STATUS ($i/30)"
-        if [ "$STATUS" != "PROVISIONING" ]; then
-          break
-        fi
-      done
+      echo "Cluster $CLUSTER is still PROVISIONING. Skipping it for now to let it finish."
+      continue
     fi
 
     echo "Deleting orphaned TF cluster: $CLUSTER in $C_LOC"
