@@ -18,7 +18,7 @@ metadata:
   labels:
     {{- include "latest-features.labels" . | nindent 4 }}
 spec:
-  progressDeadlineSeconds: 2400
+  progressDeadlineSeconds: 3600
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
