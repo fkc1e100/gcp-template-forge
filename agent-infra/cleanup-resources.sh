@@ -138,6 +138,17 @@ for RGN in $REGIONS; do
   done
 done
 
+echo "Waiting for routers to be fully deleted..."
+for i in {1..10}; do
+  STILL_THERE=$(gcloud compute routers list --project=$PROJECT --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" | wc -l)
+  if [ "$STILL_THERE" -le 0 ]; then
+    echo "All targeted routers deleted."
+    break
+  fi
+  echo "Waiting for routers... ($STILL_THERE remaining)"
+  sleep 15
+done
+
 # VPN Resources
 for RGN in $REGIONS; do
   TUNNELS=$(gcloud compute vpn-tunnels list --project=$PROJECT --regions=$RGN --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
