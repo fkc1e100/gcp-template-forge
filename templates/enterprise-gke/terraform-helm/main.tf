@@ -175,6 +175,11 @@ resource "google_container_node_pool" "primary_nodes" {
       project  = "gcp-template-forge"
       template = "enterprise-gke"
     }
+
+    resource_labels = {
+      project  = "gcp-template-forge"
+      template = "enterprise-gke"
+    }
   }
 }
 

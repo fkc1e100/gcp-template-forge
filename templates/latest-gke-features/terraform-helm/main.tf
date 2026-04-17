@@ -211,5 +211,10 @@ resource "google_container_node_pool" "primary_nodes" {
       project  = "gcp-template-forge"
       template = "latest-gke-features"
     }
+
+    resource_labels = {
+      project  = "gcp-template-forge"
+      template = "latest-gke-features"
+    }
   }
 }

@@ -80,6 +80,10 @@ resource "google_container_node_pool" "primary_nodes" {
     oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform"
     ]
+
+    resource_labels = {
+      project = "gcp-template-forge"
+    }
   }
 }
 
@@ -113,5 +117,9 @@ resource "google_storage_bucket" "validation_tf_state" {
   location = "US"
   versioning {
     enabled = true
+  }
+
+  labels = {
+    project = "gcp-template-forge"
   }
 }
