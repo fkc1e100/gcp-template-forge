@@ -547,6 +547,8 @@ jobs:
         run: |
           echo "KCC Wait failed. Dumping resource status..."
           kubectl get -n $KCC_NAMESPACE -f ${{ matrix.template }}/config-connector/ -o custom-columns=KIND:.kind,NAME:.metadata.name,READY:.status.conditions[?(@.type=="Ready")].status,REASON:.status.conditions[?(@.type=="Ready")].reason || true
+          echo "Dumping events..."
+          kubectl get events -n $KCC_NAMESPACE --sort-by='.lastTimestamp' | tail -n 20
 
       - name: Verify KCC ContainerCluster Ready
         id: kcc-cluster-ready
