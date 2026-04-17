@@ -51,6 +51,15 @@ spec:
     vulnerabilityMode: VULNERABILITY_ENTERPRISE
   gatewayApiConfig:
     channel: CHANNEL_STANDARD
+  loggingConfig:
+    enableComponents:
+      - SYSTEM_COMPONENTS
+      - WORKLOADS
+  monitoringConfig:
+    enableComponents:
+      - SYSTEM_COMPONENTS
+    managedPrometheus:
+      enabled: true
   clusterAutoscaling:
     enabled: true
     resourceLimits:
