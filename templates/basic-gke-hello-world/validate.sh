@@ -15,49 +15,36 @@
 
 set -e
 
-echo "Starting KCC Validation Tests for basic-gke-hello-world..."
+echo "Starting Validation Tests for basic-gke-hello-world..."
 
 PROJECT_ID=${PROJECT_ID:-"gca-gke-2025"}
-CLUSTER_NAME="gke-basic-kcc-v2"
-NAMESPACE="forge-management"
-NAMESPACE_WORKLOAD="hello-world"
-REGION="us-central1"
+CLUSTER_NAME=${CLUSTER_NAME:-"basic-gke-hello-world-tf"}
+REGION=${REGION:-"us-central1"}
+NAMESPACE_WORKLOAD=${NAMESPACE_WORKLOAD:-"hello-world"}
 
-# 1. Resource Readiness
-echo "Test 1: Resource Readiness..."
-kubectl wait --for=condition=Ready containercluster/${CLUSTER_NAME} --timeout=30m -n ${NAMESPACE}
-echo "Resource Readiness passed."
+# Isolate KUBECONFIG
+export KUBECONFIG=$(mktemp)
+trap 'rm -f "$KUBECONFIG"' EXIT
 
-# 2. Drift & Revert (Labels disabled due to KCC version limitation)
-# echo "Test 2: Drift & Revert..."
-# gcloud container clusters update ${CLUSTER_NAME} --region ${REGION} --update-labels drift=test --project ${PROJECT_ID}
-# echo "Out-of-band change applied. Waiting for KCC to revert (sleeping 3m)..."
-# sleep 180
-# LABELS=$(gcloud container clusters describe ${CLUSTER_NAME} --region ${REGION} --project ${PROJECT_ID} --format="value(resourceLabels.drift)")
-# if [ ! -z "$LABELS" ]; then
-#   echo "Drift Revert failed! KCC did not revert the change."
-#   exit 1
-# fi
-# echo "Drift & Revert passed."
-
-# 3. Workload Deployment (via Helm)
-echo "Test 3: Workload Deployment (via Helm)..."
-# Get credentials for the newly created cluster
+# 1. Cluster Connectivity
+echo "Test 1: Cluster Connectivity..."
 gcloud container clusters get-credentials ${CLUSTER_NAME} --region ${REGION} --project ${PROJECT_ID}
+kubectl cluster-info
+echo "Connectivity passed."
 
-# Apply workload via Helm chart
-echo "Installing Helm chart from terraform-helm/workload/..."
-helm upgrade --install gke-basic terraform-helm/workload/ \
-  --namespace ${NAMESPACE_WORKLOAD} \
-  --create-namespace \
-  --wait --timeout=15m
+# 2. Workload Readiness
+echo "Test 2: Workload Readiness..."
+# Deployment name from fullname helper: <release-name>-<chart-name>
+# In CI, release name is 'release', chart name is 'hello-world'
+kubectl wait --for=condition=available deployment/release-hello-world -n ${NAMESPACE_WORKLOAD} --timeout=10m
+echo "Workload is available."
 
-# 4. Endpoint Interaction
-echo "Test 4: Endpoint Interaction..."
+# 3. Endpoint Interaction
+echo "Test 3: Endpoint Interaction..."
 # Wait for LoadBalancer IP
 SERVICE_IP=""
 for i in {1..20}; do
-  SERVICE_IP=$(kubectl get svc -n ${NAMESPACE_WORKLOAD} -l app.kubernetes.io/instance=gke-basic -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}' || true)
+  SERVICE_IP=$(kubectl get svc -n ${NAMESPACE_WORKLOAD} -l app.kubernetes.io/instance=release -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}' || true)
   if [ ! -z "$SERVICE_IP" ]; then
     break
   fi
@@ -72,38 +59,17 @@ fi
 
 echo "Testing endpoint http://${SERVICE_IP}:80/..."
 # Retry curl as the LB might take a few moments to actually start serving
-for i in {1..10}; do
-  if curl -sf http://${SERVICE_IP}:80/; then
+for i in {1..12}; do
+  if curl -sf --connect-timeout 5 --max-time 10 http://${SERVICE_IP}:80/; then
     echo "Endpoint test passed!"
     break
   fi
-  echo "Endpoint not ready (attempt $i/10)..."
-  sleep 10
-  if [ $i -eq 10 ]; then
-    echo "Endpoint test failed after 10 attempts!"
+  echo "Endpoint not ready (attempt $i/12)..."
+  sleep 30
+  if [ $i -eq 12 ]; then
+    echo "Endpoint test failed after 12 attempts!"
     exit 1
   fi
 done
 
-# 5. Teardown Verification
-echo "Test 5: Teardown Verification..."
-# Delete workload via Helm
-helm uninstall gke-basic -n ${NAMESPACE_WORKLOAD}
-
-# Delete KCC manifests
-kubectl delete containercluster/${CLUSTER_NAME} -n ${NAMESPACE} --wait=false
-echo "Waiting for cluster deletion to start..."
-for i in {1..20}; do
-  STATUS=$(gcloud container clusters describe ${CLUSTER_NAME} --region ${REGION} --project ${PROJECT_ID} --format="value(status)" 2>/dev/null || echo "DELETED")
-  if [ "$STATUS" == "STOPPING" ] || [ "$STATUS" == "DELETED" ]; then
-    echo "Cluster status: $STATUS"
-    break
-  fi
-  echo "Waiting for cluster to reach STOPPING (current: $STATUS)..."
-  sleep 30
-done
-
-# Delete other KCC manifests
-kubectl delete -f config-connector/ -n ${NAMESPACE} --ignore-not-found
-
-echo "All KCC Validation Tests passed successfully!"
+echo "All Validation Tests passed successfully!"
