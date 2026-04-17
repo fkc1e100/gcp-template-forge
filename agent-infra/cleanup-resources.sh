@@ -206,8 +206,19 @@ done
 # Networks (VPCs)
 NETWORKS=$(gcloud compute networks list --project=$PROJECT --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
 for N in $NETWORKS; do
-  echo "Deleting network $N"
-  gcloud compute networks delete $N --project=$PROJECT --quiet || true
+  echo "Initiating deletion of network $N..."
+  gcloud compute networks delete $N --project=$PROJECT --quiet --async || true
+done
+
+echo "Waiting for networks to be fully deleted..."
+for i in {1..15}; do
+  STILL_THERE=$(gcloud compute networks list --project=$PROJECT --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" | wc -l)
+  if [ "$STILL_THERE" -le 0 ]; then
+    echo "All targeted networks deleted."
+    break
+  fi
+  echo "Waiting for $STILL_THERE networks to delete... ($i/15)"
+  sleep 20
 done
 
 echo "=== Cleanup Complete ==="
