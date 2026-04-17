@@ -92,7 +92,7 @@ resource "google_container_cluster" "latest_features_cluster" {
   initial_node_count       = 1
 
   # Research the latest GKE version available in the RAPID channel
-  min_master_version = "1.35.3-gke.1234000"
+  # min_master_version = "1.35.3-gke.1234000"
 
   networking_mode = "VPC_NATIVE"
   network         = google_compute_network.vpc.name
