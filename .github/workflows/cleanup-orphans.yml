@@ -44,6 +44,9 @@ jobs:
 
           gcloud version
 
+          echo "Current Quota Status:"
+          gcloud compute project-info describe --project=$PROJECT --format="yaml(quotas)" || true
+
           echo "Checking for active GitHub Actions runs..."
           # Get list of active/queued runs to avoid deleting their resources
           ACTIVE_RUNS=$(gh run list --status in_progress --json databaseId -q '.[].databaseId')
@@ -111,7 +114,7 @@ jobs:
           echo "Cleaning up routers across all regions..."
           REGIONS=$(gcloud compute regions list --project=$PROJECT --format="value(name)")
           for RGN in $REGIONS; do
-            ROUTERS=$(gcloud compute routers list --project=$PROJECT --regions=$RGN --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
+            ROUTERS=$(gcloud compute routers list --project=$PROJECT --filter="region=$RGN" --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
             for R in $ROUTERS; do
               echo "Checking NATs for router $R in $RGN"
               NATS=$(gcloud compute routers describe $R --project=$PROJECT --region=$RGN --format="value(nats.name)" | tr ';' ' ')
@@ -129,7 +132,7 @@ jobs:
           # Subnets across all regions
           echo "Cleaning up subnets across all regions..."
           for RGN in $REGIONS; do
-            SUBNETS=$(gcloud compute networks subnets list --project=$PROJECT --regions=$RGN --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
+            SUBNETS=$(gcloud compute networks subnets list --project=$PROJECT --filter="region=$RGN" --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
             for S in $SUBNETS; do
               echo "Deleting subnet $S in $RGN"
               gcloud compute networks subnets delete $S --region=$RGN --project=$PROJECT --quiet || ERROR_FOUND=true
