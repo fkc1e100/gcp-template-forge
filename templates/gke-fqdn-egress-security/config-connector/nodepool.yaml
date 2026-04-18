@@ -20,6 +20,8 @@ metadata:
   labels:
     project: gcp-template-forge
     template: gke-fqdn-egress-security
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   clusterRef:
     name: fqdn-egress-cluster
