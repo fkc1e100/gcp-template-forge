@@ -123,7 +123,7 @@ resource "google_container_cluster" "enterprise_cluster" {
 
   security_posture_config {
     mode               = "BASIC"
-    vulnerability_mode = "VULNERABILITY_ENTERPRISE"
+    vulnerability_mode = "VULNERABILITY_BASIC"
   }
 
   secret_manager_config {
@@ -181,25 +181,5 @@ resource "google_container_node_pool" "primary_nodes" {
       template = "enterprise-gke"
     }
   }
-}
-
-# Google Service Account for Workload Identity
-resource "google_service_account" "workload_sa" {
-  account_id   = "enterprise-gke-tf-sa"
-  display_name = "Enterprise Workload Service Account (TF)"
-}
-
-# Allow Kubernetes Service Account to impersonate the Google Service Account
-resource "google_service_account_iam_member" "workload_identity_binding" {
-  service_account_id = google_service_account.workload_sa.name
-  role               = "roles/iam.workloadIdentityUser"
-  member             = "serviceAccount:${var.project_id}.svc.id.goog[enterprise-gke/enterprise-gke-sa]"
-}
-
-# Optional: Allow workload to access secrets if Secret Manager is used
-resource "google_project_iam_member" "secret_accessor" {
-  project = var.project_id
-  role    = "roles/secretmanager.secretAccessor"
-  member  = "serviceAccount:${google_service_account.workload_sa.email}"
 }
 
