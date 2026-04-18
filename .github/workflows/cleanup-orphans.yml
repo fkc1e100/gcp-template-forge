@@ -172,7 +172,6 @@ jobs:
               else
                 delete_resource "gcloud compute network-endpoint-groups delete $NEG_NAME --global --project=$PROJECT --quiet" "NEG $NEG_NAME"
               fi
-            fi
           done <<< "$ALL_NEGS"
 
           # 3. Clean up Networking resources (matching pattern)
