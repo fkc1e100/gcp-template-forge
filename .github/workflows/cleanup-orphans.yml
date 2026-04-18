@@ -137,6 +137,40 @@ jobs:
             delete_resource "gcloud container clusters delete $CLUSTER --location=$C_LOC --project=$PROJECT --quiet" "cluster $CLUSTER"
           done <<< "$TF_CLUSTERS"
 
+          # 2.5 Clean up Network Endpoint Groups (NEGs)
+          echo "Cleaning up orphaned Network Endpoint Groups (NEGs)..."
+          ALL_NEGS=$(gcloud compute network-endpoint-groups list --project=$PROJECT --format="value(name, zone, network)" || true)
+          
+          while read -r NEG_NAME NEG_ZONE NEG_NET; do
+            [ -z "$NEG_NAME" ] && continue
+            
+            # Check if the network matches our pattern
+            if [[ "$NEG_NET" =~ "latest-gke-features-" || "$NEG_NET" =~ "enterprise-gke-" || "$NEG_NET" =~ "basic-gke-" ]]; then
+              # Check safe-list
+              if [[ "$NEG_NET" =~ "repo-agent-standard" || "$NEG_NET" =~ "krmapihost-kcc-instance" || "$NEG_NET" =~ "kcc-dash-dont-delete" ]]; then
+                continue
+              fi
+              
+              # Check active runs
+              SKIP=false
+              for PAT in $ALL_ACTIVE; do
+                if [ -n "$PAT" ] && [[ "$NEG_NET" == *"$PAT"* ]]; then
+                  echo "Skipping active NEG: $NEG_NAME (matches $PAT)"
+                  SKIP=true
+                  break
+                fi
+              done
+              [ "$SKIP" = true ] && continue
+              
+              echo "Deleting orphaned NEG: $NEG_NAME in $NEG_ZONE"
+              if [ -n "$NEG_ZONE" ]; then
+                delete_resource "gcloud compute network-endpoint-groups delete $NEG_NAME --zone=$NEG_ZONE --project=$PROJECT --quiet" "NEG $NEG_NAME"
+              else
+                delete_resource "gcloud compute network-endpoint-groups delete $NEG_NAME --global --project=$PROJECT --quiet" "NEG $NEG_NAME"
+              fi
+            fi
+          done <<< "$ALL_NEGS"
+
           # 3. Clean up Networking resources (matching pattern)
           echo "Cleaning up orphaned Networking resources (matching pattern)..."
           
