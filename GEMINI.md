@@ -72,6 +72,7 @@ If the dashboard is inaccessible from specific devices or networks:
     *   Step-by-step deployment commands.
     *   How to verify the deployment (e.g., URLs to visit, kubectl commands).
     *   Cleanup instructions.
+*   **Strict Issue Scoping (Anti-Feature Creep):** The agent MUST strictly adhere to the scope of the assigned issue. Do NOT modify files or templates that are not directly related to the specific task. Avoid "feature creep" or attempting to fix similar issues in other files/templates unless explicitly instructed. Small, focused PRs are preferred over massive, all-encompassing changes to keep the CI pipeline healthy and prevent resource contention.
 
 #### `fkcurrie/gcp-template-forge` (dashboard namespace, drives what you see in the UI)
 ```yaml
@@ -92,9 +93,10 @@ spec:
       taskType: fix-issue
       prompt: |
         Fix this issue. You MUST ensure:
-        1. Functional parity between the terraform-helm/ and config-connector/ paths.
-        2. The config-connector/ directory contains ALL necessary Kubernetes manifests for the workload (Deployment, Service, etc.).
-        3. The README.md is comprehensive, accurate, and provides clear deployment/verification instructions for BOTH paths.
+        1. Strict adherence to the issue scope. ONLY modify files directly related to the task.
+        2. Functional parity between the terraform-helm/ and config-connector/ paths.
+        3. The config-connector/ directory contains ALL necessary Kubernetes manifests for the workload (Deployment, Service, etc.).
+        4. The README.md is comprehensive, accurate, and provides clear deployment/verification instructions for BOTH paths.
   review:
     maxSandboxes: 3
     maxActiveSandboxes: 3
