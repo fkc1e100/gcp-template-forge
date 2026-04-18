@@ -9,6 +9,8 @@ serviceAccount:
   create: true
   name: "enterprise-gke-sa"
   # UPDATE: Replace with your actual GCP Service Account email if using Workload Identity
+  # If you enable the commented-out TF resources in main.tf, use:
+  # enterprise-gke-tf-sa@<PROJECT_ID>.iam.gserviceaccount.com
   gcpServiceAccount: ""
 
 podSecurityContext:
