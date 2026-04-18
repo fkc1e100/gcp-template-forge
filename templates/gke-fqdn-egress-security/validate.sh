@@ -78,23 +78,49 @@ echo "Verifier pod is ready."
 echo "Test 5: Running Egress Tests..."
 
 echo "Testing allowed domain: api.anthropic.com..."
-if kubectl exec egress-verifier -n "${NAMESPACE}" -- curl -sL --connect-timeout 5 https://api.anthropic.com > /dev/null; then
-  echo "SUCCESS: api.anthropic.com is reachable."
-else
-  echo "FAILURE: api.anthropic.com is NOT reachable."
+# Dataplane V2 FQDN policies sometimes need a few seconds to learn the IP from the first DNS response.
+# We use a retry loop to account for this.
+MAX_RETRIES=5
+SUCCESS=false
+for i in $(seq 1 $MAX_RETRIES); do
+  if kubectl exec egress-verifier -n "${NAMESPACE}" -- curl -sL -4 --connect-timeout 10 https://api.anthropic.com > /dev/null; then
+    echo "SUCCESS: api.anthropic.com is reachable (attempt $i)."
+    SUCCESS=true
+    break
+  fi
+  echo "Attempt $i: api.anthropic.com not reachable yet, retrying in 5s..."
+  sleep 5
+done
+
+if [[ "$SUCCESS" == "false" ]]; then
+  echo "FAILURE: api.anthropic.com is NOT reachable after $MAX_RETRIES attempts."
+  # Debug: dump policy status and DNS resolution
+  echo "--- DEBUG INFO ---"
+  kubectl get fqdnnetworkpolicies.networking.gke.io allow-ai-egress -n "${NAMESPACE}" -o yaml || true
+  kubectl exec egress-verifier -n "${NAMESPACE}" -- nslookup api.anthropic.com || true
+  kubectl exec egress-verifier -n "${NAMESPACE}" -- curl -v -4 --connect-timeout 10 https://api.anthropic.com || true
   exit 1
 fi
 
 echo "Testing allowed domain: huggingface.co..."
-if kubectl exec egress-verifier -n "${NAMESPACE}" -- curl -sL --connect-timeout 5 https://huggingface.co > /dev/null; then
-  echo "SUCCESS: huggingface.co is reachable."
-else
-  echo "FAILURE: huggingface.co is NOT reachable."
+SUCCESS=false
+for i in $(seq 1 $MAX_RETRIES); do
+  if kubectl exec egress-verifier -n "${NAMESPACE}" -- curl -sL -4 --connect-timeout 10 https://huggingface.co > /dev/null; then
+    echo "SUCCESS: huggingface.co is reachable (attempt $i)."
+    SUCCESS=true
+    break
+  fi
+  echo "Attempt $i: huggingface.co not reachable yet, retrying in 5s..."
+  sleep 5
+done
+
+if [[ "$SUCCESS" == "false" ]]; then
+  echo "FAILURE: huggingface.co is NOT reachable after $MAX_RETRIES attempts."
   exit 1
 fi
 
 echo "Testing blocked domain: google.com..."
-if kubectl exec egress-verifier -n "${NAMESPACE}" -- curl -sL --connect-timeout 5 https://google.com > /dev/null 2>&1; then
+if kubectl exec egress-verifier -n "${NAMESPACE}" -- curl -sL -4 --connect-timeout 10 https://google.com > /dev/null 2>&1; then
   echo "FAILURE: google.com is reachable, but should be blocked!"
   exit 1
 else

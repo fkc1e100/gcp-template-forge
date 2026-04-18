@@ -23,7 +23,10 @@ spec:
   egress:
   - matches:
     - name: api.anthropic.com
+    - pattern: "*.anthropic.com"
     - name: huggingface.co
+    - pattern: "*.huggingface.co"
+    - pattern: "*.hf.co"
     ports:
     - protocol: TCP
       port: 443
