@@ -150,7 +150,7 @@ jobs:
             [ -z "$NEG_NAME" ] && continue
             
             # Check if the network matches our pattern
-            if [[ "$NEG_NET" =~ "latest-gke-features-" || "$NEG_NET" =~ "enterprise-gke-" || "$NEG_NET" =~ "basic-gke-|gke-fqdn-egress-security-" ]]; then
+            if [[ "$NEG_NET" =~ latest-gke-features- || "$NEG_NET" =~ enterprise-gke- || "$NEG_NET" =~ (basic-gke-|gke-fqdn-egress-security-) ]]; then
               # Check safe-list
               if [[ "$NEG_NET" =~ "repo-agent-standard" || "$NEG_NET" =~ "krmapihost-kcc-instance" || "$NEG_NET" =~ "kcc-dash-dont-delete" ]]; then
                 continue

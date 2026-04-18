@@ -26,19 +26,23 @@ variable "region" {
 variable "cluster_name" {
   description = "The name of the GKE cluster"
   type        = string
+  default     = "gke-fqdn-egress-security-tf"
 }
 
 variable "network_name" {
   description = "The name of the VPC network"
   type        = string
+  default     = "gke-fqdn-egress-security-tf-vpc"
 }
 
 variable "subnet_name" {
   description = "The name of the subnet"
   type        = string
+  default     = "gke-fqdn-egress-security-tf-subnet"
 }
 
 variable "service_account" {
   description = "The service account to use for the GKE nodes"
   type        = string
+  default     = "forge-builder@gca-gke-2025.iam.gserviceaccount.com"
 }
