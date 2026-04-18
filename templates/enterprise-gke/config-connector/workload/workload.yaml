@@ -250,6 +250,7 @@ spec:
 #   provider: gcp
 #   parameters:
 #     secrets: |
+#       # UPDATE: Replace 'gca-gke-2025' with your actual GCP Project ID
 #       - resourceName: "projects/gca-gke-2025/secrets/enterprise-gke-secret/versions/latest"
 #         path: "secret.data"
 ---
