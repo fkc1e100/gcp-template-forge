@@ -170,6 +170,8 @@ resource "google_container_node_pool" "primary_nodes" {
       enable_integrity_monitoring = true
     }
 
+    tags = ["gke-node", "${var.cluster_name}-node"]
+
     labels = {
       project  = "gcp-template-forge"
       template = "gke-fqdn-egress-security"
@@ -210,3 +212,21 @@ ${yamlencode({
 EOF
 }
 
+
+# Explicit firewall rule to allow GKE master to reach nodes on 443 and 10250.
+# While GKE usually creates this automatically, in private clusters with custom VPCs
+# it sometimes helps to be explicit to ensure kubectl exec and other features work reliably.
+resource "google_compute_firewall" "allow_master_to_node" {
+  name    = "${var.cluster_name}-master-to-node"
+  network = google_compute_network.vpc.name
+  project = var.project_id
+
+  allow {
+    protocol = "tcp"
+    ports    = ["443", "10250"]
+  }
+
+  # The master IPv4 CIDR block defined in the cluster
+  source_ranges = ["172.16.0.32/28"]
+  target_tags   = ["${var.cluster_name}-node"]
+}

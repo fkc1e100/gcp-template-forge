@@ -97,8 +97,10 @@ if [[ "$SUCCESS" == "false" ]]; then
   # Debug: dump policy status and DNS resolution
   echo "--- DEBUG INFO ---"
   kubectl get fqdnnetworkpolicies.networking.gke.io allow-ai-egress -n "${NAMESPACE}" -o yaml || true
-  kubectl exec egress-verifier -n "${NAMESPACE}" -- nslookup api.anthropic.com || true
-  kubectl exec egress-verifier -n "${NAMESPACE}" -- curl -v -4 --connect-timeout 10 https://api.anthropic.com || true
+  echo "Checking if we can reach the pod at all..."
+  kubectl get pod egress-verifier -n "${NAMESPACE}" -o wide || true
+  echo "Attempting a direct curl with verbose output..."
+  kubectl exec egress-verifier -n "${NAMESPACE}" -- curl -v -4 --connect-timeout 10 https://api.anthropic.com || echo "kubectl exec failed (check master-to-node connectivity on port 10250)"
   exit 1
 fi
 

@@ -82,3 +82,26 @@ spec:
   logConfig:
     enable: true
     filter: ERRORS_ONLY
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeFirewall
+metadata:
+  name: gke-fqdn-egress-security-master-to-node
+  namespace: forge-management
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
+  labels:
+    project: gcp-template-forge
+    template: gke-fqdn-egress-security
+spec:
+  networkRef:
+    name: gke-fqdn-egress-security-vpc
+  sourceRanges:
+    - "172.16.0.32/28"
+  targetTags:
+    - "gke-fqdn-egress-security-node"
+  allow:
+    - protocol: tcp
+      ports:
+        - "443"
+        - "10250"

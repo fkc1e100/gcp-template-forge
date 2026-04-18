@@ -38,6 +38,9 @@ spec:
     shieldedInstanceConfig:
       enableSecureBoot: true
       enableIntegrityMonitoring: true
+    tags:
+      - "gke-node"
+      - "gke-fqdn-egress-security-node"
     workloadMetadataConfig:
       mode: GKE_METADATA
     labels:
