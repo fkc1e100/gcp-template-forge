@@ -37,6 +37,7 @@ spec:
   privateClusterConfig:
     enablePrivateNodes: true
     enablePrivateEndpoint: false
+    masterIpv4CidrBlock: 172.16.0.0/28
   workloadIdentityConfig:
     workloadPool: "gca-gke-2025.svc.id.goog"
   # Requirement: Configure the cluster with the Gateway API
