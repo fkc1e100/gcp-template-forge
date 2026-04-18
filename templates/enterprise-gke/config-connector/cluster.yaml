@@ -61,5 +61,8 @@ spec:
     vulnerabilityMode: VULNERABILITY_ENTERPRISE
   releaseChannel:
     channel: REGULAR
+  resourceLabels:
+    project: gcp-template-forge
+    template: enterprise-gke
 # KCC validation trigger
 # Trigger CI run at Mon Apr 13 05:48:19 UTC 2026

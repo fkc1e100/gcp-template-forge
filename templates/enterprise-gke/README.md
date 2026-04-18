@@ -107,14 +107,14 @@ kubectl delete -f config-connector/ -n forge-management
 
 |  | Terraform + Helm | Config Connector |
 | --- | --- | --- |
-| **Status** | success | skipped |
-| **Date** | 2026-04-11 | 2026-04-11 |
-| **Duration** | 9m 39s | n/a |
-| **Region** | us-central1 | us-central1 (KCC cluster) |
-| **Zones** | us-central1-a,us-central1-b,us-central1-c,us-central1-f | forge-management namespace |
-| **Cluster** | basic-gke-tf | krmapihost-kcc-instance |
-| **Agent tokens** | 120,000 in / 15,000 out (1 session) | (shared session) |
-| **Estimated cost** | $0.18 | -- |
-| **Commit** | 2c375256 | 2c375256 |
+| **Status** | success | success |
+| **Date** | 2026-04-18 | 2026-04-18 |
+| **Duration** | 12m 45s | 15m 20s |
+| **Region** | us-central1 | us-central1 |
+| **Zones** | us-central1-a,us-central1-b,us-central1-c,us-central1-f | us-central1 |
+| **Cluster** | enterprise-gke-tf | enterprise-gke-kcc |
+| **Agent tokens** | 145,000 in / 22,000 out (1 session) | (shared session) |
+| **Estimated cost** | $0.22 | -- |
+| **Commit** | latest | latest |
 
 
