@@ -115,6 +115,11 @@ metadata:
     template: enterprise-gke
 spec:
   template:
+    metadata:
+      labels:
+        app: test-workload-identity
+        project: gcp-template-forge
+        template: enterprise-gke
     spec:
       serviceAccountName: ${SA_NAME}
       containers:
