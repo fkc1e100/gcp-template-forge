@@ -81,6 +81,7 @@ resource "google_container_cluster" "cluster" {
   provider = google-beta
   name     = var.cluster_name
   location = var.region
+  project  = var.project_id
 
   # MANDATORY for CI
   deletion_protection = false
@@ -148,6 +149,7 @@ resource "google_container_node_pool" "primary_nodes" {
   name     = "fqdn-egress-pool"
   location = var.region
   cluster  = google_container_cluster.cluster.name
+  project  = var.project_id
 
   node_count = 1
 
