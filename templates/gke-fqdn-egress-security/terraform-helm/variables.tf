@@ -44,4 +44,5 @@ variable "subnet_name" {
 variable "service_account" {
   description = "The service account to use for the GKE nodes"
   type        = string
+  default     = "forge-builder@gca-gke-2025.iam.gserviceaccount.com"
 }
