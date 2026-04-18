@@ -119,6 +119,23 @@ if [[ "$SUCCESS" == "false" ]]; then
   exit 1
 fi
 
+echo "Testing allowed domain: hf.co..."
+SUCCESS=false
+for i in $(seq 1 $MAX_RETRIES); do
+  if kubectl exec egress-verifier -n "${NAMESPACE}" -- curl -sL -4 --connect-timeout 10 https://hf.co > /dev/null; then
+    echo "SUCCESS: hf.co is reachable (attempt $i)."
+    SUCCESS=true
+    break
+  fi
+  echo "Attempt $i: hf.co not reachable yet, retrying in 5s..."
+  sleep 5
+done
+
+if [[ "$SUCCESS" == "false" ]]; then
+  echo "FAILURE: hf.co is NOT reachable after $MAX_RETRIES attempts."
+  exit 1
+fi
+
 echo "Testing blocked domain: google.com..."
 if kubectl exec egress-verifier -n "${NAMESPACE}" -- curl -sL -4 --connect-timeout 10 https://google.com > /dev/null 2>&1; then
   echo "FAILURE: google.com is reachable, but should be blocked!"
