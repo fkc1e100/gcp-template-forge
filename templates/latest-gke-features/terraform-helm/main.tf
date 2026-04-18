@@ -44,7 +44,7 @@ resource "google_compute_subnetwork" "subnet" {
 
   secondary_ip_range {
     range_name    = "pods"
-    ip_cidr_range = "10.36.0.0/14"
+    ip_cidr_range = "10.36.0.0/20"
   }
 
   secondary_ip_range {
@@ -106,7 +106,6 @@ resource "google_container_cluster" "latest_features_cluster" {
   private_cluster_config {
     enable_private_nodes    = true
     enable_private_endpoint = false
-    master_ipv4_cidr_block  = "172.16.210.0/28"
   }
 
   workload_identity_config {
