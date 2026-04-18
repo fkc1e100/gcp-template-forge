@@ -89,7 +89,7 @@ This template demonstrates some of the latest and most advanced features of Goog
     **Gateway API Verification**:
     Verify the Gateway is `Programmed` and reachable via its external IP:
     ```bash
-    kubectl wait --for=condition=Programmed gateway/latest-features-gateway -n latest-features --timeout=10m
+    kubectl wait --for=condition=Programmed gateway/latest-features-gateway -n latest-features --timeout=30m
     GATEWAY_IP=$(kubectl get gateway latest-features-gateway -n latest-features -o jsonpath='{.status.addresses[0].value}')
     curl -I http://$GATEWAY_IP/
     ```

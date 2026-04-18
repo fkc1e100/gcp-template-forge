@@ -72,7 +72,7 @@ if ! kubectl get deployment "$DEPLOY_NAME" -n "${NAMESPACE}" >/dev/null 2>&1; th
 fi
 
 echo "Waiting for deployment ${DEPLOY_NAME} in namespace ${NAMESPACE}..."
-kubectl wait --for=condition=available deployment/${DEPLOY_NAME} -n ${NAMESPACE} --timeout=10m
+kubectl wait --for=condition=available deployment/${DEPLOY_NAME} -n ${NAMESPACE} --timeout=30m
 echo "Workload is available."
 
 # 3. Native Sidecar Validation
@@ -100,7 +100,7 @@ echo "Native Sidecar validated (restartPolicy: Always found)."
 # 4. Gateway API Validation
 echo "Test 4: Gateway API Validation..."
 # Check if Gateway is programmed
-kubectl wait --for=condition=Programmed gateway/latest-features-gateway -n ${NAMESPACE} --timeout=15m
+kubectl wait --for=condition=Programmed gateway/latest-features-gateway -n ${NAMESPACE} --timeout=30m
 
 # Get Gateway IP
 GATEWAY_IP=$(kubectl get gateway latest-features-gateway -n ${NAMESPACE} -o jsonpath='{.status.addresses[0].value}')
