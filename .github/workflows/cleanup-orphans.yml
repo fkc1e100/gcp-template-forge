@@ -97,7 +97,7 @@ jobs:
           gcloud container clusters get-credentials krmapihost-kcc-instance --region $REGION --project $PROJECT
           
           echo "Deleting all KCC-managed resources with project=gcp-template-forge label..."
-          KCC_TYPES="containercluster,computenetwork,computesubnetwork,computerouter,computerouternat,computefirewall"
+          KCC_TYPES="containercluster,containernodepool,computenetwork,computesubnetwork,computerouter,computerouternat,computefirewall"
           KCC_RESOURCES=$(kubectl get $KCC_TYPES -n forge-management -l project=gcp-template-forge -o name | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
           
           for RES in $KCC_RESOURCES; do

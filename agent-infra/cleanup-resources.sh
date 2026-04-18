@@ -48,9 +48,12 @@ gcloud container clusters get-credentials $KCC_CLUSTER --region $REGION --projec
 
 if kubectl cluster-info &>/dev/null; then
   echo "Deleting all KCC-managed resources for orphaned environments..."
-  KCC_TYPES="containercluster,computenetwork,computevpc,computesubnetwork,computerouter,computerouternat,computefirewall"
-  KCC_RESOURCES=$(kubectl get $KCC_TYPES -n $KCC_NAMESPACE -o name | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
-  
+  KCC_TYPES="containercluster,containernodepool,computenetwork,computesubnetwork,computerouter,computerouternat,computefirewall"
+  # Use the project label for more reliable detection, falling back to name patterns
+  KCC_RESOURCES=$(kubectl get $KCC_TYPES -n $KCC_NAMESPACE -l project=gcp-template-forge -o name 2>/dev/null | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
+  if [ -z "$KCC_RESOURCES" ]; then
+    KCC_RESOURCES=$(kubectl get $KCC_TYPES -n $KCC_NAMESPACE -o name 2>/dev/null | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
+  fi
   for RES in $KCC_RESOURCES; do
     SKIP=false
     for RUN_ID in $ALL_ACTIVE; do
