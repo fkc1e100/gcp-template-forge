@@ -32,7 +32,7 @@ In multi-zonal GKE clusters, network traffic between pods in different zones inc
     terraform apply
     ```
 
-2.  The Helm chart is automatically deployed via the Terraform `helm_release` (if configured) or can be deployed manually.
+2.  The application workload is deployed via the Helm chart (located in `terraform-helm/workload/`) after the cluster is ready. This is handled automatically by the CI pipeline.
 
 ## Verification
 
