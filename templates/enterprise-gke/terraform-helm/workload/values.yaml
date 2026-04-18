@@ -57,6 +57,7 @@ config:
 secrets:
   enabled: false
   providerClass: "enterprise-gke-secrets"
+  # UPDATE: Replace 'gca-gke-2025' with your actual GCP Project ID
   gcpProjectId: "gca-gke-2025"
   secretName: "enterprise-gke-secret"
   secretVersion: "latest"
