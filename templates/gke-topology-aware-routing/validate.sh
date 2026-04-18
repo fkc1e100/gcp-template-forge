@@ -92,4 +92,19 @@ if [ -z "$GATEWAY_IP" ]; then
   exit 1
 fi
 
+echo "Testing endpoint http://${GATEWAY_IP}/..."
+# Retry curl as the LB might take a few moments to actually start serving
+for i in {1..12}; do
+  if curl -sf --connect-timeout 5 --max-time 10 http://${GATEWAY_IP}/; then
+    echo "Gateway endpoint test passed!"
+    break
+  fi
+  echo "Gateway endpoint not ready (attempt $i/12)..."
+  sleep 30
+  if [ $i -eq 12 ]; then
+    echo "Gateway endpoint test failed after 12 attempts!"
+    exit 1
+  fi
+done
+
 echo "All GKE Topology-Aware Routing Validation Tests passed successfully!"
