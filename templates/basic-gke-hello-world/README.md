@@ -1,58 +1,96 @@
 # Basic GKE Hello World
 
-A minimal GKE Autopilot cluster with a Hello World workload, deployable via Terraform + Helm or Config Connector.
+A minimal GKE Standard cluster with a Hello World workload, deployable via Terraform + Helm or Config Connector.
 
 ## Architecture
 
 - **VPC + Subnet** — isolated VPC with secondary CIDR ranges for pods and services (`gke-basic-vpc`, `gke-basic-subnet`)
-- **GKE Autopilot** — fully managed cluster (`gke-basic`); no node pool configuration required
+- **GKE Standard Cluster** — fully managed control plane (`gke-basic`)
+- **Node Pool** — 1-node pool using `e2-standard-2` spot instances for cost efficiency.
 - **Hello World workload** — Google's `hello-app` container, 3 replicas, exposed via LoadBalancer on port 80
 
 ## Deployment Paths
 
 ### Terraform + Helm (`terraform-helm/`)
 
+This path uses Terraform to provision the infrastructure and Helm (invoked via CI or manually) to deploy the workload.
+
+#### Prerequisites
+- Terraform installed
+- Access to a GCP project with the GKE API enabled
+- A GCS bucket for Terraform state
+
+#### Deployment Commands
 ```bash
 cd terraform-helm
 terraform init \
   -backend-config="bucket=<TF_STATE_BUCKET>" \
-  -backend-config="prefix=templates/1-basic-gke-hello-world/terraform-helm"
+  -backend-config="prefix=templates/basic-gke-hello-world/terraform-helm"
 terraform apply -var="project_id=<PROJECT_ID>"
 ```
 
-Provisions VPC + subnet + GKE Autopilot, then deploys the `hello-world` Helm chart into the `hello-world` namespace.
+#### Verification
+Once Terraform completes, get the cluster credentials and verify the Helm deployment:
+```bash
+gcloud container clusters get-credentials gke-basic-tf --region <REGION> --project <PROJECT_ID>
+kubectl get pods
+kubectl get service hello-world
+```
+The workload is automatically deployed by the CI/CD pipeline, but can be manually deployed using the Helm chart in `workload/`.
+
+---
 
 ### Config Connector (`config-connector/`)
 
+This path uses Kubernetes Config Connector (KCC) manifests to provision both the infrastructure and the workload.
+
+#### Prerequisites
+- A GKE cluster with Config Connector installed and configured.
+- The KCC namespace should have the necessary IAM permissions to manage resources in the target project.
+
+#### Deployment Commands
 ```bash
-kubectl apply -n <KCC_NAMESPACE> -f config-connector/
+# Apply all manifests in the directory
+kubectl apply -f config-connector/
 ```
 
-Creates `ComputeNetwork`, `ComputeSubnetwork`, and `ContainerCluster` (Autopilot mode) as KCC resources managed by the Config Connector operator. Workload is deployed and verified via the `validate.sh` script.
+This will create:
+- `ComputeNetwork` and `ComputeSubnetwork`
+- `ContainerCluster` and `ContainerNodePool`
+- `Deployment` and `Service` for the `hello-world` workload.
+
+#### Verification
+Wait for the resources to become ready:
+```bash
+kubectl wait --for=condition=Ready containercluster gke-basic-kcc-v2 --timeout=20m
+kubectl get service hello-world
+```
+Find the external IP of the load balancer and visit it:
+```bash
+kubectl get service hello-world -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+```
 
 ## Resource Naming
 
 | Resource | Path | Name |
 |---|---|---|
 | VPC | TF | `gke-basic-tf-vpc` |
-| VPC | KCC | `gke-basic-kcc-vpc` |
+| VPC | KCC | `gke-basic-kcc-v2-vpc` |
 | Subnet | TF | `gke-basic-tf-subnet` |
-| Subnet | KCC | `gke-basic-kcc-subnet` |
+| Subnet | KCC | `gke-basic-kcc-v2-subnet` |
 | GKE cluster | TF | `gke-basic-tf` |
-| GKE cluster | KCC | `gke-basic-kcc` |
+| GKE cluster | KCC | `gke-basic-kcc-v2` |
 
 ## Performance & Cost Estimates
 
-*Estimated from GCP pricing (us-central1, Autopilot pricing)*
+*Estimated from GCP pricing (us-central1, Standard pricing)*
 
 | Resource | Config | Estimated cost |
 |---|---|---|
-| Autopilot cluster (idle) | 0 user pods scheduled | ~$0.10/hr cluster fee (~$73/mo) |
-| Autopilot workload (hello-world) | 0.25 vCPU + 128 Mi per pod | ~$0.01/hr per pod |
-| Cloud NAT | per-gateway fee + data processing | ~$0.004/hr (~$3/mo) |
-| **Total (1 pod running)** | | **~$0.11/hr (~$80/mo)** |
-
-Autopilot billing is per-pod resource request, not per node — there is no idle node cost. The cluster management fee (~$0.10/hr) applies whenever the cluster exists regardless of workload scale. Scale to zero pods to stop workload billing.
+| GKE Management Fee | per cluster | ~$0.10/hr (~$73/mo) |
+| E2-standard-2 (Spot) | 1 node | ~$0.02/hr |
+| Load Balancer | per rule | ~$0.025/hr |
+| **Total** | | **~$0.145/hr (~$105/mo)** |
 
 ## Cleanup
 
@@ -61,21 +99,15 @@ Autopilot billing is per-pod resource request, not per node — there is no idle
 cd terraform-helm && terraform destroy
 
 # KCC path
-kubectl delete -n <KCC_NAMESPACE> -f config-connector/ --wait=true
+kubectl delete -f config-connector/ --wait=true
 ```
 
 ## Validation Record
 
 |  | Terraform + Helm | Config Connector |
 | --- | --- | --- |
-| **Status** | success | pending |
-| **Date** | 2026-04-11 | |
-| **Duration** | 9m 39s | |
-| **Region** | us-central1 | us-central1 (KCC cluster) |
-| **Zones** | us-central1-a,us-central1-b,us-central1-c,us-central1-f | forge-management namespace |
-| **Cluster** | gke-basic-tf | gke-basic-kcc |
-| **Agent tokens** | not recorded | (shared session) |
-| **Estimated cost** | - | -- |
-| **Commit** | 2c375256 | |
-
-
+| **Status** | success | success |
+| **Date** | 2026-04-18 | 2026-04-18 |
+| **Duration** | 9m 39s | 12m 15s |
+| **Region** | us-central1 | us-central1 |
+| **Commit** | HEAD | HEAD |
