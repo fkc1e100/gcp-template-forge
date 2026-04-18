@@ -40,7 +40,24 @@ if ! kubectl get deployment "$DEPLOY_NAME" -n "${NAMESPACE}" >/dev/null 2>&1; th
   DEPLOY_NAME="latest-features-workload"
 fi
 
-echo "Waiting for deployment ${DEPLOY_NAME}..."
+# Auto-detect namespace if not found in provided NAMESPACE
+if ! kubectl get deployment "$DEPLOY_NAME" -n "${NAMESPACE}" >/dev/null 2>&1; then
+  echo "Deployment $DEPLOY_NAME not found in namespace ${NAMESPACE}. Searching for it..."
+  # Try latest-features namespace as it's the default in KCC manifests
+  if kubectl get deployment "$DEPLOY_NAME" -n "latest-features" >/dev/null 2>&1; then
+    echo "Found deployment in namespace: latest-features"
+    NAMESPACE="latest-features"
+  else
+    # Fallback to label search
+    SEARCH_NS=$(kubectl get deployment --all-namespaces -l app.kubernetes.io/name=latest-features-workload -o jsonpath='{.items[0].metadata.namespace}' 2>/dev/null)
+    if [ -n "$SEARCH_NS" ]; then
+      echo "Found deployment in namespace: $SEARCH_NS"
+      NAMESPACE="$SEARCH_NS"
+    fi
+  fi
+fi
+
+echo "Waiting for deployment ${DEPLOY_NAME} in namespace ${NAMESPACE}..."
 kubectl wait --for=condition=available deployment/${DEPLOY_NAME} -n ${NAMESPACE} --timeout=10m
 echo "Workload is available."
 

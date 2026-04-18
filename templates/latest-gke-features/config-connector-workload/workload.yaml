@@ -124,6 +124,8 @@ metadata:
   namespace: latest-features
   labels:
     app.kubernetes.io/name: latest-features-workload
+    project: gcp-template-forge
+    template: latest-gke-features
 spec:
   type: ClusterIP
   selector:
@@ -139,6 +141,8 @@ metadata:
   namespace: latest-features
   labels:
     app.kubernetes.io/name: latest-features-workload
+    project: gcp-template-forge
+    template: latest-gke-features
 spec:
   gatewayClassName: gke-l7-global-external-managed
   listeners:
@@ -153,6 +157,8 @@ metadata:
   namespace: latest-features
   labels:
     app.kubernetes.io/name: latest-features-workload
+    project: gcp-template-forge
+    template: latest-gke-features
 spec:
   parentRefs:
   - name: latest-features-gateway
