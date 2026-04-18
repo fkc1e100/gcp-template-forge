@@ -24,8 +24,11 @@ spec:
   - matches:
     - name: anthropic.com
     - name: api.anthropic.com
+    - pattern: "*.anthropic.com"
     - name: huggingface.co
+    - pattern: "*.huggingface.co"
     - name: hf.co
+    - pattern: "*.hf.co"
     ports:
     - protocol: TCP
       port: 443
