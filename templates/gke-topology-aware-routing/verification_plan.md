@@ -63,15 +63,26 @@ endpoints:
 
 We will use the `whereami` container's ability to report its own zone and the zone of its upstream backend.
 
-1.  Get the external IP of the Gateway:
+1.  Get the external IP of the Gateway and wait for it to be ready:
     ```bash
     kubectl get gateways external-http -o jsonpath='{.status.addresses[0].value}'
+    ```
+    
+    If the IP is not yet assigned, wait a few minutes. You can also watch the status:
+    ```bash
+    kubectl get gateway external-http --watch
     ```
 
 2.  Curl the frontend multiple times:
     ```bash
     GATEWAY_IP=$(kubectl get gateways external-http -o jsonpath='{.status.addresses[0].value}')
-    for i in {1..10}; do curl -s http://$GATEWAY_IP | jq -r '.zone, .backend.zone'; echo "---"; done
+    # Ensure GATEWAY_IP is set
+    if [ -z "$GATEWAY_IP" ]; then echo "Error: Gateway IP not found"; exit 1; fi
+    
+    echo "Testing endpoint http://$GATEWAY_IP/..."
+    for i in {1..10}; do 
+      curl -s http://$GATEWAY_IP | jq -r '"Frontend Zone: \(.zone), Backend Zone: \(.backend.zone)"'
+    done
     ```
 
 **Expected Result:**

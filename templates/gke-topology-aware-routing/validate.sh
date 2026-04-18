@@ -36,21 +36,40 @@ echo "Connectivity passed."
 echo "Test 2: Workload Readiness..."
 kubectl wait --for=condition=available deployment/frontend -n ${NAMESPACE} --timeout=10m
 kubectl wait --for=condition=available deployment/backend -n ${NAMESPACE} --timeout=10m
-echo "Workloads are available."
+
+# Verify replica count
+FRONTEND_REPLICAS=$(kubectl get deployment frontend -n ${NAMESPACE} -o jsonpath='{.status.availableReplicas}')
+BACKEND_REPLICAS=$(kubectl get deployment backend -n ${NAMESPACE} -o jsonpath='{.status.availableReplicas}')
+echo "Frontend replicas: ${FRONTEND_REPLICAS}, Backend replicas: ${BACKEND_REPLICAS}"
+
+if [ "${FRONTEND_REPLICAS}" -lt 3 ]; then
+  echo "Error: Expected at least 3 frontend replicas, found ${FRONTEND_REPLICAS}"
+  exit 1
+fi
+if [ "${BACKEND_REPLICAS}" -lt 3 ]; then
+  echo "Error: Expected at least 3 backend replicas, found ${BACKEND_REPLICAS}"
+  exit 1
+fi
+echo "Workloads are available and scaled correctly."
 
 # 3. Topology Spread Check
 echo "Test 3: Topology Spread Check..."
 # Get zones of frontend pods by looking at the nodes they are running on
-FRONTEND_ZONES=$(kubectl get pods -l app=frontend -n ${NAMESPACE} -o jsonpath='{.items[*].spec.nodeName}' | tr ' ' '\n' | xargs -I {} kubectl get node {} -o jsonpath='{.metadata.labels.topology\.kubernetes\.io/zone}' | tr ' ' '\n' | sort | uniq | wc -l)
-# Get zones of backend pods by looking at the nodes they are running on
-BACKEND_ZONES=$(kubectl get pods -l app=backend -n ${NAMESPACE} -o jsonpath='{.items[*].spec.nodeName}' | tr ' ' '\n' | xargs -I {} kubectl get node {} -o jsonpath='{.metadata.labels.topology\.kubernetes\.io/zone}' | tr ' ' '\n' | sort | uniq | wc -l)
+FRONTEND_ZONES_LIST=$(kubectl get pods -l app=frontend -n ${NAMESPACE} -o jsonpath='{.items[*].spec.nodeName}' | tr ' ' '\n' | xargs -I {} kubectl get node {} -o jsonpath='{.metadata.labels.topology\.kubernetes\.io/zone}' | tr ' ' '\n' | sort | uniq)
+FRONTEND_ZONES_COUNT=$(echo "${FRONTEND_ZONES_LIST}" | grep -v "^$" | wc -l)
+echo "Frontend pods are running in zones: ${FRONTEND_ZONES_LIST} (Count: ${FRONTEND_ZONES_COUNT})"
 
-if [ "$FRONTEND_ZONES" -lt 2 ]; then
-  echo "Frontend pods are not spread across enough zones (found $FRONTEND_ZONES)."
+# Get zones of backend pods by looking at the nodes they are running on
+BACKEND_ZONES_LIST=$(kubectl get pods -l app=backend -n ${NAMESPACE} -o jsonpath='{.items[*].spec.nodeName}' | tr ' ' '\n' | xargs -I {} kubectl get node {} -o jsonpath='{.metadata.labels.topology\.kubernetes\.io/zone}' | tr ' ' '\n' | sort | uniq)
+BACKEND_ZONES_COUNT=$(echo "${BACKEND_ZONES_LIST}" | grep -v "^$" | wc -l)
+echo "Backend pods are running in zones: ${BACKEND_ZONES_LIST} (Count: ${BACKEND_ZONES_COUNT})"
+
+if [ "$FRONTEND_ZONES_COUNT" -lt 2 ]; then
+  echo "Frontend pods are not spread across enough zones (found $FRONTEND_ZONES_COUNT)."
   exit 1
 fi
-if [ "$BACKEND_ZONES" -lt 2 ]; then
-  echo "Backend pods are not spread across enough zones (found $BACKEND_ZONES)."
+if [ "$BACKEND_ZONES_COUNT" -lt 2 ]; then
+  echo "Backend pods are not spread across enough zones (found $BACKEND_ZONES_COUNT)."
   exit 1
 fi
 echo "Topology spread validated."
