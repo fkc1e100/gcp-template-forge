@@ -131,14 +131,14 @@ resource "google_container_cluster" "topology_cluster" {
 
 # Node Pool distributed across zones
 resource "google_container_node_pool" "primary_nodes" {
-  provider = google-beta
-  name     = "${var.cluster_name}-pool"
-  location = var.region
-  cluster  = google_container_cluster.topology_cluster.name
+  provider   = google-beta
+  name       = "${var.cluster_name}-pool"
+  location   = var.region
+  cluster    = google_container_cluster.topology_cluster.name
+  node_count = 1
 
   # For topology-aware routing to work well, we need enough nodes in each zone.
-  # A regional node pool with initial_node_count=1 will have 1 node per zone.
-  node_count = 1
+  # A regional node pool with node_count=1 will have 1 node per zone (3 total).
 
   node_config {
     spot = true
