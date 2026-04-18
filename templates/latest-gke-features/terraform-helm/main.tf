@@ -210,4 +210,10 @@ resource "google_container_node_pool" "primary_nodes" {
       template = "latest-gke-features"
     }
   }
+
+  timeouts {
+    create = "30m"
+    update = "30m"
+    delete = "30m"
+  }
 }
