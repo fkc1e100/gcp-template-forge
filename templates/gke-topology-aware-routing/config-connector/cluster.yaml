@@ -45,7 +45,7 @@ spec:
     channel: CHANNEL_STANDARD
   securityPostureConfig:
     mode: BASIC
-    vulnerabilityMode: VULNERABILITY_BASIC
+    vulnerabilityMode: VULNERABILITY_ENTERPRISE
   releaseChannel:
     channel: RAPID
   loggingConfig:

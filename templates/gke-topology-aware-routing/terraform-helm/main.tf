@@ -110,7 +110,7 @@ resource "google_container_cluster" "topology_cluster" {
 
   security_posture_config {
     mode               = "BASIC"
-    vulnerability_mode = "VULNERABILITY_BASIC"
+    vulnerability_mode = "VULNERABILITY_ENTERPRISE"
   }
 
   logging_config {
