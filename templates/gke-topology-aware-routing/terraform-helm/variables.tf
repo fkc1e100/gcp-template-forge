@@ -44,7 +44,7 @@ variable "subnet_name" {
 variable "oauth_scopes" {
   description = "The set of Google API scopes to be made available on all of the node VMs"
   type        = list(string)
-  default     = [
+  default = [
     "https://www.googleapis.com/auth/cloud-platform"
   ]
 }
