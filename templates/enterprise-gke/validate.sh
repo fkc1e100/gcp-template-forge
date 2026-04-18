@@ -17,6 +17,7 @@ set -e
 
 echo "Starting Validation Tests for enterprise-gke..."
 
+# UPDATE: Replace 'gca-gke-2025' with your actual GCP Project ID
 PROJECT_ID=${PROJECT_ID:-"gca-gke-2025"}
 CLUSTER_NAME=${CLUSTER_NAME:-"enterprise-gke-tf"}
 
