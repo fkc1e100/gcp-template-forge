@@ -231,34 +231,27 @@ jobs:
           chmod +x agent-infra/cleanup-resources.sh
           ./agent-infra/cleanup-resources.sh
 
-  # ── 4. PR deploy-and-test: full apply+verify+destroy ─────────────────────
-  # ── 4a. PR: TF+Helm deploy → verify → destroy (parallel with deploy-test-kcc) ──
-  deploy-test-tf:
-    name: "Deploy & Test TF+Helm (${{ matrix.template }})"
+  tf-provision:
+    name: "Provision TF (${{ matrix.template }})"
     needs: [ detect-changes, lint, pre-cleanup ]
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
         template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
-
+    outputs:
+      tf_cluster: ${{ steps.tf-outputs.outputs.tf_cluster }}
+      tf_location: ${{ steps.tf-outputs.outputs.tf_location }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Authenticate to GCP
-        uses: google-github-actions/auth@v2
+      - name: Auth and Setup GKE
+        uses: ./.github/actions/gcp-gke-auth
         with:
-          workload_identity_provider: ${{ env.WIF_PROVIDER }}
-          service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
-
-      - name: Install GKE Auth Plugin
-        run: |
-          curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --yes --batch --dearmor -o /usr/share/keyrings/cloud.google.gpg
-          echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
-          sudo apt-get update && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
-          sudo apt-get update && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
+          wif_provider: ${{ env.WIF_PROVIDER }}
+          wif_service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -299,36 +292,38 @@ jobs:
           echo "tf_cluster=${CLUSTER}" >> $GITHUB_OUTPUT
           echo "tf_location=${LOCATION}" >> $GITHUB_OUTPUT
 
+  tf-test:
+    name: "Test TF (${{ matrix.template }})"
+    needs: [ tf-provision ]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Auth and Setup GKE
+        uses: ./.github/actions/gcp-gke-auth
+        with:
+          wif_provider: ${{ env.WIF_PROVIDER }}
+          wif_service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+
       - name: Get TF cluster credentials
-        id: tf-creds
-        if: >-
-          steps.tf-outputs.outcome == 'success' &&
-          steps.tf-outputs.outputs.tf_cluster != ''
         uses: google-github-actions/get-gke-credentials@v2
         with:
-          cluster_name: ${{ steps.tf-outputs.outputs.tf_cluster }}
-          location: ${{ steps.tf-outputs.outputs.tf_location }}
+          cluster_name: ${{ needs.tf-provision.outputs.tf_cluster }}
+          location: ${{ needs.tf-provision.outputs.tf_location }}
           project_id: ${{ env.PROJECT_ID }}
 
       - name: Verify Terraform cluster is RUNNING
-        id: tf-verify
-        if: steps.tf-creds.outcome == 'success'
         run: |
-          CLUSTER="${{ steps.tf-outputs.outputs.tf_cluster }}"
-          LOCATION="${{ steps.tf-outputs.outputs.tf_location }}"
           kubectl get nodes
-          gcloud container clusters describe "$CLUSTER" --location="$LOCATION" \
-            --format="value(status)" | grep -q RUNNING
-
-      - name: Set up Helm
-        run: |
-          curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
       - name: Helm deploy and verify
         id: helm-deploy
-        if: >-
-          steps.tf-verify.outcome == 'success' &&
-          hashFiles(format('{0}/terraform-helm/**', matrix.template)) != ''
+        if: "hashFiles(format('{0}/terraform-helm/**', matrix.template)) != ''"
         run: |
           CHARTS=$(find ${{ matrix.template }}/terraform-helm -name Chart.yaml -exec dirname {} \; 2>/dev/null)
           if [ -z "$CHARTS" ]; then echo "No Helm charts found -- skipping"; exit 0; fi
@@ -341,173 +336,69 @@ jobs:
             helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT"
           done
 
-          # Run template-specific validation if present
           if [ -f "${{ matrix.template }}/validate.sh" ]; then
             echo "=== Running template-specific validation: ${{ matrix.template }}/validate.sh ==="
-            RUN_ID="${{ github.run_id }}"
-            UID_SUFFIX="${RUN_ID: -6}"
-            export CLUSTER_NAME="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf"
             chmod +x ${{ matrix.template }}/validate.sh
             ./${{ matrix.template }}/validate.sh
           fi
 
-
-      - name: Security scan — GCP native (On-Demand Scanning + Security Posture)
-        id: security-scan
+      - name: Security scan — GCP native
         continue-on-error: true
-        if: steps.tf-verify.outcome == 'success'
         run: |
-          CLUSTER="${{ steps.tf-outputs.outputs.tf_cluster }}"
-          LOCATION="${{ steps.tf-outputs.outputs.tf_location }}"
+          CLUSTER="${{ needs.tf-provision.outputs.tf_cluster }}"
+          LOCATION="${{ needs.tf-provision.outputs.tf_location }}"
           PROJECT="${{ env.PROJECT_ID }}"
-          SCAN_WARNINGS=0
-
-          # ── GKE Security Posture ─────────────────────────────────────────
           echo "=== GKE Security Posture configuration ==="
           gcloud container clusters describe "$CLUSTER" --location="$LOCATION" \
             --project="$PROJECT" --format="yaml(securityPostureConfig)"
 
-          echo "=== GKE Security Posture findings (HIGH/CRITICAL) ==="
-          POSTURE_OUT=$(gcloud beta container clusters list-security-posture-findings \
-            "$CLUSTER" --location="$LOCATION" --project="$PROJECT" \
-            --filter="severity=HIGH OR severity=CRITICAL" \
-            --format="table(severity,findingType,resourceUri,description)" 2>/dev/null || true)
-          echo "$POSTURE_OUT"
-          if echo "$POSTURE_OUT" | grep -qiE 'HIGH|CRITICAL'; then
-            echo "::warning::GKE Security Posture HIGH/CRITICAL findings detected"
-            SCAN_WARNINGS=1
-          fi
+  tf-teardown:
+    name: "Teardown TF (${{ matrix.template }})"
+    needs: [ tf-provision, tf-test ]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
+    steps:
+      - uses: actions/checkout@v4
 
-          # ── On-Demand Scanning: workload images ──────────────────────────
-          echo "=== On-Demand Scanning: workload images ==="
-          gcloud services enable ondemandscanning.googleapis.com \
-            --project="$PROJECT" --quiet 2>/dev/null || true
+      - name: Auth and Setup GKE
+        uses: ./.github/actions/gcp-gke-auth
+        with:
+          wif_provider: ${{ env.WIF_PROVIDER }}
+          wif_service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
 
-          IMAGES=$(kubectl get pods --all-namespaces -o json 2>/dev/null \
-            | jq -r '.items[] | select(.metadata.namespace | IN("kube-system","kube-public","kube-node-lease","gke-gmp-system","gke-managed-metrics-server","config-management-system") | not) | [(.spec.containers//[]),(.spec.initContainers//[])] | add//[] | .[].image' 2>/dev/null \
-            | sort -u) || true
-
-          if [ -z "$IMAGES" ]; then
-            echo "No workload images found outside system namespaces — skipping image scan"
-          else
-            echo "Images to scan:"
-            echo "$IMAGES"
-            while IFS= read -r IMAGE; do
-              [ -z "$IMAGE" ] && continue
-              echo "--- Scanning: $IMAGE ---"
-              SCAN_OUT=$(gcloud artifacts docker images scan "$IMAGE" --remote \
-                --project="$PROJECT" --quiet 2>&1) || {
-                echo "::warning::On-Demand Scan failed for $IMAGE"
-                continue
-              }
-              echo "$SCAN_OUT"
-              SCAN_NAME=$(echo "$SCAN_OUT" | grep '^name:' | head -1 | awk '{print $2}' || true)
-              if [ -n "$SCAN_NAME" ]; then
-                VULNS=$(gcloud artifacts docker images list-vulnerabilities "$SCAN_NAME" \
-                  --project="$PROJECT" \
-                  --filter="vulnerability.effectiveSeverity=HIGH OR vulnerability.effectiveSeverity=CRITICAL" \
-                  --format="table(vulnerability.effectiveSeverity,vulnerability.packageIssue[0].affectedPackage,vulnerability.shortDescription)" \
-                  2>/dev/null || true)
-                if [ -n "$VULNS" ]; then
-                  echo "$VULNS"
-                  echo "::warning::HIGH/CRITICAL vulnerabilities in $IMAGE"
-                  SCAN_WARNINGS=1
-                else
-                  echo "No HIGH/CRITICAL vulnerabilities found in $IMAGE"
-                fi
-              fi
-            done <<< "$IMAGES"
-          fi
-
-          echo ""
-          [ "$SCAN_WARNINGS" -eq 0 ] \
-            && echo "Security scan complete — no HIGH/CRITICAL findings." \
-            || echo "::warning::Security findings detected — review output above (non-blocking)"
-
-      - name: Determine teardown scope
-        id: teardown-check
-        if: always()
-        run: |
-          # Destroy if TF apply itself failed (clean up partial state)
-          # OR if all downstream verification passed (normal successful cleanup)
-          # Leave cluster up if TF apply succeeded but a downstream step failed —
-          # next push will terraform apply (no-op) and re-run the failing step.
-          TF_APPLY="${{ steps.tf-apply.outcome }}"
-          TF_VERIFY="${{ steps.tf-verify.outcome }}"
-          HELM="${{ steps.helm-deploy.outcome }}"
-
-          if [ "$TF_APPLY" = "failure" ]; then
-            echo "should_destroy=true"  >> $GITHUB_OUTPUT
-            echo "Reason: TF apply failed — destroying partial state"
-          elif [ "$TF_VERIFY" = "success" ] && { [ "$HELM" = "success" ] || [ "$HELM" = "skipped" ]; }; then
-            echo "should_destroy=true"  >> $GITHUB_OUTPUT
-            echo "Reason: All verification passed — performing normal teardown"
-          else
-            echo "should_destroy=true" >> $GITHUB_OUTPUT
-            echo "::notice::Forcing cluster teardown on failure. Deployments are now dynamic per commit."
-          fi
-
-
-      - name: Helm uninstall (teardown)
-        if: always() && steps.teardown-check.outputs.should_destroy == 'true' && steps.tf-apply.outcome != 'skipped'
-        run: |
-          echo "Uninstalling Helm release to clean up NEGs and LoadBalancers..."
-          helm uninstall release --wait --timeout=5m || true
-          kubectl delete gateway,ingress --all -A --wait=true --timeout=2m || true
-          echo "Waiting for NEGs to be cleaned up..."
-          RUN_ID="${{ github.run_id }}"
-          UID_SUFFIX="${RUN_ID: -6}"
-          NETWORK_NAME="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf-vpc"
-          for i in {1..20}; do
-            NEGS=$(gcloud compute network-endpoint-groups list --filter="network:($NETWORK_NAME)" --project="${{ env.PROJECT_ID }}" --format="value(name)" 2>/dev/null || true)
-            if [ -z "$NEGS" ]; then
-              echo "All NEGs cleaned up."
-              break
-            fi
-            echo "NEGs still exist. Waiting 15s..."
-            sleep 15
-          done
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
 
       - name: Terraform destroy
-        id: tf-destroy
-        if: always() && steps.teardown-check.outputs.should_destroy == 'true' && steps.tf-apply.outcome != 'skipped'
         working-directory: ${{ matrix.template }}/terraform-helm
         run: |
-          terraform destroy -auto-approve -input=false || \
+          terraform init \
+            -backend-config="bucket=$TF_STATE_BUCKET" \
+            -backend-config="prefix=${{ matrix.template }}-${{ github.run_id }}/terraform-helm"
           terraform destroy -auto-approve -input=false
 
       - name: Fallback gcloud cluster delete
-        if: always() && steps.teardown-check.outputs.should_destroy == 'true' && steps.tf-destroy.outcome == 'failure' && steps.tf-outputs.outputs.tf_cluster != ''
+        if: failure()
         run: |
-          echo "terraform destroy failed — falling back to gcloud for cluster deletion"
-          gcloud container clusters delete "${{ steps.tf-outputs.outputs.tf_cluster }}" \
-            --location="${{ steps.tf-outputs.outputs.tf_location }}" \
+          gcloud container clusters delete "${{ needs.tf-provision.outputs.tf_cluster }}" \
+            --location="${{ needs.tf-provision.outputs.tf_location }}" \
             --project="${{ env.PROJECT_ID }}" --quiet --async || true
-          echo "::warning::Cluster deletion initiated via gcloud fallback. VPC may need manual cleanup."
 
       - name: Post TF+Helm summary to PR
-        if: always()
         uses: actions/github-script@v7
         with:
           script: |
             const template = '${{ matrix.template }}';
-            const tfResult = '${{ steps.tf-verify.outcome || 'skipped' }}';
-            const helmResult = '${{ steps.helm-deploy.outcome || 'skipped' }}';
-            const failed = [tfResult, helmResult].some(r => r === 'failure');
-            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-            const body = [
-              `### Deploy & Test TF+Helm: \`${template}\``,
-              `| Step | Result |`,
-              `|---|---|`,
-              `| Terraform apply + cluster verify | **${tfResult}** |`,
-              `| Helm deploy + verify | **${helmResult}** |`,
-              ...(failed ? ['', `TF+Helm test failed — see [run logs](${runUrl}) for details.`] : []),
-            ].join('\n');
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body,
+              body: `### Deploy & Test TF+Helm: \`${template}\` complete.`,
             });
 
       - name: Remove Hold Label on Failure

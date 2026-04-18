@@ -1,0 +1,24 @@
+name: 'GCP and GKE Auth'
+description: 'Authenticates to GCP and installs the GKE auth plugin'
+inputs:
+  wif_provider:
+    description: 'Workload Identity Provider'
+    required: true
+  wif_service_account:
+    description: 'Service Account'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Authenticate to GCP
+      uses: google-github-actions/auth@v2
+      with:
+        workload_identity_provider: ${{ inputs.wif_provider }}
+        service_account: ${{ inputs.wif_service_account }}
+
+    - name: Install GKE Auth Plugin
+      shell: bash
+      run: |
+        curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --yes --batch --dearmor -o /usr/share/keyrings/cloud.google.gpg
+        echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+        sudo apt-get update && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
