@@ -30,6 +30,18 @@ trap 'rm -f "$KUBECONFIG"' EXIT
 echo "Test 1: Cluster Connectivity..."
 gcloud container clusters get-credentials ${CLUSTER_NAME} --region ${REGION} --project ${PROJECT_ID}
 kubectl cluster-info
+
+# Auto-detect namespace if not explicitly set and not in default
+if [ "$NAMESPACE_WORKLOAD" == "default" ]; then
+  if ! kubectl get deployment release-enterprise-workload -n default >/dev/null 2>&1; then
+    if kubectl get deployment release-enterprise-workload -n enterprise-gke >/dev/null 2>&1; then
+      echo "Workload found in enterprise-gke namespace, switching context..."
+      NAMESPACE_WORKLOAD="enterprise-gke"
+    fi
+  fi
+fi
+
+echo "Using namespace: ${NAMESPACE_WORKLOAD}"
 echo "Connectivity passed."
 
 # 2. Workload Readiness

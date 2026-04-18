@@ -13,7 +13,44 @@ This template provides an enterprise-grade Google Kubernetes Engine (GKE) archit
 ### Config Connector (`config-connector/`)
 - Uses KCC resources (`ContainerCluster`, `ContainerNodePool`, `ComputeNetwork`, `ComputeSubnetwork`) to provision the same infrastructure.
 - Manages IAM roles and Service Accounts via KCC for seamless Workload Identity integration.
-- Deploys the workload via the Helm chart (located in `terraform-helm/workload/`) after the cluster is ready.
+- Deploys the workload via a KCC-compatible Kubernetes manifest (`workload.yaml`) after the cluster is ready.
+
+## Deployment
+
+### Prerequisites
+- Google Cloud Project with Billing enabled
+- Config Connector installed and configured in a management cluster (for KCC path)
+- Terraform and Helm 3 (for Terraform + Helm path)
+
+### Terraform + Helm Path
+1.  **Initialize and Apply Infrastructure**:
+    ```bash
+    cd terraform-helm
+    terraform init
+    terraform apply -var="project_id=${PROJECT_ID}"
+    ```
+2.  **Deploy Workload**:
+    ```bash
+    gcloud container clusters get-credentials $(terraform output -raw cluster_name) --region $(terraform output -raw cluster_location)
+    helm upgrade --install release ./workload
+    ```
+
+### Config Connector Path
+1.  **Provision Infrastructure**:
+    Apply the KCC manifests to your management cluster:
+    ```bash
+    kubectl apply -f config-connector/ -n forge-management
+    ```
+2.  **Verify Cluster Readiness**:
+    ```bash
+    kubectl wait --for=condition=Ready containercluster enterprise-gke-kcc -n forge-management --timeout=30m
+    ```
+3.  **Deploy Workload**:
+    Get credentials for the newly created cluster and apply the workload manifest:
+    ```bash
+    gcloud container clusters get-credentials enterprise-gke-kcc --region us-central1 --project ${PROJECT_ID}
+    kubectl apply -f config-connector/workload.yaml
+    ```
 
 ## Cluster Details
 - **Type**: GKE Standard
@@ -52,6 +89,19 @@ This template provides an enterprise-grade Google Kubernetes Engine (GKE) archit
 | **Total (on-demand nodes)** | e2-standard-4 on-demand | ~$0.14/hr (~$100/mo) |
 
 Spot node interruptions are expected during validation; the workload is stateless (Nginx) so restarts are safe. Use on-demand nodes for production.
+
+## Cleanup
+
+### Terraform + Helm Path
+```bash
+cd terraform-helm
+terraform destroy -var="project_id=${PROJECT_ID}"
+```
+
+### Config Connector Path
+```bash
+kubectl delete -f config-connector/ -n forge-management
+```
 
 ## Validation Record
 
