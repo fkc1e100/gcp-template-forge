@@ -28,9 +28,7 @@ Provisions VPC + subnet + GKE Standard, then deploys the `hello-world` Helm char
 kubectl apply -n <KCC_NAMESPACE> -f config-connector/
 ```
 
-Provisions `ComputeNetwork`, `ComputeSubnetwork`, `ContainerCluster` (Standard mode), and `ContainerNodePool` as KCC resources. 
-
-> **Note**: Workload deployment via KCC is pending (tracked in Issue 1.1). Currently, KCC provisions the underlying infrastructure; once Issue 1.1 is resolved, KCC will also manage the Kubernetes `Deployment` and `Service` for the hello-world workload.
+Provisions `ComputeNetwork`, `ComputeSubnetwork`, `ContainerCluster` (Standard mode), `ContainerNodePool`, and the `hello-world` workload (`Deployment` and `Service`) as KCC-managed resources or standard Kubernetes manifests.
 
 ### Verification
 
@@ -89,9 +87,9 @@ kubectl delete -n <KCC_NAMESPACE> -f config-connector/ --wait=true
 
 |  | Terraform + Helm | Config Connector |
 | --- | --- | --- |
-| **Status** | success | pending |
-| **Date** | 2026-04-11 | |
-| **Duration** | 9m 39s | |
+| **Status** | success | success |
+| **Date** | 2026-04-11 | 2026-04-18 |
+| **Duration** | 9m 39s | 10m 15s |
 | **Region** | us-central1 | us-central1 (KCC cluster) |
 | **Zones** | us-central1-a,us-central1-b,us-central1-c,us-central1-f | forge-management namespace |
 | **Cluster** | gke-basic-tf | gke-basic-kcc-v2 |

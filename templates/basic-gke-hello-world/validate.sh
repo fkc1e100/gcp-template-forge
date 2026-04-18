@@ -34,9 +34,8 @@ echo "Connectivity passed."
 
 # 2. Workload Readiness
 echo "Test 2: Workload Readiness..."
-# Deployment name from fullname helper: <release-name>-<chart-name>
-# In CI, release name is 'release', chart name is 'hello-world'
-kubectl wait --for=condition=available deployment/release-hello-world -n ${NAMESPACE_WORKLOAD} --timeout=10m
+# Wait for any deployment with the correct app label
+kubectl wait --for=condition=available deployment -l app.kubernetes.io/name=hello-world -n ${NAMESPACE_WORKLOAD} --timeout=10m
 echo "Workload is available."
 
 # 3. Endpoint Interaction
@@ -44,7 +43,7 @@ echo "Test 3: Endpoint Interaction..."
 # Wait for LoadBalancer IP
 SERVICE_IP=""
 for i in {1..20}; do
-  SERVICE_IP=$(kubectl get svc -n ${NAMESPACE_WORKLOAD} -l app.kubernetes.io/instance=release -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}' || true)
+  SERVICE_IP=$(kubectl get svc -n ${NAMESPACE_WORKLOAD} -l app.kubernetes.io/name=hello-world -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}' || true)
   if [ ! -z "$SERVICE_IP" ]; then
     break
   fi
