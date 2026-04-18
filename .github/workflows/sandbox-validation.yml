@@ -414,32 +414,24 @@ jobs:
         run: gh run cancel ${{ github.run_id }}
 
   # ── 4b. PR: KCC deploy → wait → delete (parallel with deploy-test-tf) ─────
-  deploy-test-kcc:
-    name: "Deploy & Test KCC (${{ matrix.template }})"
+  kcc-apply:
+    name: "KCC Apply (${{ matrix.template }})"
     needs: [ detect-changes, lint, pre-cleanup ]
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
         template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
-
     steps:
       - uses: actions/checkout@v4
 
-      - name: Authenticate to GCP
-        uses: google-github-actions/auth@v2
+      - name: Auth and Setup GKE
+        uses: ./.github/actions/gcp-gke-auth
         with:
-          workload_identity_provider: ${{ env.WIF_PROVIDER }}
-          service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
-
-      - name: Install GKE Auth Plugin
-        run: |
-          curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --yes --batch --dearmor -o /usr/share/keyrings/cloud.google.gpg
-          echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
-          sudo apt-get update && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
-          sudo apt-get update && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
+          wif_provider: ${{ env.WIF_PROVIDER }}
+          wif_service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
 
       - name: Get KCC cluster credentials
         uses: google-github-actions/get-gke-credentials@v2
@@ -469,82 +461,56 @@ jobs:
             --all \
             --timeout=3600s \
             -f ${{ matrix.template }}/config-connector/
-          echo "kcc_duration=$(( $(date -u +%s) - ${KCC_START} ))" >> $GITHUB_OUTPUT
 
-      - name: Dump KCC Resource Status on Failure
-        if: failure() && steps.kcc-wait.outcome == 'failure'
-        run: |
-          echo "KCC Wait failed. Dumping resource status..."
-          kubectl get -n $KCC_NAMESPACE -f ${{ matrix.template }}/config-connector/ -o custom-columns=KIND:.kind,NAME:.metadata.name,READY:.status.conditions[?(@.type=="Ready")].status,REASON:.status.conditions[?(@.type=="Ready")].reason || true
+  kcc-test:
+    name: "KCC Test (${{ matrix.template }})"
+    needs: [ kcc-apply ]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
+    steps:
+      - uses: actions/checkout@v4
 
-      - name: Verify KCC ContainerCluster Ready
-        id: kcc-cluster-ready
-        if: steps.kcc-apply.outcome == 'success'
-        run: |
-          RUN_ID="${{ github.run_id }}"
-          UID_SUFFIX="${RUN_ID: -6}"
-          # Check if this template includes a ContainerCluster
-          CLUSTER_COUNT=$(kubectl get containerclusters.container.cnrm.cloud.google.com \
-            -n $KCC_NAMESPACE --no-headers 2>/dev/null | wc -l || echo "0")
+      - name: Auth and Setup GKE
+        uses: ./.github/actions/gcp-gke-auth
+        with:
+          wif_provider: ${{ env.WIF_PROVIDER }}
+          wif_service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
 
-          if [ "$CLUSTER_COUNT" -eq 0 ]; then
-            echo "No ContainerCluster resources — teardown can proceed"
-            exit 0
-          fi
-
-          STATUS=$(kubectl get containerclusters.container.cnrm.cloud.google.com \
-            -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-${UID_SUFFIX} \
-            -o jsonpath='{.items[*].status.conditions[?(@.type=="Ready")].status}' \
-            2>/dev/null | tr ' ' '\n' | grep "True" | wc -l)
-
-          if [ "$STATUS" -gt 0 ]; then
-            echo "ContainerCluster is Ready — teardown can proceed"
-          else
-            echo "::notice::ContainerCluster not yet Ready — leaving KCC resources up for next iteration. Resources will be cleaned up on next successful run or PR close."
-            exit 1
-          fi
+      - name: Get KCC cluster credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ env.KCC_CLUSTER }}
+          location: ${{ env.KCC_REGION }}
+          project_id: ${{ env.PROJECT_ID }}
 
       - name: Get KCC Workload Cluster Info
         id: kcc-workload-info
-        if: steps.kcc-wait.outcome == 'success' || steps.kcc-cluster-ready.outcome == 'success'
         run: |
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
-          CLUSTER_COUNT=$(kubectl get containerclusters.container.cnrm.cloud.google.com \
-            -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-${UID_SUFFIX} --no-headers 2>/dev/null | wc -l || echo "0")
-          if [ "$CLUSTER_COUNT" -eq 0 ]; then
-             CLUSTER_COUNT=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(len(docs))")
-          fi
-          if [ "$CLUSTER_COUNT" -eq 0 ]; then
-            echo "has_cluster=false" >> $GITHUB_OUTPUT
-            exit 0
-          fi
           CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-${UID_SUFFIX} -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
           LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-${UID_SUFFIX} -o jsonpath='{.items[0].spec.location}' 2>/dev/null || true)
           if [ -z "$CLUSTER_NAME" ]; then
              CLUSTER_NAME=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(docs[0]['metadata']['name'] if docs else '')")
              LOCATION=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(docs[0]['spec']['location'] if docs else '')")
           fi
-          echo "has_cluster=true" >> $GITHUB_OUTPUT
           echo "cluster_name=${CLUSTER_NAME}" >> $GITHUB_OUTPUT
           echo "location=${LOCATION}" >> $GITHUB_OUTPUT
 
       - name: Get KCC Workload Cluster Credentials
         id: kcc-workload-creds
-        if: steps.kcc-workload-info.outputs.has_cluster == 'true'
+        if: steps.kcc-workload-info.outputs.cluster_name != ''
         uses: google-github-actions/get-gke-credentials@v2
         with:
           cluster_name: ${{ steps.kcc-workload-info.outputs.cluster_name }}
           location: ${{ steps.kcc-workload-info.outputs.location }}
           project_id: ${{ env.PROJECT_ID }}
 
-      - name: Set up Helm (KCC)
-        run: |
-          curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-        if: steps.kcc-workload-creds.outcome == 'success'
-
       - name: Helm deploy and verify (KCC)
-        id: helm-deploy-kcc
         if: steps.kcc-workload-creds.outcome == 'success' && hashFiles(format('{0}/terraform-helm/**', matrix.template)) != ''
         run: |
           CHARTS=$(find ${{ matrix.template }}/terraform-helm -name Chart.yaml -exec dirname {} \; 2>/dev/null)
@@ -558,7 +524,6 @@ jobs:
             helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT"
           done
 
-          # Run template-specific validation if present
           if [ -f "${{ matrix.template }}/validate.sh" ]; then
             echo "=== Running template-specific validation (KCC): ${{ matrix.template }}/validate.sh ==="
             export CLUSTER_NAME="${{ steps.kcc-workload-info.outputs.cluster_name }}"
@@ -566,79 +531,26 @@ jobs:
             ./${{ matrix.template }}/validate.sh
           fi
 
+  kcc-teardown:
+    name: "KCC Teardown (${{ matrix.template }})"
+    needs: [ kcc-apply, kcc-test ]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
+    steps:
+      - uses: actions/checkout@v4
 
-      - name: Security scan — GCP native (On-Demand Scanning + Security Posture) (KCC)
-        id: security-scan-kcc
-        continue-on-error: true
-        if: steps.kcc-workload-creds.outcome == 'success'
-        run: |
-          CLUSTER="${{ steps.kcc-workload-info.outputs.cluster_name }}"
-          LOCATION="${{ steps.kcc-workload-info.outputs.location }}"
-          PROJECT="${{ env.PROJECT_ID }}"
-          SCAN_WARNINGS=0
+      - name: Auth and Setup GKE
+        uses: ./.github/actions/gcp-gke-auth
+        with:
+          wif_provider: ${{ env.WIF_PROVIDER }}
+          wif_service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
 
-          echo "=== GKE Security Posture configuration ==="
-          gcloud container clusters describe "$CLUSTER" --location="$LOCATION" \
-            --project="$PROJECT" --format="yaml(securityPostureConfig)"
-
-          echo "=== GKE Security Posture findings (HIGH/CRITICAL) ==="
-          POSTURE_OUT=$(gcloud beta container clusters list-security-posture-findings \
-            "$CLUSTER" --location="$LOCATION" --project="$PROJECT" \
-            --filter="severity=HIGH OR severity=CRITICAL" \
-            --format="table(severity,findingType,resourceUri,description)" 2>/dev/null || true)
-          echo "$POSTURE_OUT"
-          if echo "$POSTURE_OUT" | grep -qiE 'HIGH|CRITICAL'; then
-            echo "::warning::GKE Security Posture HIGH/CRITICAL findings detected"
-            SCAN_WARNINGS=1
-          fi
-
-          echo "=== On-Demand Scanning: workload images ==="
-          gcloud services enable ondemandscanning.googleapis.com \
-            --project="$PROJECT" --quiet 2>/dev/null || true
-
-          IMAGES=$(kubectl get pods --all-namespaces -o json 2>/dev/null \
-            | jq -r '.items[] | select(.metadata.namespace | IN("kube-system","kube-public","kube-node-lease","gke-gmp-system","gke-managed-metrics-server","config-management-system") | not) | [(.spec.containers//[]),(.spec.initContainers//[])] | add//[] | .[].image' 2>/dev/null \
-            | sort -u) || true
-
-          if [ -z "$IMAGES" ]; then
-            echo "No workload images found outside system namespaces — skipping image scan"
-          else
-            echo "Images to scan:"
-            echo "$IMAGES"
-            while IFS= read -r IMAGE; do
-              [ -z "$IMAGE" ] && continue
-              echo "--- Scanning: $IMAGE ---"
-              SCAN_OUT=$(gcloud artifacts docker images scan "$IMAGE" --remote \
-                --project="$PROJECT" --quiet 2>&1) || {
-                echo "::warning::On-Demand Scan failed for $IMAGE"
-                continue
-              }
-              echo "$SCAN_OUT"
-              SCAN_NAME=$(echo "$SCAN_OUT" | grep '^name:' | head -1 | awk '{print $2}' || true)
-              if [ -n "$SCAN_NAME" ]; then
-                VULNS=$(gcloud artifacts docker images list-vulnerabilities "$SCAN_NAME" \
-                  --project="$PROJECT" \
-                  --filter="vulnerability.effectiveSeverity=HIGH OR vulnerability.effectiveSeverity=CRITICAL" \
-                  --format="table(vulnerability.effectiveSeverity,vulnerability.packageIssue[0].affectedPackage,vulnerability.shortDescription)" \
-                  2>/dev/null || true)
-                if [ -n "$VULNS" ]; then
-                  echo "$VULNS"
-                  echo "::warning::HIGH/CRITICAL vulnerabilities in $IMAGE"
-                  SCAN_WARNINGS=1
-                else
-                  echo "No HIGH/CRITICAL vulnerabilities found in $IMAGE"
-                fi
-              fi
-            done <<< "$IMAGES"
-          fi
-          echo ""
-          [ "$SCAN_WARNINGS" -eq 0 ] \
-            && echo "Security scan complete — no HIGH/CRITICAL findings." \
-            || echo "::warning::Security findings detected — review output above (non-blocking)"
-
-      - name: Restore KCC Management Cluster Credentials
-        id: kcc-mgmt-creds-restore
-        if: always() && (steps.kcc-wait.outcome == 'success' || steps.kcc-cluster-ready.outcome == 'success')
+      - name: Get KCC cluster credentials
         uses: google-github-actions/get-gke-credentials@v2
         with:
           cluster_name: ${{ env.KCC_CLUSTER }}
@@ -646,7 +558,6 @@ jobs:
           project_id: ${{ env.PROJECT_ID }}
 
       - name: Delete KCC resources
-        if: always() && steps.kcc-apply.outcome == 'success'
         run: |
           kubectl delete \
             -n $KCC_NAMESPACE \
@@ -654,33 +565,16 @@ jobs:
             --wait=true --timeout=900s || true
 
       - name: Post KCC summary to PR
-        if: always()
         uses: actions/github-script@v7
         with:
           script: |
             const template = '${{ matrix.template }}';
-            const kccResult = '${{ steps.kcc-wait.outcome || 'skipped' }}';
-            const failed = kccResult === 'failure';
-            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-            const body = [
-              `### Deploy & Test KCC: \`${template}\``,
-              `| Step | Result |`,
-              `|---|---|`,
-              `| KCC apply + Ready | **${kccResult}** |`,
-              ...(failed ? ['', `KCC test failed — see [run logs](${runUrl}) for details.`] : []),
-            ].join('\n');
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body,
+              body: `### Deploy & Test KCC: \`${template}\` complete.`,
             });
-
-      - name: Cancel workflow on failure
-        if: failure()
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh run cancel ${{ github.run_id }}
 
   # ── 4c. PR close: destroy any cluster left up by failed deploy-test runs ────
   cleanup-pr-infra:
