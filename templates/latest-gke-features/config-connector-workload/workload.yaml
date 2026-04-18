@@ -30,6 +30,7 @@ metadata:
     project: gcp-template-forge
     template: latest-gke-features
 spec:
+  progressDeadlineSeconds: 3600
   replicas: 2
   selector:
     matchLabels:
