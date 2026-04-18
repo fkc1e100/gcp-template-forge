@@ -1,11 +1,11 @@
 # Basic GKE Hello World
 
-A minimal GKE Autopilot cluster with a Hello World workload, deployable via Terraform + Helm or Config Connector.
+A minimal GKE Standard cluster with a Hello World workload, deployable via Terraform + Helm or Config Connector.
 
 ## Architecture
 
-- **VPC + Subnet** — isolated VPC with secondary CIDR ranges for pods and services (`gke-basic-vpc`, `gke-basic-subnet`)
-- **GKE Autopilot** — fully managed cluster (`gke-basic`); no node pool configuration required
+- **VPC + Subnet** — isolated VPC with secondary CIDR ranges for pods and services (`gke-basic-tf-vpc` or `gke-basic-kcc-v2-vpc`)
+- **GKE Standard** — cost-optimized cluster with a single e2-standard-2 spot node pool
 - **Hello World workload** — Google's `hello-app` container, 3 replicas, exposed via LoadBalancer on port 80
 
 ## Deployment Paths
@@ -16,11 +16,11 @@ A minimal GKE Autopilot cluster with a Hello World workload, deployable via Terr
 cd terraform-helm
 terraform init \
   -backend-config="bucket=<TF_STATE_BUCKET>" \
-  -backend-config="prefix=templates/1-basic-gke-hello-world/terraform-helm"
+  -backend-config="prefix=templates/basic-gke-hello-world/terraform-helm"
 terraform apply -var="project_id=<PROJECT_ID>"
 ```
 
-Provisions VPC + subnet + GKE Autopilot, then deploys the `hello-world` Helm chart into the `hello-world` namespace.
+Provisions VPC + subnet + GKE Standard, then deploys the `hello-world` Helm chart into the target cluster.
 
 ### Config Connector (`config-connector/`)
 
@@ -28,31 +28,52 @@ Provisions VPC + subnet + GKE Autopilot, then deploys the `hello-world` Helm cha
 kubectl apply -n <KCC_NAMESPACE> -f config-connector/
 ```
 
-Creates `ComputeNetwork`, `ComputeSubnetwork`, and `ContainerCluster` (Autopilot mode) as KCC resources managed by the Config Connector operator. Workload is deployed and verified via the `validate.sh` script.
+Provisions `ComputeNetwork`, `ComputeSubnetwork`, `ContainerCluster` (Standard mode), and `ContainerNodePool` as KCC resources. 
+
+> **Note**: Workload deployment via KCC is pending (tracked in Issue 1.1). Currently, KCC provisions the underlying infrastructure; once Issue 1.1 is resolved, KCC will also manage the Kubernetes `Deployment` and `Service` for the hello-world workload.
+
+### Verification
+
+To verify the deployment:
+
+1. **Check Infrastructure Readiness**:
+   Monitor the KCC resources in the management cluster until all report `READY=True`:
+   ```bash
+   kubectl get gcp -n <KCC_NAMESPACE>
+   ```
+
+2. **Run Validation Script**:
+   Use the `validate.sh` script to verify cluster connectivity and workload health (requires `gcloud` and `kubectl`):
+   ```bash
+   export PROJECT_ID=<PROJECT_ID>
+   export CLUSTER_NAME=gke-basic-kcc-v2
+   export REGION=us-central1
+   ./validate.sh
+   ```
 
 ## Resource Naming
 
 | Resource | Path | Name |
 |---|---|---|
 | VPC | TF | `gke-basic-tf-vpc` |
-| VPC | KCC | `gke-basic-kcc-vpc` |
+| VPC | KCC | `gke-basic-kcc-v2-vpc` |
 | Subnet | TF | `gke-basic-tf-subnet` |
-| Subnet | KCC | `gke-basic-kcc-subnet` |
+| Subnet | KCC | `gke-basic-kcc-v2-subnet` |
 | GKE cluster | TF | `gke-basic-tf` |
-| GKE cluster | KCC | `gke-basic-kcc` |
+| GKE cluster | KCC | `gke-basic-kcc-v2` |
 
 ## Performance & Cost Estimates
 
-*Estimated from GCP pricing (us-central1, Autopilot pricing)*
+*Estimated from GCP pricing (us-central1, Standard Spot pricing)*
 
 | Resource | Config | Estimated cost |
 |---|---|---|
-| Autopilot cluster (idle) | 0 user pods scheduled | ~$0.10/hr cluster fee (~$73/mo) |
-| Autopilot workload (hello-world) | 0.25 vCPU + 128 Mi per pod | ~$0.01/hr per pod |
-| Cloud NAT | per-gateway fee + data processing | ~$0.004/hr (~$3/mo) |
-| **Total (1 pod running)** | | **~$0.11/hr (~$80/mo)** |
+| GKE Cluster fee | Standard Management Fee | ~$0.10/hr (~$73/mo) |
+| Node (e2-standard-2) | 1x Spot Instance | ~$0.02/hr (~$15/mo) |
+| LoadBalancer | Forwarding Rule + processing | ~$0.025/hr (~$18/mo) |
+| **Total (1 node cluster)** | | **~$0.145/hr (~$106/mo)** |
 
-Autopilot billing is per-pod resource request, not per node — there is no idle node cost. The cluster management fee (~$0.10/hr) applies whenever the cluster exists regardless of workload scale. Scale to zero pods to stop workload billing.
+GKE Standard management fee applies per cluster. Using Spot instances for the node pool significantly reduces compute costs for sandbox/testing environments.
 
 ## Cleanup
 
@@ -73,7 +94,7 @@ kubectl delete -n <KCC_NAMESPACE> -f config-connector/ --wait=true
 | **Duration** | 9m 39s | |
 | **Region** | us-central1 | us-central1 (KCC cluster) |
 | **Zones** | us-central1-a,us-central1-b,us-central1-c,us-central1-f | forge-management namespace |
-| **Cluster** | gke-basic-tf | gke-basic-kcc |
+| **Cluster** | gke-basic-tf | gke-basic-kcc-v2 |
 | **Agent tokens** | not recorded | (shared session) |
 | **Estimated cost** | - | -- |
 | **Commit** | 2c375256 | |
