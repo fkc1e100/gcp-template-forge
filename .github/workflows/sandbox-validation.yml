@@ -448,7 +448,18 @@ jobs:
           helm uninstall release --wait --timeout=5m || true
           kubectl delete gateway,ingress --all -A --wait=true --timeout=2m || true
           echo "Waiting for NEGs to be cleaned up..."
-          sleep 60
+          RUN_ID="${{ github.run_id }}"
+          UID_SUFFIX="${RUN_ID: -6}"
+          NETWORK_NAME="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf-vpc"
+          for i in {1..20}; do
+            NEGS=$(gcloud compute network-endpoint-groups list --filter="network:($NETWORK_NAME)" --project="${{ env.PROJECT_ID }}" --format="value(name)" 2>/dev/null || true)
+            if [ -z "$NEGS" ]; then
+              echo "All NEGs cleaned up."
+              break
+            fi
+            echo "NEGs still exist. Waiting 15s..."
+            sleep 15
+          done
 
       - name: Terraform destroy
         id: tf-destroy
@@ -1089,7 +1100,19 @@ jobs:
           echo "Uninstalling Helm release to clean up NEGs and LoadBalancers..."
           helm uninstall release --wait --timeout=5m || true
           kubectl delete gateway,ingress --all -A --wait=true --timeout=2m || true
-          sleep 10
+          echo "Waiting for NEGs to be cleaned up..."
+          RUN_ID="${{ github.run_id }}"
+          UID_SUFFIX="${RUN_ID: -6}"
+          NETWORK_NAME="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf-vpc"
+          for i in {1..20}; do
+            NEGS=$(gcloud compute network-endpoint-groups list --filter="network:($NETWORK_NAME)" --project="${{ env.PROJECT_ID }}" --format="value(name)" 2>/dev/null || true)
+            if [ -z "$NEGS" ]; then
+              echo "All NEGs cleaned up."
+              break
+            fi
+            echo "NEGs still exist. Waiting 15s..."
+            sleep 15
+          done
 
       - name: Terraform destroy
         id: tf-destroy
