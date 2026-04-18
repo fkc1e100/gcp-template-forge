@@ -78,7 +78,7 @@ jobs:
 
       - name: Add Hold Label
         if: github.event_name == 'pull_request'
-        run: gh pr edit ${{ github.event.pull_request.number }} --add-label "hold"
+        run: gh pr edit ${{ github.event.number }} --add-label "hold"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -512,7 +512,7 @@ jobs:
 
       - name: Remove Hold Label on Failure
         if: failure() && github.event_name == 'pull_request'
-        run: gh pr edit ${{ github.event.pull_request.number }} --remove-label "hold"
+        run: gh pr edit ${{ github.event.number }} --remove-label "hold"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -1450,7 +1450,7 @@ jobs:
 
       - name: Remove Hold Label on Failure
         if: failure() && github.event_name == 'pull_request'
-        run: gh pr edit ${{ github.event.pull_request.number }} --remove-label "hold"
+        run: gh pr edit ${{ github.event.number }} --remove-label "hold"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
