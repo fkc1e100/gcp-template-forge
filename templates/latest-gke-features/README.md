@@ -58,8 +58,8 @@ This template demonstrates some of the latest and most advanced features of Goog
 2.  **Wait for Infrastructure**:
     Monitor the status of the cluster and node pool until they are `Ready`:
     ```bash
-    kubectl wait --for=condition=Ready containercluster latest-gke-features-kcc -n forge-management --timeout=20m
-    kubectl wait --for=condition=Ready containernodepool latest-gke-features-kcc-pool -n forge-management --timeout=15m
+    kubectl wait --for=condition=Ready containercluster latest-gke-features-kcc -n forge-management --timeout=30m
+    kubectl wait --for=condition=Ready containernodepool latest-gke-features-kcc-pool -n forge-management --timeout=30m
     ```
 
 3.  **Deploy Workload**:
