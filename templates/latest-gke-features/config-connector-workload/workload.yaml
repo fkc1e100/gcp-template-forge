@@ -1,0 +1,170 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: latest-features
+  labels:
+    project: gcp-template-forge
+    template: latest-gke-features
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: latest-features-workload
+  namespace: latest-features
+  labels:
+    app.kubernetes.io/name: latest-features-workload
+    project: gcp-template-forge
+    template: latest-gke-features
+spec:
+  progressDeadlineSeconds: 3600
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: latest-features-workload
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: latest-features-workload
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 2000
+      # LATEST FEATURE: Native Sidecar Containers (requires K8s 1.29+)
+      initContainers:
+      - name: logger-sidecar
+        image: busybox:1.36.1
+        restartPolicy: Always
+        command: ["sh", "-c", "mkdir -p /var/log/nginx && while true; do echo \"$(date) - heartbeat from native sidecar\" >> /var/log/app.log; if [ $(stat -c%s /var/log/app.log) -gt 1048576 ]; then tail -n 100 /var/log/app.log > /var/log/app.log.tmp && mv /var/log/app.log.tmp /var/log/app.log; fi; sleep 30; done"]
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          privileged: false
+        resources:
+          limits:
+            cpu: 100m
+            memory: 64Mi
+          requests:
+            cpu: 50m
+            memory: 32Mi
+        volumeMounts:
+        - name: logs
+          mountPath: /var/log
+      containers:
+      - name: web-app
+        image: nginxinc/nginx-unprivileged:1.25
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          privileged: false
+        ports:
+        - name: http
+          containerPort: 8080
+        livenessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        resources:
+          limits:
+            cpu: 200m
+            memory: 256Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        volumeMounts:
+        - name: logs
+          mountPath: /var/log
+      volumes:
+      - name: logs
+        emptyDir:
+          sizeLimit: 500Mi
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app.kubernetes.io/name: latest-features-workload
+      - maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app.kubernetes.io/name: latest-features-workload
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: latest-features-workload
+  namespace: latest-features
+  labels:
+    app.kubernetes.io/name: latest-features-workload
+    project: gcp-template-forge
+    template: latest-gke-features
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: latest-features-workload
+  ports:
+  - port: 80
+    targetPort: 8080
+---
+kind: Gateway
+apiVersion: gateway.networking.k8s.io/v1
+metadata:
+  name: latest-features-gateway
+  namespace: latest-features
+  labels:
+    app.kubernetes.io/name: latest-features-workload
+    project: gcp-template-forge
+    template: latest-gke-features
+spec:
+  gatewayClassName: gke-l7-global-external-managed
+  listeners:
+  - name: http
+    protocol: HTTP
+    port: 80
+---
+kind: HTTPRoute
+apiVersion: gateway.networking.k8s.io/v1
+metadata:
+  name: latest-features-workload
+  namespace: latest-features
+  labels:
+    app.kubernetes.io/name: latest-features-workload
+    project: gcp-template-forge
+    template: latest-gke-features
+spec:
+  parentRefs:
+  - name: latest-features-gateway
+  rules:
+  - backendRefs:
+    - name: latest-features-workload
+      port: 80
+

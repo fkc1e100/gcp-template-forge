@@ -18,9 +18,23 @@ set -e
 echo "Starting Latest GKE Features Validation Tests..."
 
 PROJECT_ID=${PROJECT_ID:-"gca-gke-2025"}
-CLUSTER_NAME=${CLUSTER_NAME:-"latest-gke-features-tf"}
 REGION=${REGION:-"us-central1"}
 NAMESPACE=${NAMESPACE:-"default"}
+
+# 0. Cluster Detection
+if [ -z "${CLUSTER_NAME}" ]; then
+  echo "CLUSTER_NAME not set, attempting to detect cluster..."
+  if gcloud container clusters describe latest-gke-features-tf --region ${REGION} --project ${PROJECT_ID} >/dev/null 2>&1; then
+    CLUSTER_NAME="latest-gke-features-tf"
+    echo "Detected Terraform cluster: ${CLUSTER_NAME}"
+  elif gcloud container clusters describe latest-gke-features-kcc --region ${REGION} --project ${PROJECT_ID} >/dev/null 2>&1; then
+    CLUSTER_NAME="latest-gke-features-kcc"
+    echo "Detected Config Connector cluster: ${CLUSTER_NAME}"
+  else
+    echo "ERROR: Could not detect GKE cluster. Please set CLUSTER_NAME environment variable."
+    exit 1
+  fi
+fi
 
 # Isolate KUBECONFIG
 export KUBECONFIG=$(mktemp)
@@ -34,14 +48,42 @@ echo "Connectivity passed."
 
 # 2. Workload Readiness
 echo "Test 2: Workload Readiness..."
-# Deployment name from fullname helper: <release-name>-<chart-name>
-# In CI, release name is 'release', chart name is 'latest-features-workload'
-kubectl wait --for=condition=available deployment/release-latest-features-workload -n ${NAMESPACE} --timeout=10m
+# Try both Helm-style name and KCC manifest name
+DEPLOY_NAME="release-latest-features-workload"
+if ! kubectl get deployment "$DEPLOY_NAME" -n "${NAMESPACE}" >/dev/null 2>&1; then
+  DEPLOY_NAME="latest-features-workload"
+fi
+
+# Auto-detect namespace if not found in provided NAMESPACE
+if ! kubectl get deployment "$DEPLOY_NAME" -n "${NAMESPACE}" >/dev/null 2>&1; then
+  echo "Deployment $DEPLOY_NAME not found in namespace ${NAMESPACE}. Searching for it..."
+  # Try latest-features namespace as it's the default in KCC manifests
+  if kubectl get deployment "$DEPLOY_NAME" -n "latest-features" >/dev/null 2>&1; then
+    echo "Found deployment in namespace: latest-features"
+    NAMESPACE="latest-features"
+  else
+    # Fallback to label search
+    SEARCH_NS=$(kubectl get deployment --all-namespaces -l app.kubernetes.io/name=latest-features-workload -o jsonpath='{.items[0].metadata.namespace}' 2>/dev/null)
+    if [ -n "$SEARCH_NS" ]; then
+      echo "Found deployment in namespace: $SEARCH_NS"
+      NAMESPACE="$SEARCH_NS"
+    fi
+  fi
+fi
+
+echo "Waiting for deployment ${DEPLOY_NAME} in namespace ${NAMESPACE}..."
+kubectl wait --for=condition=available deployment/${DEPLOY_NAME} -n ${NAMESPACE} --timeout=30m
 echo "Workload is available."
 
 # 3. Native Sidecar Validation
 echo "Test 3: Native Sidecar Validation..."
-POD_NAME=$(kubectl get pods -n ${NAMESPACE} -l app.kubernetes.io/name=latest-features-workload -o jsonpath='{.items[0].metadata.name}')
+# Try both Helm-style label and simpler label
+POD_NAME=$(kubectl get pods -n ${NAMESPACE} -l app.kubernetes.io/name=latest-features-workload -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
+
+if [ -z "$POD_NAME" ]; then
+  # Fallback for older or different label schemes
+  POD_NAME=$(kubectl get pods -n ${NAMESPACE} -l app=latest-features-workload -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
+fi
 
 if [ -z "$POD_NAME" ]; then
   echo "Native Sidecar check failed! No pods found with label app.kubernetes.io/name=latest-features-workload."
@@ -58,7 +100,7 @@ echo "Native Sidecar validated (restartPolicy: Always found)."
 # 4. Gateway API Validation
 echo "Test 4: Gateway API Validation..."
 # Check if Gateway is programmed
-kubectl wait --for=condition=Programmed gateway/latest-features-gateway -n ${NAMESPACE} --timeout=15m
+kubectl wait --for=condition=Programmed gateway/latest-features-gateway -n ${NAMESPACE} --timeout=30m
 
 # Get Gateway IP
 GATEWAY_IP=$(kubectl get gateway latest-features-gateway -n ${NAMESPACE} -o jsonpath='{.status.addresses[0].value}')
@@ -71,15 +113,16 @@ fi
 
 echo "Testing endpoint http://${GATEWAY_IP}/..."
 # Retry curl as the LB might take a few moments to actually start serving
-for i in {1..12}; do
+# Increased to 60 attempts (30 minutes) to comply with project mandates
+for i in {1..60}; do
   if curl -sf --connect-timeout 5 --max-time 10 http://${GATEWAY_IP}/; then
     echo "Gateway endpoint test passed!"
     break
   fi
-  echo "Gateway endpoint not ready (attempt $i/12)..."
+  echo "Gateway endpoint not ready (attempt $i/60)..."
   sleep 30
-  if [ $i -eq 12 ]; then
-    echo "Gateway endpoint test failed after 12 attempts!"
+  if [ $i -eq 60 ]; then
+    echo "Gateway endpoint test failed after 60 attempts!"
     exit 1
   fi
 done

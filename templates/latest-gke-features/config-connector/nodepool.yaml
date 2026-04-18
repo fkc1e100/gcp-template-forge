@@ -32,7 +32,7 @@ spec:
     diskSizeGb: 50
     diskType: pd-standard
     imageType: COS_CONTAINERD
-    spot: false
+    spot: true
     serviceAccountRef:
       external: forge-kcc-admin@gca-gke-2025.iam.gserviceaccount.com
     oauthScopes:
