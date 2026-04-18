@@ -60,6 +60,11 @@ resource "google_compute_router_nat" "nat" {
   region                             = var.region
   nat_ip_allocate_option             = "AUTO_ONLY"
   source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
+
+  log_config {
+    enable = true
+    filter = "ERRORS_ONLY"
+  }
 }
 
 # GKE Cluster
@@ -101,6 +106,17 @@ resource "google_container_cluster" "cluster" {
 
   workload_identity_config {
     workload_pool = "${var.project_id}.svc.id.goog"
+  }
+
+  logging_config {
+    enable_components = ["SYSTEM_COMPONENTS", "WORKLOADS"]
+  }
+
+  monitoring_config {
+    enable_components = ["SYSTEM_COMPONENTS"]
+    managed_prometheus {
+      enabled = true
+    }
   }
 
   release_channel {
