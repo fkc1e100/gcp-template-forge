@@ -10,17 +10,21 @@ This plan outlines how to verify that Topology-Aware Routing is correctly config
 
 ## Step 1: Verify Topology Spread
 
-Check that frontend and backend pods are distributed across different zones.
+Check that frontend and backend pods are distributed across different nodes. Since this is a regional cluster, GKE will distribute nodes across zones, and the `topologySpreadConstraints` will ensure pods are spread across those zones.
 
 ```bash
-# Check frontend pods
-kubectl get pods -l app=frontend -o custom-columns=NAME:.metadata.name,NODE:.spec.nodeName,ZONE:".metadata.labels['topology\.kubernetes\.io/zone']"
+# Check frontend pods distribution
+kubectl get pods -l app=frontend -o wide
 
-# Check backend pods
-kubectl get pods -l app=backend -o custom-columns=NAME:.metadata.name,NODE:.spec.nodeName,ZONE:".metadata.labels['topology\.kubernetes\.io/zone']"
+# Check backend pods distribution
+kubectl get pods -l app=backend -o wide
 ```
 
-Each pod should be in a different zone (e.g., `us-central1-a`, `us-central1-b`, `us-central1-c`).
+To see the exact zone for each pod, you can correlate the `NODE` name with the node's topology label:
+```bash
+kubectl get nodes -L topology.kubernetes.io/zone
+```
+Each pod should be scheduled on a node in a different zone.
 
 ## Step 2: Verify Service Annotations
 

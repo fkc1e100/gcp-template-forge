@@ -40,8 +40,10 @@ echo "Workloads are available."
 
 # 3. Topology Spread Check
 echo "Test 3: Topology Spread Check..."
-FRONTEND_ZONES=$(kubectl get pods -l app=frontend -n ${NAMESPACE} -o jsonpath='{.items[*].metadata.labels.topology\.kubernetes\.io/zone}' | tr ' ' '\n' | sort | uniq | wc -l)
-BACKEND_ZONES=$(kubectl get pods -l app=backend -n ${NAMESPACE} -o jsonpath='{.items[*].metadata.labels.topology\.kubernetes\.io/zone}' | tr ' ' '\n' | sort | uniq | wc -l)
+# Get zones of frontend pods by looking at the nodes they are running on
+FRONTEND_ZONES=$(kubectl get pods -l app=frontend -n ${NAMESPACE} -o jsonpath='{.items[*].spec.nodeName}' | tr ' ' '\n' | xargs -I {} kubectl get node {} -o jsonpath='{.metadata.labels.topology\.kubernetes\.io/zone}' | tr ' ' '\n' | sort | uniq | wc -l)
+# Get zones of backend pods by looking at the nodes they are running on
+BACKEND_ZONES=$(kubectl get pods -l app=backend -n ${NAMESPACE} -o jsonpath='{.items[*].spec.nodeName}' | tr ' ' '\n' | xargs -I {} kubectl get node {} -o jsonpath='{.metadata.labels.topology\.kubernetes\.io/zone}' | tr ' ' '\n' | sort | uniq | wc -l)
 
 if [ "$FRONTEND_ZONES" -lt 2 ]; then
   echo "Frontend pods are not spread across enough zones (found $FRONTEND_ZONES)."
