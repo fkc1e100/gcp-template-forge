@@ -7,10 +7,9 @@ spec:
     matchLabels:
       app: {{ .Values.pod.label }}
   egress:
-  - to:
-    - fqdns:
-      - api.anthropic.com
-      - huggingface.co
+  - matches:
+    - name: api.anthropic.com
+    - name: huggingface.co
     ports:
     - protocol: TCP
       port: 443

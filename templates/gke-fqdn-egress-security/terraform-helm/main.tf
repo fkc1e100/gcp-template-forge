@@ -91,9 +91,7 @@ resource "google_container_cluster" "cluster" {
   # Dataplane V2 is required for FQDN Network Policies
   datapath_provider = "ADVANCED_DATAPATH"
 
-  network_config {
-    enable_fqdn_network_policy = true
-  }
+  enable_fqdn_network_policy = true
 
   workload_identity_config {
     workload_pool = "${var.project_id}.svc.id.goog"
