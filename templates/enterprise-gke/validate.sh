@@ -47,9 +47,9 @@ kubectl cluster-info
 # Auto-detect namespace if not explicitly set and not in default
 if [ "$NAMESPACE_WORKLOAD" == "default" ]; then
   # List of namespaces to check in order of preference
-  CHECK_NAMESPACES=("enterprise-gke")
+  CHECK_NAMESPACES=("gke-workload")
   if [ -n "$UID_SUFFIX" ]; then
-    CHECK_NAMESPACES=("enterprise-gke-${UID_SUFFIX}" "${CHECK_NAMESPACES[@]}")
+    CHECK_NAMESPACES=("gke-workload-${UID_SUFFIX}" "${CHECK_NAMESPACES[@]}")
   fi
 
   # Check if workload exists in current NAMESPACE_WORKLOAD
@@ -113,14 +113,14 @@ metadata:
   labels:
     app: test-workload-identity
     project: gcp-template-forge
-    template: enterprise-gke
+    template: gke-workload
 spec:
   template:
     metadata:
       labels:
         app: test-workload-identity
         project: gcp-template-forge
-        template: enterprise-gke
+        template: gke-workload
     spec:
       serviceAccountName: ${SA_NAME}
       containers:

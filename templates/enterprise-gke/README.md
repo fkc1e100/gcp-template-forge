@@ -101,6 +101,7 @@ terraform destroy -var="project_id=${PROJECT_ID}"
 
 ### Config Connector Path
 ```bash
+kubectl delete -f kcc-workload/workload.yaml
 kubectl delete -f config-connector/ -n forge-management
 ```
 
