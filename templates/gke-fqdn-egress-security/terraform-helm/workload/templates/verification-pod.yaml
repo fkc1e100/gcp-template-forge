@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: egress-verifier
+  labels:
+    app: {{ .Values.pod.label }}
+spec:
+  containers:
+  - name: verifier
+    image: {{ .Values.pod.image }}
+    command: ["/bin/sh", "-c", "sleep 3600"]
+  restartPolicy: Never

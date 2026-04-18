@@ -1,0 +1,12 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-egress
+spec:
+  podSelector:
+    matchLabels:
+      app: {{ .Values.pod.label }}
+  policyTypes:
+  - Egress
+  # Empty egress rule means deny all
+  egress: []

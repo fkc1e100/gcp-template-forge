@@ -1,0 +1,16 @@
+apiVersion: networking.gke.io/v1alpha1
+kind: FQDNNetworkPolicy
+metadata:
+  name: allow-ai-egress
+spec:
+  podSelector:
+    matchLabels:
+      app: {{ .Values.pod.label }}
+  egress:
+  - to:
+    - fqdns:
+      - api.anthropic.com
+      - huggingface.co
+    ports:
+    - protocol: TCP
+      port: 443

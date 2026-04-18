@@ -1,0 +1,6 @@
+# Default values for fqdn-egress-security.
+project_id: ""
+
+pod:
+  image: python:3.9-slim
+  label: egress-test
