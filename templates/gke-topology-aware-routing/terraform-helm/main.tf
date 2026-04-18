@@ -149,7 +149,8 @@ resource "google_container_node_pool" "primary_nodes" {
     image_type   = "COS_CONTAINERD"
 
     service_account = var.service_account
-    oauth_scopes    = var.oauth_scopes
+
+    oauth_scopes = var.oauth_scopes
 
     workload_metadata_config {
       mode = "GKE_METADATA"

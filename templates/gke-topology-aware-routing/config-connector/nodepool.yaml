@@ -38,8 +38,8 @@ spec:
     shieldedInstanceConfig:
       enableSecureBoot: true
       enableIntegrityMonitoring: true
-    metadata:
-      disable-legacy-endpoints: "true"
+    workloadMetadataConfig:
+      mode: GKE_METADATA
     labels:
       project: gcp-template-forge
       template: gke-topology-aware-routing
