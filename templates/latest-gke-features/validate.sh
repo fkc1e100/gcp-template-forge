@@ -18,9 +18,23 @@ set -e
 echo "Starting Latest GKE Features Validation Tests..."
 
 PROJECT_ID=${PROJECT_ID:-"gca-gke-2025"}
-CLUSTER_NAME=${CLUSTER_NAME:-"latest-gke-features-tf"}
 REGION=${REGION:-"us-central1"}
 NAMESPACE=${NAMESPACE:-"default"}
+
+# 0. Cluster Detection
+if [ -z "${CLUSTER_NAME}" ]; then
+  echo "CLUSTER_NAME not set, attempting to detect cluster..."
+  if gcloud container clusters describe latest-gke-features-tf --region ${REGION} --project ${PROJECT_ID} >/dev/null 2>&1; then
+    CLUSTER_NAME="latest-gke-features-tf"
+    echo "Detected Terraform cluster: ${CLUSTER_NAME}"
+  elif gcloud container clusters describe latest-gke-features-kcc --region ${REGION} --project ${PROJECT_ID} >/dev/null 2>&1; then
+    CLUSTER_NAME="latest-gke-features-kcc"
+    echo "Detected Config Connector cluster: ${CLUSTER_NAME}"
+  else
+    echo "ERROR: Could not detect GKE cluster. Please set CLUSTER_NAME environment variable."
+    exit 1
+  fi
+fi
 
 # Isolate KUBECONFIG
 export KUBECONFIG=$(mktemp)

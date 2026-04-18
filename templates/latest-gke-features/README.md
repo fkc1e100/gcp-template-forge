@@ -69,7 +69,13 @@ This template demonstrates some of the latest and most advanced features of Goog
     kubectl apply -f config-connector-workload/workload.yaml
     ```
 
-4.  **Verify Advanced Features**:
+4.  **Verify Deployment**:
+    Run the automated validation script:
+    ```bash
+    ./validate.sh
+    ```
+
+    Alternatively, you can verify features manually:
 
     **Sidecar Verification**:
     Verify that the \`logger-sidecar\` is running as a native sidecar in the \`latest-features\` namespace:
