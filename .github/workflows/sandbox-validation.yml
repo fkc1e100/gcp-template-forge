@@ -447,7 +447,8 @@ jobs:
           echo "Uninstalling Helm release to clean up NEGs and LoadBalancers..."
           helm uninstall release --wait --timeout=5m || true
           kubectl delete gateway,ingress --all -A --wait=true --timeout=2m || true
-          sleep 10
+          echo "Waiting for NEGs to be cleaned up..."
+          sleep 60
 
       - name: Terraform destroy
         id: tf-destroy
