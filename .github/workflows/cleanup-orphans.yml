@@ -182,7 +182,7 @@ jobs:
           echo "Cleaning up orphaned Networking resources (matching pattern)..."
           
           # Firewalls (Generic exclusion)
-          FIREWALLS=$(gcloud compute firewall-rules list --project=$PROJECT --format="value(name)" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete|default" || true)
+          FIREWALLS=$(gcloud compute firewall-rules list --project=$PROJECT --format="value(name)" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete|default|^k8s-fw-" || true)
           for F in $FIREWALLS; do
             SKIP=false
             for PAT in $ALL_ACTIVE; do
