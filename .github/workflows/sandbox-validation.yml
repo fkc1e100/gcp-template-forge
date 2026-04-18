@@ -69,6 +69,7 @@ jobs:
           fi
           DIRS=$(git diff --name-only "$BASE" "$DIFF_HEAD" \
             | grep '^templates/' \
+            | grep -v '\.md$' \
             | awk -F/ '{print $1"/"$2}' \
             | sort -u \
             | jq -Rnc '[inputs | select(length>0)]')
@@ -79,6 +80,12 @@ jobs:
       - name: Add Hold Label
         if: github.event_name == 'pull_request'
         run: gh pr edit ${{ github.event.number }} --add-label "hold"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Remove repo-agent Label on Start
+        if: github.event_name == 'pull_request'
+        run: gh pr edit ${{ github.event.number }} --remove-label "repo-agent" || true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -294,7 +301,7 @@ jobs:
 
   tf-test:
     name: "Test TF (${{ matrix.template }})"
-    needs: [ tf-provision ]
+    needs: [ tf-provision, detect-changes ]
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
@@ -338,6 +345,8 @@ jobs:
 
           if [ -f "${{ matrix.template }}/validate.sh" ]; then
             echo "=== Running template-specific validation: ${{ matrix.template }}/validate.sh ==="
+            export CLUSTER_NAME="${{ needs.tf-provision.outputs.tf_cluster }}"
+            export REGION="${{ needs.tf-provision.outputs.tf_location }}"
             chmod +x ${{ matrix.template }}/validate.sh
             ./${{ matrix.template }}/validate.sh
           fi
@@ -354,7 +363,7 @@ jobs:
 
   tf-teardown:
     name: "Teardown TF (${{ matrix.template }})"
-    needs: [ tf-provision, tf-test ]
+    needs: [ tf-provision, tf-test, detect-changes ]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -464,7 +473,7 @@ jobs:
 
   kcc-test:
     name: "KCC Test (${{ matrix.template }})"
-    needs: [ kcc-apply ]
+    needs: [ kcc-apply, detect-changes ]
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
@@ -492,12 +501,27 @@ jobs:
         run: |
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
-          CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-${UID_SUFFIX} -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
-          LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-${UID_SUFFIX} -o jsonpath='{.items[0].spec.location}' 2>/dev/null || true)
-          if [ -z "$CLUSTER_NAME" ]; then
-             CLUSTER_NAME=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(docs[0]['metadata']['name'] if docs else '')")
-             LOCATION=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(docs[0]['spec']['location'] if docs else '')")
+          
+          # Check if template intends to create a cluster
+          HAS_CLUSTER=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print('true' if docs else 'false')")
+          
+          if [ "$HAS_CLUSTER" = "true" ]; then
+            # Try to get cluster name and location from the management cluster using the unique label
+            CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-${UID_SUFFIX} -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
+            LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-${UID_SUFFIX} -o jsonpath='{.items[0].spec.location}' 2>/dev/null || true)
+            
+            # Fallback to local manifest parsing if not found in management cluster
+            if [ -z "$CLUSTER_NAME" ]; then
+               CLUSTER_NAME=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(docs[0]['metadata']['name'] if docs else '')")
+            fi
+            if [ -z "$LOCATION" ]; then
+               LOCATION=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(docs[0]['spec']['location'] if docs else '')")
+            fi
+          else
+            CLUSTER_NAME=""
+            LOCATION=""
           fi
+          
           echo "cluster_name=${CLUSTER_NAME}" >> $GITHUB_OUTPUT
           echo "location=${LOCATION}" >> $GITHUB_OUTPUT
 
@@ -527,13 +551,14 @@ jobs:
           if [ -f "${{ matrix.template }}/validate.sh" ]; then
             echo "=== Running template-specific validation (KCC): ${{ matrix.template }}/validate.sh ==="
             export CLUSTER_NAME="${{ steps.kcc-workload-info.outputs.cluster_name }}"
+            export REGION="${{ steps.kcc-workload-info.outputs.location }}"
             chmod +x ${{ matrix.template }}/validate.sh
             ./${{ matrix.template }}/validate.sh
           fi
 
   kcc-teardown:
     name: "KCC Teardown (${{ matrix.template }})"
-    needs: [ kcc-apply, kcc-test ]
+    needs: [ kcc-apply, kcc-test, detect-changes ]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -811,9 +836,8 @@ jobs:
           # Run template-specific validation if present
           if [ -f "${{ matrix.template }}/validate.sh" ]; then
             echo "=== Running template-specific validation: ${{ matrix.template }}/validate.sh ==="
-            RUN_ID="${{ github.run_id }}"
-            UID_SUFFIX="${RUN_ID: -6}"
-            export CLUSTER_NAME="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf"
+            export CLUSTER_NAME="${{ steps.tf-outputs.outputs.tf_cluster }}"
+            export REGION="${{ steps.tf-outputs.outputs.tf_location }}"
             chmod +x ${{ matrix.template }}/validate.sh
             ./${{ matrix.template }}/validate.sh
           fi
@@ -1122,6 +1146,7 @@ jobs:
           if [ -f "${{ matrix.template }}/validate.sh" ]; then
             echo "=== Running template-specific validation (KCC): ${{ matrix.template }}/validate.sh ==="
             export CLUSTER_NAME="${{ steps.kcc-workload-info.outputs.cluster_name }}"
+            export REGION="${{ steps.kcc-workload-info.outputs.location }}"
             chmod +x ${{ matrix.template }}/validate.sh
             ./${{ matrix.template }}/validate.sh
           fi
@@ -1457,3 +1482,17 @@ jobs:
             git add "${TEMPLATE}/.agent-metrics-cumulative"
           git commit -m "ci: validate ${TEMPLATE} [skip ci]" || true
           git push
+
+  pr-completion:
+    name: "PR Completion"
+    needs: [detect-changes, lint, pre-cleanup, tf-provision, tf-test, tf-teardown, kcc-apply, kcc-test, kcc-teardown]
+    if: always() && github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Add repo-agent label on failure
+        if: failure()
+        run: gh pr edit ${{ github.event.number }} --add-label "repo-agent"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
