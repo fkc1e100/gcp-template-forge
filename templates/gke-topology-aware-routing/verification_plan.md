@@ -71,7 +71,7 @@ We will use the `whereami` container's ability to report its own zone and the zo
 2.  Curl the frontend multiple times:
     ```bash
     GATEWAY_IP=$(kubectl get gateways external-http -o jsonpath='{.status.addresses[0].value}')
-    for i in {1..10}; do curl -s $GATEWAY_IP | jq -r '.zone, .backend.zone'; echo "---"; done
+    for i in {1..10}; do curl -s http://$GATEWAY_IP | jq -r '.zone, .backend.zone'; echo "---"; done
     ```
 
 **Expected Result:**

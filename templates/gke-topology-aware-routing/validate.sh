@@ -96,15 +96,15 @@ fi
 
 echo "Testing endpoint http://${GATEWAY_IP}/..."
 # Retry curl as the LB might take a few moments to actually start serving
-for i in {1..12}; do
+for i in {1..20}; do
   if curl -sf --connect-timeout 5 --max-time 10 http://${GATEWAY_IP}/; then
     echo "Gateway endpoint test passed!"
     break
   fi
-  echo "Gateway endpoint not ready (attempt $i/12)..."
+  echo "Gateway endpoint not ready (attempt $i/20)..."
   sleep 30
-  if [ $i -eq 12 ]; then
-    echo "Gateway endpoint test failed after 12 attempts!"
+  if [ $i -eq 20 ]; then
+    echo "Gateway endpoint test failed after 20 attempts!"
     exit 1
   fi
 done
