@@ -34,15 +34,21 @@ echo "Connectivity passed."
 
 # 2. Workload Readiness
 echo "Test 2: Workload Readiness..."
-# Deployment name from fullname helper: <release-name>-<chart-name>
-# In CI, release name is 'release', chart name is 'enterprise-workload'
-kubectl wait --for=condition=available deployment/release-enterprise-workload -n ${NAMESPACE_WORKLOAD} --timeout=15m
+DEPLOYMENT_NAME="release-enterprise-workload"
+if ! kubectl get deployment "$DEPLOYMENT_NAME" -n "${NAMESPACE_WORKLOAD}" >/dev/null 2>&1; then
+  DEPLOYMENT_NAME="enterprise-gke-workload"
+fi
+echo "Waiting for deployment/${DEPLOYMENT_NAME}..."
+kubectl wait --for=condition=available "deployment/${DEPLOYMENT_NAME}" -n ${NAMESPACE_WORKLOAD} --timeout=15m
 echo "Workload is available."
 
 # 3. Workload Identity Integration
 echo "Test 3: Workload Identity Integration..."
 # Verify that the service account exists and is used by the pod
-POD_NAME=$(kubectl get pods -n ${NAMESPACE_WORKLOAD} -l app.kubernetes.io/instance=release -o jsonpath='{.items[0].metadata.name}')
+POD_NAME=$(kubectl get pods -n ${NAMESPACE_WORKLOAD} -l app=enterprise-gke -o jsonpath='{.items[0].metadata.name}')
+if [ -z "$POD_NAME" ]; then
+  POD_NAME=$(kubectl get pods -n ${NAMESPACE_WORKLOAD} -l app.kubernetes.io/instance=release -o jsonpath='{.items[0].metadata.name}')
+fi
 if [ -z "$POD_NAME" ]; then
   echo "Failed to find workload pod!"
   exit 1
@@ -81,12 +87,17 @@ echo "Workload Identity validated."
 echo "Test 4: Endpoint Interaction..."
 # Wait for LoadBalancer IP
 SERVICE_IP=""
+SERVICE_NAME="release-enterprise-workload"
+if ! kubectl get service "$SERVICE_NAME" -n "${NAMESPACE_WORKLOAD}" >/dev/null 2>&1; then
+  SERVICE_NAME="enterprise-gke-service"
+fi
+
 for i in {1..20}; do
-  SERVICE_IP=$(kubectl get svc -n ${NAMESPACE_WORKLOAD} -l app.kubernetes.io/instance=release -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}' || true)
+  SERVICE_IP=$(kubectl get svc "${SERVICE_NAME}" -n ${NAMESPACE_WORKLOAD} -o jsonpath='{.status.loadBalancer.ingress[0].ip}' || true)
   if [ ! -z "$SERVICE_IP" ]; then
     break
   fi
-  echo "Waiting for LoadBalancer IP (attempt $i/20)..."
+  echo "Waiting for LoadBalancer IP for ${SERVICE_NAME} (attempt $i/20)..."
   sleep 30
 done
 
