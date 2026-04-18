@@ -49,13 +49,13 @@ resource "google_compute_subnetwork" "subnet" {
 
 # Cloud NAT
 resource "google_compute_router" "router" {
-  name    = "${var.cluster_name}-router"
+  name    = "fqdn-egress-router"
   region  = var.region
   network = google_compute_network.vpc.id
 }
 
 resource "google_compute_router_nat" "nat" {
-  name                               = "${var.cluster_name}-nat"
+  name                               = "fqdn-egress-nat"
   router                             = google_compute_router.router.name
   region                             = var.region
   nat_ip_allocate_option             = "AUTO_ONLY"
