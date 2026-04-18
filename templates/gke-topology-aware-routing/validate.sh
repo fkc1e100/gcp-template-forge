@@ -119,15 +119,26 @@ fi
 
 echo "Testing endpoint http://${GATEWAY_IP}/..."
 # Retry curl as the LB might take a few moments to actually start serving
-for i in {1..20}; do
+# Global Load Balancers can sometimes take up to 15 minutes to fully provision
+for i in {1..30}; do
   if curl -sf --connect-timeout 5 --max-time 10 http://${GATEWAY_IP}/; then
     echo "Gateway endpoint test passed!"
     break
   fi
-  echo "Gateway endpoint not ready (attempt $i/20)..."
+  echo "Gateway endpoint not ready (attempt $i/30)..."
+  
+  if [ $((i % 5)) -eq 0 ]; then
+    echo "Debugging Gateway status..."
+    kubectl describe gateway external-http -n ${NAMESPACE} || true
+    kubectl describe httproute frontend-route -n ${NAMESPACE} || true
+  fi
+
   sleep 30
-  if [ $i -eq 20 ]; then
-    echo "Gateway endpoint test failed after 20 attempts!"
+  if [ $i -eq 30 ]; then
+    echo "Gateway endpoint test failed after 30 attempts!"
+    echo "Final Gateway and HTTPRoute status:"
+    kubectl describe gateway external-http -n ${NAMESPACE}
+    kubectl describe httproute frontend-route -n ${NAMESPACE}
     exit 1
   fi
 done

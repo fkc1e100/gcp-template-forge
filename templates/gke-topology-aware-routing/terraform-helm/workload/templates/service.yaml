@@ -21,6 +21,8 @@ metadata:
   annotations:
     # Enable Topology-Aware Hints
     service.kubernetes.io/topology-mode: Auto
+    # Explicitly enable NEGs for Gateway API
+    cloud.google.com/neg: '{"ingress": true}'
 spec:
   type: {{ .Values.frontend.service.type }}
   ports:
