@@ -166,7 +166,7 @@ templates/<name>/
 ├── config-connector/            ← Config Connector (KCC) deployment path
 │   ├── network.yaml             ← ComputeNetwork + ComputeSubnetwork
 │   ├── cluster.yaml             ← ContainerCluster (+ NodePool if standard)
-│   └── workload/                ← Kubernetes manifests for the workload (optional)
+│   └── workload/                ← Kubernetes manifests for the workload (required)
 │       └── *.yaml               ← Deployment · Service · HPA · NetworkPolicy etc.
 ├── README.md                    ← auto-updated by CI with validation record
 ├── .validated                   ← CI marker: commit + status after successful deploy
