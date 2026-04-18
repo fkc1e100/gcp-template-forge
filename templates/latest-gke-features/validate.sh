@@ -34,17 +34,23 @@ echo "Connectivity passed."
 
 # 2. Workload Readiness
 echo "Test 2: Workload Readiness..."
-# Deployment name from fullname helper: <release-name>-<chart-name>
-# In CI, release name is 'release', chart name is 'latest-features-workload'
-kubectl wait --for=condition=available deployment/release-latest-features-workload -n ${NAMESPACE} --timeout=10m
+DEPLOYMENT_NAME="release-latest-features-workload"
+if ! kubectl get deployment "$DEPLOYMENT_NAME" -n "${NAMESPACE}" >/dev/null 2>&1; then
+  DEPLOYMENT_NAME="latest-features-workload"
+fi
+echo "Waiting for deployment/${DEPLOYMENT_NAME}..."
+kubectl wait --for=condition=available "deployment/${DEPLOYMENT_NAME}" -n ${NAMESPACE} --timeout=10m
 echo "Workload is available."
 
 # 3. Native Sidecar Validation
 echo "Test 3: Native Sidecar Validation..."
-POD_NAME=$(kubectl get pods -n ${NAMESPACE} -l app.kubernetes.io/name=latest-features-workload -o jsonpath='{.items[0].metadata.name}')
+POD_NAME=$(kubectl get pods -n ${NAMESPACE} -l app=latest-features -o jsonpath='{.items[0].metadata.name}')
+if [ -z "$POD_NAME" ]; then
+  POD_NAME=$(kubectl get pods -n ${NAMESPACE} -l app.kubernetes.io/name=latest-features-workload -o jsonpath='{.items[0].metadata.name}')
+fi
 
 if [ -z "$POD_NAME" ]; then
-  echo "Native Sidecar check failed! No pods found with label app.kubernetes.io/name=latest-features-workload."
+  echo "Native Sidecar check failed! No pods found."
   exit 1
 fi
 

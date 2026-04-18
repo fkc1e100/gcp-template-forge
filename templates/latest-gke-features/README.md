@@ -1,48 +1,56 @@
-# Template: Latest GKE Features Template
+# Latest GKE Features Template
 
-<!-- force CI run 2 -->
+This template showcases the latest GKE and Kubernetes features, including Native Sidecar Containers and Pod Topology Spread Constraints.
 
-## Overview
-This template demonstrates some of the latest and most advanced features of Google Kubernetes Engine (GKE), released in 2024, 2025, and 2026. It showcases both cluster-level infrastructure improvements and modern workload deployment patterns.
+## Features
 
-## Latest Features Included
+- **Native Sidecar Containers** — Uses the Kubernetes 1.29+ feature where sidecars are defined in `initContainers` with `restartPolicy: Always`.
+- **Pod Topology Spread Constraints** — Ensures high availability by spreading pods across nodes and zones.
+- **GKE Gateway API** — Demonstrates modern L7 load balancing.
+- **Private GKE Cluster** — Secure infra with Cloud NAT.
 
-### Cluster Features (Terraform)
-- **GKE Gateway API**: Enabled by default (`CHANNEL_STANDARD`), providing a modern, expressive way to manage load balancing.
-- **Node Pool Auto-provisioning (NAP)**: Automatically creates and manages node pools based on workload requirements.
-- **Image Streaming (GCFS)**: Significantly reduces container startup times by streaming image data on-demand.
-- **Enterprise Security Posture**: Advanced vulnerability scanning and security monitoring.
-- **Spot VMs**: Cost-optimized compute for fault-tolerant workloads.
-
-### Workload Features (Helm)
-- **Native Sidecar Containers**: Leveraging Kubernetes 1.29+ "Sidecar Containers" feature (init containers with `restartPolicy: Always`).
-- **GKE Gateway Controller**: Using `Gateway` and `HTTPRoute` resources instead of legacy Ingress.
-- **Pod Topology Spread Constraints**: Modern scheduling to ensure high availability across hostnames and zones.
-
-## Template Paths
+## Deployment Paths
 
 ### Terraform + Helm (`terraform-helm/`)
-- Provisions a VPC-native, private GKE Standard cluster with NAP and Gateway API enabled.
-- Deploys a workload that utilizes native sidecars and is exposed via GKE Gateway.
+
+#### Deployment Commands
+```bash
+cd terraform-helm
+terraform init -backend-config="bucket=<TF_STATE_BUCKET>" -backend-config="prefix=templates/latest-gke-features/terraform-helm"
+terraform apply -var="project_id=<PROJECT_ID>"
+```
+
+#### Verification
+```bash
+gcloud container clusters get-credentials gke-latest-tf --region us-central1
+kubectl get pods
+# Check for sidecar container in the pod spec
+kubectl get pod <POD_NAME> -o jsonpath='{.spec.initContainers}'
+```
+
+---
 
 ### Config Connector (`config-connector/`)
-- Demonstrates a Kubernetes-native way to provision the core infrastructure (VPC, Cluster, NodePool).
-- *Note: Some cutting-edge features like Gateway API configuration in the cluster spec may be limited in KCC depending on the version.*
+
+#### Deployment Commands
+```bash
+kubectl apply -f config-connector/
+```
+
+#### Verification
+```bash
+kubectl wait --for=condition=Ready containercluster gke-latest-kcc --timeout=20m
+kubectl get gateway latest-features-gateway
+```
 
 ## Performance & Cost Estimates
+Using native sidecars reduces complexity in lifecycle management. Pod topology spread constraints ensure better availability during zonal outages.
 
-| Resource | Config | Estimated cost |
-|---|---|---|
-| Node pool | e2-standard-4 (NAP managed), spot | ~$0.04/hr |
-| Load balancer | GKE Gateway (L7 GCLB) | ~$0.025/hr |
-| **Total (estimated)** | | **~$0.07/hr** |
+## Cleanup
+```bash
+# Terraform
+terraform destroy
 
-## Validation Record
-
-|  | Terraform + Helm | Config Connector |
-| --- | --- | --- |
-| **Status** | validating (GKE RAPID channel) | validating (GKE RAPID channel) |
-| **Date** | 2026-04-17 | 2026-04-17 |
-<!-- force CI run 3 -->
-Re-triggering validation for latest-gke-features
-<!-- force CI run 4 -->
+# KCC
+kubectl delete -f config-connector/
+```
