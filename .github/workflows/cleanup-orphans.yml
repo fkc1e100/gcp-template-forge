@@ -82,7 +82,11 @@ jobs:
           ACTIVE_SHAS=$(gh run list --status in_progress --json headSha -q '.[].headSha' | cut -c1-5 || true)
           QUEUED_SHAS=$(gh run list --status queued --json headSha -q '.[].headSha' | cut -c1-5 || true)
           
-          ALL_ACTIVE="$ACTIVE_RUNS $QUEUED_RUNS $ACTIVE_SHAS $QUEUED_SHAS"
+          # Get last 6 digits of run IDs (resources use this as suffix)
+          ACTIVE_SUFFIXES=$(gh run list --status in_progress --json databaseId -q '.[].databaseId' | awk '{if (length($0) >= 6) print substr($0, length($0)-5); else print $0}' || true)
+          QUEUED_SUFFIXES=$(gh run list --status queued --json databaseId -q '.[].databaseId' | awk '{if (length($0) >= 6) print substr($0, length($0)-5); else print $0}' || true)
+          
+          ALL_ACTIVE="$ACTIVE_RUNS $QUEUED_RUNS $ACTIVE_SHAS $QUEUED_SHAS $ACTIVE_SUFFIXES $QUEUED_SUFFIXES"
 
           if [ -n "$ALL_ACTIVE" ]; then
             echo "Found active/queued runs/patterns: $ALL_ACTIVE. Cleanup will skip these."
