@@ -21,6 +21,7 @@ metadata:
     project: gcp-template-forge
     template: enterprise-gke
   annotations:
+    # UPDATE: Replace 'gca-gke-2025' with your actual GCP Project ID
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   displayName: "Enterprise Workload Service Account"
@@ -34,8 +35,10 @@ metadata:
     project: gcp-template-forge
     template: enterprise-gke
   annotations:
+    # UPDATE: Replace 'gca-gke-2025' with your actual GCP Project ID
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
+  # UPDATE: Replace 'gca-gke-2025' with your actual GCP Project ID
   member: "serviceAccount:gca-gke-2025.svc.id.goog[enterprise-gke/enterprise-gke-sa]"
   role: roles/iam.workloadIdentityUser
   resourceRef:

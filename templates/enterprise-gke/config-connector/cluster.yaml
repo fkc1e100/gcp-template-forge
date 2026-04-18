@@ -21,6 +21,7 @@ metadata:
     project: gcp-template-forge
     template: enterprise-gke
   annotations:
+    # UPDATE: Replace 'gca-gke-2025' with your actual GCP Project ID
     cnrm.cloud.google.com/project-id: gca-gke-2025
     cnrm.cloud.google.com/remove-default-node-pool: "true"
 spec:
