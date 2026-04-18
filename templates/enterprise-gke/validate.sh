@@ -19,6 +19,14 @@ echo "Starting Validation Tests for enterprise-gke..."
 
 PROJECT_ID=${PROJECT_ID:-"gca-gke-2025"}
 CLUSTER_NAME=${CLUSTER_NAME:-"enterprise-gke-tf"}
+
+# Handle CI-specific cluster naming (suffix with last 6 digits of run ID)
+if [ "$CLUSTER_NAME" == "enterprise-gke-tf" ] && [ -n "$GITHUB_RUN_ID" ]; then
+  UID_SUFFIX="${GITHUB_RUN_ID: -6}"
+  CLUSTER_NAME="enterprise-gke-${UID_SUFFIX}-tf"
+  echo "Detected CI environment, using cluster name: ${CLUSTER_NAME}"
+fi
+
 REGION=${REGION:-"us-central1"}
 NAMESPACE_WORKLOAD=${NAMESPACE_WORKLOAD:-"default"}
 

@@ -49,7 +49,7 @@ This template provides an enterprise-grade Google Kubernetes Engine (GKE) archit
     Get credentials for the newly created cluster and apply the workload manifest:
     ```bash
     gcloud container clusters get-credentials enterprise-gke-kcc --region us-central1 --project ${PROJECT_ID}
-    kubectl apply -f config-connector/workload.yaml
+    kubectl apply -f config-connector/workload/workload.yaml
     ```
 
 ## Cluster Details
