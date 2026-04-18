@@ -21,8 +21,12 @@ PROJECT_ID=${PROJECT_ID:-"gca-gke-2025"}
 CLUSTER_NAME=${CLUSTER_NAME:-"enterprise-gke-tf"}
 
 # Handle CI-specific cluster naming (suffix with last 6 digits of run ID)
-if [ "$CLUSTER_NAME" == "enterprise-gke-tf" ] && [ -n "$GITHUB_RUN_ID" ]; then
+UID_SUFFIX=""
+if [ -n "$GITHUB_RUN_ID" ]; then
   UID_SUFFIX="${GITHUB_RUN_ID: -6}"
+fi
+
+if [ "$CLUSTER_NAME" == "enterprise-gke-tf" ] && [ -n "$UID_SUFFIX" ]; then
   CLUSTER_NAME="enterprise-gke-${UID_SUFFIX}-tf"
   echo "Detected CI environment, using cluster name: ${CLUSTER_NAME}"
 fi
@@ -42,9 +46,13 @@ kubectl cluster-info
 # Auto-detect namespace if not explicitly set and not in default
 if [ "$NAMESPACE_WORKLOAD" == "default" ]; then
   if ! kubectl get deployment release-enterprise-workload -n default >/dev/null 2>&1; then
+    # Check standard namespace and CI-suffixed namespace
     if kubectl get deployment release-enterprise-workload -n enterprise-gke >/dev/null 2>&1; then
       echo "Workload found in enterprise-gke namespace, switching context..."
       NAMESPACE_WORKLOAD="enterprise-gke"
+    elif [ -n "$UID_SUFFIX" ] && kubectl get deployment release-enterprise-workload -n "enterprise-gke-${UID_SUFFIX}" >/dev/null 2>&1; then
+      echo "Workload found in enterprise-gke-${UID_SUFFIX} namespace, switching context..."
+      NAMESPACE_WORKLOAD="enterprise-gke-${UID_SUFFIX}"
     fi
   fi
 fi
