@@ -28,7 +28,7 @@ resource "google_compute_network" "vpc" {
   auto_create_subnetworks = false
 
   # MANDATORY for project tracking
-  project = var.project_id
+  project                 = var.project_id
 }
 
 # Subnet
@@ -50,7 +50,7 @@ resource "google_compute_subnetwork" "subnet" {
   }
 
   # MANDATORY for project tracking
-  project = var.project_id
+  project                  = var.project_id
 }
 
 # Cloud NAT
@@ -77,32 +77,32 @@ resource "google_compute_router_nat" "nat" {
 
 # GKE Cluster
 resource "google_container_cluster" "cluster" {
-  provider = google-beta
-  name     = var.cluster_name
-  location = var.region
+  provider                   = google-beta
+  name                       = var.cluster_name
+  location                   = var.region
 
   # MANDATORY for CI
-  deletion_protection = false
+  deletion_protection        = false
 
-  resource_labels = {
+  resource_labels            = {
     project  = "gcp-template-forge"
     template = "gke-fqdn-egress-security"
   }
 
-  network    = google_compute_network.vpc.name
-  subnetwork = google_compute_subnetwork.subnet.name
+  network                    = google_compute_network.vpc.name
+  subnetwork                 = google_compute_subnetwork.subnet.name
 
-  networking_mode = "VPC_NATIVE"
+  networking_mode            = "VPC_NATIVE"
   ip_allocation_policy {
     cluster_secondary_range_name  = "pods"
     services_secondary_range_name = "services"
   }
 
-  remove_default_node_pool = true
-  initial_node_count       = 1
+  remove_default_node_pool   = true
+  initial_node_count         = 1
 
   # Dataplane V2 is required for FQDN Network Policies
-  datapath_provider = "ADVANCED_DATAPATH"
+  datapath_provider          = "ADVANCED_DATAPATH"
 
   enable_fqdn_network_policy = true
 
@@ -152,9 +152,9 @@ resource "google_container_node_pool" "primary_nodes" {
   node_count = 1
 
   node_config {
-    spot         = true
-    machine_type = "e2-standard-4"
-    disk_size_gb = 50
+    spot            = true
+    machine_type    = "e2-standard-4"
+    disk_size_gb    = 50
 
     service_account = var.service_account
     oauth_scopes    = ["https://www.googleapis.com/auth/cloud-platform"]
@@ -182,7 +182,7 @@ resource "google_container_node_pool" "primary_nodes" {
 
 # Generate values.yaml for the Helm chart
 resource "local_file" "helm_values" {
-  content = <<EOF
+  content  = <<EOF
 # Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
