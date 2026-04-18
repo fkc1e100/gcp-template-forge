@@ -26,12 +26,6 @@ provider "google-beta" {
 resource "google_compute_network" "vpc" {
   name                    = var.network_name
   auto_create_subnetworks = false
-
-  # Mandatory labels for resource tracking
-  labels = {
-    project  = "gcp-template-forge"
-    template = "latest-gke-features"
-  }
 }
 
 # Subnet
@@ -41,12 +35,6 @@ resource "google_compute_subnetwork" "subnet" {
   region                   = var.region
   network                  = google_compute_network.vpc.id
   private_ip_google_access = true
-
-  # Mandatory labels for resource tracking
-  labels = {
-    project  = "gcp-template-forge"
-    template = "latest-gke-features"
-  }
 
   secondary_ip_range {
     range_name    = "pods"
@@ -64,12 +52,6 @@ resource "google_compute_router" "router" {
   name    = "${var.cluster_name}-router"
   region  = var.region
   network = google_compute_network.vpc.id
-
-  # Mandatory labels for resource tracking
-  labels = {
-    project  = "gcp-template-forge"
-    template = "latest-gke-features"
-  }
 }
 
 resource "google_compute_router_nat" "nat" {
