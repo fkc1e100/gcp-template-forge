@@ -8,6 +8,8 @@ This template demonstrates how to implement a "Default Deny" egress policy in GK
 - **Zero-Trust Security:** Default deny all egress to prevent data exfiltration.
 - **AI-Focused:** Pre-configured for Anthropic and HuggingFace APIs.
 
+> **Note:** FQDN Network Policies require GKE Dataplane V2 and GKE Enterprise (Advanced Networking) to be enabled on the cluster. This template handles these requirements automatically in the manifests.
+
 ## Architecture
 1.  **GKE Cluster:** Configured with Dataplane V2 and GKE Enterprise Advanced Networking.
 2.  **Network Policies:**
