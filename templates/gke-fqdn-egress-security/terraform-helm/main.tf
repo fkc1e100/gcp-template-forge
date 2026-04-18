@@ -171,3 +171,15 @@ resource "google_container_node_pool" "primary_nodes" {
     }
   }
 }
+
+# Generate values.yaml for the Helm chart
+resource "local_file" "helm_values" {
+  content = yamlencode({
+    project_id = var.project_id
+    pod = {
+      image = "curlimages/curl:8.4.0"
+      label = "egress-test"
+    }
+  })
+  filename = "${path.module}/workload/values.yaml"
+}
