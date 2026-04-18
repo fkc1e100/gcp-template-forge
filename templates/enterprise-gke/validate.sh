@@ -53,6 +53,16 @@ if [ "$NAMESPACE_WORKLOAD" == "default" ]; then
     elif [ -n "$UID_SUFFIX" ] && kubectl get deployment release-enterprise-workload -n "enterprise-gke-${UID_SUFFIX}" >/dev/null 2>&1; then
       echo "Workload found in enterprise-gke-${UID_SUFFIX} namespace, switching context..."
       NAMESPACE_WORKLOAD="enterprise-gke-${UID_SUFFIX}"
+    else
+      # Fallback: search across all namespaces for the deployment
+      echo "Workload not found in standard namespaces, searching across all namespaces..."
+      DETECTED_NS=$(kubectl get deployments --all-namespaces -l app.kubernetes.io/instance=release 2>/dev/null | grep release-enterprise-workload | awk '{print $1}' | head -n 1)
+      if [ -n "$DETECTED_NS" ]; then
+        echo "Workload found in ${DETECTED_NS} namespace, switching context..."
+        NAMESPACE_WORKLOAD="$DETECTED_NS"
+      else
+        echo "Warning: Could not auto-detect workload namespace. Falling back to ${NAMESPACE_WORKLOAD}"
+      fi
     fi
   fi
 fi
