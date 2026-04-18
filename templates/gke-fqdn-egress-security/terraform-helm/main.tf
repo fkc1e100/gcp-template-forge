@@ -93,6 +93,12 @@ resource "google_container_cluster" "cluster" {
 
   enable_fqdn_network_policy = true
 
+  private_cluster_config {
+    enable_private_nodes    = true
+    enable_private_endpoint = false
+    master_ipv4_cidr_block  = "172.16.0.32/28"
+  }
+
   workload_identity_config {
     workload_pool = "${var.project_id}.svc.id.goog"
   }
