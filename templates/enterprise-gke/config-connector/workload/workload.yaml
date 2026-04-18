@@ -29,6 +29,7 @@ metadata:
     project: gcp-template-forge
     template: enterprise-gke
   annotations:
+    # UPDATE: Replace 'gca-gke-2025' with your actual GCP Project ID
     iam.gke.io/gcp-service-account: enterprise-gke-kcc-sa@gca-gke-2025.iam.gserviceaccount.com
 ---
 apiVersion: v1
@@ -54,10 +55,12 @@ metadata:
     project: gcp-template-forge
     template: enterprise-gke
 spec:
+  # Replicas is managed by HPA if enabled, but set here as default
   replicas: 3
   selector:
     matchLabels:
       app: enterprise-workload
+      app.kubernetes.io/instance: release
   template:
     metadata:
       labels:
@@ -74,17 +77,51 @@ spec:
         runAsNonRoot: true
         seccompProfile:
           type: RuntimeDefault
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - enterprise-workload
+                topologyKey: kubernetes.io/hostname
+            - weight: 50
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - enterprise-workload
+                topologyKey: topology.kubernetes.io/zone
       containers:
       - name: nginx
         image: nginxinc/nginx-unprivileged:1.25.3
         ports:
-        - containerPort: 8080
+        - name: http
+          containerPort: 8080
         securityContext:
           capabilities:
             drop:
               - ALL
           readOnlyRootFilesystem: true
           allowPrivilegeEscalation: false
+        livenessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 10
         resources:
           limits:
             cpu: 500m
@@ -95,6 +132,31 @@ spec:
         envFrom:
         - configMapRef:
             name: release-enterprise-workload-config
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: run
+          mountPath: /var/run
+        - name: cache
+          mountPath: /var/cache/nginx
+        # Optional: Uncomment if using Secret Manager via CSI driver
+        # - name: secrets-volume
+        #   mountPath: "/mnt/secrets"
+        #   readOnly: true
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: run
+        emptyDir: {}
+      - name: cache
+        emptyDir: {}
+      # Optional: Uncomment if using Secret Manager via CSI driver
+      # - name: secrets-volume
+      #   csi:
+      #     driver: secrets-store.csi.k8s.io
+      #     readOnly: true
+      #     volumeAttributes:
+      #       secretProviderClass: enterprise-gke-secrets
 ---
 apiVersion: v1
 kind: Service
@@ -109,6 +171,7 @@ spec:
   type: LoadBalancer
   selector:
     app: enterprise-workload
+    app.kubernetes.io/instance: release
   ports:
   - protocol: TCP
     port: 80
@@ -149,6 +212,30 @@ spec:
       ports:
         - protocol: TCP
           port: 443
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: release-enterprise-workload
+  namespace: enterprise-gke
+  labels:
+    app.kubernetes.io/instance: release
+    project: gcp-template-forge
+    template: enterprise-gke
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: release-enterprise-workload
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 80
 ---
 apiVersion: policy/v1
 kind: PodDisruptionBudget
