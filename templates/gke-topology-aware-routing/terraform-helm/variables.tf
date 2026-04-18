@@ -26,19 +26,19 @@ variable "region" {
 variable "cluster_name" {
   description = "The name of the cluster"
   type        = string
-  default     = "gke-topology-aware-routing-tf"
+  default     = "gke-topology-aware-tf"
 }
 
 variable "network_name" {
   description = "The name of the VPC network"
   type        = string
-  default     = "gke-topology-routing-vpc"
+  default     = "gke-topology-vpc"
 }
 
 variable "subnet_name" {
   description = "The name of the subnet"
   type        = string
-  default     = "gke-topology-routing-subnet"
+  default     = "gke-topology-subnet"
 }
 
 variable "oauth_scopes" {

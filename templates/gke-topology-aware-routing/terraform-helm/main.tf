@@ -96,6 +96,7 @@ resource "google_container_cluster" "topology_cluster" {
   private_cluster_config {
     enable_private_nodes    = true
     enable_private_endpoint = false
+    master_ipv4_cidr_block  = "172.16.0.0/28"
   }
 
   workload_identity_config {
@@ -105,6 +106,11 @@ resource "google_container_cluster" "topology_cluster" {
   # Requirement: Configure the cluster with the Gateway API
   gateway_api_config {
     channel = "CHANNEL_STANDARD"
+  }
+
+  security_posture_config {
+    mode               = "BASIC"
+    vulnerability_mode = "VULNERABILITY_BASIC"
   }
 
   logging_config {
@@ -119,7 +125,7 @@ resource "google_container_cluster" "topology_cluster" {
   }
 
   release_channel {
-    channel = "REGULAR"
+    channel = "RAPID"
   }
 
   timeouts {

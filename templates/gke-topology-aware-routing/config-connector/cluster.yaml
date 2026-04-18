@@ -15,7 +15,7 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerCluster
 metadata:
-  name: gke-topology-routing-kcc
+  name: gke-topology-aware-routing-kcc
   namespace: forge-management
   labels:
     project: gcp-template-forge
@@ -28,9 +28,9 @@ spec:
   initialNodeCount: 1
   networkingMode: VPC_NATIVE
   networkRef:
-    name: gke-topology-routing-kcc-vpc
+    name: gke-topology-aware-routing-kcc-vpc
   subnetworkRef:
-    name: gke-topology-routing-kcc-subnet
+    name: gke-topology-aware-routing-kcc-subnet
   ipAllocationPolicy:
     clusterSecondaryRangeName: pods
     servicesSecondaryRangeName: services
@@ -42,8 +42,11 @@ spec:
   # Requirement: Configure the cluster with the Gateway API
   gatewayApiConfig:
     channel: CHANNEL_STANDARD
+  securityPostureConfig:
+    mode: BASIC
+    vulnerabilityMode: VULNERABILITY_BASIC
   releaseChannel:
-    channel: REGULAR
+    channel: RAPID
   loggingConfig:
     enableComponents:
       - SYSTEM_COMPONENTS
