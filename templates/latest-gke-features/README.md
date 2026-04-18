@@ -78,7 +78,7 @@ This template demonstrates some of the latest and most advanced features of Goog
     Alternatively, you can verify features manually:
 
     **Sidecar Verification**:
-    Verify that the \`logger-sidecar\` is running as a native sidecar in the \`latest-features\` namespace:
+    Verify that the `logger-sidecar` is running as a native sidecar in the `latest-features` namespace:
     ```bash
     POD_NAME=$(kubectl get pods -n latest-features -l app.kubernetes.io/name=latest-features-workload -o jsonpath='{.items[0].metadata.name}')
     kubectl get pod $POD_NAME -n latest-features -o jsonpath='{.spec.initContainers[0].restartPolicy}'
