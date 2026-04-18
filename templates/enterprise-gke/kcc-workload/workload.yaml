@@ -15,19 +15,19 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: enterprise-gke
+  name: gke-workload
   labels:
     project: gcp-template-forge
-    template: enterprise-gke
+    template: gke-workload
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: enterprise-gke-sa
-  namespace: enterprise-gke
+  name: gke-workload-sa
+  namespace: gke-workload
   labels:
     project: gcp-template-forge
-    template: enterprise-gke
+    template: gke-workload
   annotations:
     # UPDATE: Replace 'gca-gke-2025' with your actual GCP Project ID
     iam.gke.io/gcp-service-account: enterprise-gke-kcc-sa@gca-gke-2025.iam.gserviceaccount.com
@@ -36,11 +36,11 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: release-enterprise-workload-config
-  namespace: enterprise-gke
+  namespace: gke-workload
   labels:
     app.kubernetes.io/instance: release
     project: gcp-template-forge
-    template: enterprise-gke
+    template: gke-workload
 data:
   LOG_LEVEL: "info"
   ENVIRONMENT: "production"
@@ -49,11 +49,11 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: release-enterprise-workload
-  namespace: enterprise-gke
+  namespace: gke-workload
   labels:
     app.kubernetes.io/instance: release
     project: gcp-template-forge
-    template: enterprise-gke
+    template: gke-workload
 spec:
   # Replicas is managed by HPA if enabled, but set here as default
   replicas: 3
@@ -67,9 +67,9 @@ spec:
         app: enterprise-workload
         app.kubernetes.io/instance: release
         project: gcp-template-forge
-        template: enterprise-gke
+        template: gke-workload
     spec:
-      serviceAccountName: enterprise-gke-sa
+      serviceAccountName: gke-workload-sa
       securityContext:
         runAsUser: 1000
         runAsGroup: 3000
@@ -156,17 +156,17 @@ spec:
       #     driver: secrets-store.csi.k8s.io
       #     readOnly: true
       #     volumeAttributes:
-      #       secretProviderClass: enterprise-gke-secrets
+      #       secretProviderClass: gke-workload-secrets
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: release-enterprise-workload
-  namespace: enterprise-gke
+  namespace: gke-workload
   labels:
     app.kubernetes.io/instance: release
     project: gcp-template-forge
-    template: enterprise-gke
+    template: gke-workload
 spec:
   type: LoadBalancer
   selector:
@@ -181,11 +181,11 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: release-enterprise-workload
-  namespace: enterprise-gke
+  namespace: gke-workload
   labels:
     app.kubernetes.io/instance: release
     project: gcp-template-forge
-    template: enterprise-gke
+    template: gke-workload
 spec:
   podSelector:
     matchLabels:
@@ -217,11 +217,11 @@ apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: release-enterprise-workload
-  namespace: enterprise-gke
+  namespace: gke-workload
   labels:
     app.kubernetes.io/instance: release
     project: gcp-template-forge
-    template: enterprise-gke
+    template: gke-workload
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
@@ -241,28 +241,28 @@ spec:
 # apiVersion: secrets-store.csi.x-k8s.io/v1
 # kind: SecretProviderClass
 # metadata:
-#   name: enterprise-gke-secrets
-#   namespace: enterprise-gke
+#   name: gke-workload-secrets
+#   namespace: gke-workload
 #   labels:
 #     project: gcp-template-forge
-#     template: enterprise-gke
+#     template: gke-workload
 # spec:
 #   provider: gcp
 #   parameters:
 #     secrets: |
 #       # UPDATE: Replace 'gca-gke-2025' with your actual GCP Project ID
-#       - resourceName: "projects/gca-gke-2025/secrets/enterprise-gke-secret/versions/latest"
+#       - resourceName: "projects/gca-gke-2025/secrets/gke-workload-secret/versions/latest"
 #         path: "secret.data"
 ---
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   name: release-enterprise-workload
-  namespace: enterprise-gke
+  namespace: gke-workload
   labels:
     app.kubernetes.io/instance: release
     project: gcp-template-forge
-    template: enterprise-gke
+    template: gke-workload
 spec:
   minAvailable: 2
   selector:
