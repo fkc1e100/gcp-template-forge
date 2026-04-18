@@ -294,7 +294,7 @@ jobs:
 
   tf-test:
     name: "Test TF (${{ matrix.template }})"
-    needs: [ tf-provision ]
+    needs: [ tf-provision, detect-changes ]
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
@@ -338,6 +338,8 @@ jobs:
 
           if [ -f "${{ matrix.template }}/validate.sh" ]; then
             echo "=== Running template-specific validation: ${{ matrix.template }}/validate.sh ==="
+            export CLUSTER_NAME="${{ needs.tf-provision.outputs.tf_cluster }}"
+            export REGION="${{ needs.tf-provision.outputs.tf_location }}"
             chmod +x ${{ matrix.template }}/validate.sh
             ./${{ matrix.template }}/validate.sh
           fi
@@ -354,7 +356,7 @@ jobs:
 
   tf-teardown:
     name: "Teardown TF (${{ matrix.template }})"
-    needs: [ tf-provision, tf-test ]
+    needs: [ tf-provision, tf-test, detect-changes ]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -464,7 +466,7 @@ jobs:
 
   kcc-test:
     name: "KCC Test (${{ matrix.template }})"
-    needs: [ kcc-apply ]
+    needs: [ kcc-apply, detect-changes ]
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
@@ -537,13 +539,14 @@ jobs:
           if [ -f "${{ matrix.template }}/validate.sh" ]; then
             echo "=== Running template-specific validation (KCC): ${{ matrix.template }}/validate.sh ==="
             export CLUSTER_NAME="${{ steps.kcc-workload-info.outputs.cluster_name }}"
+            export REGION="${{ steps.kcc-workload-info.outputs.location }}"
             chmod +x ${{ matrix.template }}/validate.sh
             ./${{ matrix.template }}/validate.sh
           fi
 
   kcc-teardown:
     name: "KCC Teardown (${{ matrix.template }})"
-    needs: [ kcc-apply, kcc-test ]
+    needs: [ kcc-apply, kcc-test, detect-changes ]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -821,9 +824,8 @@ jobs:
           # Run template-specific validation if present
           if [ -f "${{ matrix.template }}/validate.sh" ]; then
             echo "=== Running template-specific validation: ${{ matrix.template }}/validate.sh ==="
-            RUN_ID="${{ github.run_id }}"
-            UID_SUFFIX="${RUN_ID: -6}"
-            export CLUSTER_NAME="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf"
+            export CLUSTER_NAME="${{ steps.tf-outputs.outputs.tf_cluster }}"
+            export REGION="${{ steps.tf-outputs.outputs.tf_location }}"
             chmod +x ${{ matrix.template }}/validate.sh
             ./${{ matrix.template }}/validate.sh
           fi
@@ -1132,6 +1134,7 @@ jobs:
           if [ -f "${{ matrix.template }}/validate.sh" ]; then
             echo "=== Running template-specific validation (KCC): ${{ matrix.template }}/validate.sh ==="
             export CLUSTER_NAME="${{ steps.kcc-workload-info.outputs.cluster_name }}"
+            export REGION="${{ steps.kcc-workload-info.outputs.location }}"
             chmod +x ${{ matrix.template }}/validate.sh
             ./${{ matrix.template }}/validate.sh
           fi
