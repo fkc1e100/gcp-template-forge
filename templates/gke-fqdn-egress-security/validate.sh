@@ -55,7 +55,7 @@ echo "FQDNNetworkPolicy resource found."
 
 # 4. Wait for Verifier Pod
 echo "Test 4: Waiting for Egress Verifier Pod..."
-# Wait for pod to exist
+# Wait for pod to exist (up to 200 seconds)
 POD_FOUND=false
 for i in {1..20}; do
   if kubectl get pod egress-verifier -n "${NAMESPACE}" > /dev/null 2>&1; then
