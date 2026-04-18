@@ -8,8 +8,8 @@ image:
 serviceAccount:
   create: true
   name: "enterprise-gke-sa"
-  # UPDATE: Replace 'gca-gke-2025' with your actual GCP Project ID
-  gcpServiceAccount: "enterprise-gke-tf-sa@gca-gke-2025.iam.gserviceaccount.com"
+  # UPDATE: Replace with your actual GCP Service Account email if using Workload Identity
+  gcpServiceAccount: ""
 
 podSecurityContext:
   runAsUser: 1000
