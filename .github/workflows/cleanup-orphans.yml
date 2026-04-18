@@ -149,12 +149,10 @@ jobs:
           while read -r NEG_NAME NEG_ZONE NEG_NET; do
             [ -z "$NEG_NAME" ] && continue
             
-            # Check if the network matches our pattern
-            if [[ "$NEG_NET" =~ "latest-gke-features-" || "$NEG_NET" =~ "enterprise-gke-" || "$NEG_NET" =~ "basic-gke-" ]]; then
-              # Check safe-list
-              if [[ "$NEG_NET" =~ "repo-agent-standard" || "$NEG_NET" =~ "krmapihost-kcc-instance" || "$NEG_NET" =~ "kcc-dash-dont-delete" ]]; then
-                continue
-              fi
+            # Check safe-list (Generic exclusion)
+            if [[ "$NEG_NET" =~ "repo-agent-standard" || "$NEG_NET" =~ "krmapihost-kcc-instance" || "$NEG_NET" =~ "kcc-dash-dont-delete" || "$NEG_NET" =~ "default" ]]; then
+              continue
+            fi
               
               # Check active runs
               SKIP=false
