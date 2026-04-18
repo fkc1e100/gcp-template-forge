@@ -126,7 +126,7 @@ for i in {1..30}; do
     break
   fi
   echo "Gateway endpoint not ready (attempt $i/30)..."
-  
+
   if [ $((i % 5)) -eq 0 ]; then
     echo "Debugging Gateway status..."
     kubectl describe gateway external-http -n ${NAMESPACE} || true
