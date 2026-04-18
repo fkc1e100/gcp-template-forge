@@ -4,6 +4,9 @@ on:
     - cron: '*/10 * * * *' # Runs every 10 minutes
   workflow_dispatch: # Allows manual triggering from the GitHub Actions UI
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   sweep:
     runs-on: ubuntu-latest
