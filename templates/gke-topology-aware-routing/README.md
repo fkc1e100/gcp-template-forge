@@ -1,39 +1,56 @@
-# GKE Topology-Aware Routing Template
+# GKE Topology-Aware Routing
 
-This template demonstrates how to optimize cross-zone egress costs in GKE using **Topology-Aware Routing**.
-
-## Overview
-
-In multi-zonal GKE clusters, network traffic between pods in different zones incurs cross-zone egress charges. Topology-Aware Routing (via Topology-Aware Hints) allows Kubernetes to prefer routing traffic to endpoints within the same zone as the source pod.
-
-## Key Features
-
-- **Standard Multi-zonal GKE Cluster:** Regional cluster distributed across multiple zones.
-- **Gateway API Enabled:** Uses the modern GKE Gateway controller.
-- **Topology-Aware Hints:** Enabled on Kubernetes Services to keep traffic local to the zone.
-- **Topology Spread Constraints:** Ensures workloads are evenly distributed across availability zones.
+This template demonstrates how to configure Topology-Aware Hints in GKE to reduce cross-zone traffic costs and improve latency by routing traffic to backends in the same zone.
 
 ## Architecture
 
-1.  **VPC Network & Subnet:** Configured for VPC-native GKE.
-2.  **GKE Cluster:** Regional cluster with Gateway API enabled.
-3.  **Frontend Microservice:** Deployed with 3 replicas, spread across 3 zones.
-4.  **Backend Microservice:** Deployed with 3 replicas, spread across 3 zones.
-5.  **Service Topology:** Both frontend and backend services have `service.kubernetes.io/topology-mode: Auto` enabled.
+- **Multi-Zonal GKE Cluster** — Nodes spread across multiple zones in a region.
+- **Topology-Aware Routing** — Enabled on Services using the `service.kubernetes.io/topology-mode: Auto` annotation.
+- **Frontend/Backend Workload** — A two-tier application using `whereami` to demonstrate zonal routing.
+- **Gateway API** — External L7 load balancing using GKE Gateway controller.
 
-## Usage
+## Deployment Paths
 
-### Terraform & Helm
+### Terraform + Helm (`terraform-helm/`)
 
-1.  Initialize and apply the Terraform configuration:
-    ```bash
-    cd terraform-helm
-    terraform init
-    terraform apply
-    ```
+#### Deployment Commands
+```bash
+cd terraform-helm
+terraform init -backend-config="bucket=<TF_STATE_BUCKET>" -backend-config="prefix=templates/gke-topology-aware-routing/terraform-helm"
+terraform apply -var="project_id=<PROJECT_ID>"
+```
 
-2.  The application workload is deployed via the Helm chart (located in `terraform-helm/workload/`) after the cluster is ready. This is handled automatically by the CI pipeline.
+#### Verification
+```bash
+gcloud container clusters get-credentials gke-topology-tf --region us-central1
+kubectl get service frontend -o yaml # Check for topology-mode annotation
+```
 
-## Verification
+---
 
-The `verification_plan.md` provides detailed steps to verify that traffic is indeed staying within the same zone.
+### Config Connector (`config-connector/`)
+
+#### Deployment Commands
+```bash
+kubectl apply -f config-connector/
+```
+
+#### Verification
+```bash
+kubectl wait --for=condition=Ready containercluster gke-topology-kcc --timeout=20m
+kubectl get gateway external-http
+# Verify topology hints in endpoint slices
+kubectl get endpointslices -l kubernetes.io/service-name=backend
+```
+
+## Performance & Cost Estimates
+Topology-aware routing reduces inter-zonal data transfer costs, which is typically $0.01/GB. For high-traffic applications, this can result in significant savings.
+
+## Cleanup
+```bash
+# Terraform
+terraform destroy
+
+# KCC
+kubectl delete -f config-connector/
+```
