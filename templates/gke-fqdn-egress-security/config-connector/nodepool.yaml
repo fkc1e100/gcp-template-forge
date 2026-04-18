@@ -15,7 +15,7 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
 metadata:
-  name: fqdn-egress-pool
+  name: gke-fqdn-egress-security-pool
   namespace: forge-management
   labels:
     project: gcp-template-forge
@@ -24,7 +24,7 @@ metadata:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   clusterRef:
-    name: fqdn-egress-cluster
+    name: gke-fqdn-egress-security-cluster
   location: us-central1
   nodeCount: 1
   nodeConfig:

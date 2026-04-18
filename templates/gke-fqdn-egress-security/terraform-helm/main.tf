@@ -55,14 +55,14 @@ resource "google_compute_subnetwork" "subnet" {
 
 # Cloud NAT
 resource "google_compute_router" "router" {
-  name    = "fqdn-egress-router"
+  name    = "${var.cluster_name}-router"
   region  = var.region
   network = google_compute_network.vpc.id
   project = var.project_id
 }
 
 resource "google_compute_router_nat" "nat" {
-  name                               = "fqdn-egress-nat"
+  name                               = "${var.cluster_name}-nat"
   router                             = google_compute_router.router.name
   region                             = var.region
   project                            = var.project_id
