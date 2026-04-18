@@ -22,7 +22,7 @@ CLUSTER_NAME=${CLUSTER_NAME:-"gke-fqdn-egress-security-cluster"}
 REGION=${REGION:-"us-central1"}
 NAMESPACE=${NAMESPACE:-"default"}
 
-# Isolate KUBECONFIG
+# Isolate KUBECONFIG to avoid affecting other clusters
 export KUBECONFIG=$(mktemp)
 trap 'rm -f "$KUBECONFIG"' EXIT
 
