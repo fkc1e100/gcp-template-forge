@@ -133,6 +133,11 @@ resource "google_container_node_pool" "primary_nodes" {
       mode = "GKE_METADATA"
     }
 
+    shielded_instance_config {
+      enable_secure_boot          = true
+      enable_integrity_monitoring = true
+    }
+
     labels = {
       project  = "gcp-template-forge"
       template = "gke-fqdn-egress-security"
