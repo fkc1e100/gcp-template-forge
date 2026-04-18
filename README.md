@@ -166,7 +166,7 @@ templates/<name>/
 ├── config-connector/            ← Config Connector (KCC) deployment path
 │   ├── network.yaml             ← ComputeNetwork + ComputeSubnetwork
 │   ├── cluster.yaml             ← ContainerCluster (+ NodePool if standard)
-│   └── workload/                ← Kubernetes manifests for the workload (optional)
+│   └── workload/                ← Kubernetes manifests for the workload (required)
 │       └── *.yaml               ← Deployment · Service · HPA · NetworkPolicy etc.
 ├── README.md                    ← auto-updated by CI with validation record
 ├── .validated                   ← CI marker: commit + status after successful deploy
@@ -187,10 +187,10 @@ templates/<name>/
 
 | Template | TF+Helm | KCC | Validated |
 |---|---|---|---|
-| [basic-gke-hello-world](templates/basic-gke-hello-world/) | GKE Autopilot + hello-world | GKE Autopilot | — |
-| [enterprise-gke](templates/enterprise-gke/) | GKE Standard + security stack + Helm workload | GKE Standard + networking | — |
-| [latest-gke-features](templates/latest-gke-features/) | GKE Standard + Gateway API + NAP + Native Sidecars | GKE Standard + KCC networking | — |
-| [gke-topology-aware-routing](templates/gke-topology-aware-routing/) | GKE Standard + Topology-Aware Routing + Gateway API | GKE Standard + Topology Routing | — |
+| [basic-gke-hello-world](templates/basic-gke-hello-world/) | GKE Standard + hello-world | GKE Standard + hello-world | — |
+| [enterprise-gke](templates/enterprise-gke/) | GKE Standard + security stack + Helm workload | GKE Standard + security stack + KCC workload | — |
+| [latest-gke-features](templates/latest-gke-features/) | GKE Standard + Gateway API + NAP + Native Sidecars | GKE Standard + Native Sidecars + Gateway API | — |
+| [gke-topology-aware-routing](templates/gke-topology-aware-routing/) | GKE Standard + Topology-Aware Routing + Gateway API | GKE Standard + Topology-Aware Routing + Gateway API | — |
 
 ---
 

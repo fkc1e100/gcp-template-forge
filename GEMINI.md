@@ -65,6 +65,13 @@ If the dashboard is inaccessible from specific devices or networks:
 *   **Timeouts:** Always use a minimum of 30-minute timeouts when waiting for GKE cluster readiness.
 *   **Separation of Concerns (Terraform vs. Helm):** NEVER use `local-exec` provisioners or the Terraform Helm provider to deploy Helm charts or Kubernetes manifests within `main.tf`. Terraform's sole responsibility is infrastructure provisioning. The CI/CD pipeline (`sandbox-validation.yml`) contains a dedicated, authenticated `Helm deploy and verify` step that automatically handles workload deployment. Use `local_file` in Terraform to dynamically generate a `values.yaml` file for the downstream Helm step to consume.
 *   **KCC Resource Waits:** NEVER use `|| true` or ignore failures when waiting for KCC resources to become ready in CI pipelines or scripts. If KCC fails to provision resources, the task must fail loudly to avoid cascade failures. Use the provided `agent-infra/check-kcc-ready.sh` script in the sandbox to verify readiness.
+*   **Complete KCC Templates:** ALL `config-connector/` paths MUST include complete Kubernetes manifests for the workloads (e.g., `Deployment`, `Service`, `ConfigMap`, `Ingress`), ensuring functional parity with the `terraform-helm/` path. Do NOT rely solely on `validate.sh` to deploy the workload; the manifests must be present in the repository for user consumption.
+*   **Comprehensive READMEs:** The `README.md` for each template MUST provide detailed deployment and verification instructions for BOTH the `terraform-helm/` and `config-connector/` paths. It must clearly explain:
+    *   The architecture and resources created.
+    *   Prerequisites (e.g., KCC installation, IAM permissions).
+    *   Step-by-step deployment commands.
+    *   How to verify the deployment (e.g., URLs to visit, kubectl commands).
+    *   Cleanup instructions.
 
 #### `fkcurrie/gcp-template-forge` (dashboard namespace, drives what you see in the UI)
 ```yaml
@@ -83,7 +90,11 @@ spec:
       labels: [repo-agent]
       excludeLabels: [hold]
       taskType: fix-issue
-      prompt: "Fix this issue"
+      prompt: |
+        Fix this issue. You MUST ensure:
+        1. Functional parity between the terraform-helm/ and config-connector/ paths.
+        2. The config-connector/ directory contains ALL necessary Kubernetes manifests for the workload (Deployment, Service, etc.).
+        3. The README.md is comprehensive, accurate, and provides clear deployment/verification instructions for BOTH paths.
   review:
     maxSandboxes: 3
     maxActiveSandboxes: 3
