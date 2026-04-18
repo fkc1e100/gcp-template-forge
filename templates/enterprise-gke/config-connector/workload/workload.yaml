@@ -237,6 +237,22 @@ spec:
         type: Utilization
         averageUtilization: 80
 ---
+# Optional: Uncomment if using Secret Manager via CSI driver
+# apiVersion: secrets-store.csi.x-k8s.io/v1
+# kind: SecretProviderClass
+# metadata:
+#   name: enterprise-gke-secrets
+#   namespace: enterprise-gke
+#   labels:
+#     project: gcp-template-forge
+#     template: enterprise-gke
+# spec:
+#   provider: gcp
+#   parameters:
+#     secrets: |
+#       - resourceName: "projects/gca-gke-2025/secrets/enterprise-gke-secret/versions/latest"
+#         path: "secret.data"
+---
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:

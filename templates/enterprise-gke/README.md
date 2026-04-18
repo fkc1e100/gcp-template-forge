@@ -68,6 +68,7 @@ This template provides an enterprise-grade Google Kubernetes Engine (GKE) archit
 - [x] VPC-native networking
 - [x] Private cluster + Cloud NAT
 - [x] Binary Authorization
+- [x] Secret Manager (via Secrets Store CSI)
 - [ ] Confidential GKE Nodes
 - [x] Vertical / Horizontal Pod Autoscaler
 - [ ] Cluster Autoscaler / Node Auto-provisioning

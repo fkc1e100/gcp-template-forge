@@ -17,21 +17,18 @@ kind: Deployment
 metadata:
   name: {{ include "enterprise-workload.fullname" . }}
   labels:
-    app.kubernetes.io/name: {{ include "enterprise-workload.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    {{- include "enterprise-workload.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "enterprise-workload.name" . }}
-      app.kubernetes.io/instance: {{ .Release.Name }}
+      {{- include "enterprise-workload.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ include "enterprise-workload.name" . }}
-        app.kubernetes.io/instance: {{ .Release.Name }}
+        {{- include "enterprise-workload.labels" . | nindent 8 }}
     spec:
       serviceAccountName: {{ include "enterprise-workload.serviceAccountName" . }}
       securityContext:

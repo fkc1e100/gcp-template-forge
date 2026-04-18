@@ -8,6 +8,8 @@ image:
 serviceAccount:
   create: true
   name: "enterprise-gke-sa"
+  # UPDATE: Replace 'gca-gke-2025' with your actual GCP Project ID
+  gcpServiceAccount: "enterprise-gke-tf-sa@gca-gke-2025.iam.gserviceaccount.com"
 
 podSecurityContext:
   runAsUser: 1000
@@ -53,6 +55,11 @@ networkPolicy:
 config:
   LOG_LEVEL: "info"
   ENVIRONMENT: "production"
+
+# Common labels for all resources
+commonLabels:
+  project: "gcp-template-forge"
+  template: "enterprise-gke"
 
 secrets:
   enabled: false
