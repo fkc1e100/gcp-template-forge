@@ -26,6 +26,9 @@ provider "google-beta" {
 resource "google_compute_network" "vpc" {
   name                    = var.network_name
   auto_create_subnetworks = false
+
+  # MANDATORY for project tracking
+  project = var.project_id
 }
 
 # Subnet
@@ -45,6 +48,9 @@ resource "google_compute_subnetwork" "subnet" {
     range_name    = "services"
     ip_cidr_range = "10.8.0.0/20"
   }
+
+  # MANDATORY for project tracking
+  project = var.project_id
 }
 
 # Cloud NAT
@@ -52,12 +58,14 @@ resource "google_compute_router" "router" {
   name    = "fqdn-egress-router"
   region  = var.region
   network = google_compute_network.vpc.id
+  project = var.project_id
 }
 
 resource "google_compute_router_nat" "nat" {
   name                               = "fqdn-egress-nat"
   router                             = google_compute_router.router.name
   region                             = var.region
+  project                            = var.project_id
   nat_ip_allocate_option             = "AUTO_ONLY"
   source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
 
