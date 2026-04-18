@@ -45,18 +45,30 @@ kubectl cluster-info
 
 # Auto-detect namespace if not explicitly set and not in default
 if [ "$NAMESPACE_WORKLOAD" == "default" ]; then
-  if ! kubectl get deployment release-enterprise-workload -n default >/dev/null 2>&1; then
-    # Check standard namespace and CI-suffixed namespace
-    if kubectl get deployment release-enterprise-workload -n enterprise-gke >/dev/null 2>&1; then
-      echo "Workload found in enterprise-gke namespace, switching context..."
-      NAMESPACE_WORKLOAD="enterprise-gke"
-    elif [ -n "$UID_SUFFIX" ] && kubectl get deployment release-enterprise-workload -n "enterprise-gke-${UID_SUFFIX}" >/dev/null 2>&1; then
-      echo "Workload found in enterprise-gke-${UID_SUFFIX} namespace, switching context..."
-      NAMESPACE_WORKLOAD="enterprise-gke-${UID_SUFFIX}"
-    else
+  # List of namespaces to check in order of preference
+  CHECK_NAMESPACES=("enterprise-gke")
+  if [ -n "$UID_SUFFIX" ]; then
+    CHECK_NAMESPACES=("enterprise-gke-${UID_SUFFIX}" "${CHECK_NAMESPACES[@]}")
+  fi
+
+  # Check if workload exists in current NAMESPACE_WORKLOAD
+  if ! kubectl get deployment release-enterprise-workload -n "${NAMESPACE_WORKLOAD}" >/dev/null 2>&1; then
+    FOUND=false
+    for ns in "${CHECK_NAMESPACES[@]}"; do
+      if kubectl get deployment release-enterprise-workload -n "${ns}" >/dev/null 2>&1; then
+        echo "Workload found in ${ns} namespace, switching context..."
+        NAMESPACE_WORKLOAD="${ns}"
+        FOUND=true
+        break
+      fi
+    done
+
+    if [ "$FOUND" = false ]; then
       # Fallback: search across all namespaces for the deployment
       echo "Workload not found in standard namespaces, searching across all namespaces..."
-      DETECTED_NS=$(kubectl get deployments --all-namespaces -l app.kubernetes.io/instance=release 2>/dev/null | grep release-enterprise-workload | awk '{print $1}' | head -n 1)
+      # Use jsonpath for cleaner detection and prefer ones with UID_SUFFIX if available (sort -r)
+      DETECTED_NS=$(kubectl get deployments --all-namespaces -l app.kubernetes.io/instance=release -o jsonpath='{range .items[?(@.metadata.name=="release-enterprise-workload")]}{.metadata.namespace}{"\n"}{end}' | sort -r | head -n 1)
+      
       if [ -n "$DETECTED_NS" ]; then
         echo "Workload found in ${DETECTED_NS} namespace, switching context..."
         NAMESPACE_WORKLOAD="$DETECTED_NS"
@@ -97,6 +109,10 @@ kind: Job
 metadata:
   name: test-workload-identity-$(date +%s)
   namespace: ${NAMESPACE_WORKLOAD}
+  labels:
+    app: test-workload-identity
+    project: gcp-template-forge
+    template: enterprise-gke
 spec:
   template:
     spec:
@@ -109,7 +125,7 @@ spec:
   backoffLimit: 1
 EOF
 
-JOB_NAME=$(kubectl get jobs -n ${NAMESPACE_WORKLOAD} --sort-by=.metadata.creationTimestamp -o jsonpath='{.items[-1].metadata.name}')
+JOB_NAME=$(kubectl get jobs -n ${NAMESPACE_WORKLOAD} -l app=test-workload-identity --sort-by=.metadata.creationTimestamp -o jsonpath='{.items[-1].metadata.name}')
 kubectl wait --for=condition=complete job/${JOB_NAME} --timeout=5m -n ${NAMESPACE_WORKLOAD}
 kubectl logs job/${JOB_NAME} -n ${NAMESPACE_WORKLOAD}
 kubectl delete job ${JOB_NAME} -n ${NAMESPACE_WORKLOAD}
