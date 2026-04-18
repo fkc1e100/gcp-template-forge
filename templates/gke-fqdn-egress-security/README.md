@@ -27,9 +27,16 @@ terraform apply
 ```
 
 ### Config Connector
-```bash
-kubectl apply -f config-connector/
-```
+1.  **Infrastructure:**
+    ```bash
+    kubectl apply -f config-connector/
+    ```
+2.  **Workload:**
+    Once the cluster is ready, get credentials and apply the workload:
+    ```bash
+    gcloud container clusters get-credentials gke-fqdn-egress-security-cluster --region us-central1
+    kubectl apply -f config-connector-workload/
+    ```
 
 ## Verification
 The `validate.sh` script automates the verification of the egress policies.
