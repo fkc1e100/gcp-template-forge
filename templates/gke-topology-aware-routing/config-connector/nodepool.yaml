@@ -33,6 +33,8 @@ spec:
     diskType: pd-standard
     imageType: COS_CONTAINERD
     spot: true
+    serviceAccountRef:
+      external: forge-kcc-admin@gca-gke-2025.iam.gserviceaccount.com
     oauthScopes:
       - https://www.googleapis.com/auth/cloud-platform
     shieldedInstanceConfig:

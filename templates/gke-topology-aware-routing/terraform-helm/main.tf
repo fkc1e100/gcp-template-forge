@@ -132,7 +132,7 @@ resource "google_container_cluster" "topology_cluster" {
 # Node Pool distributed across zones
 resource "google_container_node_pool" "primary_nodes" {
   provider   = google-beta
-  name       = "${var.cluster_name}-pool"
+  name       = "topology-pool"
   location   = var.region
   cluster    = google_container_cluster.topology_cluster.name
   node_count = 1
