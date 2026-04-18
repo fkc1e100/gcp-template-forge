@@ -17,16 +17,18 @@ kind: Deployment
 metadata:
   name: latest-features-workload
   labels:
-    app: latest-features-workload
+    app.kubernetes.io/name: latest-features-workload
+    project: gcp-template-forge
+    template: latest-gke-features
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: latest-features-workload
+      app.kubernetes.io/name: latest-features-workload
   template:
     metadata:
       labels:
-        app: latest-features-workload
+        app.kubernetes.io/name: latest-features-workload
     spec:
       securityContext:
         runAsNonRoot: true
@@ -98,22 +100,24 @@ spec:
         whenUnsatisfiable: ScheduleAnyway
         labelSelector:
           matchLabels:
-            app: latest-features-workload
+            app.kubernetes.io/name: latest-features-workload
       - maxSkew: 1
         topologyKey: topology.kubernetes.io/zone
         whenUnsatisfiable: ScheduleAnyway
         labelSelector:
           matchLabels:
-            app: latest-features-workload
+            app.kubernetes.io/name: latest-features-workload
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: latest-features-workload
+  labels:
+    app.kubernetes.io/name: latest-features-workload
 spec:
   type: ClusterIP
   selector:
-    app: latest-features-workload
+    app.kubernetes.io/name: latest-features-workload
   ports:
   - port: 80
     targetPort: 8080
@@ -122,6 +126,8 @@ kind: Gateway
 apiVersion: gateway.networking.k8s.io/v1
 metadata:
   name: latest-features-gateway
+  labels:
+    app.kubernetes.io/name: latest-features-workload
 spec:
   gatewayClassName: gke-l7-global-external-managed
   listeners:
@@ -133,6 +139,8 @@ kind: HTTPRoute
 apiVersion: gateway.networking.k8s.io/v1
 metadata:
   name: latest-features-workload
+  labels:
+    app.kubernetes.io/name: latest-features-workload
 spec:
   parentRefs:
   - name: latest-features-gateway

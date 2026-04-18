@@ -25,7 +25,7 @@ This template demonstrates some of the latest and most advanced features of Goog
 
 ### Config Connector (`config-connector/`)
 - Demonstrates a Kubernetes-native way to provision the core infrastructure (VPC, Cluster, NodePool).
-- Includes Kubernetes manifests for the workload (`config-connector/workload/`) to demonstrate functional parity for users who prefer not to use Helm.
+- Includes Kubernetes manifests for the workload (`config-connector-workload/`) to demonstrate functional parity for users who prefer not to use Helm.
 
 ## Deployment Paths
 
@@ -66,7 +66,7 @@ This template demonstrates some of the latest and most advanced features of Goog
     Once the cluster is ready, get credentials and apply the workload manifests directly to the **workload cluster**:
     ```bash
     gcloud container clusters get-credentials latest-gke-features-kcc --region us-central1 --project <PROJECT_ID>
-    kubectl apply -f config-connector/workload/workload.yaml
+    kubectl apply -f config-connector-workload/workload.yaml
     ```
 
 4.  **Verify Advanced Features**:
@@ -115,7 +115,7 @@ cd terraform-helm && terraform destroy -var="project_id=<PROJECT_ID>"
 ### Config Connector Path
 ```bash
 # Delete workload from workload cluster
-kubectl delete -f config-connector/workload/workload.yaml
+kubectl delete -f config-connector-workload/workload.yaml
 
 # Delete infrastructure from management cluster
 kubectl delete -f config-connector/nodepool.yaml -n forge-management

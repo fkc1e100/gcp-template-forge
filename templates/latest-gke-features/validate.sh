@@ -34,14 +34,25 @@ echo "Connectivity passed."
 
 # 2. Workload Readiness
 echo "Test 2: Workload Readiness..."
-# Deployment name from fullname helper: <release-name>-<chart-name>
-# In CI, release name is 'release', chart name is 'latest-features-workload'
-kubectl wait --for=condition=available deployment/release-latest-features-workload -n ${NAMESPACE} --timeout=10m
+# Try both Helm-style name and KCC manifest name
+DEPLOY_NAME="release-latest-features-workload"
+if ! kubectl get deployment "$DEPLOY_NAME" -n "${NAMESPACE}" >/dev/null 2>&1; then
+  DEPLOY_NAME="latest-features-workload"
+fi
+
+echo "Waiting for deployment ${DEPLOY_NAME}..."
+kubectl wait --for=condition=available deployment/${DEPLOY_NAME} -n ${NAMESPACE} --timeout=10m
 echo "Workload is available."
 
 # 3. Native Sidecar Validation
 echo "Test 3: Native Sidecar Validation..."
-POD_NAME=$(kubectl get pods -n ${NAMESPACE} -l app.kubernetes.io/name=latest-features-workload -o jsonpath='{.items[0].metadata.name}')
+# Try both Helm-style label and simpler label
+POD_NAME=$(kubectl get pods -n ${NAMESPACE} -l app.kubernetes.io/name=latest-features-workload -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
+
+if [ -z "$POD_NAME" ]; then
+  # Fallback for older or different label schemes
+  POD_NAME=$(kubectl get pods -n ${NAMESPACE} -l app=latest-features-workload -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
+fi
 
 if [ -z "$POD_NAME" ]; then
   echo "Native Sidecar check failed! No pods found with label app.kubernetes.io/name=latest-features-workload."
