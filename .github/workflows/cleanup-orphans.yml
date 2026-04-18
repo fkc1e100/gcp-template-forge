@@ -167,9 +167,10 @@ jobs:
               done
               [ "$SKIP" = true ] && continue
               
-              echo "Deleting orphaned NEG: $NEG_NAME in $NEG_ZONE"
-              if [ -n "$NEG_ZONE" ]; then
-                delete_resource "gcloud compute network-endpoint-groups delete $NEG_NAME --zone=$NEG_ZONE --project=$PROJECT --quiet" "NEG $NEG_NAME"
+              ZONE_NAME="${NEG_ZONE##*/}"
+              echo "Deleting orphaned NEG: $NEG_NAME in $ZONE_NAME"
+              if [ -n "$ZONE_NAME" ]; then
+                delete_resource "gcloud compute network-endpoint-groups delete $NEG_NAME --zone=$ZONE_NAME --project=$PROJECT --quiet" "NEG $NEG_NAME"
               else
                 delete_resource "gcloud compute network-endpoint-groups delete $NEG_NAME --global --project=$PROJECT --quiet" "NEG $NEG_NAME"
               fi
