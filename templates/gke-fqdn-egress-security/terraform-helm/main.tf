@@ -117,6 +117,7 @@ resource "google_container_cluster" "cluster" {
 }
 
 resource "google_container_node_pool" "primary_nodes" {
+  provider   = google-beta
   name       = "fqdn-egress-pool"
   location   = var.region
   cluster    = google_container_cluster.cluster.name
@@ -143,18 +144,5 @@ resource "google_container_node_pool" "primary_nodes" {
       project  = "gcp-template-forge"
       template = "gke-fqdn-egress-security"
     }
-  }
-}
-
-# Helm Release for Workload
-resource "helm_release" "workload" {
-  name       = "fqdn-egress-security"
-  chart      = "${path.module}/workload"
-  namespace  = "default"
-  depends_on = [google_container_node_pool.primary_nodes]
-
-  set {
-    name  = "project_id"
-    value = var.project_id
   }
 }

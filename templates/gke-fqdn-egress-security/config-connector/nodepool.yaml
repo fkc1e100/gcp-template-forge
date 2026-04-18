@@ -37,3 +37,6 @@ spec:
       enableIntegrityMonitoring: true
     workloadMetadataConfig:
       mode: GKE_METADATA
+    labels:
+      project: gcp-template-forge
+      template: gke-fqdn-egress-security
