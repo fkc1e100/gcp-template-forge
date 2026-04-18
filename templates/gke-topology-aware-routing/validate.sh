@@ -38,8 +38,10 @@ kubectl wait --for=condition=available deployment/frontend -n ${NAMESPACE} --tim
 kubectl wait --for=condition=available deployment/backend -n ${NAMESPACE} --timeout=10m
 
 # Verify replica count
-FRONTEND_REPLICAS=$(kubectl get deployment frontend -n ${NAMESPACE} -o jsonpath='{.status.availableReplicas}')
-BACKEND_REPLICAS=$(kubectl get deployment backend -n ${NAMESPACE} -o jsonpath='{.status.availableReplicas}')
+FRONTEND_REPLICAS=$(kubectl get deployment frontend -n ${NAMESPACE} -o jsonpath='{.status.availableReplicas}' || echo "0")
+BACKEND_REPLICAS=$(kubectl get deployment backend -n ${NAMESPACE} -o jsonpath='{.status.availableReplicas}' || echo "0")
+FRONTEND_REPLICAS=${FRONTEND_REPLICAS:-0}
+BACKEND_REPLICAS=${BACKEND_REPLICAS:-0}
 echo "Frontend replicas: ${FRONTEND_REPLICAS}, Backend replicas: ${BACKEND_REPLICAS}"
 
 if [ "${FRONTEND_REPLICAS}" -lt 3 ]; then
@@ -55,14 +57,16 @@ echo "Workloads are available and scaled correctly."
 # 3. Topology Spread Check
 echo "Test 3: Topology Spread Check..."
 # Get zones of frontend pods by looking at the nodes they are running on
-FRONTEND_ZONES_LIST=$(kubectl get pods -l app=frontend -n ${NAMESPACE} -o jsonpath='{.items[*].spec.nodeName}' | tr ' ' '\n' | xargs -I {} kubectl get node {} -o jsonpath='{.metadata.labels.topology\.kubernetes\.io/zone}' | tr ' ' '\n' | sort | uniq)
-FRONTEND_ZONES_COUNT=$(echo "${FRONTEND_ZONES_LIST}" | grep -v "^$" | wc -l)
-echo "Frontend pods are running in zones: ${FRONTEND_ZONES_LIST} (Count: ${FRONTEND_ZONES_COUNT})"
+FRONTEND_NODES=$(kubectl get pods -l app=frontend -n ${NAMESPACE} -o jsonpath='{.items[*].spec.nodeName}')
+FRONTEND_ZONES_LIST=$(for node in ${FRONTEND_NODES}; do kubectl get node ${node} -o jsonpath='{.metadata.labels.topology\.kubernetes\.io/zone}'; echo; done | sort | uniq | grep -v "^$")
+FRONTEND_ZONES_COUNT=$(echo "${FRONTEND_ZONES_LIST}" | wc -l)
+echo "Frontend pods are running in zones: $(echo ${FRONTEND_ZONES_LIST} | tr '\n' ' ') (Count: ${FRONTEND_ZONES_COUNT})"
 
 # Get zones of backend pods by looking at the nodes they are running on
-BACKEND_ZONES_LIST=$(kubectl get pods -l app=backend -n ${NAMESPACE} -o jsonpath='{.items[*].spec.nodeName}' | tr ' ' '\n' | xargs -I {} kubectl get node {} -o jsonpath='{.metadata.labels.topology\.kubernetes\.io/zone}' | tr ' ' '\n' | sort | uniq)
-BACKEND_ZONES_COUNT=$(echo "${BACKEND_ZONES_LIST}" | grep -v "^$" | wc -l)
-echo "Backend pods are running in zones: ${BACKEND_ZONES_LIST} (Count: ${BACKEND_ZONES_COUNT})"
+BACKEND_NODES=$(kubectl get pods -l app=backend -n ${NAMESPACE} -o jsonpath='{.items[*].spec.nodeName}')
+BACKEND_ZONES_LIST=$(for node in ${BACKEND_NODES}; do kubectl get node ${node} -o jsonpath='{.metadata.labels.topology\.kubernetes\.io/zone}'; echo; done | sort | uniq | grep -v "^$")
+BACKEND_ZONES_COUNT=$(echo "${BACKEND_ZONES_LIST}" | wc -l)
+echo "Backend pods are running in zones: $(echo ${BACKEND_ZONES_LIST} | tr '\n' ' ') (Count: ${BACKEND_ZONES_COUNT})"
 
 if [ "$FRONTEND_ZONES_COUNT" -lt 3 ]; then
   echo "Frontend pods are not spread across enough zones (found $FRONTEND_ZONES_COUNT, expected 3)."
