@@ -83,6 +83,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Remove repo-agent Label on Start
+        if: github.event_name == 'pull_request'
+        run: gh pr edit ${{ github.event.number }} --remove-label "repo-agent" || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   # ── 2. Lint / static analysis (PR + push) ────────────────────────────────
   lint-agent-infra:
     name: "Lint Agent Infra"
@@ -1476,3 +1482,17 @@ jobs:
             git add "${TEMPLATE}/.agent-metrics-cumulative"
           git commit -m "ci: validate ${TEMPLATE} [skip ci]" || true
           git push
+
+  pr-completion:
+    name: "PR Completion"
+    needs: [detect-changes, lint, pre-cleanup, tf-provision, tf-test, tf-teardown, kcc-apply, kcc-test, kcc-teardown]
+    if: always() && github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Add repo-agent label on failure
+        if: failure()
+        run: gh pr edit ${{ github.event.number }} --add-label "repo-agent"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
