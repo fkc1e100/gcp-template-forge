@@ -45,9 +45,6 @@ spec:
   # Dataplane V2 is required for FQDN Network Policies
   datapathProvider: ADVANCED_DATAPATH
   enableFqdnNetworkPolicy: true
-  resourceLabels:
-    project: gcp-template-forge
-    template: gke-fqdn-egress-security
   # Enable GKE Enterprise features (Vulnerability Enterprise is a good proxy for GKE Enterprise enablement)
   securityPostureConfig:
     mode: BASIC
