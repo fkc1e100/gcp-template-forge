@@ -144,6 +144,18 @@ resource "google_container_cluster" "cluster" {
   }
 }
 
+# Register the cluster to a Fleet (GKE Enterprise)
+resource "google_gke_hub_membership" "membership" {
+  provider      = google-beta
+  membership_id = var.cluster_name
+  endpoint {
+    gke_cluster {
+      resource_link = "//container.googleapis.com/${google_container_cluster.cluster.id}"
+    }
+  }
+  project = var.project_id
+}
+
 resource "google_container_node_pool" "primary_nodes" {
   provider = google-beta
   name     = "fqdn-egress-pool"

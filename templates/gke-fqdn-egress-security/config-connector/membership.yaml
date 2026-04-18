@@ -12,23 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: networking.gke.io/v1alpha1
-kind: FQDNNetworkPolicy
+apiVersion: gkehub.cnrm.cloud.google.com/v1beta1
+kind: GKEHubMembership
 metadata:
-  name: allow-ai-egress
+  name: gke-fqdn-egress-security-cluster
+  namespace: forge-management
+  labels:
+    project: gcp-template-forge
+    template: gke-fqdn-egress-security
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
-  podSelector:
-    matchLabels:
-      app: {{ .Values.pod.label }}
-  egress:
-  - matches:
-    - name: anthropic.com
-    - name: api.anthropic.com
-    - pattern: "*.anthropic.com"
-    - name: huggingface.co
-    - pattern: "*.huggingface.co"
-    - name: hf.co
-    - pattern: "*.hf.co"
-    ports:
-    - protocol: TCP
-      port: 443
+  location: us-central1
+  endpoint:
+    gkeCluster:
+      resourceRef:
+        name: gke-fqdn-egress-security-cluster
