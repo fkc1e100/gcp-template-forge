@@ -18,7 +18,7 @@ metadata:
   name: gke-workload
   labels:
     project: gcp-template-forge
-    template: gke-workload
+    template: enterprise-gke
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -27,7 +27,7 @@ metadata:
   namespace: gke-workload
   labels:
     project: gcp-template-forge
-    template: gke-workload
+    template: enterprise-gke
   annotations:
     # UPDATE: Replace 'gca-gke-2025' with your actual GCP Project ID
     iam.gke.io/gcp-service-account: enterprise-gke-kcc-sa@gca-gke-2025.iam.gserviceaccount.com
@@ -40,7 +40,7 @@ metadata:
   labels:
     app.kubernetes.io/instance: release
     project: gcp-template-forge
-    template: gke-workload
+    template: enterprise-gke
 data:
   LOG_LEVEL: "info"
   ENVIRONMENT: "production"
@@ -53,7 +53,7 @@ metadata:
   labels:
     app.kubernetes.io/instance: release
     project: gcp-template-forge
-    template: gke-workload
+    template: enterprise-gke
 spec:
   # Replicas is managed by HPA if enabled, but set here as default
   replicas: 3
@@ -67,7 +67,7 @@ spec:
         app: enterprise-workload
         app.kubernetes.io/instance: release
         project: gcp-template-forge
-        template: gke-workload
+        template: enterprise-gke
     spec:
       serviceAccountName: gke-workload-sa
       securityContext:
@@ -166,7 +166,7 @@ metadata:
   labels:
     app.kubernetes.io/instance: release
     project: gcp-template-forge
-    template: gke-workload
+    template: enterprise-gke
 spec:
   type: LoadBalancer
   selector:
@@ -185,7 +185,7 @@ metadata:
   labels:
     app.kubernetes.io/instance: release
     project: gcp-template-forge
-    template: gke-workload
+    template: enterprise-gke
 spec:
   podSelector:
     matchLabels:
@@ -221,7 +221,7 @@ metadata:
   labels:
     app.kubernetes.io/instance: release
     project: gcp-template-forge
-    template: gke-workload
+    template: enterprise-gke
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
@@ -245,7 +245,7 @@ spec:
 #   namespace: gke-workload
 #   labels:
 #     project: gcp-template-forge
-#     template: gke-workload
+#     template: enterprise-gke
 # spec:
 #   provider: gcp
 #   parameters:
@@ -262,7 +262,7 @@ metadata:
   labels:
     app.kubernetes.io/instance: release
     project: gcp-template-forge
-    template: gke-workload
+    template: enterprise-gke
 spec:
   minAvailable: 2
   selector:
