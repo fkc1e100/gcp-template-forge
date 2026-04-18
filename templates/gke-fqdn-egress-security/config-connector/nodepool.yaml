@@ -43,3 +43,6 @@ spec:
     labels:
       project: gcp-template-forge
       template: gke-fqdn-egress-security
+    resourceLabels:
+      project: gcp-template-forge
+      template: gke-fqdn-egress-security
