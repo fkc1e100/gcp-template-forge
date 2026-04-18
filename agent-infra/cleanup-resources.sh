@@ -49,7 +49,7 @@ gcloud container clusters get-credentials $KCC_CLUSTER --region $REGION --projec
 if kubectl cluster-info &>/dev/null; then
   echo "Deleting all KCC-managed resources for orphaned environments..."
   KCC_TYPES="containercluster,computenetwork,computevpc,computesubnetwork,computerouter,computerouternat,computefirewall"
-  KCC_RESOURCES=$(kubectl get $KCC_TYPES -n $KCC_NAMESPACE -o name | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
+  KCC_RESOURCES=$(kubectl get $KCC_TYPES -n $KCC_NAMESPACE -o name | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-topology-aware-routing-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
   
   for RES in $KCC_RESOURCES; do
     SKIP=false
@@ -71,7 +71,7 @@ fi
 echo "Searching for orphaned Terraform clusters..."
 TF_CLUSTERS=$(gcloud container clusters list \
   --project=$PROJECT \
-  --filter="(resourceLabels.project=gcp-template-forge OR name ~ latest-gke-features- OR name ~ enterprise-gke- OR name ~ basic-gke- OR name ~ gke-) AND name != $KCC_CLUSTER" \
+  --filter="(resourceLabels.project=gcp-template-forge OR name ~ latest-gke-features- OR name ~ enterprise-gke- OR name ~ basic-gke- OR name ~ gke- OR name ~ gke-topology-aware-routing-) AND name != $KCC_CLUSTER" \
   --format="value(name, zone.scope())")
 
 DELETED_CLUSTERS=false
@@ -104,7 +104,7 @@ done <<< "$TF_CLUSTERS"
 if [ "$DELETED_CLUSTERS" = true ]; then
   echo "Waiting for clusters to be deleted (up to 10 minutes)..."
   for i in {1..20}; do
-    STILL_THERE=$(gcloud container clusters list --project=$PROJECT --filter="(resourceLabels.project=gcp-template-forge OR name ~ latest-gke-features- OR name ~ enterprise-gke- OR name ~ basic-gke- OR name ~ gke-) AND name != $KCC_CLUSTER" --format="value(name)" 2>/dev/null | wc -l || echo "0")
+    STILL_THERE=$(gcloud container clusters list --project=$PROJECT --filter="(resourceLabels.project=gcp-template-forge OR name ~ latest-gke-features- OR name ~ enterprise-gke- OR name ~ basic-gke- OR name ~ gke- OR name ~ gke-topology-aware-routing-) AND name != $KCC_CLUSTER" --format="value(name)" 2>/dev/null | wc -l || echo "0")
     if [ "$STILL_THERE" -le 0 ]; then
       echo "All clusters deleted."
       break
@@ -118,7 +118,7 @@ fi
 echo "Cleaning up orphaned Networking resources..."
 
 # Firewalls
-FIREWALLS=$(gcloud compute firewall-rules list --project=$PROJECT --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
+FIREWALLS=$(gcloud compute firewall-rules list --project=$PROJECT --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-topology-aware-routing-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
 for F in $FIREWALLS; do
   echo "Deleting firewall: $F"
   gcloud compute firewall-rules delete $F --project=$PROJECT --quiet || true

@@ -67,7 +67,7 @@ resource "google_compute_router_nat" "nat" {
   }
 }
 
-# GKE Cluster with Gateway API
+# GKE Cluster with Gateway API and Topology-Aware Routing enabled
 resource "google_container_cluster" "topology_cluster" {
   provider = google-beta
   name     = var.cluster_name

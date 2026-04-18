@@ -64,12 +64,12 @@ BACKEND_ZONES_LIST=$(kubectl get pods -l app=backend -n ${NAMESPACE} -o jsonpath
 BACKEND_ZONES_COUNT=$(echo "${BACKEND_ZONES_LIST}" | grep -v "^$" | wc -l)
 echo "Backend pods are running in zones: ${BACKEND_ZONES_LIST} (Count: ${BACKEND_ZONES_COUNT})"
 
-if [ "$FRONTEND_ZONES_COUNT" -lt 2 ]; then
-  echo "Frontend pods are not spread across enough zones (found $FRONTEND_ZONES_COUNT)."
+if [ "$FRONTEND_ZONES_COUNT" -lt 3 ]; then
+  echo "Frontend pods are not spread across enough zones (found $FRONTEND_ZONES_COUNT, expected 3)."
   exit 1
 fi
-if [ "$BACKEND_ZONES_COUNT" -lt 2 ]; then
-  echo "Backend pods are not spread across enough zones (found $BACKEND_ZONES_COUNT)."
+if [ "$BACKEND_ZONES_COUNT" -lt 3 ]; then
+  echo "Backend pods are not spread across enough zones (found $BACKEND_ZONES_COUNT, expected 3)."
   exit 1
 fi
 echo "Topology spread validated."
