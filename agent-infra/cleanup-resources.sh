@@ -209,12 +209,17 @@ gcloud compute project-info describe --project=$PROJECT --format="json" > /tmp/q
 
 echo "Quota Comparison (Before vs After):"
 python3 << 'EOF' || true
-import sys, json
+import sys, json, os
 try:
+    if not os.path.exists('/tmp/quota_before.json') or os.path.getsize('/tmp/quota_before.json') == 0:
+        raise ValueError('quota_before.json is missing or empty')
+    if not os.path.exists('/tmp/quota_after.json') or os.path.getsize('/tmp/quota_after.json') == 0:
+        raise ValueError('quota_after.json is missing or empty')
+    
     before = json.load(open('/tmp/quota_before.json'))
     after = json.load(open('/tmp/quota_after.json'))
 except Exception as e:
-    print(f'Error loading quota files: {e}')
+    print(f'Note: Could not compare quotas (this is normal if gcloud failed): {e}')
     sys.exit(0)
 
 before_quotas = {q['metric']: q for q in before.get('quotas', [])}

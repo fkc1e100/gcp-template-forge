@@ -17,13 +17,11 @@ kind: NetworkPolicy
 metadata:
   name: default-deny-egress
 spec:
-  podSelector:
-    matchLabels:
-      app: {{ .Values.pod.label }}
+  podSelector: {}
   policyTypes:
   - Egress
   egress:
-  # Allow DNS resolution
+  # Allow DNS resolution for all pods to enable FQDN resolution
   - ports:
     - protocol: UDP
       port: 53
