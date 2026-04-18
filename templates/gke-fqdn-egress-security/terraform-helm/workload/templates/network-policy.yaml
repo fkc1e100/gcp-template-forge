@@ -8,5 +8,12 @@ spec:
       app: {{ .Values.pod.label }}
   policyTypes:
   - Egress
-  # Empty egress rule means deny all
-  egress: []
+  egress:
+  # Allow DNS resolution
+  - ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+
+

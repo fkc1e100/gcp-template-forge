@@ -20,6 +20,8 @@ metadata:
   labels:
     project: gcp-template-forge
     template: gke-fqdn-egress-security
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   routingMode: REGIONAL
   autoCreateSubnetworks: false
@@ -32,8 +34,10 @@ metadata:
   labels:
     project: gcp-template-forge
     template: gke-fqdn-egress-security
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
-  location: us-central1
+  region: us-central1
   networkRef:
     name: fqdn-egress-vpc
   ipCidrRange: 10.0.0.0/20
@@ -52,8 +56,10 @@ metadata:
   labels:
     project: gcp-template-forge
     template: gke-fqdn-egress-security
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
-  location: us-central1
+  region: us-central1
   networkRef:
     name: fqdn-egress-vpc
 ---
@@ -65,8 +71,10 @@ metadata:
   labels:
     project: gcp-template-forge
     template: gke-fqdn-egress-security
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
-  location: us-central1
+  region: us-central1
   routerRef:
     name: fqdn-egress-router
   natIpAllocateOption: AUTO_ONLY

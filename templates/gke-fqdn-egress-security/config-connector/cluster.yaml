@@ -44,14 +44,11 @@ spec:
     channel: REGULAR
   # Dataplane V2 is required for FQDN Network Policies
   datapathProvider: ADVANCED_DATAPATH
+  enableFqdnNetworkPolicy: true
   # Enable GKE Enterprise features (Vulnerability Enterprise is a good proxy for GKE Enterprise enablement)
   securityPostureConfig:
     mode: BASIC
     vulnerabilityMode: VULNERABILITY_ENTERPRISE
-  # Note: enableFqdnNetworkPolicy might not be available in all KCC versions
-  # but ADVANCED_DATAPATH is the primary requirement.
-  networkConfig:
-    enableFqdnNetworkPolicy: true
   loggingConfig:
     enableComponents:
       - SYSTEM_COMPONENTS

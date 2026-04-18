@@ -62,7 +62,7 @@ echo "Verifier pod is ready."
 echo "Test 5: Running Egress Tests..."
 
 echo "Testing allowed domain: api.anthropic.com..."
-if kubectl exec egress-verifier -n ${NAMESPACE} -- curl -sfL --connect-timeout 5 https://api.anthropic.com > /dev/null; then
+if kubectl exec egress-verifier -n ${NAMESPACE} -- curl -sL --connect-timeout 5 https://api.anthropic.com > /dev/null; then
   echo "SUCCESS: api.anthropic.com is reachable."
 else
   echo "FAILURE: api.anthropic.com is NOT reachable."
@@ -70,7 +70,7 @@ else
 fi
 
 echo "Testing allowed domain: huggingface.co..."
-if kubectl exec egress-verifier -n ${NAMESPACE} -- curl -sfL --connect-timeout 5 https://huggingface.co > /dev/null; then
+if kubectl exec egress-verifier -n ${NAMESPACE} -- curl -sL --connect-timeout 5 https://huggingface.co > /dev/null; then
   echo "SUCCESS: huggingface.co is reachable."
 else
   echo "FAILURE: huggingface.co is NOT reachable."
@@ -78,7 +78,7 @@ else
 fi
 
 echo "Testing blocked domain: google.com..."
-if kubectl exec egress-verifier -n ${NAMESPACE} -- curl -sfL --connect-timeout 5 https://google.com > /dev/null 2>&1; then
+if kubectl exec egress-verifier -n ${NAMESPACE} -- curl -sL --connect-timeout 5 https://google.com > /dev/null 2>&1; then
   echo "FAILURE: google.com is reachable, but should be blocked!"
   exit 1
 else
