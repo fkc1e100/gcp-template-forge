@@ -12,10 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: latest-features
+  labels:
+    project: gcp-template-forge
+    template: latest-gke-features
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: latest-features-workload
+  namespace: latest-features
   labels:
     app.kubernetes.io/name: latest-features-workload
     project: gcp-template-forge
@@ -112,6 +121,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: latest-features-workload
+  namespace: latest-features
   labels:
     app.kubernetes.io/name: latest-features-workload
 spec:
@@ -126,6 +136,7 @@ kind: Gateway
 apiVersion: gateway.networking.k8s.io/v1
 metadata:
   name: latest-features-gateway
+  namespace: latest-features
   labels:
     app.kubernetes.io/name: latest-features-workload
 spec:
@@ -139,6 +150,7 @@ kind: HTTPRoute
 apiVersion: gateway.networking.k8s.io/v1
 metadata:
   name: latest-features-workload
+  namespace: latest-features
   labels:
     app.kubernetes.io/name: latest-features-workload
 spec:
@@ -148,3 +160,4 @@ spec:
   - backendRefs:
     - name: latest-features-workload
       port: 80
+

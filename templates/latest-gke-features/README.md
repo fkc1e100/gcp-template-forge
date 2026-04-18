@@ -63,7 +63,7 @@ This template demonstrates some of the latest and most advanced features of Goog
     ```
 
 3.  **Deploy Workload**:
-    Once the cluster is ready, get credentials and apply the workload manifests directly to the **workload cluster**:
+    Once the cluster is ready, get credentials and apply the workload manifests directly to the **workload cluster**. This will create the `latest-features` namespace and all required resources:
     ```bash
     gcloud container clusters get-credentials latest-gke-features-kcc --region us-central1 --project <PROJECT_ID>
     kubectl apply -f config-connector-workload/workload.yaml
@@ -72,10 +72,10 @@ This template demonstrates some of the latest and most advanced features of Goog
 4.  **Verify Advanced Features**:
 
     **Sidecar Verification**:
-    Verify that the \`logger-sidecar\` is running as a native sidecar (init container with \`restartPolicy: Always\`):
+    Verify that the \`logger-sidecar\` is running as a native sidecar in the \`latest-features\` namespace:
     ```bash
-    POD_NAME=$(kubectl get pods -l app.kubernetes.io/name=latest-features-workload -o jsonpath='{.items[0].metadata.name}')
-    kubectl get pod $POD_NAME -o jsonpath='{.spec.initContainers[0].restartPolicy}'
+    POD_NAME=$(kubectl get pods -n latest-features -l app.kubernetes.io/name=latest-features-workload -o jsonpath='{.items[0].metadata.name}')
+    kubectl get pod $POD_NAME -n latest-features -o jsonpath='{.spec.initContainers[0].restartPolicy}'
     # Expected output: Always
     ```
 
@@ -83,8 +83,8 @@ This template demonstrates some of the latest and most advanced features of Goog
     **Gateway API Verification**:
     Verify the Gateway is `Programmed` and reachable via its external IP:
     ```bash
-    kubectl wait --for=condition=Programmed gateway/latest-features-gateway --timeout=10m
-    GATEWAY_IP=$(kubectl get gateway latest-features-gateway -o jsonpath='{.status.addresses[0].value}')
+    kubectl wait --for=condition=Programmed gateway/latest-features-gateway -n latest-features --timeout=10m
+    GATEWAY_IP=$(kubectl get gateway latest-features-gateway -n latest-features -o jsonpath='{.status.addresses[0].value}')
     curl -I http://$GATEWAY_IP/
     ```
 
