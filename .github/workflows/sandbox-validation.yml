@@ -32,6 +32,7 @@ env:
   WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
   TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
   USE_GKE_GCLOUD_AUTH_PLUGIN: "True"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
   # Inject project-specific values so variables.tf has no hardcoded defaults
   TF_VAR_project_id: gca-gke-2025
   TF_VAR_service_account: forge-builder@gca-gke-2025.iam.gserviceaccount.com
@@ -259,6 +260,8 @@ jobs:
       - name: Break stale TF state lock (if any)
         if: "hashFiles(format('{0}/terraform-helm/**', matrix.template)) != ''"
         run: |
+          RUN_ID="${{ github.run_id }}"
+          UID_SUFFIX="${RUN_ID: -6}"
           gsutil rm "gs://${TF_STATE_BUCKET}/${{ matrix.template }}-${{ github.run_id }}/terraform-helm/default.tflock" \
             2>/dev/null && echo "Stale state lock removed" || echo "No stale lock present"
 
@@ -267,8 +270,9 @@ jobs:
         if: "hashFiles(format('{0}/terraform-helm/main.tf', matrix.template)) != ''"
         working-directory: ${{ matrix.template }}/terraform-helm
         run: |
+          RUN_ID="${{ github.run_id }}"
+          UID_SUFFIX="${RUN_ID: -6}"
           echo "TF_START=$(date -u +%s)" >> $GITHUB_ENV
-          UID_SUFFIX="${{ github.run_id }}"
           export TF_VAR_cluster_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf"
           export TF_VAR_network_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf-vpc"
           export TF_VAR_subnet_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf-subnet"
@@ -334,7 +338,8 @@ jobs:
           # Run template-specific validation if present
           if [ -f "${{ matrix.template }}/validate.sh" ]; then
             echo "=== Running template-specific validation: ${{ matrix.template }}/validate.sh ==="
-            UID_SUFFIX="${{ github.run_id }}"
+            RUN_ID="${{ github.run_id }}"
+            UID_SUFFIX="${RUN_ID: -6}"
             export CLUSTER_NAME="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf"
             chmod +x ${{ matrix.template }}/validate.sh
             ./${{ matrix.template }}/validate.sh
@@ -437,6 +442,26 @@ jobs:
           fi
 
 
+      - name: Helm uninstall (teardown)
+        if: always() && steps.teardown-check.outputs.should_destroy == 'true' && steps.tf-apply.outcome != 'skipped'
+        run: |
+          echo "Uninstalling Helm release to clean up NEGs and LoadBalancers..."
+          helm uninstall release --wait --timeout=5m || true
+          kubectl delete gateway,ingress --all -A --wait=true --timeout=2m || true
+          echo "Waiting for NEGs to be cleaned up..."
+          RUN_ID="${{ github.run_id }}"
+          UID_SUFFIX="${RUN_ID: -6}"
+          NETWORK_NAME="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf-vpc"
+          for i in {1..20}; do
+            NEGS=$(gcloud compute network-endpoint-groups list --filter="network:($NETWORK_NAME)" --project="${{ env.PROJECT_ID }}" --format="value(name)" 2>/dev/null || true)
+            if [ -z "$NEGS" ]; then
+              echo "All NEGs cleaned up."
+              break
+            fi
+            echo "NEGs still exist. Waiting 15s..."
+            sleep 15
+          done
+
       - name: Terraform destroy
         id: tf-destroy
         if: always() && steps.teardown-check.outputs.should_destroy == 'true' && steps.tf-apply.outcome != 'skipped'
@@ -524,8 +549,9 @@ jobs:
         id: kcc-apply
         if: "hashFiles(format('{0}/config-connector/**', matrix.template)) != ''"
         run: |
+          RUN_ID="${{ github.run_id }}"
+          UID_SUFFIX="${RUN_ID: -6}"
           echo "KCC_START=$(date -u +%s)" >> $GITHUB_ENV
-          UID_SUFFIX="${{ github.run_id }}"
           find ${{ matrix.template }}/config-connector -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
           kubectl apply -n $KCC_NAMESPACE \
             -f ${{ matrix.template }}/config-connector/
@@ -552,6 +578,8 @@ jobs:
         id: kcc-cluster-ready
         if: steps.kcc-apply.outcome == 'success'
         run: |
+          RUN_ID="${{ github.run_id }}"
+          UID_SUFFIX="${RUN_ID: -6}"
           # Check if this template includes a ContainerCluster
           CLUSTER_COUNT=$(kubectl get containerclusters.container.cnrm.cloud.google.com \
             -n $KCC_NAMESPACE --no-headers 2>/dev/null | wc -l || echo "0")
@@ -562,7 +590,7 @@ jobs:
           fi
 
           STATUS=$(kubectl get containerclusters.container.cnrm.cloud.google.com \
-            -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-${{ github.run_id }} \
+            -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-${UID_SUFFIX} \
             -o jsonpath='{.items[*].status.conditions[?(@.type=="Ready")].status}' \
             2>/dev/null | tr ' ' '\n' | grep "True" | wc -l)
 
@@ -577,8 +605,10 @@ jobs:
         id: kcc-workload-info
         if: steps.kcc-wait.outcome == 'success' || steps.kcc-cluster-ready.outcome == 'success'
         run: |
+          RUN_ID="${{ github.run_id }}"
+          UID_SUFFIX="${RUN_ID: -6}"
           CLUSTER_COUNT=$(kubectl get containerclusters.container.cnrm.cloud.google.com \
-            -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-${{ github.run_id }} --no-headers 2>/dev/null | wc -l || echo "0")
+            -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-${UID_SUFFIX} --no-headers 2>/dev/null | wc -l || echo "0")
           if [ "$CLUSTER_COUNT" -eq 0 ]; then
              CLUSTER_COUNT=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(len(docs))")
           fi
@@ -586,8 +616,8 @@ jobs:
             echo "has_cluster=false" >> $GITHUB_OUTPUT
             exit 0
           fi
-          CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-${{ github.run_id }} -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
-          LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-${{ github.run_id }} -o jsonpath='{.items[0].spec.location}' 2>/dev/null || true)
+          CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-${UID_SUFFIX} -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
+          LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-${UID_SUFFIX} -o jsonpath='{.items[0].spec.location}' 2>/dev/null || true)
           if [ -z "$CLUSTER_NAME" ]; then
              CLUSTER_NAME=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(docs[0]['metadata']['name'] if docs else '')")
              LOCATION=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(docs[0]['spec']['location'] if docs else '')")
@@ -791,7 +821,8 @@ jobs:
         if: "hashFiles(format('{0}/terraform-helm/main.tf', matrix.template)) != ''"
         working-directory: ${{ matrix.template }}/terraform-helm
         run: |
-          UID_SUFFIX="${{ github.run_id }}"
+          RUN_ID="${{ github.run_id }}"
+          UID_SUFFIX="${RUN_ID: -6}"
           export TF_VAR_cluster_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf"
           export TF_VAR_network_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf-vpc"
           export TF_VAR_subnet_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf-subnet"
@@ -897,6 +928,8 @@ jobs:
           steps.skip-check.outputs.skip != 'true' &&
           hashFiles(format('{0}/terraform-helm/**', matrix.template)) != ''
         run: |
+          RUN_ID="${{ github.run_id }}"
+          UID_SUFFIX="${RUN_ID: -6}"
           gsutil rm "gs://${TF_STATE_BUCKET}/${{ matrix.template }}-${{ github.run_id }}/terraform-helm/default.tflock" \
             2>/dev/null && echo "Stale state lock removed" || echo "No stale lock present"
 
@@ -907,8 +940,9 @@ jobs:
           hashFiles(format('{0}/terraform-helm/main.tf', matrix.template)) != ''
         working-directory: ${{ matrix.template }}/terraform-helm
         run: |
+          RUN_ID="${{ github.run_id }}"
+          UID_SUFFIX="${RUN_ID: -6}"
           echo "TF_START=$(date -u +%s)" >> $GITHUB_ENV
-          UID_SUFFIX="${{ github.run_id }}"
           export TF_VAR_cluster_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf"
           export TF_VAR_network_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf-vpc"
           export TF_VAR_subnet_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf-subnet"
@@ -980,7 +1014,8 @@ jobs:
           # Run template-specific validation if present
           if [ -f "${{ matrix.template }}/validate.sh" ]; then
             echo "=== Running template-specific validation: ${{ matrix.template }}/validate.sh ==="
-            UID_SUFFIX="${{ github.run_id }}"
+            RUN_ID="${{ github.run_id }}"
+            UID_SUFFIX="${RUN_ID: -6}"
             export CLUSTER_NAME="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf"
             chmod +x ${{ matrix.template }}/validate.sh
             ./${{ matrix.template }}/validate.sh
@@ -1059,6 +1094,26 @@ jobs:
             && echo "Security scan complete — no HIGH/CRITICAL findings." \
             || echo "::warning::Security findings detected — review output above (non-blocking)"
 
+
+      - name: Helm uninstall (teardown)
+        if: always() && steps.teardown-check.outputs.should_destroy == 'true' && steps.helm-deploy.outcome == 'success'
+        run: |
+          echo "Uninstalling Helm release to clean up NEGs and LoadBalancers..."
+          helm uninstall release --wait --timeout=5m || true
+          kubectl delete gateway,ingress --all -A --wait=true --timeout=2m || true
+          echo "Waiting for NEGs to be cleaned up..."
+          RUN_ID="${{ github.run_id }}"
+          UID_SUFFIX="${RUN_ID: -6}"
+          NETWORK_NAME="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf-vpc"
+          for i in {1..20}; do
+            NEGS=$(gcloud compute network-endpoint-groups list --filter="network:($NETWORK_NAME)" --project="${{ env.PROJECT_ID }}" --format="value(name)" 2>/dev/null || true)
+            if [ -z "$NEGS" ]; then
+              echo "All NEGs cleaned up."
+              break
+            fi
+            echo "NEGs still exist. Waiting 15s..."
+            sleep 15
+          done
 
       - name: Terraform destroy
         id: tf-destroy
@@ -1175,8 +1230,9 @@ jobs:
           steps.skip-check.outputs.skip != 'true' &&
           hashFiles(format('{0}/config-connector/**', matrix.template)) != ''
         run: |
+          RUN_ID="${{ github.run_id }}"
+          UID_SUFFIX="${RUN_ID: -6}"
           echo "KCC_START=$(date -u +%s)" >> $GITHUB_ENV
-          UID_SUFFIX="${{ github.run_id }}"
           find ${{ matrix.template }}/config-connector -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
           kubectl apply -n $KCC_NAMESPACE \
             -f ${{ matrix.template }}/config-connector/
@@ -1202,6 +1258,8 @@ jobs:
       - name: Dump KCC Resource Status
         if: always() && steps.kcc-apply.outcome == 'success'
         run: |
+          RUN_ID="${{ github.run_id }}"
+          UID_SUFFIX="${RUN_ID: -6}"
           echo "=== Final KCC Resource Status ==="
           kubectl get containercluster,computenetwork,computesubnetwork,computerouter -n $KCC_NAMESPACE || true
 
@@ -1213,8 +1271,10 @@ jobs:
         id: kcc-workload-info
         if: steps.kcc-wait.outcome == 'success' || steps.kcc-cluster-ready.outcome == 'success'
         run: |
+          RUN_ID="${{ github.run_id }}"
+          UID_SUFFIX="${RUN_ID: -6}"
           CLUSTER_COUNT=$(kubectl get containerclusters.container.cnrm.cloud.google.com \
-            -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-$(echo ${{ github.sha }} | cut -c1-5) --no-headers 2>/dev/null | wc -l || echo "0")
+            -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-${UID_SUFFIX} --no-headers 2>/dev/null | wc -l || echo "0")
           if [ "$CLUSTER_COUNT" -eq 0 ]; then
              CLUSTER_COUNT=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(len(docs))")
           fi
@@ -1222,8 +1282,8 @@ jobs:
             echo "has_cluster=false" >> $GITHUB_OUTPUT
             exit 0
           fi
-          CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-$(echo ${{ github.sha }} | cut -c1-5) -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
-          LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-$(echo ${{ github.sha }} | cut -c1-5) -o jsonpath='{.items[0].spec.location}' 2>/dev/null || true)
+          CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-${UID_SUFFIX} -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
+          LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-${UID_SUFFIX} -o jsonpath='{.items[0].spec.location}' 2>/dev/null || true)
           if [ -z "$CLUSTER_NAME" ]; then
              CLUSTER_NAME=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(docs[0]['metadata']['name'] if docs else '')")
              LOCATION=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(docs[0]['spec']['location'] if docs else '')")

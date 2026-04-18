@@ -20,7 +20,7 @@ metadata:
   labels:
     {{- include "latest-features.labels" . | nindent 4 }}
 spec:
-  gatewayClassName: gke-l7-gclb
+  gatewayClassName: gke-l7-global-external-managed
   listeners:
   - name: http
     protocol: HTTP

@@ -26,7 +26,7 @@ metadata:
 spec:
   location: us-central1
   initialNodeCount: 1
-  minMasterVersion: 1.35.3-gke.1234000
+  # minMasterVersion: 1.35.3-gke.1234000
   networkingMode: VPC_NATIVE
   networkRef:
     name: latest-gke-features-kcc-vpc
@@ -38,7 +38,6 @@ spec:
   privateClusterConfig:
     enablePrivateNodes: true
     enablePrivateEndpoint: false
-    masterIpv4CidrBlock: "172.16.210.16/28"
   workloadIdentityConfig:
     workloadPool: "gca-gke-2025.svc.id.goog"
   releaseChannel:
