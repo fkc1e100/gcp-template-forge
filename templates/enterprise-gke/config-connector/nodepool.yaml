@@ -34,6 +34,8 @@ spec:
     diskSizeGb: 50
     diskType: pd-standard
     imageType: COS_CONTAINERD
+    serviceAccountRef:
+      external: forge-kcc-admin@gca-gke-2025.iam.gserviceaccount.com
     oauthScopes:
       - "https://www.googleapis.com/auth/cloud-platform"
     workloadMetadataConfig:
