@@ -76,6 +76,12 @@ jobs:
           echo "has_templates=$([ "$DIRS" = "[]" ] && echo false || echo true)" >> $GITHUB_OUTPUT
           echo "Changed templates: $DIRS"
 
+      - name: Add Hold Label
+        if: github.event_name == 'pull_request'
+        run: gh pr edit ${{ github.event.pull_request.number }} --add-label "hold"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   # ── 2. Lint / static analysis (PR + push) ────────────────────────────────
   lint-agent-infra:
     name: "Lint Agent Infra"
@@ -503,6 +509,12 @@ jobs:
               repo: context.repo.repo,
               body,
             });
+
+      - name: Remove Hold Label on Failure
+        if: failure() && github.event_name == 'pull_request'
+        run: gh pr edit ${{ github.event.pull_request.number }} --remove-label "hold"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Cancel workflow on failure
         if: failure()
@@ -1435,6 +1447,12 @@ jobs:
           name: kcc-results-${{ github.run_id }}-${{ strategy.job-index }}
           path: /tmp/kcc-results/result.json
           retention-days: 1
+
+      - name: Remove Hold Label on Failure
+        if: failure() && github.event_name == 'pull_request'
+        run: gh pr edit ${{ github.event.pull_request.number }} --remove-label "hold"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # ── 5c. Post-merge: update README + write .validated (needs both above) ──
   publish-validated:
