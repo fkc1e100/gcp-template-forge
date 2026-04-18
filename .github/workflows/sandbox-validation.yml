@@ -492,12 +492,22 @@ jobs:
         run: |
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
-          CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-${UID_SUFFIX} -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
-          LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-${UID_SUFFIX} -o jsonpath='{.items[0].spec.location}' 2>/dev/null || true)
-          if [ -z "$CLUSTER_NAME" ]; then
-             CLUSTER_NAME=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(docs[0]['metadata']['name'] if docs else '')")
-             LOCATION=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(docs[0]['spec']['location'] if docs else '')")
+          
+          # Check if template intends to create a cluster
+          HAS_CLUSTER=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print('true' if docs else 'false')")
+          
+          if [ "$HAS_CLUSTER" = "true" ]; then
+            CLUSTER_NAME="$(basename ${{ matrix.template }})-${UID_SUFFIX}"
+            # Get location from management cluster if possible, or fallback to file
+            LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-${UID_SUFFIX} -o jsonpath='{.items[0].spec.location}' 2>/dev/null || true)
+            if [ -z "$LOCATION" ]; then
+               LOCATION=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(docs[0]['spec']['location'] if docs else '')")
+            fi
+          else
+            CLUSTER_NAME=""
+            LOCATION=""
           fi
+          
           echo "cluster_name=${CLUSTER_NAME}" >> $GITHUB_OUTPUT
           echo "location=${LOCATION}" >> $GITHUB_OUTPUT
 
