@@ -72,12 +72,13 @@ This template demonstrates some of the latest and most advanced features of Goog
 4.  **Verify Advanced Features**:
 
     **Sidecar Verification**:
-    Verify that the `logger-sidecar` is running as a native sidecar (init container with `restartPolicy: Always`):
+    Verify that the \`logger-sidecar\` is running as a native sidecar (init container with \`restartPolicy: Always\`):
     ```bash
-    POD_NAME=$(kubectl get pods -l app=latest-features-workload -o jsonpath='{.items[0].metadata.name}')
+    POD_NAME=$(kubectl get pods -l app.kubernetes.io/name=latest-features-workload -o jsonpath='{.items[0].metadata.name}')
     kubectl get pod $POD_NAME -o jsonpath='{.spec.initContainers[0].restartPolicy}'
     # Expected output: Always
     ```
+
 
     **Gateway API Verification**:
     Verify the Gateway is `Programmed` and reachable via its external IP:
