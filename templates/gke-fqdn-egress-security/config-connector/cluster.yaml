@@ -25,6 +25,8 @@ metadata:
     cnrm.cloud.google.com/remove-default-node-pool: "true"
 spec:
   location: us-central1
+  # MANDATORY for CI
+  deletionProtection: false
   initialNodeCount: 1
   networkingMode: VPC_NATIVE
   networkRef:
