@@ -191,6 +191,7 @@ templates/<name>/
 | [enterprise-gke](templates/enterprise-gke/) | GKE Standard + security stack + Helm workload | GKE Standard + networking | — |
 | [latest-gke-features](templates/latest-gke-features/) | GKE Standard + Gateway API + NAP + Native Sidecars | GKE Standard + KCC networking | — |
 | [gke-fqdn-egress-security](templates/gke-fqdn-egress-security/) | GKE Standard + FQDN Network Policies + AI Egress | GKE Standard + KCC Networking | — |
+| [gke-topology-aware-routing](templates/gke-topology-aware-routing/) | GKE Standard + Topology-Aware Routing + Gateway API | GKE Standard + Topology Routing | — |
 
 ---
 
