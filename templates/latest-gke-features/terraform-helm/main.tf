@@ -28,7 +28,10 @@ resource "google_compute_network" "vpc" {
   auto_create_subnetworks = false
 
   # Mandatory labels for resource tracking
-  # Note: google_compute_network DOES NOT support labels in current provider version.
+  labels = {
+    project  = "gcp-template-forge"
+    template = "latest-gke-features"
+  }
 }
 
 # Subnet
@@ -40,7 +43,10 @@ resource "google_compute_subnetwork" "subnet" {
   private_ip_google_access = true
 
   # Mandatory labels for resource tracking
-  # Note: google_compute_subnetwork DOES NOT support labels in current provider version.
+  labels = {
+    project  = "gcp-template-forge"
+    template = "latest-gke-features"
+  }
 
   secondary_ip_range {
     range_name    = "pods"
@@ -58,6 +64,12 @@ resource "google_compute_router" "router" {
   name    = "${var.cluster_name}-router"
   region  = var.region
   network = google_compute_network.vpc.id
+
+  # Mandatory labels for resource tracking
+  labels = {
+    project  = "gcp-template-forge"
+    template = "latest-gke-features"
+  }
 }
 
 resource "google_compute_router_nat" "nat" {
