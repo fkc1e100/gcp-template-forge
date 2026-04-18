@@ -45,3 +45,24 @@ spec:
     apiVersion: iam.cnrm.cloud.google.com/v1beta1
     kind: IAMServiceAccount
     name: enterprise-gke-kcc-sa
+---
+# Optional: Allow workload to access secrets if Secret Manager is used
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMPolicyMember
+metadata:
+  name: enterprise-gke-kcc-secret-accessor
+  namespace: forge-management
+  labels:
+    project: gcp-template-forge
+    template: enterprise-gke
+  annotations:
+    # UPDATE: Replace 'gca-gke-2025' with your actual GCP Project ID
+    cnrm.cloud.google.com/project-id: gca-gke-2025
+spec:
+  # UPDATE: Replace 'gca-gke-2025' with your actual GCP Project ID
+  member: "serviceAccount:enterprise-gke-kcc-sa@gca-gke-2025.iam.gserviceaccount.com"
+  role: roles/secretmanager.secretAccessor
+  resourceRef:
+    apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
+    kind: Project
+    external: gca-gke-2025

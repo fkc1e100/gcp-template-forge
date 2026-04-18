@@ -59,6 +59,8 @@ spec:
   securityPostureConfig:
     mode: BASIC
     vulnerabilityMode: VULNERABILITY_ENTERPRISE
+  secretManagerConfig:
+    enabled: true
   releaseChannel:
     channel: REGULAR
   resourceLabels:

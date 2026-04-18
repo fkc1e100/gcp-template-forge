@@ -17,8 +17,7 @@ kind: ConfigMap
 metadata:
   name: {{ include "enterprise-workload.fullname" . }}-config
   labels:
-    app.kubernetes.io/name: {{ include "enterprise-workload.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    {{- include "enterprise-workload.labels" . | nindent 4 }}
 data:
   {{- range $key, $val := .Values.config }}
   {{ $key }}: {{ $val | quote }}

@@ -17,15 +17,13 @@ kind: Service
 metadata:
   name: {{ include "enterprise-workload.fullname" . }}
   labels:
-    app.kubernetes.io/name: {{ include "enterprise-workload.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    {{- include "enterprise-workload.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:
     - port: {{ .Values.service.port }}
-      targetPort: http
+      targetPort: {{ .Values.service.targetPort }}
       protocol: TCP
       name: http
   selector:
-    app.kubernetes.io/name: {{ include "enterprise-workload.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    {{- include "enterprise-workload.selectorLabels" . | nindent 4 }}
