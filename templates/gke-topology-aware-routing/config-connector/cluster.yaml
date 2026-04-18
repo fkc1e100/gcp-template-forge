@@ -1,0 +1,55 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: container.cnrm.cloud.google.com/v1beta1
+kind: ContainerCluster
+metadata:
+  name: gke-topology-routing-kcc
+  namespace: forge-management
+  labels:
+    project: gcp-template-forge
+    template: gke-topology-aware-routing
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
+    cnrm.cloud.google.com/remove-default-node-pool: "true"
+spec:
+  location: us-central1
+  initialNodeCount: 1
+  networkingMode: VPC_NATIVE
+  networkRef:
+    name: gke-topology-routing-kcc-vpc
+  subnetworkRef:
+    name: gke-topology-routing-kcc-subnet
+  ipAllocationPolicy:
+    clusterSecondaryRangeName: pods
+    servicesSecondaryRangeName: services
+  privateClusterConfig:
+    enablePrivateNodes: true
+    enablePrivateEndpoint: false
+  workloadIdentityConfig:
+    workloadPool: "gca-gke-2025.svc.id.goog"
+  # Requirement: Configure the cluster with the Gateway API
+  gatewayApiConfig:
+    channel: CHANNEL_STANDARD
+  releaseChannel:
+    channel: REGULAR
+  loggingConfig:
+    enableComponents:
+      - SYSTEM_COMPONENTS
+      - WORKLOADS
+  monitoringConfig:
+    enableComponents:
+      - SYSTEM_COMPONENTS
+    managedPrometheus:
+      enabled: true
