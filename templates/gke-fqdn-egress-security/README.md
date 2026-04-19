@@ -69,6 +69,8 @@ The included `validate.sh` script automates the entire verification process, inc
 ```
 
 ### Manual Verification
+*Note: If you deployed using the default settings, the namespace will be `default`.*
+
 1.  **Test Allowed Egress (Anthropic):**
     ```bash
     kubectl exec egress-verifier -n <namespace> -- curl -sL -4 --connect-timeout 10 https://api.anthropic.com
