@@ -152,27 +152,27 @@ resource "local_file" "helm_values" {
     # limitations under the License.
 
     ${yamlencode({
-  replicaCount = 3
-  image = {
-    repository = "us-docker.pkg.dev/google-samples/containers/gke/hello-app"
-    tag        = "1.0"
-    pullPolicy = "IfNotPresent"
-  }
-  resources = {
-    requests = {
-      cpu    = "100m"
-      memory = "128Mi"
-    }
-    limits = {
-      cpu    = "200m"
-      memory = "256Mi"
-    }
-  }
-  service = {
-    type       = "LoadBalancer"
-    port       = 80
-    targetPort = 8080
-  }
-})}
+      replicaCount = 3
+      image        = {
+        repository = "us-docker.pkg.dev/google-samples/containers/gke/hello-app"
+        tag        = "1.0"
+        pullPolicy = "IfNotPresent"
+      }
+      resources    = {
+        requests = {
+          cpu    = "100m"
+          memory = "128Mi"
+        }
+        limits   = {
+          cpu    = "200m"
+          memory = "256Mi"
+        }
+      }
+      service      = {
+        type       = "LoadBalancer"
+        port       = 80
+        targetPort = 8080
+      }
+    })}
   EOT
 }
