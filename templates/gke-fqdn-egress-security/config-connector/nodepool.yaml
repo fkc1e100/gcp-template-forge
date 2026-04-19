@@ -33,8 +33,6 @@ spec:
     diskSizeGb: 50
     oauthScopes:
       - https://www.googleapis.com/auth/cloud-platform
-    serviceAccountRef:
-      external: forge-builder@gca-gke-2025.iam.gserviceaccount.com
     shieldedInstanceConfig:
       enableSecureBoot: true
       enableIntegrityMonitoring: true
