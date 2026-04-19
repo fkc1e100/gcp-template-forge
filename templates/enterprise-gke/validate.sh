@@ -69,7 +69,7 @@ if [ "$NAMESPACE_WORKLOAD" == "default" ]; then
       echo "Workload not found in standard namespaces, searching across all namespaces..."
       # Use jsonpath for cleaner detection and prefer ones with UID_SUFFIX if available (sort -r)
       DETECTED_NS=$(kubectl get deployments --all-namespaces -l app.kubernetes.io/instance=release -o jsonpath='{range .items[?(@.metadata.name=="release-enterprise-workload")]}{.metadata.namespace}{"\n"}{end}' | sort -r | head -n 1)
-      
+
       if [ -n "$DETECTED_NS" ]; then
         echo "Workload found in ${DETECTED_NS} namespace, switching context..."
         NAMESPACE_WORKLOAD="$DETECTED_NS"
