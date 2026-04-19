@@ -12,6 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# This manifest defines the workload for the latest-gke-features template.
+# It should be applied to the WORKLOAD cluster after the infrastructure is ready.
+# Deployment to a separate namespace ('latest-features') demonstrates functional parity
+# with the Helm path while maintaining clear resource separation.
+#
+# Path: templates/latest-gke-features/config-connector-workload/workload.yaml
+
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -26,9 +33,9 @@ metadata:
   name: latest-features-workload
   namespace: latest-features
   labels:
-    app.kubernetes.io/name: latest-features-workload
     project: gcp-template-forge
     template: latest-gke-features
+    app.kubernetes.io/name: latest-features-workload
 spec:
   progressDeadlineSeconds: 3600
   replicas: 2
@@ -38,6 +45,8 @@ spec:
   template:
     metadata:
       labels:
+        project: gcp-template-forge
+        template: latest-gke-features
         app.kubernetes.io/name: latest-features-workload
     spec:
       securityContext:
@@ -124,9 +133,9 @@ metadata:
   name: latest-features-workload
   namespace: latest-features
   labels:
-    app.kubernetes.io/name: latest-features-workload
     project: gcp-template-forge
     template: latest-gke-features
+    app.kubernetes.io/name: latest-features-workload
 spec:
   type: ClusterIP
   selector:
@@ -141,9 +150,9 @@ metadata:
   name: latest-features-gateway
   namespace: latest-features
   labels:
-    app.kubernetes.io/name: latest-features-workload
     project: gcp-template-forge
     template: latest-gke-features
+    app.kubernetes.io/name: latest-features-workload
 spec:
   gatewayClassName: gke-l7-global-external-managed
   listeners:
@@ -157,9 +166,9 @@ metadata:
   name: latest-features-workload
   namespace: latest-features
   labels:
-    app.kubernetes.io/name: latest-features-workload
     project: gcp-template-forge
     template: latest-gke-features
+    app.kubernetes.io/name: latest-features-workload
 spec:
   parentRefs:
   - name: latest-features-gateway
@@ -167,4 +176,3 @@ spec:
   - backendRefs:
     - name: latest-features-workload
       port: 80
-

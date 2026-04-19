@@ -65,7 +65,7 @@ If the dashboard is inaccessible from specific devices or networks:
 *   **Timeouts:** Always use a minimum of 30-minute timeouts when waiting for GKE cluster readiness.
 *   **Separation of Concerns (Terraform vs. Helm):** NEVER use `local-exec` provisioners or the Terraform Helm provider to deploy Helm charts or Kubernetes manifests within `main.tf`. Terraform's sole responsibility is infrastructure provisioning. The CI/CD pipeline (`sandbox-validation.yml`) contains a dedicated, authenticated `Helm deploy and verify` step that automatically handles workload deployment. Use `local_file` in Terraform to dynamically generate a `values.yaml` file for the downstream Helm step to consume.
 *   **KCC Resource Waits:** NEVER use `|| true` or ignore failures when waiting for KCC resources to become ready in CI pipelines or scripts. If KCC fails to provision resources, the task must fail loudly to avoid cascade failures. Use the provided `agent-infra/check-kcc-ready.sh` script in the sandbox to verify readiness.
-*   **Complete KCC Templates:** ALL `config-connector/` paths MUST include complete Kubernetes manifests for the workloads (e.g., `Deployment`, `Service`, `ConfigMap`, `Ingress`), ensuring functional parity with the `terraform-helm/` path. Do NOT rely solely on `validate.sh` to deploy the workload; the manifests must be present in the repository for user consumption.
+*   **Complete KCC Templates:** ALL Config Connector deployment paths MUST include complete Kubernetes manifests for the workloads (e.g., `Deployment`, `Service`, `ConfigMap`, `Ingress`), ensuring functional parity with the `terraform-helm/` path. Do NOT rely solely on `validate.sh` to deploy the workload; the manifests must be present in the repository for user consumption.
 *   **KCC Workload Manifest Location**: ALL raw Kubernetes workload manifests for KCC paths MUST be placed in a dedicated directory called `config-connector-workload/` at the root of the template (e.g., `templates/<template-name>/config-connector-workload/`). They MUST NOT be placed directly in the `config-connector/` directory, as the CI pipeline applies that directory to the KCC Management Cluster, causing failures for non-KCC resources. This is the ONLY approved path forward for raw workload manifests in KCC templates.
 *   **Comprehensive READMEs:** The `README.md` for each template MUST provide detailed deployment and verification instructions for BOTH the `terraform-helm/` and `config-connector/` paths. It must clearly explain:
     *   The architecture and resources created.
@@ -96,7 +96,7 @@ spec:
         Fix this issue. You MUST ensure:
         1. Strict adherence to the issue scope. ONLY modify files directly related to the task.
         2. Functional parity between the terraform-helm/ and config-connector/ paths.
-        3. The config-connector/ directory contains ALL necessary Kubernetes manifests for the workload (Deployment, Service, etc.).
+        3. The config-connector-workload/ directory contains ALL necessary Kubernetes manifests for the workload (Deployment, Service, etc.).
         4. The README.md is comprehensive, accurate, and provides clear deployment/verification instructions for BOTH paths.
   review:
     maxSandboxes: 3
@@ -309,4 +309,3 @@ git push origin HEAD
 ```
 
 ---
-

@@ -26,6 +26,8 @@ provider "google-beta" {
 resource "google_compute_network" "vpc" {
   name                    = var.network_name
   auto_create_subnetworks = false
+
+  project = var.project_id
 }
 
 # Subnet
@@ -141,6 +143,8 @@ resource "google_container_cluster" "latest_features_cluster" {
         enable_secure_boot          = true
         enable_integrity_monitoring = true
       }
+      # Note: 'labels' is not currently supported in auto_provisioning_defaults.
+      # Nodes will be labeled based on Pod nodeSelectors/affinity.
     }
   }
 

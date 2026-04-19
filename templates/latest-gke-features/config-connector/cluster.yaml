@@ -76,3 +76,5 @@ spec:
       shieldedInstanceConfig:
         enableSecureBoot: true
         enableIntegrityMonitoring: true
+      # Note: 'labels' is not currently supported in autoProvisioningDefaults.
+      # Nodes will be labeled based on Pod nodeSelectors/affinity.

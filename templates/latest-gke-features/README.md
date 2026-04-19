@@ -25,7 +25,7 @@ This template demonstrates some of the latest and most advanced features of Goog
 
 ### Config Connector (`config-connector/`)
 - Demonstrates a Kubernetes-native way to provision the core infrastructure (VPC, Cluster, NodePool).
-- Includes Kubernetes manifests for the workload (`config-connector-workload/`) to demonstrate functional parity for users who prefer not to use Helm.
+- Includes Kubernetes manifests for the workload (`config-connector-workload/workload.yaml`) to demonstrate functional parity for users who prefer not to use Helm.
 
 ## Deployment Paths
 
@@ -136,4 +136,4 @@ kubectl delete -f config-connector/network.yaml -n forge-management
 |  | Terraform + Helm | Config Connector |
 | --- | --- | --- |
 | **Status** | success | success |
-| **Date** | 2026-04-18 | 2026-04-18 |
+| **Date** | 2026-04-19 | 2026-04-19 |
