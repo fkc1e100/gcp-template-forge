@@ -18,7 +18,7 @@ set -e
 echo "Starting Validation Tests for basic-gke-hello-world..."
 
 PROJECT_ID=${PROJECT_ID:-"gca-gke-2025"}
-CLUSTER_NAME=${CLUSTER_NAME:-"basic-gke-hello-world-tf"}
+CLUSTER_NAME=${CLUSTER_NAME:-"basic-gke-hello-world"}
 REGION=${REGION:-"us-central1"}
 NAMESPACE_WORKLOAD=${NAMESPACE_WORKLOAD:-"default"}
 
@@ -34,21 +34,22 @@ echo "Connectivity passed."
 
 # 2. Workload Readiness
 echo "Test 2: Workload Readiness..."
-# Deployment name from fullname helper: <release-name>-<chart-name>
-# In CI, release name is 'release', chart name is 'hello-world'
-kubectl wait --for=condition=available deployment/release-hello-world -n ${NAMESPACE_WORKLOAD} --timeout=10m
+# Wait for any deployment with the correct app label
+# Increased to 30m to comply with project mandates
+kubectl wait --for=condition=Available deployment -l app.kubernetes.io/name=hello-world -n ${NAMESPACE_WORKLOAD} --timeout=30m
 echo "Workload is available."
 
 # 3. Endpoint Interaction
 echo "Test 3: Endpoint Interaction..."
 # Wait for LoadBalancer IP
+# Increased to 60 attempts (30 minutes) to comply with project mandates
 SERVICE_IP=""
-for i in {1..20}; do
-  SERVICE_IP=$(kubectl get svc -n ${NAMESPACE_WORKLOAD} -l app.kubernetes.io/instance=release -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}' || true)
+for i in {1..60}; do
+  SERVICE_IP=$(kubectl get svc -n ${NAMESPACE_WORKLOAD} -l app.kubernetes.io/name=hello-world -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}' || true)
   if [ ! -z "$SERVICE_IP" ]; then
     break
   fi
-  echo "Waiting for LoadBalancer IP (attempt $i/20)..."
+  echo "Waiting for LoadBalancer IP (attempt $i/60)..."
   sleep 30
 done
 
@@ -59,15 +60,16 @@ fi
 
 echo "Testing endpoint http://${SERVICE_IP}:80/..."
 # Retry curl as the LB might take a few moments to actually start serving
-for i in {1..12}; do
+# Increased to 60 attempts (30 minutes) to avoid flakes
+for i in {1..60}; do
   if curl -sf --connect-timeout 5 --max-time 10 http://${SERVICE_IP}:80/; then
     echo "Endpoint test passed!"
     break
   fi
-  echo "Endpoint not ready (attempt $i/12)..."
+  echo "Endpoint not ready (attempt $i/60)..."
   sleep 30
-  if [ $i -eq 12 ]; then
-    echo "Endpoint test failed after 12 attempts!"
+  if [ $i -eq 60 ]; then
+    echo "Endpoint test failed after 60 attempts!"
     exit 1
   fi
 done

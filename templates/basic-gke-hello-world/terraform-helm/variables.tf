@@ -26,19 +26,19 @@ variable "region" {
 variable "cluster_name" {
   description = "The name of the GKE cluster"
   type        = string
-  default     = "gke-basic-tf"
+  default     = "basic-gke-hello-world"
 }
 
 variable "network_name" {
   description = "The name of the VPC network"
   type        = string
-  default     = "gke-basic-tf-vpc"
+  default     = "basic-gke-hello-world-vpc"
 }
 
 variable "subnet_name" {
   description = "The name of the subnet"
   type        = string
-  default     = "gke-basic-tf-subnet"
+  default     = "basic-gke-hello-world-subnet"
 }
 
 variable "service_account" {

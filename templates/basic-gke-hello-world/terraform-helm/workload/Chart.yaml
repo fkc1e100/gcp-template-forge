@@ -1,6 +1,6 @@
 apiVersion: v2
 name: hello-world
-description: A simple hello-world workload for GKE Autopilot
+description: A simple hello-world workload for GKE Standard
 type: application
 version: 0.1.0
 appVersion: "1.0"

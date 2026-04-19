@@ -15,7 +15,7 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerCluster
 metadata:
-  name: gke-basic-kcc-v2
+  name: basic-gke-hello-world
   namespace: forge-management
   labels:
     project: gcp-template-forge
@@ -27,10 +27,11 @@ spec:
   location: us-central1
   # GKE Standard cluster — explicit node pool defined in nodepool.yaml
   initialNodeCount: 1
+  networkingMode: VPC_NATIVE
   networkRef:
-    name: gke-basic-kcc-v2-vpc
+    name: basic-gke-hello-world-vpc
   subnetworkRef:
-    name: gke-basic-kcc-v2-subnet
+    name: basic-gke-hello-world-subnet
   ipAllocationPolicy:
     clusterSecondaryRangeName: pods
     servicesSecondaryRangeName: services
@@ -45,3 +46,4 @@ spec:
     mode: BASIC
     vulnerabilityMode: VULNERABILITY_BASIC
 # KCC validation trigger
+# Trigger CI run at Sun Apr 19 14:00:00 UTC 2026
