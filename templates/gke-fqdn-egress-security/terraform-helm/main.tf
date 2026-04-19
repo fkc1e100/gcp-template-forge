@@ -144,6 +144,32 @@ resource "google_container_cluster" "cluster" {
   }
 }
 
+# Register the cluster to a Fleet (GKE Enterprise)
+resource "google_gke_hub_membership" "membership" {
+  provider      = google-beta
+  membership_id = var.cluster_name
+  endpoint {
+    gke_cluster {
+      resource_link = "//container.googleapis.com/${google_container_cluster.cluster.id}"
+    }
+  }
+  project = var.project_id
+
+  labels = {
+    project  = "gcp-template-forge"
+    template = "gke-fqdn-egress-security"
+  }
+}
+
+# Wait for GKE Enterprise features (like FQDN Network Policy) to propagate
+# after fleet registration. This ensures the CRDs are available in the 
+# workload cluster before Helm attempts to install policies.
+resource "time_sleep" "wait_for_gke_features" {
+  depends_on = [google_gke_hub_membership.membership]
+
+  create_duration = "180s"
+}
+
 resource "google_container_node_pool" "primary_nodes" {
   provider = google-beta
   name     = "fqdn-egress-pool"
@@ -152,6 +178,9 @@ resource "google_container_node_pool" "primary_nodes" {
   project  = var.project_id
 
   node_count = 1
+
+  # Ensure features are propagated before nodes are ready
+  depends_on = [time_sleep.wait_for_gke_features]
 
   node_config {
     spot         = true

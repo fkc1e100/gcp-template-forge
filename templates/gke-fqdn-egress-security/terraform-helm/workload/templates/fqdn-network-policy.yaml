@@ -16,6 +16,9 @@ apiVersion: networking.gke.io/v1alpha1
 kind: FQDNNetworkPolicy
 metadata:
   name: allow-ai-egress
+  labels:
+    project: gcp-template-forge
+    template: gke-fqdn-egress-security
 spec:
   podSelector:
     matchLabels:
@@ -24,11 +27,11 @@ spec:
   - matches:
     - name: anthropic.com
     - name: api.anthropic.com
-    - name: "*.anthropic.com"
+    - pattern: "*.anthropic.com"
     - name: huggingface.co
-    - name: "*.huggingface.co"
+    - pattern: "*.huggingface.co"
     - name: hf.co
-    - name: "*.hf.co"
+    - pattern: "*.hf.co"
     ports:
     - protocol: TCP
       port: 443

@@ -13,6 +13,7 @@
 - [enterprise-gke](templates/enterprise-gke/) — Private GKE cluster with VPC, Cloud NAT, Workload Identity, security posture
 - [latest-gke-features](templates/latest-gke-features/) — Advanced GKE features (Gateway API, NAP, Native Sidecars, Image Streaming, Security Posture)
 - [gke-topology-aware-routing](templates/gke-topology-aware-routing/) — Cost-optimized egress via Topology-Aware Routing and Gateway API
+- [gke-fqdn-egress-security](templates/gke-fqdn-egress-security/) — Zero-Trust AI egress security via FQDN Network Policies (Enterprise feature)
 
 ## External Documentation (fetch before writing code)
 

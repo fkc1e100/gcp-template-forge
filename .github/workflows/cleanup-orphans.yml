@@ -62,7 +62,7 @@ jobs:
             out=$($cmd 2>&1)
             local status=$?
             if [ $status -ne 0 ]; then
-              if [[ "$out" =~ "Could not fetch resource" || "$out" =~ "not found" || "$out" =~ "is already being used" || "$out" =~ "running incompatible operation" || "$out" =~ "is not ready" || "$out" =~ "permission" ]]; then
+              if [[ "${out,,}" =~ "could not fetch resource" || "${out,,}" =~ "not found" || "${out,,}" =~ "is already being used" || "${out,,}" =~ "running incompatible operation" || "${out,,}" =~ "is not ready" || "${out,,}" =~ "permission" ]]; then
                 echo "Ignored benign error for $desc: $out"
               else
                 echo "ERROR deleting $desc: $out"
