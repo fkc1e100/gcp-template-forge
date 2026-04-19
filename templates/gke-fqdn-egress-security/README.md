@@ -18,6 +18,7 @@ Securing egress traffic is a critical component of a Zero-Trust architecture. In
     - `anthropic.com`, `api.anthropic.com`, `*.anthropic.com`
     - `huggingface.co`, `*.huggingface.co`
     - `hf.co`, `*.hf.co`
+    *Note: The GKE FQDN controller intercepts DNS queries from the pods to learn the IP addresses associated with these domains. The first few requests after a policy is applied may experience slight latency as the eBPF maps are populated.*
 - **Validation Pod:** A `curl`-based pod used to verify connectivity.
 
 ## Prerequisites
