@@ -36,7 +36,7 @@ echo "Connectivity passed."
 echo "Test 2: Workload Readiness..."
 # Wait for any deployment with the correct app label
 # Increased to 30m to comply with project mandates
-kubectl wait --for=condition=available deployment -l app.kubernetes.io/name=hello-world -n ${NAMESPACE_WORKLOAD} --timeout=30m
+kubectl wait --for=condition=Available deployment -l app.kubernetes.io/name=hello-world -n ${NAMESPACE_WORKLOAD} --timeout=30m
 echo "Workload is available."
 
 # 3. Endpoint Interaction
