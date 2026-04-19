@@ -45,6 +45,9 @@ spec:
     labels:
       project: gcp-template-forge
       template: latest-gke-features
+    resourceLabels:
+      project: gcp-template-forge
+      template: latest-gke-features
     # LATEST FEATURE: Image Streaming (GCFS)
     gcfsConfig:
       enabled: true
