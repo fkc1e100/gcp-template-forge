@@ -31,9 +31,9 @@ metadata:
   name: latest-features-workload
   namespace: latest-features
   labels:
-    app.kubernetes.io/name: latest-features-workload
     project: gcp-template-forge
     template: latest-gke-features
+    app.kubernetes.io/name: latest-features-workload
 spec:
   progressDeadlineSeconds: 3600
   replicas: 2
@@ -43,9 +43,9 @@ spec:
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: latest-features-workload
         project: gcp-template-forge
         template: latest-gke-features
+        app.kubernetes.io/name: latest-features-workload
     spec:
       securityContext:
         runAsNonRoot: true
@@ -131,9 +131,9 @@ metadata:
   name: latest-features-workload
   namespace: latest-features
   labels:
-    app.kubernetes.io/name: latest-features-workload
     project: gcp-template-forge
     template: latest-gke-features
+    app.kubernetes.io/name: latest-features-workload
 spec:
   type: ClusterIP
   selector:
@@ -148,9 +148,9 @@ metadata:
   name: latest-features-gateway
   namespace: latest-features
   labels:
-    app.kubernetes.io/name: latest-features-workload
     project: gcp-template-forge
     template: latest-gke-features
+    app.kubernetes.io/name: latest-features-workload
 spec:
   gatewayClassName: gke-l7-global-external-managed
   listeners:
@@ -164,9 +164,9 @@ metadata:
   name: latest-features-workload
   namespace: latest-features
   labels:
-    app.kubernetes.io/name: latest-features-workload
     project: gcp-template-forge
     template: latest-gke-features
+    app.kubernetes.io/name: latest-features-workload
 spec:
   parentRefs:
   - name: latest-features-gateway
@@ -174,4 +174,3 @@ spec:
   - backendRefs:
     - name: latest-features-workload
       port: 80
-

@@ -122,7 +122,7 @@ cd terraform-helm && terraform destroy -var="project_id=<PROJECT_ID>"
 ### Config Connector Path
 ```bash
 # Delete workload from workload cluster
-kubectl delete -f config-connector/workload/workload.yaml
+kubectl delete -f config-connector-workload/workload.yaml
 
 # Delete infrastructure from management cluster
 kubectl delete -f config-connector/nodepool.yaml -n forge-management
