@@ -1,0 +1,111 @@
+apiVersion: ray.io/v1
+kind: RayCluster
+metadata:
+  name: raycluster-team-a
+  namespace: team-a
+  labels:
+    kueue.x-k8s.io/queue-name: team-a-lq
+spec:
+  rayVersion: '2.9.0'
+  headGroupSpec:
+    rayStartParams:
+      dashboard-host: '0.0.0.0'
+    template:
+      spec:
+        containers:
+          - name: ray-head
+            image: rayproject/ray:2.9.0
+            resources:
+              limits:
+                cpu: 1
+                memory: 2Gi
+              requests:
+                cpu: 1
+                memory: 2Gi
+            ports:
+              - containerPort: 6379
+                name: gcs-server
+              - containerPort: 8265
+                name: dashboard
+              - containerPort: 10001
+                name: client
+  workerGroupSpecs:
+    - replicas: 1
+      minReplicas: 0
+      maxReplicas: 5
+      groupName: gpu-group
+      rayStartParams: {}
+      template:
+        spec:
+          containers:
+            - name: ray-worker
+              image: rayproject/ray:2.9.0
+              resources:
+                limits:
+                  cpu: 2
+                  memory: 4Gi
+                  nvidia.com/gpu: 1
+                requests:
+                  cpu: 2
+                  memory: 4Gi
+                  nvidia.com/gpu: 1
+          tolerations:
+            - key: "nvidia.com/gpu"
+              operator: "Exists"
+              effect: "NoSchedule"
+---
+apiVersion: ray.io/v1
+kind: RayCluster
+metadata:
+  name: raycluster-team-b
+  namespace: team-b
+  labels:
+    kueue.x-k8s.io/queue-name: team-b-lq
+spec:
+  rayVersion: '2.9.0'
+  headGroupSpec:
+    rayStartParams:
+      dashboard-host: '0.0.0.0'
+    template:
+      spec:
+        containers:
+          - name: ray-head
+            image: rayproject/ray:2.9.0
+            resources:
+              limits:
+                cpu: 1
+                memory: 2Gi
+              requests:
+                cpu: 1
+                memory: 2Gi
+            ports:
+              - containerPort: 6379
+                name: gcs-server
+              - containerPort: 8265
+                name: dashboard
+              - containerPort: 10001
+                name: client
+  workerGroupSpecs:
+    - replicas: 1
+      minReplicas: 0
+      maxReplicas: 5
+      groupName: gpu-group
+      rayStartParams: {}
+      template:
+        spec:
+          containers:
+            - name: ray-worker
+              image: rayproject/ray:2.9.0
+              resources:
+                limits:
+                  cpu: 2
+                  memory: 4Gi
+                  nvidia.com/gpu: 1
+                requests:
+                  cpu: 2
+                  memory: 4Gi
+                  nvidia.com/gpu: 1
+          tolerations:
+            - key: "nvidia.com/gpu"
+              operator: "Exists"
+              effect: "NoSchedule"
