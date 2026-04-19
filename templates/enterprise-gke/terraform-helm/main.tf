@@ -183,7 +183,7 @@ resource "google_container_node_pool" "primary_nodes" {
   }
 }
 
-# The following resources for Workload Identity are commented out because the CI 
+# The following resources for Workload Identity are commented out because the CI
 # service account lacks permissions to create Google Service Accounts (403 error).
 # They are provided here for functional parity with the Config Connector path
 # and can be enabled by users with sufficient permissions.
@@ -199,7 +199,7 @@ resource "google_service_account" "workload_sa" {
 resource "google_service_account_iam_member" "workload_identity_binding" {
   service_account_id = google_service_account.workload_sa.name
   role               = "roles/iam.workloadIdentityUser"
-  member             = "serviceAccount:${var.project_id}.svc.id.goog[default/gke-workload-sa]"
+  member             = "serviceAccount:${var.project_id}.svc.id.goog[gke-workload/gke-workload-sa]"
 }
 
 # Optional: Allow workload to access secrets if Secret Manager is used
