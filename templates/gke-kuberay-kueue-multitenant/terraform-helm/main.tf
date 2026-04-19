@@ -144,10 +144,6 @@ resource "google_container_node_pool" "gpu_nodes" {
       count = 1
     }
 
-    gpu_driver_installation_config {
-      gpu_driver_version = "LATEST"
-    }
-
     labels = {
       project                            = "gcp-template-forge"
       "cloud.google.com/gke-accelerator" = "nvidia-l4"
@@ -164,13 +160,13 @@ resource "google_container_node_pool" "gpu_nodes" {
       effect = "NO_SCHEDULE"
     }
   }
-  
+
   depends_on = [google_container_cluster.primary]
 }
 
 # Generate values.yaml for Helm
 resource "local_file" "helm_values" {
-  content = yamlencode({
+  content  = yamlencode({
     clusterName = var.cluster_name
     projectID   = var.project_id
     region      = var.region
