@@ -32,7 +32,7 @@ This template provides an enterprise-grade Google Kubernetes Engine (GKE) archit
 2.  **Deploy Workload**:
     ```bash
     gcloud container clusters get-credentials $(terraform output -raw cluster_name) --region $(terraform output -raw cluster_location)
-    helm upgrade --install release ./workload
+    helm upgrade --install release ./workload -n gke-workload --create-namespace
     ```
 
 ### Config Connector Path
