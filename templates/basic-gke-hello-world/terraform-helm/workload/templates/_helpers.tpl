@@ -10,6 +10,8 @@
 helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
 {{ include "hello-world.selectorLabels" . }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+project: gcp-template-forge
+template: basic-gke-hello-world
 {{- end }}
 
 {{- define "hello-world.selectorLabels" -}}

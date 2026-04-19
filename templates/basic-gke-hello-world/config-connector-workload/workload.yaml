@@ -29,6 +29,8 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: hello-world
+        project: gcp-template-forge
+        template: basic-gke-hello-world
     spec:
       containers:
       - name: hello-app

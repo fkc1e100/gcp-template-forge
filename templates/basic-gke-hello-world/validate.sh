@@ -32,6 +32,18 @@ gcloud container clusters get-credentials ${CLUSTER_NAME} --region ${REGION} --p
 kubectl cluster-info
 echo "Connectivity passed."
 
+# 1.5 Apply KCC Workload (if on KCC cluster)
+# Detect KCC cluster by checking if name does NOT end in -tf
+if [[ ! "$CLUSTER_NAME" =~ -tf$ ]]; then
+  WORKLOAD_MANIFEST="templates/basic-gke-hello-world/config-connector-workload/workload.yaml"
+  if [ -f "$WORKLOAD_MANIFEST" ]; then
+    echo "KCC cluster detected. Applying KCC workload manifests from $WORKLOAD_MANIFEST..."
+    kubectl apply -f "$WORKLOAD_MANIFEST" -n ${NAMESPACE_WORKLOAD}
+  else
+    echo "Warning: Workload manifest $WORKLOAD_MANIFEST not found."
+  fi
+fi
+
 # 2. Workload Readiness
 echo "Test 2: Workload Readiness..."
 # Wait for any deployment with the correct app label
