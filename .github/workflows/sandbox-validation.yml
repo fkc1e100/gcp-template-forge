@@ -946,7 +946,7 @@ jobs:
 
 
       - name: Helm uninstall (teardown)
-        if: always() && steps.teardown-check.outputs.should_destroy == 'true' && steps.helm-deploy.outcome == 'success'
+        if: always() && steps.tf-outputs.outputs.tf_cluster != ''
         run: |
           echo "Uninstalling Helm release to clean up NEGs and LoadBalancers..."
           helm uninstall release --wait --timeout=5m || true
