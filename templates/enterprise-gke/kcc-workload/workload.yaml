@@ -26,6 +26,8 @@ metadata:
   name: gke-workload-sa
   namespace: gke-workload
   labels:
+    app.kubernetes.io/name: enterprise-workload
+    app.kubernetes.io/instance: release
     project: gcp-template-forge
     template: enterprise-gke
   annotations:
@@ -38,6 +40,7 @@ metadata:
   name: release-enterprise-workload-config
   namespace: gke-workload
   labels:
+    app.kubernetes.io/name: enterprise-workload
     app.kubernetes.io/instance: release
     project: gcp-template-forge
     template: enterprise-gke
@@ -51,6 +54,7 @@ metadata:
   name: release-enterprise-workload
   namespace: gke-workload
   labels:
+    app.kubernetes.io/name: enterprise-workload
     app.kubernetes.io/instance: release
     project: gcp-template-forge
     template: enterprise-gke
@@ -59,12 +63,12 @@ spec:
   replicas: 3
   selector:
     matchLabels:
-      app: enterprise-workload
+      app.kubernetes.io/name: enterprise-workload
       app.kubernetes.io/instance: release
   template:
     metadata:
       labels:
-        app: enterprise-workload
+        app.kubernetes.io/name: enterprise-workload
         app.kubernetes.io/instance: release
         project: gcp-template-forge
         template: enterprise-gke
@@ -84,7 +88,7 @@ spec:
               podAffinityTerm:
                 labelSelector:
                   matchExpressions:
-                    - key: app
+                    - key: app.kubernetes.io/name
                       operator: In
                       values:
                         - enterprise-workload
@@ -93,7 +97,7 @@ spec:
               podAffinityTerm:
                 labelSelector:
                   matchExpressions:
-                    - key: app
+                    - key: app.kubernetes.io/name
                       operator: In
                       values:
                         - enterprise-workload
@@ -164,13 +168,14 @@ metadata:
   name: release-enterprise-workload
   namespace: gke-workload
   labels:
+    app.kubernetes.io/name: enterprise-workload
     app.kubernetes.io/instance: release
     project: gcp-template-forge
     template: enterprise-gke
 spec:
   type: LoadBalancer
   selector:
-    app: enterprise-workload
+    app.kubernetes.io/name: enterprise-workload
     app.kubernetes.io/instance: release
   ports:
   - protocol: TCP
@@ -183,13 +188,14 @@ metadata:
   name: release-enterprise-workload
   namespace: gke-workload
   labels:
+    app.kubernetes.io/name: enterprise-workload
     app.kubernetes.io/instance: release
     project: gcp-template-forge
     template: enterprise-gke
 spec:
   podSelector:
     matchLabels:
-      app: enterprise-workload
+      app.kubernetes.io/name: enterprise-workload
       app.kubernetes.io/instance: release
   policyTypes:
     - Ingress
@@ -219,6 +225,7 @@ metadata:
   name: release-enterprise-workload
   namespace: gke-workload
   labels:
+    app.kubernetes.io/name: enterprise-workload
     app.kubernetes.io/instance: release
     project: gcp-template-forge
     template: enterprise-gke
@@ -260,6 +267,7 @@ metadata:
   name: release-enterprise-workload
   namespace: gke-workload
   labels:
+    app.kubernetes.io/name: enterprise-workload
     app.kubernetes.io/instance: release
     project: gcp-template-forge
     template: enterprise-gke
@@ -267,5 +275,5 @@ spec:
   minAvailable: 2
   selector:
     matchLabels:
-      app: enterprise-workload
+      app.kubernetes.io/name: enterprise-workload
       app.kubernetes.io/instance: release
