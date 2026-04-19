@@ -42,6 +42,8 @@ spec:
   workloadIdentityConfig:
     # UPDATE: Replace 'gca-gke-2025' with your actual GCP Project ID
     workloadPool: "gca-gke-2025.svc.id.goog"
+  verticalPodAutoscaling:
+    enabled: true
   networkPolicy:
     enabled: true
     provider: CALICO
@@ -59,8 +61,6 @@ spec:
   securityPostureConfig:
     mode: BASIC
     vulnerabilityMode: VULNERABILITY_BASIC
-  verticalPodAutoscaling:
-    enabled: true
   releaseChannel:
     channel: REGULAR
 # KCC validation trigger
