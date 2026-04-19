@@ -27,6 +27,7 @@ export KUBECONFIG=$(mktemp)
 trap 'rm -f "$KUBECONFIG"' EXIT
 
 # 1. Cluster Connectivity
+# Ensure we can reach the GKE control plane
 echo "Test 1: Cluster Connectivity..."
 gcloud container clusters get-credentials "${CLUSTER_NAME}" --region "${REGION}" --project "${PROJECT_ID}"
 kubectl cluster-info
@@ -50,8 +51,24 @@ echo "Dataplane V2 and FQDN Policy enablement validated."
 
 # 3. FQDNNetworkPolicy Resource Verification
 echo "Test 3: Verifying FQDNNetworkPolicy Resource..."
+
+# NOTE: FQDNNetworkPolicy was promoted to GA in GKE 1.35. 
+# This template uses v1alpha1 as the primary API version.
+# Wait for the CRD to be available (it can take time for GKE to install it after feature enablement)
+echo "Waiting for FQDNNetworkPolicy CRD to be available..."
+for i in {1..30}; do
+  if kubectl get crd fqdnnetworkpolicies.networking.gke.io > /dev/null 2>&1; then
+    echo "CRD found!"
+    break
+  fi
+  echo "Still waiting for CRD (attempt $i/30)..."
+  sleep 10
+done
+
+# The policy should have been installed by the primary deployment phase (Helm or KCC).
+# We verify its existence here.
 kubectl get fqdnnetworkpolicies.networking.gke.io allow-ai-egress -n "${NAMESPACE}"
-echo "FQDNNetworkPolicy resource found."
+echo "FQDNNetworkPolicy resource found and verified."
 
 # 4. Wait for Verifier Pod
 echo "Test 4: Waiting for Egress Verifier Pod..."
@@ -80,7 +97,7 @@ echo "Test 5: Running Egress Tests..."
 echo "Testing allowed domain: api.anthropic.com..."
 # Dataplane V2 FQDN policies sometimes need a few seconds to learn the IP from the first DNS response.
 # We use a retry loop to account for this.
-MAX_RETRIES=5
+MAX_RETRIES=12
 SUCCESS=false
 for i in $(seq 1 $MAX_RETRIES); do
   if kubectl exec egress-verifier -n "${NAMESPACE}" -- curl -sL -4 --connect-timeout 10 https://api.anthropic.com > /dev/null; then
@@ -97,10 +114,10 @@ if [[ "$SUCCESS" == "false" ]]; then
   # Debug: dump policy status and DNS resolution
   echo "--- DEBUG INFO ---"
   kubectl get fqdnnetworkpolicies.networking.gke.io allow-ai-egress -n "${NAMESPACE}" -o yaml || true
-  echo "Checking if we can reach the pod at all..."
-  kubectl get pod egress-verifier -n "${NAMESPACE}" -o wide || true
+  echo "Checking pod status and labels..."
+  kubectl get pod egress-verifier -n "${NAMESPACE}" --show-labels || true
   echo "Attempting a direct curl with verbose output..."
-  kubectl exec egress-verifier -n "${NAMESPACE}" -- curl -v -4 --connect-timeout 10 https://api.anthropic.com || echo "kubectl exec failed (check master-to-node connectivity on port 10250)"
+  kubectl exec egress-verifier -n "${NAMESPACE}" -- curl -v -4 --connect-timeout 10 https://api.anthropic.com || echo "kubectl exec failed"
   exit 1
 fi
 

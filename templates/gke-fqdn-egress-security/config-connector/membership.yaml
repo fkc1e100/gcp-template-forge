@@ -12,21 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-terraform {
-  backend "gcs" {}
-  required_providers {
-    google = {
-      source  = "hashicorp/google"
-      version = "~> 6.0"
-    }
-    google-beta = {
-      source  = "hashicorp/google-beta"
-      version = "~> 6.0"
-    }
-    time = {
-      source  = "hashicorp/time"
-      version = "~> 0.11"
-    }
-  }
-  required_version = ">= 1.7"
-}
+apiVersion: gkehub.cnrm.cloud.google.com/v1beta1
+kind: GKEHubMembership
+metadata:
+  name: gke-fqdn-egress-security-cluster
+  namespace: forge-management
+  labels:
+    project: gcp-template-forge
+    template: gke-fqdn-egress-security
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
+spec:
+  location: us-central1
+  endpoint:
+    gkeCluster:
+      resourceRef:
+        name: gke-fqdn-egress-security-cluster
