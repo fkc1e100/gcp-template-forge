@@ -79,6 +79,5 @@ spec:
       shieldedInstanceConfig:
         enableSecureBoot: true
         enableIntegrityMonitoring: true
-      labels:
-        project: gcp-template-forge
-        template: latest-gke-features
+      # Note: 'labels' is not currently supported in autoProvisioningDefaults.
+      # Nodes will be labeled based on Pod nodeSelectors/affinity.
