@@ -13,7 +13,7 @@ Securing egress traffic is a critical component of a Zero-Trust architecture. In
 
 ## Architecture
 - **GKE Cluster:** A private cluster with Dataplane V2 and FQDN Network Policy enabled.
-- **NetworkPolicy (`default-deny-egress`):** Denies all egress except for DNS (UDP/TCP 53) to allow FQDN resolution.
+- **NetworkPolicy (`default-deny-egress`):** Denies all egress except for DNS (UDP/TCP 53) to allow FQDN resolution. *Note: This blocks communication with the Kubernetes API server by default, which is acceptable for this validation pod but may require an exception for production workloads.*
 - **FQDNNetworkPolicy (`allow-ai-egress`):** Allows HTTPS (TCP 443) traffic to:
     - `anthropic.com`, `api.anthropic.com`, `*.anthropic.com`
     - `huggingface.co`, `*.huggingface.co`
@@ -53,6 +53,8 @@ This path uses Kubernetes manifests to manage both the GCP infrastructure and th
     ```bash
     kubectl wait --for=condition=Ready containercluster/gke-fqdn-egress-security-cluster -n forge-management --timeout=30m
     ```
+    *Note: After the cluster is ready, it may take an additional 2-3 minutes for GKE Enterprise features (like FQDN Network Policies) to propagate across the fleet.*
+
 3.  **Deploy Workload:**
     Once the cluster is ready, get credentials and apply the workload manifests:
     ```bash
