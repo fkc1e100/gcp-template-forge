@@ -28,3 +28,7 @@ spec:
       port: 53
     - protocol: TCP
       port: 53
+  # NOTE: This strict policy will block traffic to the Kubernetes API server 
+  # by default. For this validation pod, it is acceptable, but real workloads 
+  # may need an explicit allow rule for the API server IP/port if they 
+  # need to communicate with the cluster control plane.
