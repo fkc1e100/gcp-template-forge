@@ -101,6 +101,10 @@ resource "google_container_cluster" "enterprise_cluster" {
     workload_pool = "${var.project_id}.svc.id.goog"
   }
 
+  vertical_pod_autoscaling {
+    enabled = true
+  }
+
   network_policy {
     enabled  = true
     provider = "CALICO"
@@ -127,10 +131,6 @@ resource "google_container_cluster" "enterprise_cluster" {
   }
 
   secret_manager_config {
-    enabled = true
-  }
-
-  vertical_pod_autoscaling {
     enabled = true
   }
 

@@ -47,7 +47,7 @@ terraform apply -auto-approve
 2. **Workload Health:**
    ```bash
    gcloud container clusters get-credentials enterprise-gke-tf --region us-central1
-   kubectl get pods -l app.kubernetes.io/name=enterprise-workload -n gke-workload
+   kubectl get pods -l app.kubernetes.io/instance=release -n gke-workload
    ```
 3. **Endpoint Interaction:**
    ```bash
