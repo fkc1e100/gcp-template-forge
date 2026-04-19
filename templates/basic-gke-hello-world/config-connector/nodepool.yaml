@@ -33,7 +33,7 @@ spec:
     diskSizeGb: 50
     diskType: pd-standard
     oauthScopes:
-      - https://www.googleapis.com/auth/cloud-platform
+      - "https://www.googleapis.com/auth/cloud-platform"
     workloadMetadataConfig:
       mode: GKE_METADATA
     labels:
