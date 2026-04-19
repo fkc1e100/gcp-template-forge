@@ -29,7 +29,7 @@ spec:
     - protocol: TCP
       port: 53
 ---
-apiVersion: networking.gke.io/v1alpha1
+apiVersion: networking.gke.io/v1
 kind: FQDNNetworkPolicy
 metadata:
   name: allow-ai-egress

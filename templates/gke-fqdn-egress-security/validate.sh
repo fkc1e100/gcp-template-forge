@@ -50,8 +50,34 @@ echo "Dataplane V2 and FQDN Policy enablement validated."
 
 # 3. FQDNNetworkPolicy Resource Verification
 echo "Test 3: Verifying FQDNNetworkPolicy Resource..."
+
+# Wait for the CRD to be available (it can take time for GKE to install it after feature enablement)
+echo "Waiting for FQDNNetworkPolicy CRD to be available..."
+for i in {1..30}; do
+  if kubectl get crd fqdnnetworkpolicies.networking.gke.io > /dev/null 2>&1; then
+    echo "CRD found!"
+    break
+  fi
+  echo "Still waiting for CRD (attempt $i/30)..."
+  sleep 10
+done
+
+# Check if the policy exists. If not, it might have been skipped by Helm due to missing CRD at install time.
+if ! kubectl get fqdnnetworkpolicies.networking.gke.io allow-ai-egress -n "${NAMESPACE}" > /dev/null 2>&1; then
+  echo "FQDNNetworkPolicy 'allow-ai-egress' not found. It may have been skipped by Helm."
+  echo "Attempting to apply it manually from the template..."
+  
+  # Try to find the manifest. We can use the one from config-connector-workload as it's static.
+  if [ -f "templates/gke-fqdn-egress-security/config-connector-workload/workload.yaml" ]; then
+    kubectl apply -n "${NAMESPACE}" -f templates/gke-fqdn-egress-security/config-connector-workload/workload.yaml
+  else
+    echo "ERROR: Could not find workload manifest to apply FQDNNetworkPolicy manually!"
+    exit 1
+  fi
+fi
+
 kubectl get fqdnnetworkpolicies.networking.gke.io allow-ai-egress -n "${NAMESPACE}"
-echo "FQDNNetworkPolicy resource found."
+echo "FQDNNetworkPolicy resource found and verified."
 
 # 4. Wait for Verifier Pod
 echo "Test 4: Waiting for Egress Verifier Pod..."

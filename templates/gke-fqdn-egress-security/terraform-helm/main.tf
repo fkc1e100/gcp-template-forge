@@ -156,6 +156,14 @@ resource "google_gke_hub_membership" "membership" {
   project = var.project_id
 }
 
+# Wait for GKE Enterprise features (like FQDN Network Policy) to propagate
+# after fleet registration.
+resource "time_sleep" "wait_for_gke_features" {
+  depends_on = [google_gke_hub_membership.membership]
+
+  create_duration = "120s"
+}
+
 resource "google_container_node_pool" "primary_nodes" {
   provider = google-beta
   name     = "fqdn-egress-pool"
@@ -164,6 +172,9 @@ resource "google_container_node_pool" "primary_nodes" {
   project  = var.project_id
 
   node_count = 1
+
+  # Ensure features are propagated before nodes are ready
+  depends_on = [time_sleep.wait_for_gke_features]
 
   node_config {
     spot         = true
