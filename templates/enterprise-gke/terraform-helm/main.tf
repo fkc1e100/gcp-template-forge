@@ -199,7 +199,7 @@ resource "google_service_account" "workload_sa" {
 resource "google_service_account_iam_member" "workload_identity_binding" {
   service_account_id = google_service_account.workload_sa.name
   role               = "roles/iam.workloadIdentityUser"
-  member             = "serviceAccount:${var.project_id}.svc.id.goog[gke-workload/gke-workload-sa]"
+  member             = "serviceAccount:${var.project_id}.svc.id.goog[default/gke-workload-sa]"
 }
 
 # Optional: Allow workload to access secrets if Secret Manager is used
