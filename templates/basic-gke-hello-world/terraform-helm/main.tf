@@ -136,7 +136,7 @@ resource "google_container_node_pool" "primary_nodes" {
 # Generate values.yaml for the Helm chart
 resource "local_file" "helm_values" {
   filename = "${path.module}/workload/values.yaml"
-  content  = <<-EOF
+  content = <<-EOF
 # Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -153,22 +153,22 @@ resource "local_file" "helm_values" {
 
 ${yamlencode({
   replicaCount = 3
-  image        = {
+  image = {
     repository = "us-docker.pkg.dev/google-samples/containers/gke/hello-app"
     tag        = "1.0"
     pullPolicy = "IfNotPresent"
   }
-  resources    = {
+  resources = {
     requests = {
       cpu    = "100m"
       memory = "128Mi"
     }
-    limits   = {
+    limits = {
       cpu    = "200m"
       memory = "256Mi"
     }
   }
-  service      = {
+  service = {
     type       = "LoadBalancer"
     port       = 80
     targetPort = 8080
