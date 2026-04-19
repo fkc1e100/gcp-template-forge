@@ -34,8 +34,10 @@ echo "Connectivity passed."
 
 # 1.5 Apply KCC Workload (if on KCC cluster)
 # Detect KCC cluster by checking if name does NOT end in -tf
+# We use the directory of the script to find the workload manifest
 if [[ ! "$CLUSTER_NAME" =~ -tf$ ]]; then
-  WORKLOAD_MANIFEST="templates/basic-gke-hello-world/config-connector-workload/workload.yaml"
+  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  WORKLOAD_MANIFEST="${SCRIPT_DIR}/config-connector-workload/workload.yaml"
   if [ -f "$WORKLOAD_MANIFEST" ]; then
     echo "KCC cluster detected. Applying KCC workload manifests from $WORKLOAD_MANIFEST..."
     kubectl apply -f "$WORKLOAD_MANIFEST" -n ${NAMESPACE_WORKLOAD}
