@@ -21,14 +21,6 @@ provider "google" {
 resource "google_compute_network" "vpc" {
   name                    = var.network_name
   auto_create_subnetworks = false
-
-  # GCP resource labels
-  # Note: google_compute_network uses 'labels' field
-  # project: gcp-template-forge is mandatory per engineering mandates
-  labels = {
-    project  = "gcp-template-forge"
-    template = "basic-gke-hello-world"
-  }
 }
 
 # Subnet with secondary ranges for VPC-native GKE
@@ -38,13 +30,6 @@ resource "google_compute_subnetwork" "subnet" {
   region                   = var.region
   network                  = google_compute_network.vpc.id
   private_ip_google_access = true
-
-  # GCP resource labels
-  # project: gcp-template-forge is mandatory per engineering mandates
-  labels = {
-    project  = "gcp-template-forge"
-    template = "basic-gke-hello-world"
-  }
 
   secondary_ip_range {
     range_name    = "pods"
