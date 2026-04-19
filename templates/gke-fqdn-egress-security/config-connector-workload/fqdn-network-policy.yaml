@@ -12,21 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-terraform {
-  backend "gcs" {}
-  required_providers {
-    google = {
-      source  = "hashicorp/google"
-      version = "~> 6.0"
-    }
-    google-beta = {
-      source  = "hashicorp/google-beta"
-      version = "~> 6.0"
-    }
-    time = {
-      source  = "hashicorp/time"
-      version = "~> 0.11"
-    }
-  }
-  required_version = ">= 1.7"
-}
+apiVersion: networking.gke.io/v1alpha1
+kind: FQDNNetworkPolicy
+metadata:
+  name: allow-ai-egress
+  labels:
+    project: gcp-template-forge
+    template: gke-fqdn-egress-security
+spec:
+  podSelector:
+    matchLabels:
+      app: egress-test
+  egress:
+  - matches:
+    - name: anthropic.com
+    - name: api.anthropic.com
+    - pattern: "*.anthropic.com"
+    - name: huggingface.co
+    - pattern: "*.huggingface.co"
+    - name: hf.co
+    - pattern: "*.hf.co"
+    ports:
+    - protocol: TCP
+      port: 443
