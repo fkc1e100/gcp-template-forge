@@ -241,19 +241,16 @@ jobs:
           chmod +x agent-infra/cleanup-resources.sh
           ./agent-infra/cleanup-resources.sh
 
-  tf-provision:
-    name: "Provision TF (${{ matrix.template }})"
+  validate-tf-helm-pr:
+    name: "Validate TF+Helm (${{ matrix.template }})"
     needs: [ detect-changes, lint, pre-cleanup ]
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
         template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
-    outputs:
-      tf_cluster: ${{ steps.tf-outputs.outputs.tf_cluster }}
-      tf_location: ${{ steps.tf-outputs.outputs.tf_location }}
     steps:
       - uses: actions/checkout@v4
 
@@ -269,8 +266,6 @@ jobs:
       - name: Break stale TF state lock (if any)
         if: "hashFiles(format('{0}/terraform-helm/**', matrix.template)) != ''"
         run: |
-          RUN_ID="${{ github.run_id }}"
-          UID_SUFFIX="${RUN_ID: -6}"
           gsutil rm "gs://${TF_STATE_BUCKET}/${{ matrix.template }}-${{ github.run_id }}/terraform-helm/default.tflock" \
             2>/dev/null && echo "Stale state lock removed" || echo "No stale lock present"
 
@@ -295,45 +290,27 @@ jobs:
         if: steps.tf-apply.outcome == 'success'
         working-directory: ${{ matrix.template }}/terraform-helm
         run: |
-          TF_DURATION=$(( $(date -u +%s) - ${TF_START} ))
-          echo "tf_duration=${TF_DURATION}" >> $GITHUB_OUTPUT
           CLUSTER=$(terraform output -raw cluster_name 2>/dev/null || echo "")
           LOCATION=$(terraform output -raw cluster_location 2>/dev/null || echo "")
-          echo "tf_cluster=${CLUSTER}" >> $GITHUB_OUTPUT
-          echo "tf_location=${LOCATION}" >> $GITHUB_OUTPUT
-
-  tf-test:
-    name: "Test TF (${{ matrix.template }})"
-    needs: [ tf-provision, detect-changes ]
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    strategy:
-      fail-fast: false
-      matrix:
-        template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Auth and Setup GKE
-        uses: ./.github/actions/gcp-gke-auth
-        with:
-          wif_provider: ${{ env.WIF_PROVIDER }}
-          wif_service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+          echo "tf_cluster=${CLUSTER}" >> $GITHUB_ENV
+          echo "tf_location=${LOCATION}" >> $GITHUB_ENV
 
       - name: Get TF cluster credentials
+        if: steps.tf-apply.outcome == 'success'
         uses: google-github-actions/get-gke-credentials@v2
         with:
-          cluster_name: ${{ needs.tf-provision.outputs.tf_cluster }}
-          location: ${{ needs.tf-provision.outputs.tf_location }}
+          cluster_name: ${{ env.tf_cluster }}
+          location: ${{ env.tf_location }}
           project_id: ${{ env.PROJECT_ID }}
 
       - name: Verify Terraform cluster is RUNNING
+        if: steps.tf-apply.outcome == 'success'
         run: |
           kubectl get nodes
 
       - name: Helm deploy and verify
         id: helm-deploy
-        if: "hashFiles(format('{0}/terraform-helm/**', matrix.template)) != ''"
+        if: steps.tf-apply.outcome == 'success' && hashFiles(format('{0}/terraform-helm/**', matrix.template)) != ''
         run: |
           CHARTS=$(find ${{ matrix.template }}/terraform-helm -name Chart.yaml -exec dirname {} \; 2>/dev/null)
           if [ -z "$CHARTS" ]; then echo "No Helm charts found -- skipping"; exit 0; fi
@@ -348,60 +325,35 @@ jobs:
 
           if [ -f "${{ matrix.template }}/validate.sh" ]; then
             echo "=== Running template-specific validation: ${{ matrix.template }}/validate.sh ==="
-            export CLUSTER_NAME="${{ needs.tf-provision.outputs.tf_cluster }}"
-            export REGION="${{ needs.tf-provision.outputs.tf_location }}"
+            export CLUSTER_NAME="${{ env.tf_cluster }}"
+            export REGION="${{ env.tf_location }}"
             chmod +x ${{ matrix.template }}/validate.sh
             ./${{ matrix.template }}/validate.sh
           fi
 
       - name: Security scan — GCP native
+        if: steps.tf-apply.outcome == 'success'
         continue-on-error: true
         run: |
-          CLUSTER="${{ needs.tf-provision.outputs.tf_cluster }}"
-          LOCATION="${{ needs.tf-provision.outputs.tf_location }}"
-          PROJECT="${{ env.PROJECT_ID }}"
           echo "=== GKE Security Posture configuration ==="
-          gcloud container clusters describe "$CLUSTER" --location="$LOCATION" \
-            --project="$PROJECT" --format="yaml(securityPostureConfig)"
-
-  tf-teardown:
-    name: "Teardown TF (${{ matrix.template }})"
-    needs: [ tf-provision, tf-test, detect-changes ]
-    if: always()
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Auth and Setup GKE
-        uses: ./.github/actions/gcp-gke-auth
-        with:
-          wif_provider: ${{ env.WIF_PROVIDER }}
-          wif_service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+          gcloud container clusters describe "${{ env.tf_cluster }}" --location="${{ env.tf_location }}" \
+            --project="${{ env.PROJECT_ID }}" --format="yaml(securityPostureConfig)"
 
       - name: Terraform destroy
+        if: always() && steps.tf-apply.outcome == 'success'
         working-directory: ${{ matrix.template }}/terraform-helm
         run: |
-          terraform init \
-            -backend-config="bucket=$TF_STATE_BUCKET" \
-            -backend-config="prefix=${{ matrix.template }}-${{ github.run_id }}/terraform-helm"
           terraform destroy -auto-approve -input=false
 
       - name: Fallback gcloud cluster delete
-        if: failure()
+        if: failure() && steps.tf-apply.outcome == 'success'
         run: |
-          gcloud container clusters delete "${{ needs.tf-provision.outputs.tf_cluster }}" \
-            --location="${{ needs.tf-provision.outputs.tf_location }}" \
+          gcloud container clusters delete "${{ env.tf_cluster }}" \
+            --location="${{ env.tf_location }}" \
             --project="${{ env.PROJECT_ID }}" --quiet --async || true
 
       - name: Post TF+Helm summary to PR
+        if: always() && steps.tf-apply.outcome == 'success'
         uses: actions/github-script@v7
         with:
           script: |
@@ -414,7 +366,7 @@ jobs:
             });
 
       - name: Remove Hold Label on Failure
-        if: failure() && github.event_name == 'pull_request'
+        if: failure()
         run: gh pr edit ${{ github.event.number }} --remove-label "hold"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -425,13 +377,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh run cancel ${{ github.run_id }}
 
-  # ── 4b. PR: KCC deploy → wait → delete (parallel with deploy-test-tf) ─────
-  kcc-apply:
-    name: "KCC Apply (${{ matrix.template }})"
+  validate-kcc-pr:
+    name: "Validate KCC (${{ matrix.template }})"
     needs: [ detect-changes, lint, pre-cleanup ]
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
@@ -459,12 +410,21 @@ jobs:
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
           echo "KCC_START=$(date -u +%s)" >> $GITHUB_ENV
-          find ${{ matrix.template }}/config-connector -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
+          
+          # Suffix template name in config-connector and kcc-workload
+          DIRS_TO_SUFFIX=""
+          [ -d "${{ matrix.template }}/config-connector" ] && DIRS_TO_SUFFIX="${{ matrix.template }}/config-connector"
+          [ -d "${{ matrix.template }}/kcc-workload" ] && DIRS_TO_SUFFIX="${DIRS_TO_SUFFIX} ${{ matrix.template }}/kcc-workload"
+          
+          if [ -n "${DIRS_TO_SUFFIX}" ]; then
+            find ${DIRS_TO_SUFFIX} -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
+            find ${DIRS_TO_SUFFIX} -type f -name "*.yaml" -exec sed -i "s/gke-workload/gke-workload-${UID_SUFFIX}/g" {} +
+          fi
+          
           kubectl apply -n $KCC_NAMESPACE \
             -f ${{ matrix.template }}/config-connector/
 
       - name: Wait for KCC resources Ready
-        id: kcc-wait
         if: steps.kcc-apply.outcome == 'success'
         run: |
           kubectl wait \
@@ -474,32 +434,8 @@ jobs:
             --timeout=3600s \
             -f ${{ matrix.template }}/config-connector/
 
-  kcc-test:
-    name: "KCC Test (${{ matrix.template }})"
-    needs: [ kcc-apply, detect-changes ]
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    strategy:
-      fail-fast: false
-      matrix:
-        template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Auth and Setup GKE
-        uses: ./.github/actions/gcp-gke-auth
-        with:
-          wif_provider: ${{ env.WIF_PROVIDER }}
-          wif_service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
-
-      - name: Get KCC cluster credentials
-        uses: google-github-actions/get-gke-credentials@v2
-        with:
-          cluster_name: ${{ env.KCC_CLUSTER }}
-          location: ${{ env.KCC_REGION }}
-          project_id: ${{ env.PROJECT_ID }}
-
       - name: Get KCC Workload Cluster Info
+        if: steps.kcc-apply.outcome == 'success'
         id: kcc-workload-info
         run: |
           RUN_ID="${{ github.run_id }}"
@@ -525,20 +461,24 @@ jobs:
             LOCATION=""
           fi
           
-          echo "cluster_name=${CLUSTER_NAME}" >> $GITHUB_OUTPUT
-          echo "location=${LOCATION}" >> $GITHUB_OUTPUT
+          echo "cluster_name=${CLUSTER_NAME}" >> $GITHUB_ENV
+          echo "location=${LOCATION}" >> $GITHUB_ENV
 
       - name: Get KCC Workload Cluster Credentials
-        id: kcc-workload-creds
-        if: steps.kcc-workload-info.outputs.cluster_name != ''
+        if: steps.kcc-apply.outcome == 'success' && env.cluster_name != ''
         uses: google-github-actions/get-gke-credentials@v2
         with:
-          cluster_name: ${{ steps.kcc-workload-info.outputs.cluster_name }}
-          location: ${{ steps.kcc-workload-info.outputs.location }}
+          cluster_name: ${{ env.cluster_name }}
+          location: ${{ env.location }}
           project_id: ${{ env.PROJECT_ID }}
 
+      - name: Deploy KCC Workload
+        if: steps.kcc-apply.outcome == 'success' && env.cluster_name != '' && hashFiles(format('{0}/kcc-workload/**', matrix.template)) != ''
+        run: |
+          kubectl apply -f ${{ matrix.template }}/kcc-workload/
+
       - name: Helm deploy and verify (KCC)
-        if: steps.kcc-workload-creds.outcome == 'success' && hashFiles(format('{0}/terraform-helm/**', matrix.template)) != ''
+        if: steps.kcc-apply.outcome == 'success' && env.cluster_name != '' && hashFiles(format('{0}/terraform-helm/**', matrix.template)) != ''
         run: |
           CHARTS=$(find ${{ matrix.template }}/terraform-helm -name Chart.yaml -exec dirname {} \; 2>/dev/null)
           if [ -z "$CHARTS" ]; then echo "No Helm charts found -- skipping"; exit 0; fi
@@ -553,46 +493,24 @@ jobs:
 
           if [ -f "${{ matrix.template }}/validate.sh" ]; then
             echo "=== Running template-specific validation (KCC): ${{ matrix.template }}/validate.sh ==="
-            export CLUSTER_NAME="${{ steps.kcc-workload-info.outputs.cluster_name }}"
-            export REGION="${{ steps.kcc-workload-info.outputs.location }}"
+            export CLUSTER_NAME="${{ env.cluster_name }}"
+            export REGION="${{ env.location }}"
             chmod +x ${{ matrix.template }}/validate.sh
             ./${{ matrix.template }}/validate.sh
           fi
 
-  kcc-teardown:
-    name: "KCC Teardown (${{ matrix.template }})"
-    needs: [ kcc-apply, kcc-test, detect-changes ]
-    if: always()
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Auth and Setup GKE
-        uses: ./.github/actions/gcp-gke-auth
-        with:
-          wif_provider: ${{ env.WIF_PROVIDER }}
-          wif_service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
-
-      - name: Get KCC cluster credentials
-        uses: google-github-actions/get-gke-credentials@v2
-        with:
-          cluster_name: ${{ env.KCC_CLUSTER }}
-          location: ${{ env.KCC_REGION }}
-          project_id: ${{ env.PROJECT_ID }}
-
       - name: Delete KCC resources
+        if: always() && steps.kcc-apply.outcome == 'success'
         run: |
+          # Restore KCC management credentials
+          gcloud container clusters get-credentials $KCC_CLUSTER --location $KCC_REGION --project $PROJECT_ID
           kubectl delete \
             -n $KCC_NAMESPACE \
             -f ${{ matrix.template }}/config-connector/ \
             --wait=true --timeout=900s || true
 
       - name: Post KCC summary to PR
+        if: always() && steps.kcc-apply.outcome == 'success'
         uses: actions/github-script@v7
         with:
           script: |
@@ -632,7 +550,6 @@ jobs:
         run: |
           curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --yes --batch --dearmor -o /usr/share/keyrings/cloud.google.gpg
           echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
-          sudo apt-get update && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
           sudo apt-get update && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
 
       # ── TF cleanup ──────────────────────────────────────────────────────────
@@ -698,6 +615,12 @@ jobs:
       fail-fast: false
       matrix:
         template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
+    outputs:
+      tf_cluster: ${{ steps.tf-outputs.outputs.tf_cluster }}
+      tf_location: ${{ steps.tf-outputs.outputs.tf_location }}
+      tf_duration: ${{ steps.tf-outputs.outputs.tf_duration }}
+      tf_zones: ${{ steps.tf-outputs.outputs.tf_zones }}
+      tf_status: ${{ steps.tf-verify.outcome }}
 
     steps:
       - uses: actions/checkout@v4
@@ -741,7 +664,6 @@ jobs:
         run: |
           curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --yes --batch --dearmor -o /usr/share/keyrings/cloud.google.gpg
           echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
-          sudo apt-get update && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
           sudo apt-get update && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
 
       - name: Setup Terraform
@@ -787,6 +709,8 @@ jobs:
           LOCATION=$(terraform output -raw cluster_location 2>/dev/null || echo "")
           echo "tf_cluster=${CLUSTER}" >> $GITHUB_OUTPUT
           echo "tf_location=${LOCATION}" >> $GITHUB_OUTPUT
+          echo "tf_cluster=${CLUSTER}" >> $GITHUB_ENV
+          echo "tf_location=${LOCATION}" >> $GITHUB_ENV
           if [ -n "$CLUSTER" ] && [ -n "$LOCATION" ]; then
             ZONES=$(gcloud container clusters describe $CLUSTER --location=$LOCATION \
               --format="value(locations)" 2>/dev/null | tr ';' ', ' || echo "$LOCATION")
@@ -798,19 +722,19 @@ jobs:
         id: tf-creds
         if: >-
           steps.tf-outputs.outcome == 'success' &&
-          steps.tf-outputs.outputs.tf_cluster != ''
+          env.tf_cluster != ''
         uses: google-github-actions/get-gke-credentials@v2
         with:
-          cluster_name: ${{ steps.tf-outputs.outputs.tf_cluster }}
-          location: ${{ steps.tf-outputs.outputs.tf_location }}
+          cluster_name: ${{ env.tf_cluster }}
+          location: ${{ env.tf_location }}
           project_id: ${{ env.PROJECT_ID }}
 
       - name: Verify Terraform cluster is RUNNING
         id: tf-verify
         if: steps.tf-creds.outcome == 'success'
         run: |
-          CLUSTER="${{ steps.tf-outputs.outputs.tf_cluster }}"
-          LOCATION="${{ steps.tf-outputs.outputs.tf_location }}"
+          CLUSTER="${{ env.tf_cluster }}"
+          LOCATION="${{ env.tf_location }}"
           kubectl get nodes
           gcloud container clusters describe $CLUSTER --location=$LOCATION \
             --format="value(status)" | grep -q RUNNING
@@ -839,8 +763,8 @@ jobs:
           # Run template-specific validation if present
           if [ -f "${{ matrix.template }}/validate.sh" ]; then
             echo "=== Running template-specific validation: ${{ matrix.template }}/validate.sh ==="
-            export CLUSTER_NAME="${{ steps.tf-outputs.outputs.tf_cluster }}"
-            export REGION="${{ steps.tf-outputs.outputs.tf_location }}"
+            export CLUSTER_NAME="${{ env.tf_cluster }}"
+            export REGION="${{ env.tf_location }}"
             chmod +x ${{ matrix.template }}/validate.sh
             ./${{ matrix.template }}/validate.sh
           fi
@@ -850,8 +774,8 @@ jobs:
         continue-on-error: true
         if: steps.tf-verify.outcome == 'success'
         run: |
-          CLUSTER="${{ steps.tf-outputs.outputs.tf_cluster }}"
-          LOCATION="${{ steps.tf-outputs.outputs.tf_location }}"
+          CLUSTER="${{ env.tf_cluster }}"
+          LOCATION="${{ env.tf_location }}"
           PROJECT="${{ env.PROJECT_ID }}"
           SCAN_WARNINGS=0
 
@@ -919,40 +843,19 @@ jobs:
             || echo "::warning::Security findings detected — review output above (non-blocking)"
 
 
-      - name: Helm uninstall (teardown)
-        if: always() && steps.teardown-check.outputs.should_destroy == 'true' && steps.helm-deploy.outcome == 'success'
-        run: |
-          echo "Uninstalling Helm release to clean up NEGs and LoadBalancers..."
-          helm uninstall release --wait --timeout=5m || true
-          kubectl delete gateway,ingress --all -A --wait=true --timeout=2m || true
-          echo "Waiting for NEGs to be cleaned up..."
-          RUN_ID="${{ github.run_id }}"
-          UID_SUFFIX="${RUN_ID: -6}"
-          NETWORK_NAME="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf-vpc"
-          for i in {1..20}; do
-            NEGS=$(gcloud compute network-endpoint-groups list --filter="network:($NETWORK_NAME)" --project="${{ env.PROJECT_ID }}" --format="value(name)" 2>/dev/null || true)
-            if [ -z "$NEGS" ]; then
-              echo "All NEGs cleaned up."
-              break
-            fi
-            echo "NEGs still exist. Waiting 15s..."
-            sleep 15
-          done
-
       - name: Terraform destroy
         id: tf-destroy
         if: always() && steps.tf-apply.outcome != 'skipped'
         working-directory: ${{ matrix.template }}/terraform-helm
         run: |
-          terraform destroy -auto-approve -input=false || \
           terraform destroy -auto-approve -input=false
 
       - name: Fallback gcloud cluster delete
-        if: always() && steps.tf-destroy.outcome == 'failure' && steps.tf-outputs.outputs.tf_cluster != ''
+        if: always() && steps.tf-destroy.outcome == 'failure' && env.tf_cluster != ''
         run: |
           echo "terraform destroy failed — falling back to gcloud for cluster deletion"
-          gcloud container clusters delete "${{ steps.tf-outputs.outputs.tf_cluster }}" \
-            --location="${{ steps.tf-outputs.outputs.tf_location }}" \
+          gcloud container clusters delete "${{ env.tf_cluster }}" \
+            --location="${{ env.tf_location }}" \
             --project="${{ env.PROJECT_ID }}" --quiet --async || true
           echo "::warning::Cluster deletion initiated via gcloud fallback. VPC may need manual cleanup."
 
@@ -980,10 +883,6 @@ jobs:
           retention-days: 1
 
   # ── 5b. Post-merge: independent KCC cluster: apply → wait Ready → delete ─
-  #   Runs in parallel with validate-tf-helm. TF resources use -tf suffix
-  #   (e.g. basic-gke-tf, basic-gke-tf-vpc) and KCC resources use -kcc suffix
-  #   (e.g. basic-gke-kcc, basic-gke-kcc-vpc), so there is no GCP-level name
-  #   collision and both jobs can run concurrently.
   validate-kcc:
     name: "Validate KCC (${{ matrix.template }})"
     needs: detect-changes
@@ -994,6 +893,9 @@ jobs:
       fail-fast: false
       matrix:
         template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
+    outputs:
+      kcc_duration: ${{ steps.kcc-wait-out.outputs.kcc_duration }}
+      kcc_status: ${{ steps.kcc-wait.outcome }}
 
     steps:
       - uses: actions/checkout@v4
@@ -1028,16 +930,10 @@ jobs:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
 
-      - name: List existing clusters
-        if: steps.skip-check.outputs.skip != 'true'
-        run: |
-          gcloud container clusters list --project gca-gke-2025
-
       - name: Install GKE Auth Plugin
         run: |
           curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --yes --batch --dearmor -o /usr/share/keyrings/cloud.google.gpg
           echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
-          sudo apt-get update && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
           sudo apt-get update && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
 
       - name: Get KCC cluster credentials
@@ -1057,7 +953,17 @@ jobs:
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
           echo "KCC_START=$(date -u +%s)" >> $GITHUB_ENV
-          find ${{ matrix.template }}/config-connector -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
+          
+          # Suffix template name in config-connector and kcc-workload
+          DIRS_TO_SUFFIX=""
+          [ -d "${{ matrix.template }}/config-connector" ] && DIRS_TO_SUFFIX="${{ matrix.template }}/config-connector"
+          [ -d "${{ matrix.template }}/kcc-workload" ] && DIRS_TO_SUFFIX="${DIRS_TO_SUFFIX} ${{ matrix.template }}/kcc-workload"
+          
+          if [ -n "${DIRS_TO_SUFFIX}" ]; then
+            find ${DIRS_TO_SUFFIX} -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
+            find ${DIRS_TO_SUFFIX} -type f -name "*.yaml" -exec sed -i "s/gke-workload/gke-workload-${UID_SUFFIX}/g" {} +
+          fi
+          
           kubectl apply -n $KCC_NAMESPACE \
             -f ${{ matrix.template }}/config-connector/
 
@@ -1067,6 +973,7 @@ jobs:
         run: |
           echo "Waiting for KCC resources to be Ready (up to 30 minutes)..."
           KCC_START=$(date -u +%s)
+          echo "KCC_START_TS=${KCC_START}" >> $GITHUB_ENV
           for i in {1..30}; do
             echo "=== Minute $i ==="
             kubectl get containercluster,computenetwork,computesubnetwork,computerouter -n $KCC_NAMESPACE || true
@@ -1076,24 +983,17 @@ jobs:
             fi
             sleep 60
           done
-          KCC_DURATION=$(( $(date -u +%s) - ${KCC_START} ))
-          echo "kcc_duration=${KCC_DURATION}" >> $GITHUB_OUTPUT
 
-      - name: Dump KCC Resource Status
-        if: always() && steps.kcc-apply.outcome == 'success'
+      - name: Capture KCC duration
+        id: kcc-wait-out
+        if: steps.kcc-apply.outcome == 'success'
         run: |
-          RUN_ID="${{ github.run_id }}"
-          UID_SUFFIX="${RUN_ID: -6}"
-          echo "=== Final KCC Resource Status ==="
-          kubectl get containercluster,computenetwork,computesubnetwork,computerouter -n $KCC_NAMESPACE || true
-
-      - name: KCC drift and revert test
-        if: steps.kcc-wait.outcome == 'success'
-        run: echo "Drift test placeholder -- template-specific tests go here."
+          KCC_DURATION=$(( $(date -u +%s) - ${KCC_START_TS} ))
+          echo "kcc_duration=${KCC_DURATION}" >> $GITHUB_OUTPUT
 
       - name: Get KCC Workload Cluster Info
         id: kcc-workload-info
-        if: steps.kcc-wait.outcome == 'success' || steps.kcc-cluster-ready.outcome == 'success'
+        if: steps.kcc-wait.outcome == 'success'
         run: |
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
@@ -1115,15 +1015,22 @@ jobs:
           echo "has_cluster=true" >> $GITHUB_OUTPUT
           echo "cluster_name=${CLUSTER_NAME}" >> $GITHUB_OUTPUT
           echo "location=${LOCATION}" >> $GITHUB_OUTPUT
+          echo "cluster_name=${CLUSTER_NAME}" >> $GITHUB_ENV
+          echo "location=${LOCATION}" >> $GITHUB_ENV
 
       - name: Get KCC Workload Cluster Credentials
         id: kcc-workload-creds
         if: steps.kcc-workload-info.outputs.has_cluster == 'true'
         uses: google-github-actions/get-gke-credentials@v2
         with:
-          cluster_name: ${{ steps.kcc-workload-info.outputs.cluster_name }}
-          location: ${{ steps.kcc-workload-info.outputs.location }}
+          cluster_name: ${{ env.cluster_name }}
+          location: ${{ env.location }}
           project_id: ${{ env.PROJECT_ID }}
+
+      - name: Deploy KCC Workload
+        if: steps.kcc-workload-creds.outcome == 'success' && hashFiles(format('{0}/kcc-workload/**', matrix.template)) != ''
+        run: |
+          kubectl apply -f ${{ matrix.template }}/kcc-workload/
 
       - name: Set up Helm (KCC)
         run: |
@@ -1148,8 +1055,8 @@ jobs:
           # Run template-specific validation if present
           if [ -f "${{ matrix.template }}/validate.sh" ]; then
             echo "=== Running template-specific validation (KCC): ${{ matrix.template }}/validate.sh ==="
-            export CLUSTER_NAME="${{ steps.kcc-workload-info.outputs.cluster_name }}"
-            export REGION="${{ steps.kcc-workload-info.outputs.location }}"
+            export CLUSTER_NAME="${{ env.cluster_name }}"
+            export REGION="${{ env.location }}"
             chmod +x ${{ matrix.template }}/validate.sh
             ./${{ matrix.template }}/validate.sh
           fi
@@ -1159,8 +1066,8 @@ jobs:
         continue-on-error: true
         if: steps.kcc-workload-creds.outcome == 'success'
         run: |
-          CLUSTER="${{ steps.kcc-workload-info.outputs.cluster_name }}"
-          LOCATION="${{ steps.kcc-workload-info.outputs.location }}"
+          CLUSTER="${{ env.cluster_name }}"
+          LOCATION="${{ env.location }}"
           PROJECT="${{ env.PROJECT_ID }}"
           SCAN_WARNINGS=0
 
@@ -1225,7 +1132,7 @@ jobs:
 
       - name: Restore KCC Management Cluster Credentials
         id: kcc-mgmt-creds-restore
-        if: always() && (steps.kcc-wait.outcome == 'success' || steps.kcc-cluster-ready.outcome == 'success')
+        if: always() && steps.kcc-apply.outcome == 'success'
         uses: google-github-actions/get-gke-credentials@v2
         with:
           cluster_name: ${{ env.KCC_CLUSTER }}
@@ -1249,7 +1156,7 @@ jobs:
           cat > /tmp/kcc-results/result.json << 'EOF'
           {
             "status":   "${{ steps.kcc-wait.outcome   || 'skipped' }}",
-            "duration": "${{ steps.kcc-wait.outputs.kcc_duration || '' }}"
+            "duration": "${{ steps.kcc-wait-out.outputs.kcc_duration || '' }}"
           }
           EOF
 
@@ -1260,12 +1167,6 @@ jobs:
           name: kcc-results-${{ github.run_id }}-${{ strategy.job-index }}
           path: /tmp/kcc-results/result.json
           retention-days: 1
-
-      - name: Remove Hold Label on Failure
-        if: failure() && github.event_name == 'pull_request'
-        run: gh pr edit ${{ github.event.number }} --remove-label "hold"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # ── 5c. Post-merge: update README + write .validated (needs both above) ──
   publish-validated:
@@ -1488,7 +1389,7 @@ jobs:
 
   pr-completion:
     name: "PR Completion"
-    needs: [detect-changes, lint, pre-cleanup, tf-provision, tf-test, tf-teardown, kcc-apply, kcc-test, kcc-teardown]
+    needs: [detect-changes, lint, pre-cleanup, validate-tf-helm-pr, validate-kcc-pr]
     if: always() && github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
