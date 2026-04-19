@@ -147,22 +147,25 @@ jobs:
           done
 
       - name: KCC manifest syntax check
-        if: "hashFiles(format('{0}/config-connector/**', matrix.template)) != ''"
+        if: "hashFiles(format('{0}/config-connector/**', matrix.template)) != '' || hashFiles(format('{0}/kcc-workload/**', matrix.template)) != ''"
         run: |
           # Basic YAML syntax validation
           python3 -c "
           import yaml, sys, pathlib, os
           errors = []
-          for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml'):
-              try:
-                  yaml.safe_load_all(p.read_text())
-              except yaml.YAMLError as e:
-                  errors.append(str(p) + ': ' + str(e))
+          for d in ['config-connector', 'kcc-workload']:
+              path = pathlib.Path(f'${{ matrix.template }}/{d}')
+              if not path.exists(): continue
+              for p in path.rglob('*.yaml'):
+                  try:
+                      yaml.safe_load_all(p.read_text())
+                  except yaml.YAMLError as e:
+                      errors.append(str(p) + ': ' + str(e))
           if errors:
               print('YAML errors found:')
               for e in errors: print(' ', e)
               sys.exit(1)
-          print('All KCC manifests parse OK')
+          print('All KCC and workload manifests parse OK')
           "
 
 
