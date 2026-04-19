@@ -27,6 +27,8 @@ spec:
     metadata:
       labels:
         {{- include "latest-features.selectorLabels" . | nindent 8 }}
+        project: gcp-template-forge
+        template: latest-gke-features
     spec:
       securityContext:
         runAsNonRoot: true
