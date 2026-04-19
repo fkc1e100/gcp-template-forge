@@ -69,11 +69,16 @@ if ! kubectl get fqdnnetworkpolicies.networking.gke.io allow-ai-egress -n "${NAM
   echo "FQDNNetworkPolicy 'allow-ai-egress' not found. It may have been skipped by Helm."
   echo "Attempting to apply it manually from the template..."
   
-  # Try to find the manifest. We can use the one from config-connector-workload as it's static.
-  if [ -f "templates/gke-fqdn-egress-security/config-connector-workload/workload.yaml" ]; then
-    kubectl apply -n "${NAMESPACE}" -f templates/gke-fqdn-egress-security/config-connector-workload/workload.yaml
+  # Try to find the manifest. Supports running from root or template dir.
+  MANIFEST_PATH="config-connector-workload/workload.yaml"
+  if [ ! -f "$MANIFEST_PATH" ]; then
+    MANIFEST_PATH="templates/gke-fqdn-egress-security/config-connector-workload/workload.yaml"
+  fi
+
+  if [ -f "$MANIFEST_PATH" ]; then
+    kubectl apply -n "${NAMESPACE}" -f "$MANIFEST_PATH"
   else
-    echo "ERROR: Could not find workload manifest to apply FQDNNetworkPolicy manually!"
+    echo "ERROR: Could not find workload manifest to apply FQDNNetworkPolicy manually (tried $MANIFEST_PATH)!"
     exit 1
   fi
 fi

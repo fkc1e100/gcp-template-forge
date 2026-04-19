@@ -71,15 +71,15 @@ The included `validate.sh` script automates the entire verification process, inc
 ### Manual Verification
 1.  **Test Allowed Egress (Anthropic):**
     ```bash
-    kubectl exec egress-verifier -- curl -sL -4 --connect-timeout 10 https://api.anthropic.com
+    kubectl exec egress-verifier -n <namespace> -- curl -sL -4 --connect-timeout 10 https://api.anthropic.com
     ```
 2.  **Test Allowed Egress (HuggingFace):**
     ```bash
-    kubectl exec egress-verifier -- curl -sL -4 --connect-timeout 10 https://huggingface.co
+    kubectl exec egress-verifier -n <namespace> -- curl -sL -4 --connect-timeout 10 https://huggingface.co
     ```
 3.  **Test Blocked Egress (Google):**
     ```bash
-    kubectl exec egress-verifier -- curl -sL -4 --connect-timeout 10 https://google.com
+    kubectl exec egress-verifier -n <namespace> -- curl -sL -4 --connect-timeout 10 https://google.com
     # This should time out or return an error.
     ```
 
