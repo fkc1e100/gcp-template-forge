@@ -29,6 +29,47 @@ gcloud compute project-info describe --project=$PROJECT --format="json" > /tmp/q
 
 echo "Current Quota Status (Before Cleanup):"
 python3 -c "import sys, json; data = json.load(open('/tmp/quota_before.json')); print(f\"{'Metric':<40} {'Usage':<10} {'Limit':<10}\"); print('-'*60); [print(f\"{q.get('metric','N/A'):<40} {q.get('usage',0):<10.1f} {q.get('limit',0):<10.1f}\") for q in data.get('quotas', []) if q.get('usage', 0) > 0]" || true
+python3 -c "
+import json, sys
+try:
+    data = json.load(open('/tmp/quota_before.json'))
+    quotas = {q['metric']: q for q in data.get('quotas', [])}
+    
+    # Define critical metrics and the minimum available capacity we want to guarantee
+    checks = {
+        'CPUS': 10.0,
+        'NETWORKS': 1.0,
+        'FIREWALLS': 5.0,
+        'ROUTERS': 2.0
+    }
+    
+    need_cleanup = False
+    for metric, min_available in checks.items():
+        q = quotas.get(metric)
+        if q:
+            available = q['limit'] - q['usage']
+            print(f'Metric {metric}: Usage={q[\"usage\"]}, Limit={q[\"limit\"]}, Available={available}')
+            if available < min_available:
+                print(f'  -> Critical: Need at least {min_available} available!')
+                need_cleanup = True
+        else:
+            # If metric not found, assume it's fine or not applicable
+            pass
+            
+    if not need_cleanup:
+        print('All critical quotas have sufficient space. Skipping cleanup.')
+        sys.exit(100)
+    else:
+        print('Some quotas are near limits. Proceeding with cleanup.')
+        
+except Exception as e:
+    print(f'Error checking quotas: {e}. Proceeding with cleanup as fallback.')
+"
+
+if [ $? -eq 100 ]; then
+  echo "=== Skipping Cleanup (Sufficient Quota) ==="
+  exit 0
+fi
 
 # Get list of active/queued runs to avoid deleting their resources if GH_TOKEN is provided
 ALL_ACTIVE=""
