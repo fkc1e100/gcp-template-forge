@@ -49,6 +49,10 @@ spec:
   clusterRef:
     name: kuberay-kueue-kcc-cluster
   location: us-central1
+  nodeLocations:
+    - us-central1-a
+    - us-central1-b
+    - us-central1-c
   autoscaling:
     minNodeCount: 0
     maxNodeCount: 5

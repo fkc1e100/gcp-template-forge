@@ -125,6 +125,12 @@ resource "google_container_node_pool" "gpu_nodes" {
   location = var.region
   cluster  = google_container_cluster.primary.name
 
+  node_locations = [
+    "${var.region}-a",
+    "${var.region}-b",
+    "${var.region}-c"
+  ]
+
   autoscaling {
     min_node_count = 0
     max_node_count = 5
