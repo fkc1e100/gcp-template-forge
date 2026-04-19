@@ -51,6 +51,8 @@ echo "Dataplane V2 and FQDN Policy enablement validated."
 # 3. FQDNNetworkPolicy Resource Verification
 echo "Test 3: Verifying FQDNNetworkPolicy Resource..."
 
+# NOTE: FQDNNetworkPolicy was promoted to GA (v1) in GKE 1.35. 
+# This template uses v1 for stability and future-proofing.
 # Wait for the CRD to be available (it can take time for GKE to install it after feature enablement)
 echo "Waiting for FQDNNetworkPolicy CRD to be available..."
 for i in {1..30}; do
