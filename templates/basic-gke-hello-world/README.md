@@ -4,7 +4,7 @@ A minimal GKE Standard cluster with a Hello World workload, deployable via Terra
 
 ## Architecture
 
-- **VPC + Subnet** — isolated VPC with secondary CIDR ranges for pods and services (`gke-basic-tf-vpc` or `gke-basic-kcc-v2-vpc`)
+- **VPC + Subnet** — isolated VPC with secondary CIDR ranges for pods and services (`basic-gke-hello-world-vpc` or `basic-gke-hello-world-vpc`)
 - **GKE Standard** — cost-optimized cluster with a single e2-standard-2 spot node pool
 - **Hello World workload** — Google's `hello-app` container, 3 replicas, exposed via LoadBalancer on port 80
 
@@ -34,13 +34,13 @@ Provisions VPC + subnet + GKE Standard, then deploys the `hello-world` Helm char
 2. **Wait for Infrastructure**:
    Monitor the status of the cluster and node pool until they are `Ready`:
    ```bash
-   kubectl wait --for=condition=Ready containercluster gke-basic-kcc-v2 -n <KCC_NAMESPACE> --timeout=30m
+   kubectl wait --for=condition=Ready containercluster basic-gke-hello-world -n <KCC_NAMESPACE> --timeout=30m
    ```
 
 3. **Deploy Workload**:
    Once the cluster is ready, get credentials and apply the workload manifests directly to the **workload cluster**:
    ```bash
-   gcloud container clusters get-credentials gke-basic-kcc-v2 --region us-central1 --project <PROJECT_ID>
+   gcloud container clusters get-credentials basic-gke-hello-world --region us-central1 --project <PROJECT_ID>
    kubectl apply -f config-connector-workload/workload.yaml
    ```
 
@@ -58,7 +58,7 @@ To verify the deployment:
    Use the `validate.sh` script to verify cluster connectivity and workload health (requires `gcloud` and `kubectl`):
    ```bash
    export PROJECT_ID=<PROJECT_ID>
-   export CLUSTER_NAME=gke-basic-kcc-v2
+   export CLUSTER_NAME=basic-gke-hello-world
    export REGION=us-central1
    ./validate.sh
    ```
@@ -67,12 +67,12 @@ To verify the deployment:
 
 | Resource | Path | Name |
 |---|---|---|
-| VPC | TF | `gke-basic-tf-vpc` |
-| VPC | KCC | `gke-basic-kcc-v2-vpc` |
-| Subnet | TF | `gke-basic-tf-subnet` |
-| Subnet | KCC | `gke-basic-kcc-v2-subnet` |
-| GKE cluster | TF | `gke-basic-tf` |
-| GKE cluster | KCC | `gke-basic-kcc-v2` |
+| VPC | TF | `basic-gke-hello-world-vpc` |
+| VPC | KCC | `basic-gke-hello-world-vpc` |
+| Subnet | TF | `basic-gke-hello-world-subnet` |
+| Subnet | KCC | `basic-gke-hello-world-subnet` |
+| GKE cluster | TF | `basic-gke-hello-world` |
+| GKE cluster | KCC | `basic-gke-hello-world` |
 
 ## Performance & Cost Estimates
 
@@ -110,7 +110,7 @@ kubectl delete -n <KCC_NAMESPACE> -f config-connector/ --wait=true
 | **Duration** | 9m 39s | 10m 15s |
 | **Region** | us-central1 | us-central1 (KCC cluster) |
 | **Zones** | us-central1-a,us-central1-b,us-central1-c,us-central1-f | forge-management namespace |
-| **Cluster** | gke-basic-tf | gke-basic-kcc-v2 |
+| **Cluster** | basic-gke-hello-world | basic-gke-hello-world |
 | **Agent tokens** | not recorded | (shared session) |
 | **Estimated cost** | - | -- |
 | **Commit** | 2c375256 | |
