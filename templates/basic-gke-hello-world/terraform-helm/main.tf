@@ -158,6 +158,16 @@ resource "local_file" "helm_values" {
     tag        = "1.0"
     pullPolicy = "IfNotPresent"
   }
+  resources = {
+    requests = {
+      cpu    = "100m"
+      memory = "128Mi"
+    }
+    limits = {
+      cpu    = "200m"
+      memory = "256Mi"
+    }
+  }
   service = {
     type       = "LoadBalancer"
     port       = 80
