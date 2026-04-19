@@ -383,6 +383,35 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
+      - name: Get TF cluster credentials
+        if: always() && needs.tf-provision.outputs.tf_cluster != ''
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ needs.tf-provision.outputs.tf_cluster }}
+          location: ${{ needs.tf-provision.outputs.tf_location }}
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Helm uninstall (teardown)
+        if: always() && needs.tf-provision.outputs.tf_cluster != ''
+        run: |
+          echo "Uninstalling Helm release to clean up NEGs and LoadBalancers..."
+          curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+          helm uninstall release --wait --timeout=5m || true
+          kubectl delete gateway,ingress --all -A --wait=true --timeout=2m || true
+          echo "Waiting for NEGs to be cleaned up..."
+          RUN_ID="${{ github.run_id }}"
+          UID_SUFFIX="${RUN_ID: -6}"
+          NETWORK_NAME="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf-vpc"
+          for i in {1..20}; do
+            NEGS=$(gcloud compute network-endpoint-groups list --filter="network:($NETWORK_NAME)" --project="${{ env.PROJECT_ID }}" --format="value(name)" 2>/dev/null || true)
+            if [ -z "$NEGS" ]; then
+              echo "All NEGs cleaned up."
+              break
+            fi
+            echo "NEGs still exist. Waiting 15s..."
+            sleep 15
+          done
+
       - name: Terraform destroy
         working-directory: ${{ matrix.template }}/terraform-helm
         run: |
