@@ -28,6 +28,12 @@ resource "google_compute_network" "vpc" {
   auto_create_subnetworks = false
 
   project = var.project_id
+
+  # MANDATORY project labels
+  labels = {
+    project  = "gcp-template-forge"
+    template = "latest-gke-features"
+  }
 }
 
 # Subnet
