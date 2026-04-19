@@ -17,6 +17,9 @@ apiVersion: networking.gke.io/v1
 kind: FQDNNetworkPolicy
 metadata:
   name: allow-ai-egress
+  labels:
+    project: gcp-template-forge
+    template: gke-fqdn-egress-security
 spec:
   podSelector:
     matchLabels:

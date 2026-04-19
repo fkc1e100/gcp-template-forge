@@ -19,6 +19,8 @@ metadata:
   name: egress-verifier
   labels:
     app: {{ .Values.pod.label }}
+    project: gcp-template-forge
+    template: gke-fqdn-egress-security
 spec:
   containers:
   - name: verifier

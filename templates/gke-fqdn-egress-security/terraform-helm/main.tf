@@ -244,6 +244,11 @@ resource "google_compute_firewall" "allow_master_to_node" {
   network = google_compute_network.vpc.name
   project = var.project_id
 
+  labels = {
+    project  = "gcp-template-forge"
+    template = "gke-fqdn-egress-security"
+  }
+
   allow {
     protocol = "tcp"
     ports    = ["443", "10250"]
