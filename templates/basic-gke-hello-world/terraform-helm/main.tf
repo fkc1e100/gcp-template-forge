@@ -131,6 +131,12 @@ resource "google_container_node_pool" "primary_nodes" {
       template = "basic-gke-hello-world"
     }
   }
+
+  timeouts {
+    create = "30m"
+    update = "30m"
+    delete = "30m"
+  }
 }
 
 # Generate values.yaml for the Helm chart
