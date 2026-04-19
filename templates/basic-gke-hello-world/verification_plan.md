@@ -47,13 +47,21 @@ kubectl apply -f config-connector/ -n forge-management
    kubectl wait --for=condition=Ready containercluster/basic-gke-hello-world -n forge-management --timeout=20m
    ```
 2. **Workload Deployment & Integration:**
-   The `validate.sh` script handles the verification of the workload and performs interaction tests.
+   First, deploy the workload manifests to the workload cluster:
+   ```bash
+   gcloud container clusters get-credentials basic-gke-hello-world --region us-central1 --project <PROJECT_ID>
+   kubectl apply -f config-connector-workload/workload.yaml
+   ```
+   Then, the `validate.sh` script handles the verification of the workload and performs interaction tests.
    ```bash
    ./validate.sh
    ```
 
 ### Teardown
 ```bash
+# Delete workload manifests
+kubectl delete -f config-connector-workload/workload.yaml
+
 # Delete KCC manifests (GCP resources)
 kubectl delete -f config-connector/ -n forge-management
 ```

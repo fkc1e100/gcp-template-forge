@@ -4,7 +4,7 @@ A minimal GKE Standard cluster with a Hello World workload, deployable via Terra
 
 ## Architecture
 
-- **VPC + Subnet** — isolated VPC with secondary CIDR ranges for pods and services (`basic-gke-hello-world-vpc` or `basic-gke-hello-world-vpc`)
+- **VPC + Subnet** — isolated VPC with secondary CIDR ranges for pods and services (`basic-gke-hello-world-vpc`)
 - **GKE Standard** — cost-optimized cluster with a single e2-standard-2 spot node pool
 - **Hello World workload** — Google's `hello-app` container, 3 replicas, exposed via LoadBalancer on port 80
 

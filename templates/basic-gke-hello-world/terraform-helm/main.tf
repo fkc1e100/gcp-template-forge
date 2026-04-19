@@ -123,17 +123,17 @@ resource "google_container_node_pool" "primary_nodes" {
 # Generate values.yaml for the Helm chart
 resource "local_file" "helm_values" {
   filename = "${path.module}/workload/values.yaml"
-  content = <<-EOT
-replicaCount: 3
+  content  = <<-EOT
+    replicaCount: 3
 
-image:
-  repository: us-docker.pkg.dev/google-samples/containers/gke/hello-app
-  tag: "1.0"
-  pullPolicy: IfNotPresent
+    image:
+      repository: us-docker.pkg.dev/google-samples/containers/gke/hello-app
+      tag: "1.0"
+      pullPolicy: IfNotPresent
 
-service:
-  type: LoadBalancer
-  port: 80
-  targetPort: 8080
-EOT
+    service:
+      type: LoadBalancer
+      port: 80
+      targetPort: 8080
+  EOT
 }
