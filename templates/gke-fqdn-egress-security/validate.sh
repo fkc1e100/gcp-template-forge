@@ -27,6 +27,7 @@ export KUBECONFIG=$(mktemp)
 trap 'rm -f "$KUBECONFIG"' EXIT
 
 # 1. Cluster Connectivity
+# Ensure we can reach the GKE control plane
 echo "Test 1: Cluster Connectivity..."
 gcloud container clusters get-credentials "${CLUSTER_NAME}" --region "${REGION}" --project "${PROJECT_ID}"
 kubectl cluster-info
