@@ -47,6 +47,13 @@ resource "google_compute_subnetwork" "subnet" {
     range_name    = "services"
     ip_cidr_range = "10.40.0.0/20"
   }
+
+  # MANDATORY project labels
+  # Subnetworks support labels in the Google Cloud provider
+  labels = {
+    project  = "gcp-template-forge"
+    template = "latest-gke-features"
+  }
 }
 
 # Cloud NAT for private nodes
