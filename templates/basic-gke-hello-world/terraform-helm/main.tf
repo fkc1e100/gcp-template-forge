@@ -40,11 +40,6 @@ resource "google_compute_subnetwork" "subnet" {
     range_name    = "services"
     ip_cidr_range = "10.8.0.0/20"
   }
-
-  labels = {
-    project  = "gcp-template-forge"
-    template = "basic-gke-hello-world"
-  }
 }
 
 # GKE Standard Cluster
@@ -63,8 +58,9 @@ resource "google_container_cluster" "primary" {
   remove_default_node_pool = true
   initial_node_count       = 1
 
-  network    = google_compute_network.vpc.name
-  subnetwork = google_compute_subnetwork.subnet.name
+  networking_mode = "VPC_NATIVE"
+  network         = google_compute_network.vpc.name
+  subnetwork      = google_compute_subnetwork.subnet.name
 
   ip_allocation_policy {
     cluster_secondary_range_name  = "pods"
@@ -77,6 +73,10 @@ resource "google_container_cluster" "primary" {
 
   release_channel {
     channel = "REGULAR"
+  }
+
+  logging_config {
+    enable_components = ["SYSTEM_COMPONENTS"]
   }
 
   security_posture_config {
@@ -93,7 +93,7 @@ resource "google_container_cluster" "primary" {
 
 # Node pool — spot e2-standard-2 for cost-efficient sandbox validation
 resource "google_container_node_pool" "primary_nodes" {
-  name       = "default-pool"
+  name       = "basic-gke-hello-world-pool"
   location   = var.region
   cluster    = google_container_cluster.primary.name
   node_count = 1
@@ -129,17 +129,17 @@ resource "google_container_node_pool" "primary_nodes" {
 # Generate values.yaml for the Helm chart
 resource "local_file" "helm_values" {
   filename = "${path.module}/workload/values.yaml"
-  content  = <<-EOT
-    replicaCount: 3
-
-    image:
-      repository: us-docker.pkg.dev/google-samples/containers/gke/hello-app
-      tag: "1.0"
-      pullPolicy: IfNotPresent
-
-    service:
-      type: LoadBalancer
-      port: 80
-      targetPort: 8080
-  EOT
+  content = yamlencode({
+    replicaCount = 3
+    image = {
+      repository = "us-docker.pkg.dev/google-samples/containers/gke/hello-app"
+      tag        = "1.0"
+      pullPolicy = "IfNotPresent"
+    }
+    service = {
+      type       = "LoadBalancer"
+      port       = 80
+      targetPort = 8080
+    }
+  })
 }

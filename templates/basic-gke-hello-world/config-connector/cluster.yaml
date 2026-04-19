@@ -27,6 +27,7 @@ spec:
   location: us-central1
   # GKE Standard cluster — explicit node pool defined in nodepool.yaml
   initialNodeCount: 1
+  networkingMode: VPC_NATIVE
   networkRef:
     name: basic-gke-hello-world-vpc
   subnetworkRef:
@@ -45,3 +46,4 @@ spec:
     mode: BASIC
     vulnerabilityMode: VULNERABILITY_BASIC
 # KCC validation trigger
+# Trigger CI run at Sun Apr 19 14:00:00 UTC 2026
