@@ -154,6 +154,11 @@ resource "google_gke_hub_membership" "membership" {
     }
   }
   project = var.project_id
+
+  labels = {
+    project  = "gcp-template-forge"
+    template = "gke-fqdn-egress-security"
+  }
 }
 
 # Wait for GKE Enterprise features (like FQDN Network Policy) to propagate
