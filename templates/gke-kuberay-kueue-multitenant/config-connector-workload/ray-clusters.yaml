@@ -19,6 +19,7 @@ metadata:
   namespace: team-a
   labels:
     kueue.x-k8s.io/queue-name: team-a-lq
+    project: gcp-template-forge
 spec:
   rayVersion: '2.9.0'
   headGroupSpec:
@@ -75,6 +76,7 @@ metadata:
   namespace: team-b
   labels:
     kueue.x-k8s.io/queue-name: team-b-lq
+    project: gcp-template-forge
 spec:
   rayVersion: '2.9.0'
   headGroupSpec:

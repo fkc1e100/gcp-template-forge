@@ -16,11 +16,15 @@ apiVersion: kueue.x-k8s.io/v1beta1
 kind: ResourceFlavor
 metadata:
   name: default-flavor
+  labels:
+    project: gcp-template-forge
 ---
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: ClusterQueue
 metadata:
   name: team-a-cq
+  labels:
+    project: gcp-template-forge
 spec:
   cohort: gpu-cohort
   resourceGroups:
@@ -34,6 +38,8 @@ apiVersion: kueue.x-k8s.io/v1beta1
 kind: ClusterQueue
 metadata:
   name: team-b-cq
+  labels:
+    project: gcp-template-forge
 spec:
   cohort: gpu-cohort
   resourceGroups:
@@ -48,6 +54,8 @@ kind: LocalQueue
 metadata:
   namespace: team-a
   name: team-a-lq
+  labels:
+    project: gcp-template-forge
 spec:
   clusterQueue: team-a-cq
 ---
@@ -56,5 +64,7 @@ kind: LocalQueue
 metadata:
   namespace: team-b
   name: team-b-lq
+  labels:
+    project: gcp-template-forge
 spec:
   clusterQueue: team-b-cq
