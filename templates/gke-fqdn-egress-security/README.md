@@ -7,7 +7,7 @@ Securing egress traffic is a critical component of a Zero-Trust architecture. In
 
 ## Features
 - **Dataplane V2:** High-performance eBPF-based networking (required for FQDN policies).
-- **FQDN Network Policies:** Granular egress control using domain patterns (e.g., `*.anthropic.com`). Promoted to GA in GKE 1.35 (this template uses `v1` for compatibility).
+- **FQDN Network Policies:** Granular egress control using domain patterns (e.g., `*.anthropic.com`). Promoted to GA in GKE 1.35 (this template uses `v1alpha1` for compatibility).
 - **Zero-Trust Security:** A default-deny egress policy ensures that only explicitly allowed traffic can leave the cluster.
 - **GKE Enterprise Integration:** Automatic fleet registration to enable advanced security features.
 

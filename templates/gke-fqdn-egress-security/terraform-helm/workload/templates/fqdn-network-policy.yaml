@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-{{- if .Capabilities.APIVersions.Has "networking.gke.io/v1alpha1" }}
 apiVersion: networking.gke.io/v1alpha1
 kind: FQDNNetworkPolicy
 metadata:
@@ -36,4 +35,3 @@ spec:
     ports:
     - protocol: TCP
       port: 443
-{{- end -}}

@@ -64,25 +64,8 @@ for i in {1..30}; do
   sleep 10
 done
 
-# Check if the policy exists. If not, it might have been skipped by Helm due to missing CRD at install time.
-if ! kubectl get fqdnnetworkpolicies.networking.gke.io allow-ai-egress -n "${NAMESPACE}" > /dev/null 2>&1; then
-echo "FQDNNetworkPolicy 'allow-ai-egress' not found. It may have been skipped by Helm."
-echo "Attempting to apply it manually from the template..."
-
-# Try to find the manifest. Supports running from root or template dir.
-MANIFEST_PATH="config-connector-workload/fqdn-network-policy.yaml"
-if [ ! -f "$MANIFEST_PATH" ]; then
-  MANIFEST_PATH="templates/gke-fqdn-egress-security/config-connector-workload/fqdn-network-policy.yaml"
-fi
-
-if [ -f "$MANIFEST_PATH" ]; then
-  echo "Applying FQDNNetworkPolicy from $MANIFEST_PATH..."
-  kubectl apply -n "${NAMESPACE}" -f "$MANIFEST_PATH"
-else
-  echo "ERROR: Could not find FQDNNetworkPolicy manifest to apply manually (tried $MANIFEST_PATH)!"
-  exit 1
-fi
-fi
+# The policy should have been installed by Helm or manual apply.
+# We verify its existence here.
 kubectl get fqdnnetworkpolicies.networking.gke.io allow-ai-egress -n "${NAMESPACE}"
 echo "FQDNNetworkPolicy resource found and verified."
 
