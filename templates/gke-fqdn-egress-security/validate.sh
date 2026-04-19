@@ -64,7 +64,7 @@ for i in {1..30}; do
   sleep 10
 done
 
-# The policy should have been installed by Helm or manual apply.
+# The policy should have been installed by the primary deployment phase (Helm or KCC).
 # We verify its existence here.
 kubectl get fqdnnetworkpolicies.networking.gke.io allow-ai-egress -n "${NAMESPACE}"
 echo "FQDNNetworkPolicy resource found and verified."
