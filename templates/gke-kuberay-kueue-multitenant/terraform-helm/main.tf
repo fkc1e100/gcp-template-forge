@@ -78,6 +78,11 @@ resource "google_container_cluster" "primary" {
     channel = "REGULAR"
   }
 
+  security_posture_config {
+    mode               = "BASIC"
+    vulnerability_mode = "VULNERABILITY_BASIC"
+  }
+
   timeouts {
     create = "30m"
     update = "30m"
@@ -144,7 +149,7 @@ resource "google_container_node_pool" "gpu_nodes" {
     }
 
     labels = {
-      project          = "gcp-template-forge"
+      project                            = "gcp-template-forge"
       "cloud.google.com/gke-accelerator" = "nvidia-l4"
     }
 
