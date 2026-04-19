@@ -1,3 +1,4 @@
+# Copyright 2026 Google LLC
 clusterName: kuberay-kueue-cluster
 projectID: gca-gke-2025
 region: us-central1
