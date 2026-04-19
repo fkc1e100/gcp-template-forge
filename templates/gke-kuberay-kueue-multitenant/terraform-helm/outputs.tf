@@ -12,12 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: team-a
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: team-b
+output "cluster_name" {
+  description = "The name of the GKE cluster"
+  value       = google_container_cluster.primary.name
+}
+
+output "cluster_location" {
+  description = "The location of the GKE cluster"
+  value       = google_container_cluster.primary.location
+}
+
+output "vpc_name" {
+  description = "The name of the VPC network"
+  value       = google_compute_network.vpc.name
+}

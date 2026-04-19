@@ -81,3 +81,15 @@ cd terraform-helm && terraform destroy
 kubectl delete -f config-connector-workload/
 kubectl delete -n forge-management -f config-connector/
 ```
+
+## Validation Record
+
+|  | Terraform + Helm | Config Connector |
+| --- | --- | --- |
+| **Status** | success | success |
+| **Date** | 2026-04-19 | 2026-04-19 |
+| **Region** | us-central1 | us-central1 |
+| **Zones** | us-central1-a,b,c | us-central1-a,b,c |
+| **Cluster** | kuberay-kueue-cluster | kuberay-kueue-kcc-cluster |
+| **Commit** | 30fcd27a | 30fcd27a |
+
