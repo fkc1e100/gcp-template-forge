@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# NOTE: FQDNNetworkPolicy was promoted to GA (v1) in GKE 1.35.
 {{- if .Capabilities.APIVersions.Has "networking.gke.io/v1" -}}
 apiVersion: networking.gke.io/v1
 kind: FQDNNetworkPolicy

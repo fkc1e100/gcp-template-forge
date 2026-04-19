@@ -28,6 +28,7 @@ spec:
     - protocol: TCP
       port: 53
 ---
+# NOTE: FQDNNetworkPolicy was promoted to GA (v1) in GKE 1.35.
 apiVersion: networking.gke.io/v1
 kind: FQDNNetworkPolicy
 metadata:
