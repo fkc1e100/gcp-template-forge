@@ -10,8 +10,10 @@
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
+# limitations under the License.
+
 # NOTE: FQDNNetworkPolicy was promoted to GA in GKE 1.35.
-# We use v1alpha1 for broader compatibility across GKE versions.
+# We use v1alpha1 for broader compatibility.
 apiVersion: networking.gke.io/v1alpha1
 kind: FQDNNetworkPolicy
 metadata:
@@ -19,7 +21,7 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      app: {{ .Values.pod.label }}
+      app: egress-test
   egress:
   - matches:
     - name: anthropic.com
@@ -32,4 +34,3 @@ spec:
     ports:
     - protocol: TCP
       port: 443
-
