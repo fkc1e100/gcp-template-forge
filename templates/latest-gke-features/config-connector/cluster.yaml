@@ -79,3 +79,6 @@ spec:
       shieldedInstanceConfig:
         enableSecureBoot: true
         enableIntegrityMonitoring: true
+      labels:
+        project: gcp-template-forge
+        template: latest-gke-features

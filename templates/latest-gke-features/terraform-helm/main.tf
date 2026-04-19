@@ -141,6 +141,10 @@ resource "google_container_cluster" "latest_features_cluster" {
         enable_secure_boot          = true
         enable_integrity_monitoring = true
       }
+      labels = {
+        project  = "gcp-template-forge"
+        template = "latest-gke-features"
+      }
     }
   }
 
