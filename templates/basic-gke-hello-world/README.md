@@ -121,6 +121,6 @@ kubectl delete -n <KCC_NAMESPACE> -f config-connector/ --wait=true
 | **Cluster** | basic-gke-hello-world | basic-gke-hello-world |
 | **Agent tokens** | not recorded | (shared session) |
 | **Estimated cost** | - | -- |
-| **Commit** | b897e3b | |
+| **Commit** | 5ad4eab | |
 
 
