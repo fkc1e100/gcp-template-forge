@@ -115,7 +115,8 @@ resource "google_container_node_pool" "primary_nodes" {
     service_account = var.service_account
 
     labels = {
-      project = "gcp-template-forge"
+      project  = "gcp-template-forge"
+      template = "basic-gke-hello-world"
     }
 
     resource_labels = {

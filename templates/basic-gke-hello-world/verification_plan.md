@@ -8,7 +8,11 @@ This plan outlines the steps to verify both the Terraform + Helm and Config Conn
 ```bash
 cd terraform-helm/
 terraform init
-terraform apply -auto-approve
+terraform apply -auto-approve -var="project_id=<PROJECT_ID>" -var="service_account=<SA_EMAIL>"
+
+# Deploy workload via Helm
+gcloud container clusters get-credentials basic-gke-hello-world --region us-central1 --project <PROJECT_ID>
+helm upgrade --install hello-world ./workload/ --values ./workload/values.yaml --namespace default --wait
 ```
 
 ### Verification

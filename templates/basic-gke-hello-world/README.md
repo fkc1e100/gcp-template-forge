@@ -12,13 +12,21 @@ A minimal GKE Standard cluster with a Hello World workload, deployable via Terra
 
 ### Terraform + Helm (`terraform-helm/`)
 
-```bash
-cd terraform-helm
-terraform init \
-  -backend-config="bucket=<TF_STATE_BUCKET>" \
-  -backend-config="prefix=templates/basic-gke-hello-world/terraform-helm"
-terraform apply -var="project_id=<PROJECT_ID>"
-```
+1. **Provision Infrastructure**:
+   ```bash
+   cd terraform-helm
+   terraform init \
+     -backend-config="bucket=<TF_STATE_BUCKET>" \
+     -backend-config="prefix=templates/basic-gke-hello-world/terraform-helm"
+   terraform apply -var="project_id=<PROJECT_ID>" -var="service_account=<SA_EMAIL>"
+   ```
+
+2. **Deploy Workload**:
+   After Terraform completes, get credentials and deploy the Helm chart:
+   ```bash
+   gcloud container clusters get-credentials basic-gke-hello-world --region us-central1 --project <PROJECT_ID>
+   helm upgrade --install hello-world ./workload/ --values ./workload/values.yaml --namespace default --wait
+   ```
 
 Provisions VPC + subnet + GKE Standard, then deploys the `hello-world` Helm chart into the target cluster.
 
