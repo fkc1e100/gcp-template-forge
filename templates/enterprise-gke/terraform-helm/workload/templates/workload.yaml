@@ -143,10 +143,6 @@ spec:
           mountPath: /var/run
         - name: cache
           mountPath: /var/cache/nginx
-        # Optional: Uncomment if using Secret Manager via CSI driver
-        # - name: secrets-volume
-        #   mountPath: "/mnt/secrets"
-        #   readOnly: true
       volumes:
       - name: tmp
         emptyDir: {}
@@ -154,13 +150,6 @@ spec:
         emptyDir: {}
       - name: cache
         emptyDir: {}
-      # Optional: Uncomment if using Secret Manager via CSI driver
-      # - name: secrets-volume
-      #   csi:
-      #     driver: secrets-store.csi.k8s.io
-      #     readOnly: true
-      #     volumeAttributes:
-      #       secretProviderClass: gke-workload-secrets
 ---
 apiVersion: v1
 kind: Service
@@ -243,23 +232,6 @@ spec:
       target:
         type: Utilization
         averageUtilization: 80
----
-# Optional: Uncomment if using Secret Manager via CSI driver
-# apiVersion: secrets-store.csi.x-k8s.io/v1
-# kind: SecretProviderClass
-# metadata:
-#   name: gke-workload-secrets
-#   namespace: gke-workload
-#   labels:
-#     project: gcp-template-forge
-#     template: enterprise-gke
-# spec:
-#   provider: gcp
-#   parameters:
-#     secrets: |
-#       # UPDATE: Replace 'gca-gke-2025' with your actual GCP Project ID
-#       - resourceName: "projects/gca-gke-2025/secrets/gke-workload-secret/versions/latest"
-#         path: "secret.data"
 ---
 apiVersion: policy/v1
 kind: PodDisruptionBudget
