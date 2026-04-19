@@ -52,4 +52,4 @@ spec:
     mode: BASIC
     vulnerabilityMode: VULNERABILITY_BASIC
 # KCC validation trigger
-# Trigger CI run at Sun Apr 19 16:45:00 UTC 2026
+# Trigger CI run at Sun Apr 19 16:55:00 UTC 2026
