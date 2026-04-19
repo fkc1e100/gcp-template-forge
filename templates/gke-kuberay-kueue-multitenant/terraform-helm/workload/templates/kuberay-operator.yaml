@@ -49988,6 +49988,7 @@ kind: Deployment
 metadata:
   labels:
     app.kubernetes.io/name: kuberay
+    project: gcp-template-forge
   name: kuberay-operator
   namespace: default
 spec:
@@ -49999,6 +50000,7 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: kuberay
+        project: gcp-template-forge
     spec:
       containers:
       - env:

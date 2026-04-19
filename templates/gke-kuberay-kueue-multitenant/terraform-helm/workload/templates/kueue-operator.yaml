@@ -11133,6 +11133,7 @@ kind: Deployment
 metadata:
   labels:
     control-plane: controller-manager
+    project: gcp-template-forge
   name: kueue-controller-manager
   namespace: kueue-system
 spec:
@@ -11146,6 +11147,7 @@ spec:
         kubectl.kubernetes.io/default-container: manager
       labels:
         control-plane: controller-manager
+        project: gcp-template-forge
     spec:
       containers:
       - args:
