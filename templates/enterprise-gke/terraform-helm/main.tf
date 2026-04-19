@@ -130,6 +130,10 @@ resource "google_container_cluster" "enterprise_cluster" {
     enabled = true
   }
 
+  vertical_pod_autoscaling {
+    enabled = true
+  }
+
   release_channel {
     channel = "REGULAR"
   }

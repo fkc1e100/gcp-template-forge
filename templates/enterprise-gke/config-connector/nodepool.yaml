@@ -35,6 +35,7 @@ spec:
     diskType: pd-standard
     imageType: COS_CONTAINERD
     serviceAccountRef:
+      # UPDATE: Replace 'gca-gke-2025' with your actual GCP Project ID
       external: forge-kcc-admin@gca-gke-2025.iam.gserviceaccount.com
     oauthScopes:
       - "https://www.googleapis.com/auth/cloud-platform"

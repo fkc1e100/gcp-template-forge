@@ -9,6 +9,7 @@ Run the following script to verify quota and availability:
 ```bash
 #!/bin/bash
 # pre_check.sh
+# UPDATE: Replace 'gca-gke-2025' with your actual GCP Project ID
 PROJECT_ID="gca-gke-2025"
 REGION="us-central1"
 
@@ -46,12 +47,12 @@ terraform apply -auto-approve
 2. **Workload Health:**
    ```bash
    gcloud container clusters get-credentials enterprise-gke-tf --region us-central1
-   kubectl get pods -l app.kubernetes.io/name=enterprise-gke -n enterprise-gke
+   kubectl get pods -l app.kubernetes.io/name=enterprise-workload -n gke-workload
    ```
 3. **Endpoint Interaction:**
    ```bash
    # Get LoadBalancer IP
-   SERVICE_IP=$(kubectl get svc -l app.kubernetes.io/instance=enterprise-gke -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}' -n enterprise-gke)
+   SERVICE_IP=$(kubectl get svc -l app.kubernetes.io/instance=release -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}' -n gke-workload)
    curl -sf http://${SERVICE_IP}:80/
    ```
 
@@ -64,24 +65,35 @@ terraform destroy -auto-approve
 
 ### Deployment
 ```bash
-# Apply KCC manifests (GCP resources) to forge-management namespace on management cluster
+# 1. Apply KCC manifests (GCP resources) to forge-management namespace on management cluster
 kubectl apply -f config-connector/ -n forge-management
+
+# 2. Wait for cluster readiness
+kubectl wait --for=condition=Ready containercluster/enterprise-gke-kcc -n forge-management --timeout=30m
+
+# 3. Deploy Workload via KCC manifest
+gcloud container clusters get-credentials enterprise-gke-kcc --region us-central1
+kubectl apply -f kcc-workload/workload.yaml
 ```
 
 ### Verification
 1. **Resource Readiness:**
    ```bash
-   kubectl wait --for=condition=Ready containercluster/enterprise-gke-kcc -n forge-management --timeout=20m
+   kubectl wait --for=condition=available deployment/release-enterprise-workload -n gke-workload --timeout=15m
    ```
-2. **Workload Deployment & Integration:**
-   The `validate.sh` script handles the deployment of the workload via Helm to the newly created cluster and performs interaction tests.
+2. **Workload Identity & Integration:**
+   The `validate.sh` script handles the deep verification of Workload Identity, Service Accounts, and interaction tests.
    ```bash
+   export CLUSTER_NAME="enterprise-gke-kcc"
    ./validate.sh
    ```
 
 ### Teardown
 ```bash
-# Delete KCC manifests (GCP resources)
+# 1. Delete workload
+kubectl delete -f kcc-workload/workload.yaml
+
+# 2. Delete KCC manifests (GCP resources)
 kubectl delete -f config-connector/ -n forge-management
 ```
 

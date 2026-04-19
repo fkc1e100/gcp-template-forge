@@ -59,6 +59,8 @@ spec:
   securityPostureConfig:
     mode: BASIC
     vulnerabilityMode: VULNERABILITY_BASIC
+  verticalPodAutoscaling:
+    enabled: true
   releaseChannel:
     channel: REGULAR
 # KCC validation trigger
