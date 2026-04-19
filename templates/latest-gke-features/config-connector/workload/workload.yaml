@@ -12,6 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# This manifest defines the workload for the latest-gke-features template.
+# It should be applied to the WORKLOAD cluster after the infrastructure is ready.
+# Deployment to a separate namespace ('latest-features') demonstrates functional parity
+# with the Helm path while maintaining clear resource separation.
+
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -39,6 +44,8 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: latest-features-workload
+        project: gcp-template-forge
+        template: latest-gke-features
     spec:
       securityContext:
         runAsNonRoot: true

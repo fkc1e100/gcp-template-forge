@@ -24,6 +24,9 @@ metadata:
     cnrm.cloud.google.com/project-id: gca-gke-2025
     cnrm.cloud.google.com/remove-default-node-pool: "true"
 spec:
+  resourceLabels:
+    project: gcp-template-forge
+    template: latest-gke-features
   location: us-central1
   initialNodeCount: 1
   # minMasterVersion: 1.35.3-gke.1234000
@@ -76,3 +79,5 @@ spec:
       shieldedInstanceConfig:
         enableSecureBoot: true
         enableIntegrityMonitoring: true
+      # Note: 'labels' is not currently supported in autoProvisioningDefaults.
+      # Nodes will be labeled based on Pod nodeSelectors/affinity.
