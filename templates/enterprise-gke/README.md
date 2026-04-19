@@ -3,17 +3,63 @@
 ## Overview
 This template provides an enterprise-grade Google Kubernetes Engine (GKE) architecture. It demonstrates two deployment paths: Terraform + Helm for traditional infrastructure-as-code and Config Connector (KCC) for a Kubernetes-native approach to managing GCP resources.
 
-## Template Paths
+## Architecture
+- **VPC Network** — Private VPC with dedicated secondary ranges for pods and services.
+- **GKE Standard Cluster** — VPC-native, private cluster with security hardening (Binary Authorization, Security Posture).
+- **Node Pool** — E2-standard-4 instances (Spot) with Secure Boot and Integrity Monitoring.
+- **Cloud NAT** — Enables egress for private nodes without public IP addresses.
+- **Workload Identity** — Seamless IAM integration for Kubernetes workloads.
+- **Secret Manager** — Integration via Secrets Store CSI driver for secure credential management.
+
+## Deployment Paths
 
 ### Terraform + Helm (`terraform-helm/`)
 - Provisions a dedicated VPC with specific secondary CIDRs for pods and services.
-- Deploys a private, VPC-native GKE Standard cluster with Workload Identity, Binary Authorization, and Security Posture monitoring.
+- Deploys a private, VPC-native GKE Standard cluster with Workload Identity and Security Posture monitoring.
 - Deploys the application workload using a production-ready Helm chart.
 
 ### Config Connector (`config-connector/`)
 - Uses KCC resources (`ContainerCluster`, `ContainerNodePool`, `ComputeNetwork`, `ComputeSubnetwork`) to provision the same infrastructure.
 - Manages IAM roles and Service Accounts via KCC for seamless Workload Identity integration.
-- Deploys the workload via the Helm chart (located in `terraform-helm/workload/`) after the cluster is ready.
+- Deploys the workload using Kubernetes-native manifests (Deployment, Service, HPA, etc.) located in the `config-connector/` directory.
+
+## Deployment Instructions
+
+### Terraform + Helm
+
+```bash
+cd terraform-helm
+terraform init \
+  -backend-config="bucket=<TF_STATE_BUCKET>" \
+  -backend-config="prefix=templates/enterprise-gke/terraform-helm"
+terraform apply -var="project_id=<PROJECT_ID>" -var="service_account=<NODE_SA_EMAIL>"
+```
+
+### Config Connector
+
+```bash
+# Apply the infrastructure and workload manifests to the KCC management cluster
+kubectl apply -n <KCC_NAMESPACE> -f config-connector/
+```
+
+## Verification
+
+To verify the deployment:
+
+1. **Check Infrastructure Readiness** (KCC path):
+   Monitor the KCC resources in the management cluster until all report `READY=True`:
+   ```bash
+   kubectl get gcp -n <KCC_NAMESPACE>
+   ```
+
+2. **Run Validation Script**:
+   Use the `validate.sh` script to verify cluster connectivity and workload health:
+   ```bash
+   export PROJECT_ID=<PROJECT_ID>
+   export CLUSTER_NAME=enterprise-gke-tf # or enterprise-gke-kcc for KCC path
+   export REGION=us-central1
+   ./validate.sh
+   ```
 
 ## Cluster Details
 - **Type**: GKE Standard
@@ -31,12 +77,12 @@ This template provides an enterprise-grade Google Kubernetes Engine (GKE) archit
 - [x] VPC-native networking
 - [x] Private cluster + Cloud NAT
 - [x] Binary Authorization
-- [ ] Confidential GKE Nodes
 - [x] Vertical / Horizontal Pod Autoscaler
+- [x] Config Connector resources: ContainerCluster, ContainerNodePool, ComputeNetwork, ComputeSubnetwork, IAMServiceAccount, IAMPolicyMember, ComputeRouter, ComputeRouterNAT, Deployment, Service
+- [ ] Confidential GKE Nodes
 - [ ] Cluster Autoscaler / Node Auto-provisioning
 - [ ] DWS + Kueue (accelerator templates)
 - [ ] GPU node pool with driver auto-install
-- [x] Config Connector resources: ContainerCluster, ContainerNodePool, ComputeNetwork, ComputeSubnetwork, IAMServiceAccount, IAMPolicyMember, ComputeRouter, ComputeRouterNAT
 
 ## Performance & Cost Estimates
 
@@ -53,6 +99,18 @@ This template provides an enterprise-grade Google Kubernetes Engine (GKE) archit
 
 Spot node interruptions are expected during validation; the workload is stateless (Nginx) so restarts are safe. Use on-demand nodes for production.
 
+## Cleanup
+
+### Terraform Path
+```bash
+cd terraform-helm && terraform destroy
+```
+
+### KCC Path
+```bash
+kubectl delete -n <KCC_NAMESPACE> -f config-connector/ --wait=true
+```
+
 ## Validation Record
 
 |  | Terraform + Helm | Config Connector |
@@ -62,9 +120,7 @@ Spot node interruptions are expected during validation; the workload is stateles
 | **Duration** | 9m 39s | n/a |
 | **Region** | us-central1 | us-central1 (KCC cluster) |
 | **Zones** | us-central1-a,us-central1-b,us-central1-c,us-central1-f | forge-management namespace |
-| **Cluster** | basic-gke-tf | krmapihost-kcc-instance |
+| **Cluster** | enterprise-gke-tf | krmapihost-kcc-instance |
 | **Agent tokens** | 120,000 in / 15,000 out (1 session) | (shared session) |
 | **Estimated cost** | $0.18 | -- |
 | **Commit** | 2c375256 | 2c375256 |
-
-
