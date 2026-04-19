@@ -18,7 +18,7 @@ set -e
 echo "Starting Validation Tests for basic-gke-hello-world..."
 
 PROJECT_ID=${PROJECT_ID:-"gca-gke-2025"}
-CLUSTER_NAME=${CLUSTER_NAME:-"basic-gke-hello-world-tf"}
+CLUSTER_NAME=${CLUSTER_NAME:-"gke-basic-tf"}
 REGION=${REGION:-"us-central1"}
 NAMESPACE_WORKLOAD=${NAMESPACE_WORKLOAD:-"default"}
 

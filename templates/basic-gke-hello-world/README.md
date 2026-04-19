@@ -24,11 +24,25 @@ Provisions VPC + subnet + GKE Standard, then deploys the `hello-world` Helm char
 
 ### Config Connector (`config-connector/`)
 
-```bash
-kubectl apply -n <KCC_NAMESPACE> -f config-connector/
-```
+1. **Provision Infrastructure**:
+   Apply the core infrastructure manifests to your Config Connector management namespace:
+   ```bash
+   kubectl apply -n <KCC_NAMESPACE> -f config-connector/
+   ```
+   Provisions `ComputeNetwork`, `ComputeSubnetwork`, `ContainerCluster` (Standard mode), and `ContainerNodePool` as KCC-managed resources.
 
-Provisions `ComputeNetwork`, `ComputeSubnetwork`, `ContainerCluster` (Standard mode), `ContainerNodePool`, and the `hello-world` workload (`Deployment` and `Service`) as KCC-managed resources or standard Kubernetes manifests.
+2. **Wait for Infrastructure**:
+   Monitor the status of the cluster and node pool until they are `Ready`:
+   ```bash
+   kubectl wait --for=condition=Ready containercluster gke-basic-kcc-v2 -n <KCC_NAMESPACE> --timeout=30m
+   ```
+
+3. **Deploy Workload**:
+   Once the cluster is ready, get credentials and apply the workload manifests directly to the **workload cluster**:
+   ```bash
+   gcloud container clusters get-credentials gke-basic-kcc-v2 --region us-central1 --project <PROJECT_ID>
+   kubectl apply -f config-connector-workload/workload.yaml
+   ```
 
 ### Verification
 
@@ -80,6 +94,10 @@ GKE Standard management fee applies per cluster. Using Spot instances for the no
 cd terraform-helm && terraform destroy
 
 # KCC path
+# Delete workload from workload cluster
+kubectl delete -f config-connector-workload/workload.yaml
+
+# Delete infrastructure from management cluster
 kubectl delete -n <KCC_NAMESPACE> -f config-connector/ --wait=true
 ```
 
