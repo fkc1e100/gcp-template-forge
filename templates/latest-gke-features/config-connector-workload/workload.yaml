@@ -16,6 +16,8 @@
 # It should be applied to the WORKLOAD cluster after the infrastructure is ready.
 # Deployment to a separate namespace ('latest-features') demonstrates functional parity
 # with the Helm path while maintaining clear resource separation.
+#
+# Path: templates/latest-gke-features/config-connector-workload/workload.yaml
 
 apiVersion: v1
 kind: Namespace
