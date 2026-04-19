@@ -10,9 +10,10 @@
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
-# NOTE: FQDNNetworkPolicy was promoted to GA in GKE 1.35.
-# We use v1alpha1 for broader compatibility across GKE versions.
-apiVersion: networking.gke.io/v1alpha1
+# limitations under the License.
+
+---
+apiVersion: networking.gke.io/v1
 kind: FQDNNetworkPolicy
 metadata:
   name: allow-ai-egress
@@ -32,4 +33,3 @@ spec:
     ports:
     - protocol: TCP
       port: 443
-
