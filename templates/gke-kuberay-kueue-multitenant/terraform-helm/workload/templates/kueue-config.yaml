@@ -30,7 +30,8 @@ metadata:
 spec:
   cohort: gpu-cohort
   resourceGroups:
-  - flavors:
+  - coveredResources: ["nvidia.com/gpu"]
+    flavors:
     - name: default-flavor
       resources:
       - name: nvidia.com/gpu
@@ -46,7 +47,8 @@ metadata:
 spec:
   cohort: gpu-cohort
   resourceGroups:
-  - flavors:
+  - coveredResources: ["nvidia.com/gpu"]
+    flavors:
     - name: default-flavor
       resources:
       - name: nvidia.com/gpu
