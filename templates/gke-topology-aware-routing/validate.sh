@@ -32,6 +32,15 @@ gcloud container clusters get-credentials ${CLUSTER_NAME} --region ${REGION} --p
 kubectl cluster-info
 echo "Connectivity passed."
 
+# 1.5 Apply Workload (for KCC path)
+WORKLOAD_DIR="$(dirname "$0")/config-connector-workload"
+if [ -d "$WORKLOAD_DIR" ]; then
+  echo "Applying Workload Manifests from $WORKLOAD_DIR..."
+  kubectl apply -f "$WORKLOAD_DIR/"
+else
+  echo "Warning: config-connector-workload directory not found at $WORKLOAD_DIR"
+fi
+
 # 2. Workload Readiness
 echo "Test 2: Workload Readiness..."
 kubectl wait --for=condition=available deployment/frontend -n ${NAMESPACE} --timeout=10m
@@ -53,6 +62,10 @@ if [ "${BACKEND_REPLICAS}" -lt 3 ]; then
   exit 1
 fi
 echo "Workloads are available and scaled correctly."
+
+# Give a bit of time for pods to settle and zone labels to be fully accurate
+echo "Waiting 30 seconds for pods to settle across zones..."
+sleep 30
 
 # 3. Topology Spread Check
 echo "Test 3: Topology Spread Check..."

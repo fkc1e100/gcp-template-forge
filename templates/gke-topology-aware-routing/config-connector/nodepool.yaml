@@ -26,6 +26,10 @@ spec:
   clusterRef:
     name: gke-topology-aware-routing-kcc
   location: us-central1
+  nodeLocations:
+    - us-central1-a
+    - us-central1-b
+    - us-central1-c
   nodeCount: 1
   nodeConfig:
     machineType: e2-standard-4

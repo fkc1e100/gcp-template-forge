@@ -15,7 +15,7 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerCluster
 metadata:
-  name: gke-kuberay-kueue-multitenant-kcc
+  name: ray-kueue-cluster-kcc
   namespace: forge-management
   labels:
     project: gcp-template-forge

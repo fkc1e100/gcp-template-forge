@@ -24,7 +24,7 @@ metadata:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   clusterRef:
-    name: gke-kuberay-kueue-multitenant-kcc
+    name: ray-kueue-cluster-kcc
   location: us-central1
   nodeCount: 1
   nodeConfig:
@@ -50,7 +50,7 @@ metadata:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   clusterRef:
-    name: gke-kuberay-kueue-multitenant-kcc
+    name: ray-kueue-cluster-kcc
   location: us-central1
   nodeLocations:
     - us-central1-a

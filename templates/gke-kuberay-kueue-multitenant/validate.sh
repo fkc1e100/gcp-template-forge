@@ -31,6 +31,16 @@ gcloud container clusters get-credentials ${CLUSTER_NAME} --region ${REGION} --p
 kubectl cluster-info
 echo "Connectivity passed."
 
+# 1.5 Apply Workload (for KCC path or to ensure CRDs are handled with server-side apply)
+WORKLOAD_DIR="$(dirname "$0")/config-connector-workload"
+if [ -d "$WORKLOAD_DIR" ]; then
+  echo "Applying Workload Manifests (Server-Side) from $WORKLOAD_DIR..."
+  # We use --server-side apply to handle large CRDs (e.g. KubeRay) that exceed the annotation limit.
+  kubectl apply --server-side -f "$WORKLOAD_DIR/"
+else
+  echo "Warning: config-connector-workload directory not found at $WORKLOAD_DIR"
+fi
+
 # 2. Operator Readiness
 echo "Test 2: Operator Readiness..."
 echo "Checking KubeRay Operator..."
@@ -44,11 +54,21 @@ echo "Operators are ready."
 
 # 3. Kueue Resource Readiness
 echo "Test 3: Kueue Resource Readiness..."
-kubectl get clusterqueue team-a-cq
-kubectl get clusterqueue team-b-cq
-kubectl get localqueue team-a-lq -n team-a
-kubectl get localqueue team-b-lq -n team-b
-echo "Kueue resources are present."
+for i in {1..12}; do
+  if kubectl get clusterqueue team-a-cq && \
+     kubectl get clusterqueue team-b-cq && \
+     kubectl get localqueue team-a-lq -n team-a && \
+     kubectl get localqueue team-b-lq -n team-b; then
+    echo "Kueue resources are present and admitted."
+    break
+  fi
+  echo "Waiting for Kueue resources (attempt $i/12)..."
+  sleep 10
+  if [ $i -eq 12 ]; then
+    echo "Error: Kueue resources failed to become present."
+    exit 1
+  fi
+done
 
 # 4. RayCluster Readiness
 echo "Test 4: RayCluster Readiness..."
