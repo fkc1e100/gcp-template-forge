@@ -46,12 +46,12 @@ terraform apply -auto-approve
 2. **Workload Health:**
    ```bash
    gcloud container clusters get-credentials enterprise-gke-tf --region us-central1
-   kubectl get pods -l app.kubernetes.io/name=enterprise-gke -n enterprise-gke
+   kubectl get pods -l app.kubernetes.io/name=enterprise-workload -n gke-workload
    ```
 3. **Endpoint Interaction:**
    ```bash
    # Get LoadBalancer IP
-   SERVICE_IP=$(kubectl get svc -l app.kubernetes.io/instance=enterprise-gke -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}' -n enterprise-gke)
+   SERVICE_IP=$(kubectl get svc -l app.kubernetes.io/instance=release -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}' -n gke-workload)
    curl -sf http://${SERVICE_IP}:80/
    ```
 
