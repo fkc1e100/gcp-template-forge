@@ -90,6 +90,6 @@ kubectl delete -n forge-management -f config-connector/
 | **Date** | 2026-04-20 | 2026-04-20 |
 | **Region** | us-central1 | us-central1 |
 | **Zones** | us-central1-a,b,c | us-central1-a,b,c |
-| **Cluster** | kuberay-kueue-cluster | gke-kuberay-kueue-multitenant-kcc |
-| **Commit** | b1a5f06 | b1a5f06 |
+| **Cluster** | gke-kuberay-kueue-multitenant | gke-kuberay-kueue-multitenant-kcc |
+| **Commit** | 998cbdf | 998cbdf |
 
