@@ -94,3 +94,16 @@ spec:
     apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
     kind: Project
     external: gca-gke-2025
+---
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMPolicyMember
+metadata:
+  name: enterprise-gke-node-metadata-writer
+  namespace: forge-management
+spec:
+  member: "serviceAccount:enterprise-gke-node-sa@gca-gke-2025.iam.gserviceaccount.com"
+  role: roles/stackdriver.resourceMetadata.writer
+  resourceRef:
+    apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
+    kind: Project
+    external: gca-gke-2025

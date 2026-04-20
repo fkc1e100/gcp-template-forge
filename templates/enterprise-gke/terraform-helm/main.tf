@@ -203,9 +203,10 @@ resource "google_service_account" "workload_sa" {
 }
 
 resource "google_service_account_iam_member" "workload_identity_binding" {
+  for_each = toset(["default", "gke-workload"])
   service_account_id = google_service_account.workload_sa.name
   role               = "roles/iam.workloadIdentityUser"
-  member             = "serviceAccount:${var.project_id}.svc.id.goog[default/enterprise-gke-sa]"
+  member             = "serviceAccount:${var.project_id}.svc.id.goog[${each.value}/gke-workload-sa]"
 }
 
 # GCP Service Account for Nodes

@@ -7,7 +7,7 @@ image:
 
 serviceAccount:
   create: true
-  name: "enterprise-gke-sa"
+  name: "gke-workload-sa"
   # Replace with the email of the GCP Service Account created by Terraform
   gcpServiceAccount: ""
 

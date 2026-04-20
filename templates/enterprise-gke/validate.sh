@@ -20,7 +20,15 @@ echo "Starting Validation Tests for enterprise-gke..."
 PROJECT_ID=${PROJECT_ID:-"gca-gke-2025"}
 CLUSTER_NAME=${CLUSTER_NAME:-"enterprise-gke-tf"}
 REGION=${REGION:-"us-central1"}
-NAMESPACE_WORKLOAD=${NAMESPACE_WORKLOAD:-"default"}
+NAMESPACE_WORKLOAD=${NAMESPACE_WORKLOAD:-""}
+if [ -z "$NAMESPACE_WORKLOAD" ]; then
+  if kubectl get ns gke-workload >/dev/null 2>&1; then
+    NAMESPACE_WORKLOAD="gke-workload"
+  else
+    NAMESPACE_WORKLOAD="default"
+  fi
+fi
+echo "Using namespace: ${NAMESPACE_WORKLOAD}"
 
 # Isolate KUBECONFIG
 export KUBECONFIG=$(mktemp)
