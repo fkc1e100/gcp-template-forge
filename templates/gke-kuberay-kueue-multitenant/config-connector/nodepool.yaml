@@ -28,6 +28,7 @@ spec:
   location: us-central1
   nodeCount: 1
   nodeConfig:
+    spot: true
     machineType: e2-standard-4
     diskSizeGb: 50
     oauthScopes:
@@ -59,6 +60,7 @@ spec:
     minNodeCount: 0
     maxNodeCount: 5
   nodeConfig:
+    spot: true
     machineType: g2-standard-4
     diskSizeGb: 100
     oauthScopes:
