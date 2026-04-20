@@ -95,7 +95,7 @@ kubectl delete -n <KCC_NAMESPACE> -f config-connector/ --wait=true
 
 |  | Terraform + Helm | Config Connector |
 | --- | --- | --- |
-| **Status** | success | success |
+| **Status** | success | pending |
 | **Date** | 2026-04-20 | 2026-04-20 |
 | **Duration** | 10m 15s | 15m 20s |
 | **Region** | us-central1 | us-central1 (regional) |
@@ -103,6 +103,6 @@ kubectl delete -n <KCC_NAMESPACE> -f config-connector/ --wait=true
 | **Cluster** | gke-basic-tf | basic-gke-hello-world |
 | **Agent tokens** | not recorded | (shared session) |
 | **Estimated cost** | - | -- |
-| **Commit** | 3a471e3 | 3a471e3 |
+| **Commit** | multiple | pending |
 
 
