@@ -44,6 +44,24 @@ spec:
     name: enterprise-gke-kcc-sa
 ---
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMPolicyMember
+metadata:
+  name: enterprise-gke-kcc-wi-binding-default
+  namespace: forge-management
+  labels:
+    project: gcp-template-forge
+    template: enterprise-gke
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
+spec:
+  member: "serviceAccount:gca-gke-2025.svc.id.goog[default/gke-workload-sa]"
+  role: roles/iam.workloadIdentityUser
+  resourceRef:
+    apiVersion: iam.cnrm.cloud.google.com/v1beta1
+    kind: IAMServiceAccount
+    name: enterprise-gke-kcc-sa
+---
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMServiceAccount
 metadata:
   name: enterprise-gke-node-sa
