@@ -94,5 +94,5 @@ kubectl delete -n forge-management -f config-connector/
 | **Cluster** | gke-kuberay-kueue-multitenant | krmapihost-kcc-instance |
 | **Agent tokens** | not recorded | (shared session) |
 | **Estimated cost** | - | -- |
-| **Commit** | 3f6575c9 | 3f6575c9 |
+| **Commit** | 3d50356 | 3d50356 |
 
