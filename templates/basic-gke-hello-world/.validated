@@ -1,4 +1,6 @@
-validated_at: 2026-04-11T23:02:32Z
-commit: 2c375256b7c1ade287fd8d95c92e2e32f1e4169a
-tf_helm: success
-kcc: skipped
+42ef2797df918498314b83abad5fe77095037ae8
+2026-04-20
+success
+terraform-helm/
+config-connector/
+basic-gke-hello-world
