@@ -11134,6 +11134,7 @@ metadata:
   labels:
     control-plane: controller-manager
     project: gcp-template-forge
+    template: gke-kuberay-kueue-multitenant
   name: kueue-controller-manager
   namespace: kueue-system
 spec:
@@ -11148,6 +11149,7 @@ spec:
       labels:
         control-plane: controller-manager
         project: gcp-template-forge
+        template: gke-kuberay-kueue-multitenant
     spec:
       containers:
       - args:

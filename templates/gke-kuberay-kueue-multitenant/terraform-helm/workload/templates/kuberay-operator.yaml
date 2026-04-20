@@ -49989,6 +49989,7 @@ metadata:
   labels:
     app.kubernetes.io/name: kuberay
     project: gcp-template-forge
+    template: gke-kuberay-kueue-multitenant
   name: kuberay-operator
   namespace: default
 spec:
@@ -50001,6 +50002,7 @@ spec:
       labels:
         app.kubernetes.io/name: kuberay
         project: gcp-template-forge
+        template: gke-kuberay-kueue-multitenant
     spec:
       containers:
       - env:

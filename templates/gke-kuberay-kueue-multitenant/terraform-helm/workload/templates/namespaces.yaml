@@ -18,6 +18,7 @@ metadata:
   name: team-a
   labels:
     project: gcp-template-forge
+    template: gke-kuberay-kueue-multitenant
 ---
 apiVersion: v1
 kind: Namespace
@@ -25,3 +26,4 @@ metadata:
   name: team-b
   labels:
     project: gcp-template-forge
+    template: gke-kuberay-kueue-multitenant

@@ -20,6 +20,7 @@ metadata:
   labels:
     kueue.x-k8s.io/queue-name: team-a-lq
     project: gcp-template-forge
+    template: gke-kuberay-kueue-multitenant
 spec:
   rayVersion: '2.9.0'
   headGroupSpec:
@@ -29,6 +30,7 @@ spec:
       metadata:
         labels:
           project: gcp-template-forge
+          template: gke-kuberay-kueue-multitenant
       spec:
         containers:
           - name: ray-head
@@ -57,6 +59,7 @@ spec:
         metadata:
           labels:
             project: gcp-template-forge
+            template: gke-kuberay-kueue-multitenant
         spec:
           containers:
             - name: ray-worker
@@ -83,6 +86,7 @@ metadata:
   labels:
     kueue.x-k8s.io/queue-name: team-b-lq
     project: gcp-template-forge
+    template: gke-kuberay-kueue-multitenant
 spec:
   rayVersion: '2.9.0'
   headGroupSpec:
@@ -92,6 +96,7 @@ spec:
       metadata:
         labels:
           project: gcp-template-forge
+          template: gke-kuberay-kueue-multitenant
       spec:
         containers:
           - name: ray-head
@@ -120,6 +125,7 @@ spec:
         metadata:
           labels:
             project: gcp-template-forge
+            template: gke-kuberay-kueue-multitenant
         spec:
           containers:
             - name: ray-worker
