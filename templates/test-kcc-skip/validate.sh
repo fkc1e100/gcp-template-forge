@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +13,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-resource "local_file" "placeholder" {
-  filename = "${path.module}/placeholder.txt"
-  content  = "This is a placeholder to ensure terraform apply succeeds."
-}
+echo "Skipping validation for test-kcc-skip."
+exit 0

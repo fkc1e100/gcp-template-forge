@@ -12,7 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-resource "local_file" "placeholder" {
-  filename = "${path.module}/placeholder.txt"
-  content  = "This is a placeholder to ensure terraform apply succeeds."
-}
+apiVersion: storage.cnrm.cloud.google.com/v1beta1
+kind: StorageBucket
+metadata:
+  name: test-kcc-skip-placeholder
+  namespace: forge-management
+  labels:
+    project: gcp-template-forge
+    template: test-kcc-skip
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
+spec:
+  location: us-central1
+  storageClass: STANDARD
+  uniformBucketLevelAccess: true
+  publicAccessPrevention: enforced
