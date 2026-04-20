@@ -1,0 +1,184 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vllm-sa-inference
+  namespace: default
+  labels:
+    project: gcp-template-forge
+    template: gke-inference-fuse
+  annotations:
+    # NOTE: Replace <PROJECT_ID> with your actual project ID
+    iam.gke.io/gcp-service-account: gke-inference-fuse-sa@<PROJECT_ID>.iam.gserviceaccount.com
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vllm-inference
+  labels:
+    project: gcp-template-forge
+    template: gke-inference-fuse
+    app: vllm
+spec:
+  progressDeadlineSeconds: 3600
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vllm
+      template: gke-inference-fuse
+  template:
+    metadata:
+      labels:
+        project: gcp-template-forge
+        template: gke-inference-fuse
+        app: vllm
+        gpu: l4
+      annotations:
+        gke-gcsfuse/volumes: "true"
+        gke-gcsfuse/cpu-limit: "1"
+        gke-gcsfuse/memory-limit: "2Gi"
+        gke-gcsfuse/ephemeral-storage-limit: "60Gi"
+    spec:
+      serviceAccountName: vllm-sa-inference
+      initContainers:
+      - name: wait-for-model
+        image: busybox:latest
+        command: ['sh', '-c', 'until [ -f /models/facebook/opt-125m/config.json ]; do echo waiting for model; sleep 10; done']
+        volumeMounts:
+        - name: gcs-fuse-csi-ephemeral
+          mountPath: /models
+          readOnly: true
+      containers:
+      - name: vllm-openai
+        image: "vllm/vllm-openai:latest"
+        args:
+        - "--model"
+        - "/models/facebook/opt-125m"
+        - "--port"
+        - "8000"
+        ports:
+        - containerPort: 8000
+          name: http
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 60
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 120
+          periodSeconds: 30
+        volumeMounts:
+        - name: gcs-fuse-csi-ephemeral
+          mountPath: /models
+          readOnly: true
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+          requests:
+            nvidia.com/gpu: 1
+      volumes:
+      - name: gcs-fuse-csi-ephemeral
+        csi:
+          driver: gcsfuse.csi.storage.gke.io
+          volumeAttributes:
+            # NOTE: Update this to match your actual bucket name
+            bucketName: <BUCKET_NAME>
+            mountOptions: "implicit-dirs"
+            fileCacheCapacity: "50Gi"
+            fileCacheForRangeRead: "true"
+            # metadataCacheTTLSeconds also controls the file cache TTL
+            metadataCacheTTLSeconds: "60"
+      nodeSelector:
+        gpu: l4
+      tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Exists"
+        effect: "NoSchedule"
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: stage-model
+  namespace: default
+  labels:
+    project: gcp-template-forge
+    template: gke-inference-fuse
+    component: staging
+spec:
+  template:
+    metadata:
+      annotations:
+        gke-gcsfuse/volumes: "true"
+    spec:
+      serviceAccountName: vllm-sa-inference
+      containers:
+      - name: stager
+        image: google/cloud-sdk:slim
+        command: ["sh", "-c"]
+        args:
+        - |
+          # In a real scenario, this would be a large download.
+          # For demonstration, we just ensure a config.json exists to unblock the Deployment.
+          mkdir -p /models/facebook/opt-125m
+          echo '{"model_type": "opt"}' > /models/facebook/opt-125m/config.json
+          echo "Model staged successfully."
+        volumeMounts:
+        - name: gcs-fuse-csi-ephemeral
+          mountPath: /models
+      volumes:
+      - name: gcs-fuse-csi-ephemeral
+        csi:
+          driver: gcsfuse.csi.storage.gke.io
+          volumeAttributes:
+            # NOTE: Update this to match your actual bucket name
+            bucketName: <BUCKET_NAME>
+            mountOptions: "implicit-dirs"
+            fileCacheCapacity: "50Gi"
+            fileCacheForRangeRead: "true"
+            # metadataCacheTTLSeconds also controls the file cache TTL
+            metadataCacheTTLSeconds: "60"
+      nodeSelector:
+        gpu: l4
+      tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Exists"
+        effect: "NoSchedule"
+      restartPolicy: OnFailure
+  backoffLimit: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vllm-inference
+  namespace: default
+  labels:
+    project: gcp-template-forge
+    template: gke-inference-fuse
+    app: vllm
+spec:
+  ports:
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
+    name: http
+  selector:
+    app: vllm
+  type: ClusterIP

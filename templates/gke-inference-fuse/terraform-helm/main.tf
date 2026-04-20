@@ -1,0 +1,257 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+provider "google" {
+  project = var.project_id
+  region  = var.region
+}
+
+provider "google-beta" {
+  project = var.project_id
+  region  = var.region
+}
+
+resource "random_id" "bucket_suffix" {
+  byte_length = 4
+}
+
+locals {
+  workload_gsa_email = google_service_account.workload_sa.email
+}
+
+# VPC Network
+resource "google_compute_network" "vpc" {
+  name                    = var.network_name
+  auto_create_subnetworks = false
+}
+
+# Subnet
+resource "google_compute_subnetwork" "subnet" {
+  name                     = var.subnet_name
+  ip_cidr_range            = "10.0.0.0/20"
+  region                   = var.region
+  network                  = google_compute_network.vpc.id
+  private_ip_google_access = true
+
+  secondary_ip_range {
+    range_name    = "pods"
+    ip_cidr_range = "10.1.0.0/16"
+  }
+
+  secondary_ip_range {
+    range_name    = "services"
+    ip_cidr_range = "10.2.0.0/20"
+  }
+}
+
+# GCS Bucket for models
+resource "google_storage_bucket" "model_bucket" {
+  name          = "${var.bucket_name}-${random_id.bucket_suffix.hex}"
+  location      = var.region
+  force_destroy = true
+
+  uniform_bucket_level_access = true
+
+  labels = {
+    project  = "gcp-template-forge"
+    template = "gke-inference-fuse"
+  }
+}
+
+# GKE Cluster
+resource "google_container_cluster" "primary" {
+  provider = google-beta
+  name     = var.cluster_name
+  location = var.region
+
+  # Restrict to a single zone that supports L4 GPUs to save quota and improve reliability
+  node_locations = [var.zone]
+
+  deletion_protection = false
+
+  resource_labels = {
+    project  = "gcp-template-forge"
+    template = "gke-inference-fuse"
+  }
+
+  remove_default_node_pool = true
+  initial_node_count       = 1
+
+  network    = google_compute_network.vpc.name
+  subnetwork = google_compute_subnetwork.subnet.name
+
+  ip_allocation_policy {
+    cluster_secondary_range_name  = "pods"
+    services_secondary_range_name = "services"
+  }
+
+  workload_identity_config {
+    workload_pool = "${var.project_id}.svc.id.goog"
+  }
+
+  # Enable GCS FUSE CSI Driver
+  addons_config {
+    gcs_fuse_csi_driver_config {
+      enabled = true
+    }
+  }
+
+  release_channel {
+    channel = "REGULAR"
+  }
+
+  timeouts {
+    create = "30m"
+    update = "30m"
+    delete = "30m"
+  }
+}
+
+# GPU Node Pool with Local SSD
+resource "google_container_node_pool" "gpu_pool" {
+  provider   = google-beta
+  name       = "l4-gpu-pool"
+  location   = var.region
+  cluster    = google_container_cluster.primary.name
+  node_count = 1
+
+  # Restrict to a single zone that supports L4 GPUs
+  node_locations = [var.zone]
+
+  node_config {
+    # Use on-demand instances for better availability (spot can be harder to find in some zones)
+    spot = false
+
+    machine_type = "g2-standard-4"
+    disk_size_gb = 50
+    disk_type    = "pd-balanced"
+
+    # G2-standard-4 has 1 x L4 GPU
+    guest_accelerator {
+      type  = "nvidia-l4"
+      count = 1
+
+      # Automatically install NVIDIA GPU drivers
+      gpu_driver_installation_config {
+        gpu_driver_version = "DEFAULT"
+      }
+    }
+
+    # Attach Local SSD for GCS FUSE caching
+    ephemeral_storage_local_ssd_config {
+      local_ssd_count = 1
+    }
+
+    oauth_scopes = [
+      "https://www.googleapis.com/auth/cloud-platform",
+    ]
+
+    workload_metadata_config {
+      mode = "GKE_METADATA"
+    }
+
+    service_account = google_service_account.workload_sa.email
+
+    labels = {
+      project  = "gcp-template-forge"
+      template = "gke-inference-fuse"
+      gpu      = "l4"
+    }
+
+    resource_labels = {
+      project  = "gcp-template-forge"
+      template = "gke-inference-fuse"
+    }
+  }
+
+  timeouts {
+    create = "30m"
+    update = "30m"
+    delete = "30m"
+  }
+}
+
+# IAM for Workload Identity
+resource "google_service_account" "workload_sa" {
+  account_id   = "vllm-sa-inference"
+  display_name = "GKE Inference Service Account"
+}
+
+resource "google_storage_bucket_iam_member" "bucket_admin" {
+  bucket = google_storage_bucket.model_bucket.name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${google_service_account.workload_sa.email}"
+}
+
+resource "google_service_account_iam_member" "workload_identity_user" {
+  service_account_id = google_service_account.workload_sa.name
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "serviceAccount:${var.project_id}.svc.id.goog[default/vllm-sa-inference]"
+}
+
+# Generate values.yaml for the Helm chart
+resource "local_file" "helm_values" {
+  filename = "${path.module}/workload/values.yaml"
+  content = <<-EOF
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+${yamlencode({
+  bucketName             = google_storage_bucket.model_bucket.name
+  gcpServiceAccountEmail = local.workload_gsa_email
+  serviceAccount = {
+    name = "vllm-sa-inference"
+  }
+  # Default values for vllm-inference
+  replicaCount = 1
+  image = {
+    repository = "vllm/vllm-openai"
+    tag        = "latest"
+  }
+  resources = {
+    limits = {
+      "nvidia.com/gpu" = 1
+    }
+    requests = {
+      "nvidia.com/gpu" = 1
+    }
+  }
+  nodeSelector = {
+    gpu = "l4"
+  }
+  tolerations = [
+    {
+      key      = "nvidia.com/gpu"
+      operator = "Exists"
+      effect   = "NoSchedule"
+    }
+  ]
+  cache = {
+    capacity      = "50Gi"
+    maxAgeSeconds = 60
+  }
+})}
+EOF
+}
