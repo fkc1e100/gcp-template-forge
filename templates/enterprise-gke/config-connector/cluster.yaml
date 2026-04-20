@@ -40,6 +40,10 @@ spec:
     masterIpv4CidrBlock: "172.16.1.16/28"
   workloadIdentityConfig:
     workloadPool: "gca-gke-2025.svc.id.goog"
+  masterAuthorizedNetworksConfig:
+    cidrBlocks:
+      - cidrBlock: "0.0.0.0/0"
+        displayName: "all-admin"
   networkPolicy:
     enabled: true
     provider: CALICO

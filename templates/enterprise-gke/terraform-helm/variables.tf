@@ -45,3 +45,17 @@ variable "service_account" {
   description = "The service account email to use for the node pool"
   type        = string
 }
+
+variable "master_authorized_networks" {
+  description = "List of master authorized networks"
+  type = list(object({
+    cidr_block   = string
+    display_name = string
+  }))
+  default = [
+    {
+      cidr_block   = "0.0.0.0/0"
+      display_name = "all-admin"
+    }
+  ]
+}

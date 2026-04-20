@@ -76,6 +76,7 @@ To verify the deployment:
 - [x] Workload Identity
 - [x] VPC-native networking
 - [x] Private cluster + Cloud NAT
+- [x] Master Authorized Networks
 - [x] Binary Authorization
 - [x] Vertical / Horizontal Pod Autoscaler
 - [x] Config Connector resources: ContainerCluster, ContainerNodePool, ComputeNetwork, ComputeSubnetwork, IAMServiceAccount, IAMPolicyMember, ComputeRouter, ComputeRouterNAT, Deployment, Service

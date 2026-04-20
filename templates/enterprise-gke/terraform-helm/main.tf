@@ -101,6 +101,16 @@ resource "google_container_cluster" "enterprise_cluster" {
     workload_pool = "${var.project_id}.svc.id.goog"
   }
 
+  master_authorized_networks_config {
+    dynamic "cidr_blocks" {
+      for_each = var.master_authorized_networks
+      content {
+        cidr_block   = cidr_blocks.value.cidr_block
+        display_name = cidr_blocks.value.display_name
+      }
+    }
+  }
+
   network_policy {
     enabled  = true
     provider = "CALICO"
