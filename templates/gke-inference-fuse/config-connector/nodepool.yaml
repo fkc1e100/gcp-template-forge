@@ -29,7 +29,7 @@ spec:
   nodeCount: 1
   # Restrict to a single zone that supports L4 GPUs
   nodeLocations:
-    - us-central1-b
+    - us-central1-f
   nodeConfig:
     spot: false
     machineType: g2-standard-4

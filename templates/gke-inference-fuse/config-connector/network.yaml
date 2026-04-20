@@ -36,13 +36,13 @@ metadata:
     project: gcp-template-forge
     template: gke-inference-fuse
 spec:
-  ipCidrRange: "10.0.0.0/20"
+  ipCidrRange: "10.10.0.0/20"
   region: us-central1
   networkRef:
     name: gke-inference-fuse-vpc
   privateIpGoogleAccess: true
   secondaryIpRange:
     - rangeName: pods
-      ipCidrRange: "10.1.0.0/16"
+      ipCidrRange: "10.11.0.0/16"
     - rangeName: services
-      ipCidrRange: "10.2.0.0/20"
+      ipCidrRange: "10.12.0.0/20"

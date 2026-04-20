@@ -21,8 +21,8 @@ metadata:
     project: gcp-template-forge
     template: gke-inference-fuse
   annotations:
-    # NOTE: Replace <PROJECT_ID> with your actual project ID
-    iam.gke.io/gcp-service-account: gke-inference-fuse-sa@<PROJECT_ID>.iam.gserviceaccount.com
+    # NOTE: Replace 'gca-gke-2025' with your actual project ID
+    iam.gke.io/gcp-service-account: gke-inference-fuse-sa@gca-gke-2025.iam.gserviceaccount.com
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -99,7 +99,7 @@ spec:
           driver: gcsfuse.csi.storage.gke.io
           volumeAttributes:
             # NOTE: Update this to match your actual bucket name
-            bucketName: <BUCKET_NAME>
+            bucketName: gke-inference-fuse-bucket
             mountOptions: "implicit-dirs"
             fileCacheCapacity: "50Gi"
             fileCacheForRangeRead: "true"
@@ -149,7 +149,7 @@ spec:
           driver: gcsfuse.csi.storage.gke.io
           volumeAttributes:
             # NOTE: Update this to match your actual bucket name
-            bucketName: <BUCKET_NAME>
+            bucketName: gke-inference-fuse-bucket
             mountOptions: "implicit-dirs"
             fileCacheCapacity: "50Gi"
             fileCacheForRangeRead: "true"

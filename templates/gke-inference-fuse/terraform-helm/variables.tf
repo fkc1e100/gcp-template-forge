@@ -26,7 +26,7 @@ variable "region" {
 variable "zone" {
   description = "The zone to deploy the node pool in"
   type        = string
-  default     = "us-central1-b"
+  default     = "us-central1-f"
 }
 
 variable "cluster_name" {

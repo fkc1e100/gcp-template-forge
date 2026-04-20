@@ -27,7 +27,7 @@ spec:
   location: us-central1
   # Restrict to a single zone that supports L4 GPUs to save quota and improve reliability
   nodeLocations:
-    - us-central1-b
+    - us-central1-f
   networkRef:
     name: gke-inference-fuse-vpc
   subnetworkRef:
