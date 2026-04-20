@@ -94,5 +94,5 @@ kubectl delete -n forge-management -f config-connector/
 | **Cluster** | gke-kuberay-kueue-multitenant | gke-kuberay-kueue-multitenant-kcc |
 | **Agent tokens** | not recorded | (shared session) |
 | **Estimated cost** | - | -- |
-| **Commit** | c87fb653 | c87fb653 |
+| **Commit** | 0a249b27 | 0a249b27 |
 
