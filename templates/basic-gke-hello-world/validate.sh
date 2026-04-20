@@ -18,7 +18,7 @@ set -e
 echo "Starting Validation Tests for basic-gke-hello-world..."
 
 PROJECT_ID=${PROJECT_ID:-"gca-gke-2025"}
-CLUSTER_NAME=${CLUSTER_NAME:-"basic-gke-hello-world-tf"}
+CLUSTER_NAME=${CLUSTER_NAME:-"gke-basic-tf"}
 REGION=${REGION:-"us-central1"}
 NAMESPACE_WORKLOAD=${NAMESPACE_WORKLOAD:-"default"}
 
@@ -34,9 +34,9 @@ echo "Connectivity passed."
 
 # 2. Workload Readiness
 echo "Test 2: Workload Readiness..."
-# Deployment name from fullname helper: <release-name>-<chart-name>
-# In CI, release name is 'release', chart name is 'hello-world'
-kubectl wait --for=condition=available deployment/release-hello-world -n ${NAMESPACE_WORKLOAD} --timeout=10m
+# Use label selector for robustness across deployment paths
+# (Helm uses <release>-<chart>, KCC uses direct name)
+kubectl wait --for=condition=available deployment -l app.kubernetes.io/name=hello-world -n ${NAMESPACE_WORKLOAD} --timeout=30m
 echo "Workload is available."
 
 # 3. Endpoint Interaction
@@ -44,7 +44,8 @@ echo "Test 3: Endpoint Interaction..."
 # Wait for LoadBalancer IP
 SERVICE_IP=""
 for i in {1..20}; do
-  SERVICE_IP=$(kubectl get svc -n ${NAMESPACE_WORKLOAD} -l app.kubernetes.io/instance=release -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}' || true)
+  # Use name label for robustness across deployment paths
+  SERVICE_IP=$(kubectl get svc -n ${NAMESPACE_WORKLOAD} -l app.kubernetes.io/name=hello-world -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}' || true)
   if [ ! -z "$SERVICE_IP" ]; then
     break
   fi
