@@ -143,8 +143,9 @@ jobs:
             [ "$SKIP" = true ] && continue
 
             echo "Deleting orphaned TF cluster: $CLUSTER in $C_LOC"
-            delete_resource "gcloud container clusters delete $CLUSTER --location=$C_LOC --project=$PROJECT --quiet" "cluster $CLUSTER"
+            delete_resource "gcloud container clusters delete $CLUSTER --location=$C_LOC --project=$PROJECT --quiet" "cluster $CLUSTER" &
           done <<< "$TF_CLUSTERS"
+          wait
 
           # 2.5 Clean up Network Endpoint Groups (NEGs)
           echo "Cleaning up orphaned Network Endpoint Groups (NEGs)..."
@@ -172,11 +173,12 @@ jobs:
               ZONE_NAME="${NEG_ZONE##*/}"
               echo "Deleting orphaned NEG: $NEG_NAME in $ZONE_NAME"
               if [ -n "$ZONE_NAME" ]; then
-                delete_resource "gcloud compute network-endpoint-groups delete $NEG_NAME --zone=$ZONE_NAME --project=$PROJECT --quiet" "NEG $NEG_NAME"
+                delete_resource "gcloud compute network-endpoint-groups delete $NEG_NAME --zone=$ZONE_NAME --project=$PROJECT --quiet" "NEG $NEG_NAME" &
               else
-                delete_resource "gcloud compute network-endpoint-groups delete $NEG_NAME --global --project=$PROJECT --quiet" "NEG $NEG_NAME"
+                delete_resource "gcloud compute network-endpoint-groups delete $NEG_NAME --global --project=$PROJECT --quiet" "NEG $NEG_NAME" &
               fi
           done <<< "$ALL_NEGS"
+          wait
 
           # 3. Clean up Networking resources (matching pattern)
           echo "Cleaning up orphaned Networking resources (matching pattern)..."
@@ -194,8 +196,9 @@ jobs:
             done
             [ "$SKIP" = true ] && continue
             
-            delete_resource "gcloud compute firewall-rules delete $F --project=$PROJECT --quiet" "firewall $F"
+            delete_resource "gcloud compute firewall-rules delete $F --project=$PROJECT --quiet" "firewall $F" &
           done
+          wait
 
           # Routers and NATs across all regions
           echo "Cleaning up routers across all regions..."
@@ -219,12 +222,14 @@ jobs:
               NATS=$(gcloud compute routers describe $R --project=$PROJECT --region=$RGN --format="value(nats.name)" | tr ';' ' ')
               if [ -n "$NATS" ]; then
                 for NAT in $NATS; do
-                  delete_resource "gcloud compute routers nats delete $NAT --router=$R --region=$RGN --project=$PROJECT --quiet" "NAT $NAT on router $R"
+                  delete_resource "gcloud compute routers nats delete $NAT --router=$R --region=$RGN --project=$PROJECT --quiet" "NAT $NAT on router $R" &
                 done
+                wait
               fi
-              delete_resource "gcloud compute routers delete $R --region=$RGN --project=$PROJECT --quiet" "router $R"
+              delete_resource "gcloud compute routers delete $R --region=$RGN --project=$PROJECT --quiet" "router $R" &
             done
           done
+          wait
 
           # Subnets across all regions
           echo "Cleaning up subnets across all regions..."
@@ -243,9 +248,10 @@ jobs:
               done
               [ "$SKIP" = true ] && continue
 
-              delete_resource "gcloud compute networks subnets delete $S --region=$RGN --project=$PROJECT --quiet" "subnet $S"
+              delete_resource "gcloud compute networks subnets delete $S --region=$RGN --project=$PROJECT --quiet" "subnet $S" &
             done
           done
+          wait
 
           # Networks (VPCs)
           echo "Listing all networks in project..."
@@ -263,8 +269,9 @@ jobs:
             done
             [ "$SKIP" = true ] && continue
 
-            delete_resource "gcloud compute networks delete $N --project=$PROJECT --quiet" "network $N"
+            delete_resource "gcloud compute networks delete $N --project=$PROJECT --quiet" "network $N" &
           done
+          wait
 
           echo "Capturing Quota Status after cleanup..."
           gcloud compute project-info describe --project=$PROJECT --format="json" > /tmp/quota_after.json || true
