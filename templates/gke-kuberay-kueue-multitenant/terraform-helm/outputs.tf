@@ -14,15 +14,15 @@
 
 output "cluster_name" {
   description = "The name of the GKE cluster"
-  value       = google_container_cluster.primary.name
+  value       = google_container_cluster.gke_kuberay_kueue_multitenant_cluster.name
 }
 
 output "cluster_location" {
   description = "The location of the GKE cluster"
-  value       = google_container_cluster.primary.location
+  value       = google_container_cluster.gke_kuberay_kueue_multitenant_cluster.location
 }
 
 output "vpc_name" {
   description = "The name of the VPC network"
-  value       = google_compute_network.vpc.name
+  value       = google_compute_network.gke_kuberay_kueue_multitenant_vpc.name
 }

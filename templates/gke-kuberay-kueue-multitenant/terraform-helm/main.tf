@@ -23,17 +23,17 @@ provider "google-beta" {
 }
 
 # VPC Network
-resource "google_compute_network" "vpc" {
+resource "google_compute_network" "gke_kuberay_kueue_multitenant_vpc" {
   name                    = var.network_name
   auto_create_subnetworks = false
 }
 
 # Subnet
-resource "google_compute_subnetwork" "subnet" {
+resource "google_compute_subnetwork" "gke_kuberay_kueue_multitenant_subnet" {
   name                     = var.subnet_name
   ip_cidr_range            = "10.0.0.0/20"
   region                   = var.region
-  network                  = google_compute_network.vpc.id
+  network                  = google_compute_network.gke_kuberay_kueue_multitenant_vpc.id
   private_ip_google_access = true
 
   secondary_ip_range {
@@ -48,7 +48,7 @@ resource "google_compute_subnetwork" "subnet" {
 }
 
 # GKE Cluster
-resource "google_container_cluster" "primary" {
+resource "google_container_cluster" "gke_kuberay_kueue_multitenant_cluster" {
   name     = var.cluster_name
   location = var.region
 
@@ -62,8 +62,8 @@ resource "google_container_cluster" "primary" {
   remove_default_node_pool = true
   initial_node_count       = 1
 
-  network    = google_compute_network.vpc.name
-  subnetwork = google_compute_subnetwork.subnet.name
+  network    = google_compute_network.gke_kuberay_kueue_multitenant_vpc.name
+  subnetwork = google_compute_subnetwork.gke_kuberay_kueue_multitenant_subnet.name
 
   ip_allocation_policy {
     cluster_secondary_range_name  = "pods"
@@ -92,9 +92,9 @@ resource "google_container_cluster" "primary" {
 
 # System Node Pool
 resource "google_container_node_pool" "system_nodes" {
-  name       = "system-pool"
+  name       = "gke-kuberay-kueue-multitenant-system"
   location   = var.region
-  cluster    = google_container_cluster.primary.name
+  cluster    = google_container_cluster.gke_kuberay_kueue_multitenant_cluster.name
   node_count = 1
 
   node_config {
@@ -122,9 +122,9 @@ resource "google_container_node_pool" "system_nodes" {
 # GPU Node Pool (Autoscaled)
 resource "google_container_node_pool" "gpu_nodes" {
   provider = google-beta
-  name     = "gpu-pool"
+  name     = "gke-kuberay-kueue-multitenant-gpu"
   location = var.region
-  cluster  = google_container_cluster.primary.name
+  cluster  = google_container_cluster.gke_kuberay_kueue_multitenant_cluster.name
 
   node_locations = [
     "${var.region}-a",
@@ -154,6 +154,7 @@ resource "google_container_node_pool" "gpu_nodes" {
     labels = {
       project                            = "gcp-template-forge"
       template                           = "gke-kuberay-kueue-multitenant"
+      pool                               = "gpu"
       "cloud.google.com/gke-accelerator" = "nvidia-l4"
     }
 
@@ -169,8 +170,9 @@ resource "google_container_node_pool" "gpu_nodes" {
     }
   }
 
-  depends_on = [google_container_cluster.primary]
+  depends_on = [google_container_cluster.gke_kuberay_kueue_multitenant_cluster]
 }
+
 
 # Generate values.yaml for Helm
 resource "local_file" "helm_values" {

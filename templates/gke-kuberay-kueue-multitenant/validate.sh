@@ -18,7 +18,7 @@ set -e
 echo "Starting Validation Tests for gke-kuberay-kueue-multitenant..."
 
 PROJECT_ID=${PROJECT_ID:-"gca-gke-2025"}
-CLUSTER_NAME=${CLUSTER_NAME:-"kuberay-kueue-cluster"}
+CLUSTER_NAME=${CLUSTER_NAME:-"gke-kuberay-kueue-multitenant"}
 REGION=${REGION:-"us-central1"}
 
 # Isolate KUBECONFIG
