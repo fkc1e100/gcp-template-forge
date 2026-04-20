@@ -17,6 +17,7 @@
 | 40 | Final verification and label removal | ✅ Success | Synchronizing README with commit 70f6052 and ensuring 'hold' label is removed | Finalized |
 | 41 | Final hash synchronization and PR readiness | ✅ Success | Synchronizing README with commit bfe4f55 and confirming label removal | Ready for Merging |
 | 42 | Final audit and documentation synchronization | ✅ Success | Synchronizing README commit hash with 7ff8154 and performing final security/parity audit | PR Ready |
+| 43 | Fix inconsistent KCC IAM annotations | ✅ Success | Adding missing project-id annotations to node-related IAMPolicyMember resources for absolute consistency | Finalized |
 
 ## Key Learnings
 - **Master Authorized Networks**: Restricting control plane access improves security but requires careful coordination with CI/CD tools.

@@ -82,6 +82,8 @@ metadata:
   labels:
     project: gcp-template-forge
     template: enterprise-gke
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   member: "serviceAccount:enterprise-gke-node-sa@gca-gke-2025.iam.gserviceaccount.com"
   role: roles/logging.logWriter
@@ -98,6 +100,8 @@ metadata:
   labels:
     project: gcp-template-forge
     template: enterprise-gke
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   member: "serviceAccount:enterprise-gke-node-sa@gca-gke-2025.iam.gserviceaccount.com"
   role: roles/monitoring.metricWriter
@@ -114,6 +118,8 @@ metadata:
   labels:
     project: gcp-template-forge
     template: enterprise-gke
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   member: "serviceAccount:enterprise-gke-node-sa@gca-gke-2025.iam.gserviceaccount.com"
   role: roles/monitoring.viewer
@@ -130,6 +136,8 @@ metadata:
   labels:
     project: gcp-template-forge
     template: enterprise-gke
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   member: "serviceAccount:enterprise-gke-node-sa@gca-gke-2025.iam.gserviceaccount.com"
   role: roles/stackdriver.resourceMetadata.writer
