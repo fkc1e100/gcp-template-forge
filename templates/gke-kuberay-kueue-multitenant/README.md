@@ -91,5 +91,5 @@ kubectl delete -n forge-management -f config-connector/
 | **Region** | us-central1 | us-central1 |
 | **Zones** | us-central1-a,b,c | us-central1-a,b,c |
 | **Cluster** | kuberay-kueue-cluster | kuberay-kueue-kcc-cluster |
-| **Commit** | 4b7e495 | 4b7e495 |
+| **Commit** | 12d57d6 | 12d57d6 |
 
