@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: list-test
+  namespace: repo-agent-system
+spec:
+  containers:
+  - name: lister
+    image: python:3.11
+    command: ["/bin/sh", "-c"]
+    args:
+    - |
+      pip install google-generativeai
+      python /scripts/list-models.py
+    env:
+    - name: GEMINI_API_KEY
+      valueFrom:
+        secretKeyRef:
+          name: gemini-api-key
+          key: gemini
+    volumeMounts:
+    - name: script-vol
+      mountPath: /scripts
+  volumes:
+  - name: script-vol
+    configMap:
+      name: list-script
+  restartPolicy: Never

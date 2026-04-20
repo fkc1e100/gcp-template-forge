@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: qdrant-pvc
+  namespace: repo-agent-system
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: standard-rwo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qdrant
+  namespace: repo-agent-system
+  labels:
+    app: qdrant
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: qdrant
+  template:
+    metadata:
+      labels:
+        app: qdrant
+    spec:
+      containers:
+      - name: qdrant
+        image: qdrant/qdrant:latest
+        ports:
+        - containerPort: 6333
+          name: http
+        - containerPort: 6334
+          name: grpc
+        volumeMounts:
+        - mountPath: /qdrant/storage
+          name: qdrant-storage
+      volumes:
+      - name: qdrant-storage
+        persistentVolumeClaim:
+          claimName: qdrant-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: qdrant
+  namespace: repo-agent-system
+spec:
+  selector:
+    app: qdrant
+  ports:
+  - port: 6333
+    targetPort: 6333
+    name: http
+  - port: 6334
+    targetPort: 6334
+    name: grpc

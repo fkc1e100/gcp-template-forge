@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: query-test
+  namespace: repo-agent-system
+spec:
+  containers:
+  - name: queryer
+    image: python:3.11
+    command: ["/bin/sh", "-c"]
+    args:
+    - |
+      pip install qdrant-client google-generativeai
+      python /scripts/query-rag.py "quota issues"
+    env:
+    - name: GEMINI_API_KEY
+      valueFrom:
+        secretKeyRef:
+          name: gemini-api-key
+          key: gemini
+    volumeMounts:
+    - name: script-vol
+      mountPath: /scripts
+  volumes:
+  - name: script-vol
+    configMap:
+      name: query-script
+  restartPolicy: Never

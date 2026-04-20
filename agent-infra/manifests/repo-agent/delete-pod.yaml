@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: delete-test
+  namespace: repo-agent-system
+spec:
+  containers:
+  - name: deleter
+    image: python:3.11
+    command: ["/bin/sh", "-c"]
+    args:
+    - |
+      pip install qdrant-client
+      python /scripts/delete-collection.py
+    volumeMounts:
+    - name: script-vol
+      mountPath: /scripts
+  volumes:
+  - name: script-vol
+    configMap:
+      name: delete-script
+  restartPolicy: Never

@@ -427,17 +427,7 @@ jobs:
             --location="${{ needs.tf-provision.outputs.tf_location }}" \
             --project="${{ env.PROJECT_ID }}" --quiet --async || true
 
-      - name: Post TF+Helm summary to PR
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const template = '${{ matrix.template }}';
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `### Deploy & Test TF+Helm: \`${template}\` complete.`,
-            });
+
 
       - name: Remove Hold Label on Failure
         if: failure() && github.event_name == 'pull_request'
@@ -455,7 +445,7 @@ jobs:
   kcc-apply:
     name: "KCC Apply (${{ matrix.template }})"
     needs: [ detect-changes, lint, pre-cleanup ]
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && hashFiles(format('{0}/.kcc-unsupported', matrix.template)) == ''
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
@@ -503,6 +493,7 @@ jobs:
   kcc-test:
     name: "KCC Test (${{ matrix.template }})"
     needs: [ kcc-apply, detect-changes ]
+    if: github.event_name == 'pull_request' && hashFiles(format('{0}/.kcc-unsupported', matrix.template)) == ''
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
@@ -588,7 +579,7 @@ jobs:
   kcc-teardown:
     name: "KCC Teardown (${{ matrix.template }})"
     needs: [ kcc-apply, kcc-test, detect-changes ]
-    if: always()
+    if: always() && hashFiles(format('{0}/.kcc-unsupported', matrix.template)) == ''
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -618,17 +609,7 @@ jobs:
             -f ${{ matrix.template }}/config-connector/ \
             --wait=true --timeout=900s || true
 
-      - name: Post KCC summary to PR
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const template = '${{ matrix.template }}';
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `### Deploy & Test KCC: \`${template}\` complete.`,
-            });
+
 
   # ── 4c. PR close: destroy any cluster left up by failed deploy-test runs ────
   cleanup-pr-infra:
@@ -1013,7 +994,7 @@ jobs:
   validate-kcc:
     name: "Validate KCC (${{ matrix.template }})"
     needs: detect-changes
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && hashFiles(format('{0}/.kcc-unsupported', matrix.template)) == ''
     runs-on: ubuntu-latest
     timeout-minutes: 120
     strategy:
