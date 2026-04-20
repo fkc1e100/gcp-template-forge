@@ -38,7 +38,7 @@ variable "network_name" {
 variable "subnet_name" {
   description = "The name of the subnet"
   type        = string
-  default     = "gke-kuberay-kueue-multitenant-subnet"
+  default     = "gke-kuberay-kueue-multitenant-sub"
 }
 
 variable "service_account" {

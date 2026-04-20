@@ -15,7 +15,7 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerCluster
 metadata:
-  name: ray-kueue-cluster-kcc
+  name: gke-kuberay-kueue-multitenant
   namespace: forge-management
   labels:
     project: gcp-template-forge
@@ -29,7 +29,7 @@ spec:
   networkRef:
     name: gke-kuberay-kueue-multitenant-vpc
   subnetworkRef:
-    name: gke-kuberay-kueue-multitenant-subnet
+    name: gke-kuberay-kueue-multitenant-sub
   ipAllocationPolicy:
     clusterSecondaryRangeName: pods
     servicesSecondaryRangeName: services
