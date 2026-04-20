@@ -70,9 +70,8 @@ sleep 30
 # 3. Topology Spread Check
 echo "Test 3: Topology Spread Check..."
 
-# Get actual zones where nodes are available for this template
-# We use the 'template' label to identify our nodes
-ACTUAL_NODE_ZONES_LIST=$(kubectl get nodes -l template=gke-topology-aware-routing -o jsonpath='{.items[*].metadata.labels.topology\.kubernetes\.io/zone}' | tr ' ' '\n' | sort | uniq | grep -v "^$")
+# Get actual zones where nodes are available in this cluster
+ACTUAL_NODE_ZONES_LIST=$(kubectl get nodes -o jsonpath='{.items[*].metadata.labels.topology\.kubernetes\.io/zone}' | tr ' ' '\n' | sort | uniq | grep -v "^$")
 ACTUAL_NODE_ZONES_COUNT=$(echo "${ACTUAL_NODE_ZONES_LIST}" | wc -l)
 echo "Nodes are currently provisioned in $ACTUAL_NODE_ZONES_COUNT zones: $(echo ${ACTUAL_NODE_ZONES_LIST} | tr '\n' ' ')"
 
