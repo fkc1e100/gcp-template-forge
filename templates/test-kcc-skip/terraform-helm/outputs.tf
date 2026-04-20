@@ -1,9 +1,9 @@
 output "cluster_name" {
   description = "The name of the GKE cluster"
-  value       = var.cluster_name
+  value       = ""
 }
 
 output "cluster_location" {
   description = "The location of the GKE cluster"
-  value       = var.region
+  value       = ""
 }
