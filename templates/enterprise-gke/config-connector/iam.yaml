@@ -79,6 +79,9 @@ kind: IAMPolicyMember
 metadata:
   name: enterprise-gke-node-log-writer
   namespace: forge-management
+  labels:
+    project: gcp-template-forge
+    template: enterprise-gke
 spec:
   member: "serviceAccount:enterprise-gke-node-sa@gca-gke-2025.iam.gserviceaccount.com"
   role: roles/logging.logWriter
@@ -92,6 +95,9 @@ kind: IAMPolicyMember
 metadata:
   name: enterprise-gke-node-metric-writer
   namespace: forge-management
+  labels:
+    project: gcp-template-forge
+    template: enterprise-gke
 spec:
   member: "serviceAccount:enterprise-gke-node-sa@gca-gke-2025.iam.gserviceaccount.com"
   role: roles/monitoring.metricWriter
@@ -105,6 +111,9 @@ kind: IAMPolicyMember
 metadata:
   name: enterprise-gke-node-monitoring-viewer
   namespace: forge-management
+  labels:
+    project: gcp-template-forge
+    template: enterprise-gke
 spec:
   member: "serviceAccount:enterprise-gke-node-sa@gca-gke-2025.iam.gserviceaccount.com"
   role: roles/monitoring.viewer
@@ -118,6 +127,9 @@ kind: IAMPolicyMember
 metadata:
   name: enterprise-gke-node-metadata-writer
   namespace: forge-management
+  labels:
+    project: gcp-template-forge
+    template: enterprise-gke
 spec:
   member: "serviceAccount:enterprise-gke-node-sa@gca-gke-2025.iam.gserviceaccount.com"
   role: roles/stackdriver.resourceMetadata.writer
