@@ -31,3 +31,8 @@ output "vpc_name" {
   description = "The name of the VPC"
   value       = google_compute_network.vpc.name
 }
+
+output "workload_service_account_email" {
+  description = "The email of the GCP Service Account for Workload Identity"
+  value       = google_service_account.workload_sa.email
+}

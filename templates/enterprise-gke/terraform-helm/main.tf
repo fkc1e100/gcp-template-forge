@@ -102,6 +102,8 @@ resource "google_container_cluster" "enterprise_cluster" {
   }
 
   master_authorized_networks_config {
+    # Defaulting to 0.0.0.0/0 is for CI/Sandbox convenience. 
+    # In production, this should be restricted to known administrative CIDR ranges.
     dynamic "cidr_blocks" {
       for_each = var.master_authorized_networks
       content {
@@ -166,7 +168,7 @@ resource "google_container_node_pool" "primary_nodes" {
     disk_type    = "pd-standard"
     image_type   = "COS_CONTAINERD"
 
-    service_account = var.service_account
+    service_account = google_service_account.node_sa.email
 
     oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform"
@@ -193,3 +195,45 @@ resource "google_container_node_pool" "primary_nodes" {
   }
 }
 
+
+# GCP Service Account for Workload Identity
+resource "google_service_account" "workload_sa" {
+  account_id   = "${var.cluster_name}-workload"
+  display_name = "Enterprise Workload Service Account"
+}
+
+resource "google_service_account_iam_member" "workload_identity_binding" {
+  service_account_id = google_service_account.workload_sa.name
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "serviceAccount:${var.project_id}.svc.id.goog[default/enterprise-gke-sa]"
+}
+
+# GCP Service Account for Nodes
+resource "google_service_account" "node_sa" {
+  account_id   = "${var.cluster_name}-node-sa"
+  display_name = "Enterprise GKE Node Service Account"
+}
+
+resource "google_project_iam_member" "node_logging" {
+  project = var.project_id
+  role    = "roles/logging.logWriter"
+  member  = "serviceAccount:${google_service_account.node_sa.email}"
+}
+
+resource "google_project_iam_member" "node_monitoring_metric" {
+  project = var.project_id
+  role    = "roles/monitoring.metricWriter"
+  member  = "serviceAccount:${google_service_account.node_sa.email}"
+}
+
+resource "google_project_iam_member" "node_monitoring_viewer" {
+  project = var.project_id
+  role    = "roles/monitoring.viewer"
+  member  = "serviceAccount:${google_service_account.node_sa.email}"
+}
+
+resource "google_project_iam_member" "node_metadata_writer" {
+  project = var.project_id
+  role    = "roles/stackdriver.resourceMetadata.writer"
+  member  = "serviceAccount:${google_service_account.node_sa.email}"
+}

@@ -33,6 +33,8 @@ spec:
     diskSizeGb: 50
     diskType: pd-standard
     imageType: COS_CONTAINERD
+    serviceAccountRef:
+      name: enterprise-gke-node-sa
     oauthScopes:
       - "https://www.googleapis.com/auth/cloud-platform"
     workloadMetadataConfig:

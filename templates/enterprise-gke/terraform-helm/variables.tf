@@ -41,11 +41,6 @@ variable "subnet_name" {
   default     = "enterprise-gke-tf-subnet"
 }
 
-variable "service_account" {
-  description = "The service account email to use for the node pool"
-  type        = string
-}
-
 variable "master_authorized_networks" {
   description = "List of master authorized networks"
   type = list(object({

@@ -8,6 +8,8 @@ image:
 serviceAccount:
   create: true
   name: "enterprise-gke-sa"
+  # Replace with the email of the GCP Service Account created by Terraform
+  gcpServiceAccount: ""
 
 podSecurityContext:
   runAsUser: 1000

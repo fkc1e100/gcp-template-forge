@@ -36,9 +36,61 @@ metadata:
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
-  member: "serviceAccount:gca-gke-2025.svc.id.goog[enterprise-gke/enterprise-gke-sa]"
+  member: "serviceAccount:gca-gke-2025.svc.id.goog[gke-workload/gke-workload-sa]"
   role: roles/iam.workloadIdentityUser
   resourceRef:
     apiVersion: iam.cnrm.cloud.google.com/v1beta1
     kind: IAMServiceAccount
     name: enterprise-gke-kcc-sa
+---
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMServiceAccount
+metadata:
+  name: enterprise-gke-node-sa
+  namespace: forge-management
+  labels:
+    project: gcp-template-forge
+    template: enterprise-gke
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
+spec:
+  displayName: "Enterprise GKE Node Service Account"
+---
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMPolicyMember
+metadata:
+  name: enterprise-gke-node-log-writer
+  namespace: forge-management
+spec:
+  member: "serviceAccount:enterprise-gke-node-sa@gca-gke-2025.iam.gserviceaccount.com"
+  role: roles/logging.logWriter
+  resourceRef:
+    apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
+    kind: Project
+    external: gca-gke-2025
+---
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMPolicyMember
+metadata:
+  name: enterprise-gke-node-metric-writer
+  namespace: forge-management
+spec:
+  member: "serviceAccount:enterprise-gke-node-sa@gca-gke-2025.iam.gserviceaccount.com"
+  role: roles/monitoring.metricWriter
+  resourceRef:
+    apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
+    kind: Project
+    external: gca-gke-2025
+---
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMPolicyMember
+metadata:
+  name: enterprise-gke-node-monitoring-viewer
+  namespace: forge-management
+spec:
+  member: "serviceAccount:enterprise-gke-node-sa@gca-gke-2025.iam.gserviceaccount.com"
+  role: roles/monitoring.viewer
+  resourceRef:
+    apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
+    kind: Project
+    external: gca-gke-2025
