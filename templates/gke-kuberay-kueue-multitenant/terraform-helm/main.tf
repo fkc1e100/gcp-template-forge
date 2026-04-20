@@ -45,14 +45,6 @@ resource "google_compute_subnetwork" "subnet" {
     range_name    = "services"
     ip_cidr_range = "10.8.0.0/20"
   }
-
-  # MANDATORY: Resource labeling for all infrastructure
-  # Note: VPC Networks do not support labels, but subnets do.
-  # Using 'labels' attribute for GCE resources.
-  labels = {
-    project  = "gcp-template-forge"
-    template = "gke-kuberay-kueue-multitenant"
-  }
 }
 
 # GKE Cluster
