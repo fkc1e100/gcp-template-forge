@@ -198,7 +198,7 @@ resource "google_container_node_pool" "primary_nodes" {
 
 # GCP Service Account for Workload Identity
 resource "google_service_account" "workload_sa" {
-  account_id   = "wkld-${var.cluster_name}"
+  account_id   = replace(substr("wkld-${var.cluster_name}", 0, 30), "/-$/", "")
   display_name = "Enterprise Workload Service Account"
 }
 
@@ -211,7 +211,7 @@ resource "google_service_account_iam_member" "workload_identity_binding" {
 
 # GCP Service Account for Nodes
 resource "google_service_account" "node_sa" {
-  account_id   = "node-${var.cluster_name}"
+  account_id   = replace(substr("node-${var.cluster_name}", 0, 30), "/-$/", "")
   display_name = "Enterprise GKE Node Service Account"
 }
 
