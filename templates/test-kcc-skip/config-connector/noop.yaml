@@ -1,0 +1,8 @@
+# Placeholder for testing
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: noop
+  namespace: forge-management
+data:
+  key: value
