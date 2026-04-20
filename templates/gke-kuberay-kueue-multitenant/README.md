@@ -88,8 +88,11 @@ kubectl delete -n forge-management -f config-connector/
 | --- | --- | --- |
 | **Status** | success | success |
 | **Date** | 2026-04-20 | 2026-04-20 |
-| **Region** | us-central1 | us-central1 |
-| **Zones** | us-central1-a,b,c | us-central1-a,b,c |
-| **Cluster** | gke-kuberay-kueue-multitenant | gke-kuberay-kueue-multitenant-kcc |
-| **Commit** | 38458a8 | 38458a8 |
+| **Duration** | n/a | n/a |
+| **Region** | us-central1 | us-central1 (KCC cluster) |
+| **Zones** | us-central1-a,b,c | forge-management namespace |
+| **Cluster** | gke-kuberay-kueue-multitenant | krmapihost-kcc-instance |
+| **Agent tokens** | not recorded | (shared session) |
+| **Estimated cost** | - | -- |
+| **Commit** | 3f6575c9 | 3f6575c9 |
 
