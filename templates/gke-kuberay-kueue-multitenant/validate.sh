@@ -37,7 +37,7 @@ echo "Checking KubeRay Operator..."
 kubectl wait --for=condition=available deployment/kuberay-operator -n default --timeout=10m
 
 echo "Checking Kueue Operator..."
-# Kueue name can vary if installed via manifests or helm, 
+# Kueue name can vary if installed via manifests or helm,
 # in my manifests it's usually 'kueue-controller-manager' in 'kueue-system'
 kubectl wait --for=condition=available deployment/kueue-controller-manager -n kueue-system --timeout=10m
 echo "Operators are ready."
