@@ -1,4 +1,3 @@
-# Copyright 2026 Google LLC
 # Verification Plan - Multi-Tenant Ray on GKE with Kueue
 
 This document outlines the plan for verifying the `gke-kuberay-kueue-multitenant` template.
