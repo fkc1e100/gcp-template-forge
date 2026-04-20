@@ -37,9 +37,9 @@ cd terraform-helm/
 terraform init
 terraform apply -auto-approve
 
-# Create the workload namespace
+# Deploy the application workload via Helm
 gcloud container clusters get-credentials enterprise-gke-tf --region us-central1
-kubectl create ns gke-workload
+helm upgrade --install release ./workload --namespace gke-workload --create-namespace
 ```
 
 ### Verification
@@ -78,7 +78,7 @@ kubectl apply -f config-connector/ -n forge-management
    kubectl wait --for=condition=Ready containercluster/enterprise-gke-kcc -n forge-management --timeout=20m
    ```
 2. **Workload Deployment & Integration:**
-   The `validate.sh` script handles the deployment of the workload via Helm to the newly created cluster and performs interaction tests.
+   The `config-connector-workload/` manifests handle the deployment of the workload to the newly created cluster. Run `validate.sh` to perform health checks and interaction tests.
    ```bash
    ./validate.sh
    ```

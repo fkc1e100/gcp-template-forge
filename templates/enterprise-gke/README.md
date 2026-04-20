@@ -34,6 +34,10 @@ terraform init \
   -backend-config="bucket=<TF_STATE_BUCKET>" \
   -backend-config="prefix=templates/enterprise-gke/terraform-helm"
 terraform apply -var="project_id=<PROJECT_ID>" -var="service_account=<NODE_SA_EMAIL>" -var="create_service_accounts=true"
+
+# 2. Deploy the application workload using Helm
+gcloud container clusters get-credentials enterprise-gke-tf --region us-central1
+helm upgrade --install release ./workload --namespace gke-workload --create-namespace
 ```
 
 *Note: `create_service_accounts` defaults to `false` to ensure compatibility with restricted environments like CI. For production deployments, set it to `true` to create dedicated, least-privileged service accounts for nodes and workloads.*
@@ -132,4 +136,4 @@ kubectl delete -n <KCC_NAMESPACE> -f config-connector/ --wait=true
 | **Cluster** | enterprise-gke-tf | enterprise-gke-kcc |
 | **Agent tokens** | 450,000 in / 60,000 out (multi-session) | (shared session) |
 | **Estimated cost** | $0.45 | -- |
-| **Commit** | b22bf67 | b22bf67 |
+| **Commit** | 641891f | 641891f |

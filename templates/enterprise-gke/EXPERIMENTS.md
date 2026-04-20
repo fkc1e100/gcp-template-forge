@@ -20,9 +20,11 @@
 | 43 | Fix inconsistent KCC IAM annotations | ✅ Success | Adding missing project-id annotations to node-related IAMPolicyMember resources for absolute consistency | Finalized |
 | 44 | Final consistency audit and hash synchronization | ✅ Success | Performing final audit of TF and KCC manifests and synchronizing documentation with commit 075c3e5 | Finalized |
 | 45 | Documentation audit and verification plan fix | ✅ Success | Fixing namespace and label names in verification_plan.md to match implementation | Finalized |
-| 46 | Final documentation polish and consistency audit | ✅ Success | Synchronizing README with commit b22bf67 and refining verification plan steps | Finalized |
+| 46 | Final documentation polish and consistency audit | ✅ Success | Synchronizing README with commit b22bf67 and refining verification plan steps | Finalize documentation |
+| 47 | Helm instruction refinement and hash synchronization | ✅ Success | Adding explicit Helm deployment commands to README and verification plan, and synchronizing with commit 641891f | Finalized |
 
 ## Key Learnings
+
 - **Master Authorized Networks**: Restricting control plane access improves security but requires careful coordination with CI/CD tools.
 - **Service Account Robustness**: Using `substr` and `replace` to ensure SA `account_id` is within 30 chars and sanitized is critical for dynamic naming.
 - **Functional Parity**: Ensuring identical CIDRs, security configs, and identity models between TF and KCC paths is essential for template consistency.
