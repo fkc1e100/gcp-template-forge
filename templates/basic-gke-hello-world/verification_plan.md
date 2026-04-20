@@ -28,11 +28,11 @@ terraform apply -auto-approve
 ### Verification
 1. **Cluster Health:**
    ```bash
-   gcloud container clusters describe gke-basic-tf --region us-central1 --format="value(status)"
+   gcloud container clusters describe gke-basic-tf --region us-central1 --project <PROJECT_ID> --format="value(status)"
    ```
 2. **Workload Health:**
    ```bash
-   gcloud container clusters get-credentials gke-basic-tf --region us-central1
+   gcloud container clusters get-credentials gke-basic-tf --region us-central1 --project <PROJECT_ID>
    kubectl get pods -l app.kubernetes.io/name=hello-world
    ```
 3. **Endpoint Interaction:**
@@ -58,7 +58,7 @@ terraform destroy -auto-approve
 2. **Workload**:
    Wait for cluster readiness, then switch context to the new cluster and apply the workload:
    ```bash
-   gcloud container clusters get-credentials basic-gke-hello-world --region us-central1
+   gcloud container clusters get-credentials basic-gke-hello-world --region us-central1 --project <PROJECT_ID>
    kubectl apply -f config-connector-workload/workload.yaml
    ```
 
