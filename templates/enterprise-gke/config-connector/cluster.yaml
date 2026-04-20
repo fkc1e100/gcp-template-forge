@@ -65,5 +65,3 @@ spec:
     vulnerabilityMode: VULNERABILITY_ENTERPRISE
   releaseChannel:
     channel: REGULAR
-# KCC validation trigger
-# Trigger CI run at 2026-04-20 15:57 UTC
