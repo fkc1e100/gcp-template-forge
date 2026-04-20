@@ -28,7 +28,7 @@ spec:
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPolicyMember
 metadata:
-  name: enterprise-gke-kcc-wi-binding-v2
+  name: enterprise-gke-kcc-wi-binding-workload
   namespace: forge-management
   labels:
     project: gcp-template-forge
