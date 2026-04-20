@@ -198,7 +198,7 @@ resource "google_container_node_pool" "primary_nodes" {
 
 # GCP Service Account for Workload Identity
 resource "google_service_account" "workload_sa" {
-  account_id   = "${var.cluster_name}-workload"
+  account_id   = "wkld-${var.cluster_name}"
   display_name = "Enterprise Workload Service Account"
 }
 
@@ -211,7 +211,7 @@ resource "google_service_account_iam_member" "workload_identity_binding" {
 
 # GCP Service Account for Nodes
 resource "google_service_account" "node_sa" {
-  account_id   = "${var.cluster_name}-node-sa"
+  account_id   = "node-${var.cluster_name}"
   display_name = "Enterprise GKE Node Service Account"
 }
 
@@ -237,4 +237,88 @@ resource "google_project_iam_member" "node_metadata_writer" {
   project = var.project_id
   role    = "roles/stackdriver.resourceMetadata.writer"
   member  = "serviceAccount:${google_service_account.node_sa.email}"
+}
+
+# Generate values.yaml for the Helm chart
+resource "local_file" "helm_values" {
+  filename = "${path.module}/workload/values.yaml"
+  content  = <<-EOF
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+replicaCount: 3
+
+image:
+  repository: nginxinc/nginx-unprivileged
+  pullPolicy: IfNotPresent
+  tag: "1.25.3"
+
+serviceAccount:
+  create: true
+  name: "gke-workload-sa"
+  gcpServiceAccount: "${google_service_account.workload_sa.email}"
+
+podSecurityContext:
+  runAsUser: 1000
+  runAsGroup: 3000
+  fsGroup: 2000
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+
+service:
+  type: LoadBalancer
+  port: 80
+  targetPort: 8080
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+
+pdb:
+  enabled: true
+  minAvailable: 2
+
+networkPolicy:
+  enabled: true
+
+config:
+  LOG_LEVEL: "info"
+  ENVIRONMENT: "production"
+
+secrets:
+  enabled: false
+  providerClass: "enterprise-gke-secrets"
+  gcpProjectId: "${var.project_id}"
+  secretName: "enterprise-gke-secret"
+  secretVersion: "latest"
+EOF
 }
