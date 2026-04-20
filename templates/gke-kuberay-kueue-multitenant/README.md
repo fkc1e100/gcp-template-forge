@@ -46,7 +46,8 @@ kubectl apply -n forge-management -f config-connector/
 
 # Wait for infrastructure to be ready, then apply the workload
 # Note: Ensure you are connected to the workload cluster for the following:
-kubectl apply -f config-connector-workload/
+# We use --server-side apply to handle large CRDs (e.g. KubeRay) that exceed the annotation limit.
+kubectl apply --server-side -f config-connector-workload/
 ```
 
 ## Verification
