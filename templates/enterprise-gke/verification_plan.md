@@ -36,6 +36,10 @@ gcloud compute machine-types list \
 cd terraform-helm/
 terraform init
 terraform apply -auto-approve
+
+# Create the workload namespace
+gcloud container clusters get-credentials enterprise-gke-tf --region us-central1
+kubectl create ns gke-workload
 ```
 
 ### Verification
