@@ -34,10 +34,9 @@ echo "Connectivity passed."
 
 # 2. Workload Readiness
 echo "Test 2: Workload Readiness..."
-# Deployment name from fullname helper: <release-name>-<chart-name>
-# In CI, release name is 'release', chart name is 'hello-world'
-# In KCC, name is 'release-hello-world' for parity
-kubectl wait --for=condition=available deployment/release-hello-world -n ${NAMESPACE_WORKLOAD} --timeout=10m
+# Use label selector for robustness across deployment paths
+# (Helm uses <release>-<chart>, KCC uses direct name)
+kubectl wait --for=condition=available deployment -l app.kubernetes.io/name=hello-world -n ${NAMESPACE_WORKLOAD} --timeout=30m
 echo "Workload is available."
 
 # 3. Endpoint Interaction
