@@ -24,7 +24,7 @@ metadata:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   clusterRef:
-    name: kuberay-kueue-kcc-cluster
+    name: gke-kuberay-kueue-multitenant-kcc
   location: us-central1
   nodeCount: 1
   nodeConfig:
@@ -32,8 +32,9 @@ spec:
     diskSizeGb: 50
     oauthScopes:
       - "https://www.googleapis.com/auth/cloud-platform"
-    serviceAccountRef:
-      external: forge-kcc-admin@gca-gke-2025.iam.gserviceaccount.com
+    labels:
+      project: gcp-template-forge
+      template: gke-kuberay-kueue-multitenant
 ---
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
@@ -47,7 +48,7 @@ metadata:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   clusterRef:
-    name: kuberay-kueue-kcc-cluster
+    name: gke-kuberay-kueue-multitenant-kcc
   location: us-central1
   nodeLocations:
     - us-central1-a
@@ -61,11 +62,13 @@ spec:
     diskSizeGb: 100
     oauthScopes:
       - "https://www.googleapis.com/auth/cloud-platform"
-    serviceAccountRef:
-      external: forge-kcc-admin@gca-gke-2025.iam.gserviceaccount.com
     guestAccelerator:
       - type: nvidia-l4
         count: 1
+    labels:
+      project: gcp-template-forge
+      template: gke-kuberay-kueue-multitenant
+      "cloud.google.com/gke-accelerator": nvidia-l4
     taint:
       - key: nvidia.com/gpu
         value: present

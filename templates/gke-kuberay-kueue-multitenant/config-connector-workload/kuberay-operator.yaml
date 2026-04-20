@@ -1,11 +1,12 @@
-# Copyright 2026 Google LLC
----
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.13.0
   name: rayclusters.ray.io
+  labels:
+    project: gcp-template-forge
+    template: gke-kuberay-kueue-multitenant
 spec:
   group: ray.io
   names:
@@ -420,8 +421,8 @@ spec:
                                   type: string
                                 status:
                                   enum:
-                                  - "True"
-                                  - "False"
+                                  - 'True'
+                                  - 'False'
                                   - Unknown
                                   type: string
                                 type:
@@ -7530,8 +7531,8 @@ spec:
                                   type: string
                                 status:
                                   enum:
-                                  - "True"
-                                  - "False"
+                                  - 'True'
+                                  - 'False'
                                   - Unknown
                                   type: string
                                 type:
@@ -14233,7 +14234,7 @@ spec:
     storage: false
     subresources:
       status: {}
----
+--- null
 ---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
@@ -14241,6 +14242,9 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.13.0
   name: rayjobs.ray.io
+  labels:
+    project: gcp-template-forge
+    template: gke-kuberay-kueue-multitenant
 spec:
   group: ray.io
   names:
@@ -14660,8 +14664,8 @@ spec:
                                       type: string
                                     status:
                                       enum:
-                                      - "True"
-                                      - "False"
+                                      - 'True'
+                                      - 'False'
                                       - Unknown
                                       type: string
                                     type:
@@ -25062,8 +25066,8 @@ spec:
                                       type: string
                                     status:
                                       enum:
-                                      - "True"
-                                      - "False"
+                                      - 'True'
+                                      - 'False'
                                       - Unknown
                                       type: string
                                     type:
@@ -35066,7 +35070,7 @@ spec:
     storage: false
     subresources:
       status: {}
----
+--- null
 ---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
@@ -35074,6 +35078,9 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.13.0
   name: rayservices.ray.io
+  labels:
+    project: gcp-template-forge
+    template: gke-kuberay-kueue-multitenant
 spec:
   group: ray.io
   names:
@@ -35466,8 +35473,8 @@ spec:
                                       type: string
                                     status:
                                       enum:
-                                      - "True"
-                                      - "False"
+                                      - 'True'
+                                      - 'False'
                                       - Unknown
                                       type: string
                                     type:
@@ -42245,8 +42252,8 @@ spec:
                               type: string
                             status:
                               enum:
-                              - "True"
-                              - "False"
+                              - 'True'
+                              - 'False'
                               - Unknown
                               type: string
                             type:
@@ -42874,8 +42881,8 @@ spec:
                                       type: string
                                     status:
                                       enum:
-                                      - "True"
-                                      - "False"
+                                      - 'True'
+                                      - 'False'
                                       - Unknown
                                       type: string
                                     type:
@@ -49649,8 +49656,8 @@ spec:
                               type: string
                             status:
                               enum:
-                              - "True"
-                              - "False"
+                              - 'True'
+                              - 'False'
                               - Unknown
                               type: string
                             type:
@@ -49907,6 +49914,8 @@ kind: ServiceAccount
 metadata:
   labels:
     app.kubernetes.io/name: kuberay
+    project: gcp-template-forge
+    template: gke-kuberay-kueue-multitenant
   name: kuberay-operator
   namespace: default
 ---
@@ -49915,6 +49924,8 @@ kind: ClusterRole
 metadata:
   labels:
     app.kubernetes.io/name: kuberay
+    project: gcp-template-forge
+    template: gke-kuberay-kueue-multitenant
   name: kuberay-operator
 rules:
 - apiGroups:
@@ -49938,7 +49949,7 @@ rules:
   - patch
   - delete
 - apiGroups:
-  - ""
+  - ''
   resources:
   - pods
   - pods/status
@@ -49973,6 +49984,8 @@ kind: ClusterRoleBinding
 metadata:
   labels:
     app.kubernetes.io/name: kuberay
+    project: gcp-template-forge
+    template: gke-kuberay-kueue-multitenant
   name: kuberay-operator
 roleRef:
   apiGroup: rbac.authorization.k8s.io
