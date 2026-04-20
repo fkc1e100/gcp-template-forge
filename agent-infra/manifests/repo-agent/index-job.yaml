@@ -1,0 +1,40 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: index-data
+  namespace: repo-agent-system
+spec:
+  template:
+    spec:
+      containers:
+      - name: indexer
+        image: python:3.11
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          apt-get update && apt-get install -y wget
+          wget https://github.com/cli/cli/releases/download/v2.46.0/gh_2.46.0_linux_amd64.tar.gz
+          tar xzf gh_2.46.0_linux_amd64.tar.gz
+          cp gh_2.46.0_linux_amd64/bin/gh /usr/local/bin/
+          pip install google-generativeai qdrant-client
+          python /scripts/index-data.py
+        env:
+        - name: GEMINI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: gemini-api-key
+              key: gemini
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: github-token
+              key: token
+        volumeMounts:
+        - name: script-vol
+          mountPath: /scripts
+      volumes:
+      - name: script-vol
+        configMap:
+          name: index-script
+      restartPolicy: Never
+  backoffLimit: 1

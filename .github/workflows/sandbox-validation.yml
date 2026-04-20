@@ -455,7 +455,7 @@ jobs:
   kcc-apply:
     name: "KCC Apply (${{ matrix.template }})"
     needs: [ detect-changes, lint, pre-cleanup ]
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && hashFiles(format('{0}/.kcc-unsupported', matrix.template)) == ''
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
@@ -503,6 +503,7 @@ jobs:
   kcc-test:
     name: "KCC Test (${{ matrix.template }})"
     needs: [ kcc-apply, detect-changes ]
+    if: github.event_name == 'pull_request' && hashFiles(format('{0}/.kcc-unsupported', matrix.template)) == ''
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
@@ -588,7 +589,7 @@ jobs:
   kcc-teardown:
     name: "KCC Teardown (${{ matrix.template }})"
     needs: [ kcc-apply, kcc-test, detect-changes ]
-    if: always()
+    if: always() && hashFiles(format('{0}/.kcc-unsupported', matrix.template)) == ''
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -1013,7 +1014,7 @@ jobs:
   validate-kcc:
     name: "Validate KCC (${{ matrix.template }})"
     needs: detect-changes
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && hashFiles(format('{0}/.kcc-unsupported', matrix.template)) == ''
     runs-on: ubuntu-latest
     timeout-minutes: 120
     strategy:
