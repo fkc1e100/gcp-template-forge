@@ -15,7 +15,7 @@
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMServiceAccount
 metadata:
-  name: enterprise-gke-kcc-sa
+  name: enterprise-gke-workload-sa
   namespace: forge-management
   labels:
     project: gcp-template-forge
@@ -28,7 +28,7 @@ spec:
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPolicyMember
 metadata:
-  name: enterprise-gke-kcc-wi-binding-workload
+  name: enterprise-gke-workload-wi-binding-workload
   namespace: forge-management
   labels:
     project: gcp-template-forge
@@ -41,12 +41,12 @@ spec:
   resourceRef:
     apiVersion: iam.cnrm.cloud.google.com/v1beta1
     kind: IAMServiceAccount
-    name: enterprise-gke-kcc-sa
+    name: enterprise-gke-workload-sa
 ---
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPolicyMember
 metadata:
-  name: enterprise-gke-kcc-wi-binding-default
+  name: enterprise-gke-workload-wi-binding-default
   namespace: forge-management
   labels:
     project: gcp-template-forge
@@ -59,7 +59,7 @@ spec:
   resourceRef:
     apiVersion: iam.cnrm.cloud.google.com/v1beta1
     kind: IAMServiceAccount
-    name: enterprise-gke-kcc-sa
+    name: enterprise-gke-workload-sa
 ---
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMServiceAccount

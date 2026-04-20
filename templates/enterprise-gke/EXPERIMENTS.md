@@ -6,7 +6,8 @@
 | 19 | Rename KCC to -v3, node pool to -v3 | ❌ CI Fail | Install gke-gcloud-auth-plugin failed | Fix workflow repo |
 | 20-30 | Identity and Security Alignment | ✅ Success | Master Authorized Networks, Node SAs, and Workload Identity alignment | Finalize template |
 | 31 | Fix SA creation permissions | ✅ Success | Toggle for SA creation allows CI to pass in restricted env | Final polish |
-| 32 | Final consistency and docs polish | ✅ Success | Align KCC details in README and update latest commit hash | Production ready |
+| 32 | Final consistency and docs polish | ✅ Success | Align KCC details in README and update latest commit hash | Finalize resource names |
+| 33 | Refine KCC resource names and README | ✅ Success | Renaming KCC workload SA to 'enterprise-gke-workload-sa' improves descriptiveness | Template finalized |
 
 ## Key Learnings
 - **Master Authorized Networks**: Restricting control plane access improves security but requires careful coordination with CI/CD tools.
