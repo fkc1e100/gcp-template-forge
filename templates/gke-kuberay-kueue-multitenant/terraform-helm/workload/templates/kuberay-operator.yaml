@@ -14234,7 +14234,6 @@ spec:
     storage: false
     subresources:
       status: {}
---- null
 ---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
@@ -35070,7 +35069,6 @@ spec:
     storage: false
     subresources:
       status: {}
---- null
 ---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
