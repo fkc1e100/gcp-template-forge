@@ -15,7 +15,7 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
 metadata:
-  name: gke-kuberay-kueue-multitenant-sys
+  name: gke-kuberay-kueue-multitenant-s
   namespace: forge-management
   labels:
     project: gcp-template-forge
@@ -41,7 +41,7 @@ spec:
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
 metadata:
-  name: gke-kuberay-kueue-multitenant-gpu
+  name: gke-kuberay-kueue-multitenant-g
   namespace: forge-management
   labels:
     project: gcp-template-forge

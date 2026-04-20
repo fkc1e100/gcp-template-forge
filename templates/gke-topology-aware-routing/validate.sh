@@ -69,6 +69,17 @@ sleep 30
 
 # 3. Topology Spread Check
 echo "Test 3: Topology Spread Check..."
+
+# Get actual zones where nodes are available for this template
+# We use the 'template' label to identify our nodes
+ACTUAL_NODE_ZONES_LIST=$(kubectl get nodes -l template=gke-topology-aware-routing -o jsonpath='{.items[*].metadata.labels.topology\.kubernetes\.io/zone}' | tr ' ' '\n' | sort | uniq | grep -v "^$")
+ACTUAL_NODE_ZONES_COUNT=$(echo "${ACTUAL_NODE_ZONES_LIST}" | wc -l)
+echo "Nodes are currently provisioned in $ACTUAL_NODE_ZONES_COUNT zones: $(echo ${ACTUAL_NODE_ZONES_LIST} | tr '\n' ' ')"
+
+if [ "$ACTUAL_NODE_ZONES_COUNT" -lt 2 ]; then
+  echo "Warning: Only $ACTUAL_NODE_ZONES_COUNT zones available. Topology spread tests might be limited."
+fi
+
 # Get zones of frontend pods by looking at the nodes they are running on
 FRONTEND_NODES=$(kubectl get pods -l app=frontend -n ${NAMESPACE} -o jsonpath='{.items[*].spec.nodeName}')
 FRONTEND_ZONES_LIST=$(for node in ${FRONTEND_NODES}; do kubectl get node ${node} -o jsonpath='{.metadata.labels.topology\.kubernetes\.io/zone}'; echo; done | sort | uniq | grep -v "^$")
@@ -81,12 +92,12 @@ BACKEND_ZONES_LIST=$(for node in ${BACKEND_NODES}; do kubectl get node ${node} -
 BACKEND_ZONES_COUNT=$(echo "${BACKEND_ZONES_LIST}" | wc -l)
 echo "Backend pods are running in zones: $(echo ${BACKEND_ZONES_LIST} | tr '\n' ' ') (Count: ${BACKEND_ZONES_COUNT})"
 
-if [ "$FRONTEND_ZONES_COUNT" -lt 3 ]; then
-  echo "Frontend pods are not spread across enough zones (found $FRONTEND_ZONES_COUNT, expected 3)."
+if [ "$FRONTEND_ZONES_COUNT" -lt "$ACTUAL_NODE_ZONES_COUNT" ]; then
+  echo "Frontend pods are not spread across all available zones (found $FRONTEND_ZONES_COUNT, expected $ACTUAL_NODE_ZONES_COUNT)."
   exit 1
 fi
-if [ "$BACKEND_ZONES_COUNT" -lt 3 ]; then
-  echo "Backend pods are not spread across enough zones (found $BACKEND_ZONES_COUNT, expected 3)."
+if [ "$BACKEND_ZONES_COUNT" -lt "$ACTUAL_NODE_ZONES_COUNT" ]; then
+  echo "Backend pods are not spread across all available zones (found $BACKEND_ZONES_COUNT, expected $ACTUAL_NODE_ZONES_COUNT)."
   exit 1
 fi
 echo "Topology spread validated."

@@ -31,26 +31,44 @@ gcloud container clusters get-credentials ${CLUSTER_NAME} --region ${REGION} --p
 kubectl cluster-info
 echo "Connectivity passed."
 
-# 1.5 Apply Workload (for KCC path or to ensure CRDs are handled with server-side apply)
+# 1.5 Apply Workload in stages to avoid webhook race conditions
 WORKLOAD_DIR="$(dirname "$0")/config-connector-workload"
 if [ -d "$WORKLOAD_DIR" ]; then
-  echo "Applying Workload Manifests (Server-Side) from $WORKLOAD_DIR..."
+  echo "Applying CRDs and Operators from $WORKLOAD_DIR..."
   # We use --server-side apply to handle large CRDs (e.g. KubeRay) that exceed the annotation limit.
-  kubectl apply --server-side -f "$WORKLOAD_DIR/"
+  kubectl apply --server-side -f "$WORKLOAD_DIR/00-kuberay-operator-crds.yaml"
+  kubectl apply --server-side -f "$WORKLOAD_DIR/00-kueue-operator-crds.yaml"
+  
+  echo "Waiting for CRDs to be established..."
+  kubectl wait --for=condition=Established crd/rayclusters.ray.io --timeout=2m
+  kubectl wait --for=condition=Established crd/clusterqueues.kueue.x-k8s.io --timeout=2m
+
+  kubectl apply --server-side -f "$WORKLOAD_DIR/01-kuberay-operator.yaml"
+  kubectl apply --server-side -f "$WORKLOAD_DIR/01-kueue-operator.yaml"
+  kubectl apply --server-side -f "$WORKLOAD_DIR/01-namespaces.yaml"
+
+  # 2. Operator Readiness (MUST be ready before applying custom resources)
+  echo "Test 2: Operator Readiness..."
+  echo "Checking KubeRay Operator..."
+  kubectl wait --for=condition=available deployment/kuberay-operator -n default --timeout=10m
+
+  echo "Checking Kueue Operator..."
+  kubectl wait --for=condition=available deployment/kueue-controller-manager -n kueue-system --timeout=10m
+  echo "Operators are ready."
+
+  # 2.5 Apply Custom Resources (after webhooks are ready)
+  echo "Applying Custom Resources..."
+  # Re-apply with --server-side to ensure any webhook-mutated fields are preserved
+  kubectl apply --server-side -f "$WORKLOAD_DIR/02-kueue-config.yaml"
+  kubectl apply --server-side -f "$WORKLOAD_DIR/03-ray-clusters.yaml"
 else
   echo "Warning: config-connector-workload directory not found at $WORKLOAD_DIR"
+  # If we are in TF path and directory is missing (unlikely given PR files), 
+  # we still expect operators to be present from Helm.
+  echo "Checking Operator Readiness (expecting Helm install)..."
+  kubectl wait --for=condition=available deployment/kuberay-operator -n default --timeout=10m
+  kubectl wait --for=condition=available deployment/kueue-controller-manager -n kueue-system --timeout=10m
 fi
-
-# 2. Operator Readiness
-echo "Test 2: Operator Readiness..."
-echo "Checking KubeRay Operator..."
-kubectl wait --for=condition=available deployment/kuberay-operator -n default --timeout=10m
-
-echo "Checking Kueue Operator..."
-# Kueue name can vary if installed via manifests or helm,
-# in my manifests it's usually 'kueue-controller-manager' in 'kueue-system'
-kubectl wait --for=condition=available deployment/kueue-controller-manager -n kueue-system --timeout=10m
-echo "Operators are ready."
 
 # 3. Kueue Resource Readiness
 echo "Test 3: Kueue Resource Readiness..."
@@ -59,7 +77,7 @@ for i in {1..12}; do
      kubectl get clusterqueue team-b-cq && \
      kubectl get localqueue team-a-lq -n team-a && \
      kubectl get localqueue team-b-lq -n team-b; then
-    echo "Kueue resources are present and admitted."
+    echo "Kueue resources are present."
     break
   fi
   echo "Waiting for Kueue resources (attempt $i/12)..."
@@ -73,11 +91,11 @@ done
 # 4. RayCluster Readiness
 echo "Test 4: RayCluster Readiness..."
 # RayClusters take time to provision head pods and GPU worker nodes
-# Increase timeout to 20m to allow for GPU node provisioning
+# Increase timeout to 25m to allow for GPU node provisioning
 set +e
-kubectl wait --for=jsonpath='{.status.state}'=ready raycluster/raycluster-team-a -n team-a --timeout=20m
+kubectl wait --for=jsonpath='{.status.state}'=ready raycluster/raycluster-team-a -n team-a --timeout=25m
 RESULT_A=$?
-kubectl wait --for=jsonpath='{.status.state}'=ready raycluster/raycluster-team-b -n team-b --timeout=20m
+kubectl wait --for=jsonpath='{.status.state}'=ready raycluster/raycluster-team-b -n team-b --timeout=25m
 RESULT_B=$?
 set -e
 
