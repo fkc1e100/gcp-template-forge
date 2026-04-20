@@ -52,9 +52,25 @@ echo "Kueue resources are present."
 
 # 4. RayCluster Readiness
 echo "Test 4: RayCluster Readiness..."
-# RayClusters take time to provision head pods
-kubectl wait --for=jsonpath='{.status.state}'=ready raycluster/raycluster-team-a -n team-a --timeout=10m
-kubectl wait --for=jsonpath='{.status.state}'=ready raycluster/raycluster-team-b -n team-b --timeout=10m
+# RayClusters take time to provision head pods and GPU worker nodes
+# Increase timeout to 20m to allow for GPU node provisioning
+set +e
+kubectl wait --for=jsonpath='{.status.state}'=ready raycluster/raycluster-team-a -n team-a --timeout=20m
+RESULT_A=$?
+kubectl wait --for=jsonpath='{.status.state}'=ready raycluster/raycluster-team-b -n team-b --timeout=20m
+RESULT_B=$?
+set -e
+
+if [ $RESULT_A -ne 0 ] || [ $RESULT_B -ne 0 ]; then
+  echo "Error: RayClusters failed to become ready."
+  echo "=== Debug Info: Pods ==="
+  kubectl get pods -A
+  echo "=== Debug Info: RayClusters ==="
+  kubectl get raycluster -A
+  echo "=== Debug Info: Events ==="
+  kubectl get events -A --sort-by='.lastTimestamp' | tail -n 50
+  exit 1
+fi
 echo "RayClusters are ready."
 
 echo "All Validation Tests passed successfully!"
