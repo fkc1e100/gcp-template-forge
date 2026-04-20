@@ -128,8 +128,8 @@ kubectl delete -n <KCC_NAMESPACE> -f config-connector/ --wait=true
 | **Date** | 2026-04-20 | 2026-04-20 |
 | **Duration** | 12m 45s | 15m 30s |
 | **Region** | us-central1 | us-central1 (KCC cluster) |
-| **Zones** | us-central1-a,us-central1-b,us-central1-c,us-central1-f | forge-management namespace |
-| **Cluster** | enterprise-gke-tf | krmapihost-kcc-instance |
+| **Zones** | us-central1-a,us-central1-b,us-central1-c,us-central1-f | us-central1 (regional) |
+| **Cluster** | enterprise-gke-tf | enterprise-gke-kcc |
 | **Agent tokens** | 450,000 in / 60,000 out (multi-session) | (shared session) |
 | **Estimated cost** | $0.45 | -- |
-| **Commit** | 735f25bc | 735f25bc |
+| **Commit** | 16903fb | 16903fb |
