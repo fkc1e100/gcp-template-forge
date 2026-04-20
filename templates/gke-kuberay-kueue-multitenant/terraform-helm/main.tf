@@ -36,6 +36,9 @@ resource "google_compute_subnetwork" "gke_kuberay_kueue_multitenant_subnet" {
   network                  = google_compute_network.gke_kuberay_kueue_multitenant_vpc.id
   private_ip_google_access = true
 
+  # Note: google_compute_subnetwork does not support labels in this provider version.
+  # Mandate compliance for labeling is maintained through Cluster and Node Pool resource labels.
+
   secondary_ip_range {
     range_name    = "pods"
     ip_cidr_range = "10.4.0.0/14"
