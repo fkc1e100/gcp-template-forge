@@ -54,6 +54,8 @@ variable "master_authorized_networks" {
   }))
   default = [
     {
+      # Defaulting to 0.0.0.0/0 is for CI/Sandbox convenience. 
+      # In production, this should be restricted to known administrative CIDR ranges.
       cidr_block   = "0.0.0.0/0"
       display_name = "all-admin"
     }

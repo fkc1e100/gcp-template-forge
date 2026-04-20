@@ -8,6 +8,7 @@ This template provides an enterprise-grade Google Kubernetes Engine (GKE) archit
 - **GKE Standard Cluster** — VPC-native, private cluster with security hardening (Binary Authorization, Security Posture).
 - **Node Pool** — E2-standard-4 instances (Spot) with Secure Boot and Integrity Monitoring.
 - **Cloud NAT** — Enables egress for private nodes without public IP addresses.
+- **Master Authorized Networks** — Restricts access to the GKE control plane to specified IP ranges.
 - **Workload Identity** — Seamless IAM integration for Kubernetes workloads.
 - **Secret Manager** — Integration via Secrets Store CSI driver for secure credential management.
 
@@ -21,7 +22,7 @@ This template provides an enterprise-grade Google Kubernetes Engine (GKE) archit
 ### Config Connector (`config-connector/`)
 - Uses KCC resources (`ContainerCluster`, `ContainerNodePool`, `ComputeNetwork`, `ComputeSubnetwork`) to provision the same infrastructure.
 - Manages IAM roles and Service Accounts via KCC for seamless Workload Identity integration.
-- Deploys the workload using Kubernetes-native manifests (Deployment, Service, HPA, etc.) located in the `config-connector/` directory.
+- Deploys the workload using Kubernetes-native manifests (Deployment, Service, HPA, etc.) located in the `config-connector-workload/` directory.
 
 ## Deployment Instructions
 
@@ -38,8 +39,13 @@ terraform apply -var="project_id=<PROJECT_ID>" -var="service_account=<NODE_SA_EM
 ### Config Connector
 
 ```bash
-# Apply the infrastructure and workload manifests to the KCC management cluster
+# 1. Apply the infrastructure manifests to the KCC management cluster
 kubectl apply -n <KCC_NAMESPACE> -f config-connector/
+
+# 2. Once the cluster is READY, apply the workload manifests to the target cluster
+# Get credentials for the new cluster first
+gcloud container clusters get-credentials enterprise-gke-kcc --region us-central1
+kubectl apply -f config-connector-workload/
 ```
 
 ## Verification

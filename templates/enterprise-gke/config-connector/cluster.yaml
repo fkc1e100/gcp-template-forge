@@ -37,12 +37,14 @@ spec:
   privateClusterConfig:
     enablePrivateNodes: true
     enablePrivateEndpoint: false
-    masterIpv4CidrBlock: "172.16.1.16/28"
+    masterIpv4CidrBlock: "172.16.1.0/28"
   workloadIdentityConfig:
     workloadPool: "gca-gke-2025.svc.id.goog"
   masterAuthorizedNetworksConfig:
     cidrBlocks:
-      - cidrBlock: "0.0.0.0/0"
+      - # Defaulting to 0.0.0.0/0 is for CI/Sandbox convenience. 
+        # In production, this should be restricted to known administrative CIDR ranges.
+        cidrBlock: "0.0.0.0/0"
         displayName: "all-admin"
   networkPolicy:
     enabled: true
