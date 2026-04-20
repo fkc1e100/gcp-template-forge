@@ -102,7 +102,7 @@ resource "google_container_cluster" "enterprise_cluster" {
   }
 
   master_authorized_networks_config {
-    # Defaulting to 0.0.0.0/0 is for CI/Sandbox convenience. 
+    # Defaulting to 0.0.0.0/0 is for CI/Sandbox convenience.
     # In production, this should be restricted to known administrative CIDR ranges.
     dynamic "cidr_blocks" {
       for_each = var.master_authorized_networks
@@ -203,7 +203,7 @@ resource "google_service_account" "workload_sa" {
 }
 
 resource "google_service_account_iam_member" "workload_identity_binding" {
-  for_each = toset(["default", "gke-workload"])
+  for_each           = toset(["default", "gke-workload"])
   service_account_id = google_service_account.workload_sa.name
   role               = "roles/iam.workloadIdentityUser"
   member             = "serviceAccount:${var.project_id}.svc.id.goog[${each.value}/gke-workload-sa]"
