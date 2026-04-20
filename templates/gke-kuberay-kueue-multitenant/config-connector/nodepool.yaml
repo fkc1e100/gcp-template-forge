@@ -35,6 +35,7 @@ spec:
     labels:
       project: gcp-template-forge
       template: gke-kuberay-kueue-multitenant
+      pool: system
 ---
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
@@ -68,6 +69,7 @@ spec:
     labels:
       project: gcp-template-forge
       template: gke-kuberay-kueue-multitenant
+      pool: gpu
       "cloud.google.com/gke-accelerator": nvidia-l4
     taint:
       - key: nvidia.com/gpu

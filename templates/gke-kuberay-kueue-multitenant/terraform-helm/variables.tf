@@ -26,19 +26,19 @@ variable "region" {
 variable "cluster_name" {
   description = "The name of the GKE cluster"
   type        = string
-  default     = "kuberay-kueue-cluster"
+  default     = "gke-kuberay-kueue-multitenant"
 }
 
 variable "network_name" {
   description = "The name of the VPC network"
   type        = string
-  default     = "kuberay-kueue-vpc"
+  default     = "gke-kuberay-kueue-multitenant-vpc"
 }
 
 variable "subnet_name" {
   description = "The name of the subnet"
   type        = string
-  default     = "kuberay-kueue-subnet"
+  default     = "gke-kuberay-kueue-multitenant-subnet"
 }
 
 variable "service_account" {

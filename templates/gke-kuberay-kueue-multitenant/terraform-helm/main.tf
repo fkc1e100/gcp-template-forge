@@ -107,8 +107,9 @@ resource "google_container_node_pool" "system_nodes" {
     oauth_scopes    = ["https://www.googleapis.com/auth/cloud-platform"]
 
     labels = {
-      project = "gcp-template-forge"
-      pool    = "system"
+      project  = "gcp-template-forge"
+      template = "gke-kuberay-kueue-multitenant"
+      pool     = "system"
     }
 
     resource_labels = {
@@ -152,6 +153,7 @@ resource "google_container_node_pool" "gpu_nodes" {
 
     labels = {
       project                            = "gcp-template-forge"
+      template                           = "gke-kuberay-kueue-multitenant"
       "cloud.google.com/gke-accelerator" = "nvidia-l4"
     }
 
