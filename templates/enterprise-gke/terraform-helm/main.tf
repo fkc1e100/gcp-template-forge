@@ -168,7 +168,7 @@ resource "google_container_node_pool" "primary_nodes" {
     disk_type    = "pd-standard"
     image_type   = "COS_CONTAINERD"
 
-    service_account = google_service_account.node_sa.email
+    service_account = var.create_service_accounts ? google_service_account.node_sa[0].email : var.service_account
 
     oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform",
@@ -198,45 +198,51 @@ resource "google_container_node_pool" "primary_nodes" {
 
 # GCP Service Account for Workload Identity
 resource "google_service_account" "workload_sa" {
+  count        = var.create_service_accounts ? 1 : 0
   account_id   = replace(substr("wkld-${var.cluster_name}", 0, 30), "/-$/", "")
   display_name = "Enterprise Workload Service Account"
 }
 
 resource "google_service_account_iam_member" "workload_identity_binding" {
-  for_each           = toset(["default", "gke-workload"])
-  service_account_id = google_service_account.workload_sa.name
+  for_each           = var.create_service_accounts ? toset(["default", "gke-workload"]) : []
+  service_account_id = google_service_account.workload_sa[0].name
   role               = "roles/iam.workloadIdentityUser"
   member             = "serviceAccount:${var.project_id}.svc.id.goog[${each.value}/gke-workload-sa]"
 }
 
 # GCP Service Account for Nodes
 resource "google_service_account" "node_sa" {
+  count        = var.create_service_accounts ? 1 : 0
   account_id   = replace(substr("node-${var.cluster_name}", 0, 30), "/-$/", "")
   display_name = "Enterprise GKE Node Service Account"
 }
 
 resource "google_project_iam_member" "node_logging" {
+  count   = var.create_service_accounts ? 1 : 0
   project = var.project_id
   role    = "roles/logging.logWriter"
-  member  = "serviceAccount:${google_service_account.node_sa.email}"
+  member  = "serviceAccount:${google_service_account.node_sa[0].email}"
 }
 
 resource "google_project_iam_member" "node_monitoring_metric" {
+  count   = var.create_service_accounts ? 1 : 0
   project = var.project_id
   role    = "roles/monitoring.metricWriter"
-  member  = "serviceAccount:${google_service_account.node_sa.email}"
+  member  = "serviceAccount:${google_service_account.node_sa[0].email}"
 }
 
 resource "google_project_iam_member" "node_monitoring_viewer" {
+  count   = var.create_service_accounts ? 1 : 0
   project = var.project_id
   role    = "roles/monitoring.viewer"
-  member  = "serviceAccount:${google_service_account.node_sa.email}"
+  member  = "serviceAccount:${google_service_account.node_sa[0].email}"
 }
 
 resource "google_project_iam_member" "node_metadata_writer" {
+  count   = var.create_service_accounts ? 1 : 0
   project = var.project_id
   role    = "roles/stackdriver.resourceMetadata.writer"
-  member  = "serviceAccount:${google_service_account.node_sa.email}"
+  member  = "serviceAccount:${google_service_account.node_sa[0].email}"
 }
 
 # Generate values.yaml for the Helm chart
@@ -267,7 +273,7 @@ image:
 serviceAccount:
   create: true
   name: "gke-workload-sa"
-  gcpServiceAccount: "${google_service_account.workload_sa.email}"
+  gcpServiceAccount: "${var.create_service_accounts ? google_service_account.workload_sa[0].email : var.service_account}"
 
 podSecurityContext:
   runAsUser: 1000

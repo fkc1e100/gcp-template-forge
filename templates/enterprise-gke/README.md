@@ -33,8 +33,10 @@ cd terraform-helm
 terraform init \
   -backend-config="bucket=<TF_STATE_BUCKET>" \
   -backend-config="prefix=templates/enterprise-gke/terraform-helm"
-terraform apply -var="project_id=<PROJECT_ID>" -var="service_account=<NODE_SA_EMAIL>"
+terraform apply -var="project_id=<PROJECT_ID>" -var="service_account=<NODE_SA_EMAIL>" -var="create_service_accounts=true"
 ```
+
+*Note: `create_service_accounts` defaults to `false` to ensure compatibility with restricted environments like CI. For production deployments, set it to `true` to create dedicated, least-privileged service accounts for nodes and workloads.*
 
 ### Config Connector
 

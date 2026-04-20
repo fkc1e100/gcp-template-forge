@@ -42,9 +42,15 @@ variable "subnet_name" {
 }
 
 variable "service_account" {
-  description = "The service account to use for the GKE nodes (passed by CI)"
+  description = "The service account to use for the GKE nodes if create_service_accounts is false (passed by CI)"
   type        = string
   default     = ""
+}
+
+variable "create_service_accounts" {
+  description = "Whether to create dedicated service accounts. Set to false in environments with restricted IAM permissions (like CI)."
+  type        = bool
+  default     = false
 }
 
 variable "master_authorized_networks" {
