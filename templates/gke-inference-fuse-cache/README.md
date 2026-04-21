@@ -61,7 +61,7 @@ This template demonstrates how to achieve high-performance model loading on GKE 
 
 2.  **Deploy Workload**:
     ```bash
-    gcloud container clusters get-credentials gke-inference-fuse-cache --region us-central1
+    gcloud container clusters get-credentials gke-inf-fuse-cache --region us-central1
     helm upgrade --install release ./workload
     ```
 
@@ -80,13 +80,13 @@ This template demonstrates how to achieve high-performance model loading on GKE 
 
 2.  **Wait for Readiness**:
     ```bash
-    kubectl wait --for=condition=Ready containercluster gke-inference-fuse-cache-kcc -n forge-management --timeout=30m
+    kubectl wait --for=condition=Ready containercluster gke-inf-fuse-cache-kcc -n forge-management --timeout=30m
     ```
 
 3.  **Deploy Workload**:
     *Edit `config-connector-workload/workload.yaml` and replace `<PROJECT_ID>` and `<BUCKET_NAME>` with your actual values.*
     ```bash
-    gcloud container clusters get-credentials gke-inference-fuse-cache-kcc --region us-central1
+    gcloud container clusters get-credentials gke-inf-fuse-cache-kcc --region us-central1
     kubectl apply -f config-connector-workload/workload.yaml
     ```
 
@@ -110,6 +110,4 @@ kubectl delete -f config-connector-workload/workload.yaml
 kubectl delete job stage-model # If not using workload.yaml for cleanup
 kubectl delete -f config-connector/
 ```
-<!-- Trigger CI -->
-<!-- Trigger CI Again -->
-<!-- Trigger CI after workflow fix -->
+
