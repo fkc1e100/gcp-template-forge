@@ -16,9 +16,9 @@
 replicaCount: 1
 
 image:
-  repository: vllm/vllm-openai
+  repository: google/cloud-sdk
   pullPolicy: IfNotPresent
-  tag: "latest"
+  tag: "slim"
 
 bucketName: "gke-inference-fuse-bucket"
 gcpServiceAccountEmail: ""

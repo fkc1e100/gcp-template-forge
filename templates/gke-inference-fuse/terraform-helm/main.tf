@@ -30,7 +30,7 @@ locals {
   uid                = var.uid_suffix != "" ? var.uid_suffix : random_id.bucket_suffix.hex
   workload_gsa_email = var.service_account
   ksa_name           = "vllm-sa-${local.uid}"
-  bucket_name        = "${var.bucket_name}-${local.uid}"
+  bucket_name        = "gke-inference-fuse-${local.uid}-bucket"
 }
 
 # VPC Network
@@ -226,22 +226,20 @@ resource "google_container_node_pool" "system_pool" {
 }
 
 # IAM for Workload Identity
-resource "google_storage_bucket_iam_member" "bucket_admin" {
+# Grant the Kubernetes Service Account direct permissions on the bucket.
+# This avoids the need for the KSA to impersonate a GSA, which can be
+# problematic in some CI environments.
+resource "google_storage_bucket_iam_member" "bucket_admin_ksa" {
+  bucket = google_storage_bucket.model_bucket.name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${var.project_id}.svc.id.goog[default/${local.ksa_name}]"
+}
+
+# Also grant permissions to the node's GSA as a fallback (optional but helps robustness)
+resource "google_storage_bucket_iam_member" "bucket_admin_gsa" {
   bucket = google_storage_bucket.model_bucket.name
   role   = "roles/storage.objectAdmin"
   member = "serviceAccount:${var.service_account}"
-}
-
-# NOTE: We use google_project_iam_member at the project level as a workaround.
-# In some CI environments, managing IAM policy directly on the Service Account 
-# can result in 403 Forbidden errors (iam.serviceAccounts.getIamPolicy).
-# Granting roles/iam.workloadIdentityUser at the project level ensures the 
-# Kubernetes Service Account can impersonate the Google Service Account 
-# while avoiding these permission issues during Terraform runs.
-resource "google_project_iam_member" "workload_identity_user" {
-  project = var.project_id
-  role    = "roles/iam.workloadIdentityUser"
-  member  = "serviceAccount:${var.project_id}.svc.id.goog[default/${local.ksa_name}]"
 }
 
 # Generate values.yaml for the Helm chart

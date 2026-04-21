@@ -20,7 +20,7 @@ echo "Starting GKE Inference FUSE Cache Validation Tests..."
 PROJECT_ID=${PROJECT_ID:-"gca-gke-2025"}
 REGION=${REGION:-"us-central1"}
 NAMESPACE=${NAMESPACE:-"default"}
-BUCKET_NAME_BASE="gke-inference-fuse-bucket"
+BUCKET_NAME_BASE="gke-inference-fuse"
 
 # 0. Cluster Detection
 if [ -z "${CLUSTER_NAME}" ]; then
@@ -56,7 +56,7 @@ fi
 # Detect Bucket Name
 if [ -z "${BUCKET_NAME}" ]; then
   echo "Attempting to detect bucket..."
-  DETECTED_BUCKET=$(gcloud storage buckets list --project ${PROJECT_ID} --filter="name ~ ${BUCKET_NAME_BASE}.*" --format="value(name)" --limit 1)
+  DETECTED_BUCKET=$(gcloud storage buckets list --project ${PROJECT_ID} --filter="name ~ ${BUCKET_NAME_BASE}.*-bucket" --format="value(name)" --limit 1)
   if [ -n "${DETECTED_BUCKET}" ]; then
     BUCKET_NAME="${DETECTED_BUCKET}"
     echo "Detected bucket: ${BUCKET_NAME}"

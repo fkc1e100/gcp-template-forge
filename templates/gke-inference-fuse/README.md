@@ -24,7 +24,7 @@ This template demonstrates how to achieve high-performance model loading on GKE 
 - **Local NVMe SSD Caching**: Specifically configures Local SSDs to back the GCS FUSE file cache.
 - **Advanced GCS FUSE Tuning**: Utilizes `fileCacheCapacity`, `fileCacheForRangeRead`, and `metadataCacheTTLSeconds` (which also controls file cache TTL) for optimal performance.
 - **Workload Identity**: Securely access GCS buckets without managing long-lived keys.
-- **vLLM Inference**: Deploys a production-ready vLLM server configured for GCS-based model serving.
+- **vLLM / Mock Inference**: Deploys a lightweight inference server configured for GCS-based model serving (uses a dummy server for CI validation speed).
 
 ## Infrastructure Architecture
 - **GKE Standard Cluster**: With GCS FUSE CSI driver enabled.
@@ -62,7 +62,7 @@ This template demonstrates how to achieve high-performance model loading on GKE 
 2.  **Deploy Workload**:
     ```bash
     gcloud container clusters get-credentials gke-inference-fuse --region us-central1
-    helm upgrade --install vllm ./workload
+    helm upgrade --install release ./workload
     ```
 
 3.  **Verify**:

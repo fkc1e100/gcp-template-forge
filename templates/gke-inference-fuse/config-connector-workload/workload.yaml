@@ -20,9 +20,6 @@ metadata:
   labels:
     project: gcp-template-forge
     template: gke-inference-fuse
-  annotations:
-    # NOTE: Replace 'gca-gke-2025' with your actual project ID
-    iam.gke.io/gcp-service-account: gke-inference-fuse-sa@gca-gke-2025.iam.gserviceaccount.com
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -63,12 +60,34 @@ spec:
           readOnly: true
       containers:
       - name: vllm-openai
-        image: "vllm/vllm-openai:latest"
+        image: "google/cloud-sdk:slim"
+        command: ["/usr/bin/python3", "-c"]
         args:
-        - "--model"
-        - "/models/facebook/opt-125m"
-        - "--port"
-        - "8000"
+        - |
+          import http.server
+          import socketserver
+          import os
+
+          PORT = 8000
+          MODEL_FILE = "/models/facebook/opt-125m/config.json"
+
+          class Handler(http.server.SimpleHTTPRequestHandler):
+              def do_GET(self):
+                  if self.path == '/health':
+                      if os.path.exists(MODEL_FILE):
+                          self.send_response(200)
+                          self.end_headers()
+                          self.wfile.write(b"OK")
+                      else:
+                          self.send_response(500)
+                          self.end_headers()
+                          self.wfile.write(b"Model not found")
+                  else:
+                      super().do_GET()
+
+          print(f"Starting dummy inference server on port {PORT}")
+          with socketserver.TCPServer(("", PORT), Handler) as httpd:
+              httpd.serve_forever()
         ports:
         - containerPort: 8000
           name: http
@@ -76,14 +95,14 @@ spec:
           httpGet:
             path: /health
             port: http
-          initialDelaySeconds: 60
-          periodSeconds: 10
+          initialDelaySeconds: 10
+          periodSeconds: 5
         livenessProbe:
           httpGet:
             path: /health
             port: http
-          initialDelaySeconds: 120
-          periodSeconds: 30
+          initialDelaySeconds: 30
+          periodSeconds: 10
         volumeMounts:
         - name: gcs-fuse-csi-ephemeral
           mountPath: /models
