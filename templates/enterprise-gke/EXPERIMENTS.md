@@ -67,3 +67,4 @@
 | 83 | Fix missing resourceLabels in KCC manifests | ✅ Success | Adding mandatory resourceLabels to ContainerCluster and ContainerNodePool for full mandate compliance | Finalized |
 | 84 | Perfect revert of out-of-scope changes and PR synchronization | ❌ Fail | Fully reverting all accidental changes to the basic-gke-hello-world template and synchronizing documentation | Fix KCC failure |
 | 85 | Fix KCC failure by removing unsupported spec.resourceLabels | ✅ Success | Removing spec.resourceLabels from ContainerCluster as it is unsupported in KCC v1beta1 and caused validation errors | PR Ready |
+| 86 | Fix KCC failure by removing unsupported resourceLabels from NodePool | ✅ Success | Removing nodeConfig.resourceLabels from ContainerNodePool as it is likely unsupported in KCC v1beta1, ensuring consistency with the cluster fix | PR Ready |
