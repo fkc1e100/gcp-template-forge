@@ -229,7 +229,7 @@ resource "google_container_node_pool" "system_pool" {
 # IAM for Workload Identity
 # Grant the Kubernetes Service Account direct permissions on the bucket.
 # This avoids the need for the KSA to impersonate a GSA, which can be
-# problematic in some CI environments.
+# problematic in some CI environments. This is a resource-level binding.
 resource "google_storage_bucket_iam_member" "bucket_admin_ksa" {
   bucket = google_storage_bucket.model_bucket.name
   role   = "roles/storage.objectAdmin"
@@ -294,7 +294,7 @@ ${yamlencode({
   ]
   cache = {
     capacity      = "50Gi"
-    maxAgeSeconds = 60
+    maxAgeSeconds = 3600
   }
 })}
 EOF

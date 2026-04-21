@@ -44,4 +44,4 @@ tolerations:
 cache:
   capacity: "50Gi"
   # maxAgeSeconds maps to metadataCacheTTLSeconds, which also controls the file cache TTL
-  maxAgeSeconds: 60
+  maxAgeSeconds: 3600

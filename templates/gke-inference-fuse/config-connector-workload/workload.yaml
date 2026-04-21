@@ -18,7 +18,8 @@ metadata:
   name: gke-inference-fuse-sa
   namespace: default
   annotations:
-    iam.gke.io/gcp-service-account: gke-inference-fuse-sa@gca-gke-2025.iam.gserviceaccount.com
+    # NOTE: Replace <PROJECT_ID> with your actual project ID
+    iam.gke.io/gcp-service-account: gke-inference-fuse-sa@<PROJECT_ID>.iam.gserviceaccount.com
   labels:
     project: gcp-template-forge
     template: gke-inference-fuse
@@ -119,11 +120,12 @@ spec:
         csi:
           driver: gcsfuse.csi.storage.gke.io
           volumeAttributes:
-            bucketName: gke-inference-fuse-kcc-bucket
+            # NOTE: Replace <BUCKET_NAME> with your actual bucket name
+            bucketName: <BUCKET_NAME>
             mountOptions: "implicit-dirs"
             fileCacheCapacity: "50Gi"
             fileCacheForRangeRead: "true"
-            metadataCacheTTLSeconds: "60"
+            metadataCacheTTLSeconds: "3600"
       nodeSelector:
         gpu: l4
       tolerations:
@@ -167,11 +169,12 @@ spec:
         csi:
           driver: gcsfuse.csi.storage.gke.io
           volumeAttributes:
-            bucketName: gke-inference-fuse-kcc-bucket
+            # NOTE: Replace <BUCKET_NAME> with your actual bucket name
+            bucketName: <BUCKET_NAME>
             mountOptions: "implicit-dirs"
             fileCacheCapacity: "50Gi"
             fileCacheForRangeRead: "true"
-            metadataCacheTTLSeconds: "60"
+            metadataCacheTTLSeconds: "3600"
       restartPolicy: OnFailure
   backoffLimit: 3
 ---
