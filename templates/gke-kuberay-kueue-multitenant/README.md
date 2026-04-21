@@ -44,9 +44,13 @@ This path uses Google Cloud Config Connector (KCC) to manage GCP resources as Ku
 # Apply infrastructure resources to the management cluster
 kubectl apply -n forge-management -f config-connector/
 
-# Wait for infrastructure to be ready, then apply the workload
-# Note: Ensure you are connected to the workload cluster for the following:
-# We use --server-side apply to handle large CRDs (e.g. KubeRay) that exceed the annotation limit.
+# Wait for infrastructure to be ready
+# You can check the status using:
+kubectl get -n forge-management -f config-connector/
+
+# Note: GKE clusters and node pools can take up to 10-15 minutes to provision.
+# Once all resources show READY: True, apply the workload to the workload cluster:
+# (Ensure you are connected to the newly created workload cluster)
 kubectl apply --server-side -f config-connector-workload/
 ```
 
@@ -95,5 +99,5 @@ kubectl delete -n forge-management -f config-connector/
 | **Cluster** | gke-kuberay-kueue-multitenant | gke-kuberay-kueue-multitenant |
 | **Agent tokens** | not recorded | (shared session) |
 | **Estimated cost** | - | -- |
-| **Commit** | 5b572ad | 5b572ad |
+| **Commit** | 3ab9b38 | 3ab9b38 |
 
