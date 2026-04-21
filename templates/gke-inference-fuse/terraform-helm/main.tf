@@ -295,6 +295,8 @@ ${yamlencode({
   cache = {
     capacity                = "50Gi"
     metadataCacheTTLSeconds = 3600
+    statCacheCapacity       = "512Mi"
+    typeCacheCapacity       = "64Mi"
   }
 })}
 EOF

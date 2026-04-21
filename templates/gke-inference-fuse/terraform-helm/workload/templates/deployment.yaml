@@ -106,6 +106,8 @@ spec:
             fileCacheCapacity: "{{ .Values.cache.capacity }}"
             fileCacheForRangeRead: "true"
             metadataCacheTTLSeconds: "{{ .Values.cache.metadataCacheTTLSeconds }}"
+            metadataStatCacheCapacity: "{{ .Values.cache.statCacheCapacity }}"
+            metadataTypeCacheCapacity: "{{ .Values.cache.typeCacheCapacity }}"
       nodeSelector:
         {{- toYaml .Values.nodeSelector | nindent 8 }}
       tolerations:

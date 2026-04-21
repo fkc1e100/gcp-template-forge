@@ -45,3 +45,6 @@ cache:
   capacity: "50Gi"
   # metadataCacheTTLSeconds controls the TTL for metadata caching (seconds)
   metadataCacheTTLSeconds: 3600
+  # advanced tuning for large model directories
+  statCacheCapacity: "512Mi"
+  typeCacheCapacity: "64Mi"
