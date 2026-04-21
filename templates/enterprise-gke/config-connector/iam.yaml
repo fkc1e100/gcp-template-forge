@@ -15,7 +15,7 @@
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMServiceAccount
 metadata:
-  name: enterprise-gke-workload-sa
+  name: enterprise-gke-w-sa
   namespace: forge-management
   labels:
     project: gcp-template-forge
@@ -41,7 +41,7 @@ spec:
   resourceRef:
     apiVersion: iam.cnrm.cloud.google.com/v1beta1
     kind: IAMServiceAccount
-    name: enterprise-gke-workload-sa
+    name: enterprise-gke-w-sa
 ---
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPolicyMember
@@ -59,12 +59,12 @@ spec:
   resourceRef:
     apiVersion: iam.cnrm.cloud.google.com/v1beta1
     kind: IAMServiceAccount
-    name: enterprise-gke-workload-sa
+    name: enterprise-gke-w-sa
 ---
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMServiceAccount
 metadata:
-  name: enterprise-gke-node-sa
+  name: enterprise-gke-n-sa
   namespace: forge-management
   labels:
     project: gcp-template-forge
@@ -85,7 +85,7 @@ metadata:
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
-  member: "serviceAccount:enterprise-gke-node-sa@gca-gke-2025.iam.gserviceaccount.com"
+  member: "serviceAccount:enterprise-gke-n-sa@gca-gke-2025.iam.gserviceaccount.com"
   role: roles/logging.logWriter
   resourceRef:
     apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
@@ -103,7 +103,7 @@ metadata:
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
-  member: "serviceAccount:enterprise-gke-node-sa@gca-gke-2025.iam.gserviceaccount.com"
+  member: "serviceAccount:enterprise-gke-n-sa@gca-gke-2025.iam.gserviceaccount.com"
   role: roles/monitoring.metricWriter
   resourceRef:
     apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
@@ -121,7 +121,7 @@ metadata:
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
-  member: "serviceAccount:enterprise-gke-node-sa@gca-gke-2025.iam.gserviceaccount.com"
+  member: "serviceAccount:enterprise-gke-n-sa@gca-gke-2025.iam.gserviceaccount.com"
   role: roles/monitoring.viewer
   resourceRef:
     apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
@@ -139,7 +139,7 @@ metadata:
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
-  member: "serviceAccount:enterprise-gke-node-sa@gca-gke-2025.iam.gserviceaccount.com"
+  member: "serviceAccount:enterprise-gke-n-sa@gca-gke-2025.iam.gserviceaccount.com"
   role: roles/stackdriver.resourceMetadata.writer
   resourceRef:
     apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
