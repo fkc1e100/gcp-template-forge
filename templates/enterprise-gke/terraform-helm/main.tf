@@ -68,6 +68,7 @@ resource "google_compute_router_nat" "nat" {
 }
 
 resource "google_container_cluster" "enterprise_cluster" {
+  provider = google-beta
   name     = var.cluster_name
   location = var.region
 
@@ -116,6 +117,12 @@ resource "google_container_cluster" "enterprise_cluster" {
     }
   }
 
+  addons_config {
+    network_policy_config {
+      disabled = false
+    }
+  }
+
   network_policy {
     enabled  = true
     provider = "CALICO"
@@ -153,6 +160,7 @@ resource "google_container_cluster" "enterprise_cluster" {
 }
 
 resource "google_container_node_pool" "primary_nodes" {
+  provider   = google-beta
   name       = "enterprise-gke-pool"
   location   = var.region
   cluster    = google_container_cluster.enterprise_cluster.name
