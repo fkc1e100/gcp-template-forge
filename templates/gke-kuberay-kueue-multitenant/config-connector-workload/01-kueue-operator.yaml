@@ -1453,22 +1453,45 @@ subjects:
 ---
 apiVersion: v1
 data:
-  controller_manager_config.yaml: "apiVersion: config.kueue.x-k8s.io/v1beta1\nkind:\
-    \ Configuration\nhealth:\n  healthProbeBindAddress: :8081\nmetrics:\n  bindAddress:\
-    \ :8080\n# enableClusterQueueResources: true\nwebhook:\n  port: 9443\nleaderElection:\n\
-    \  leaderElect: true\n  resourceName: c1f6bfd2.kueue.x-k8s.io\ncontroller:\n \
-    \ groupKindConcurrency:\n    Job.batch: 5\n    Pod: 5\n    Workload.kueue.x-k8s.io:\
-    \ 5\n    LocalQueue.kueue.x-k8s.io: 1\n    ClusterQueue.kueue.x-k8s.io: 1\n  \
-    \  ResourceFlavor.kueue.x-k8s.io: 1\nclientConnection:\n  qps: 50\n  burst: 100\n\
-    #pprofBindAddress: :8082\n#waitForPodsReady:\n#  enable: true\n#manageJobsWithoutQueueName:\
-    \ true\ninternalCertManagement:\n  enable: true\n  webhookServiceName: \"kueue-webhook-service\"\n\
-    \  webhookSecretName: \"kueue-webhook-server-cert\"\nintegrations:\n  frameworks:\n\
-    \  - \"batch/job\"\n  - \"kubeflow.org/mpijob\"\n  - \"ray.io/rayjob\"\n  - \"ray.io/raycluster\"\n\
-    \  - \"jobset.x-k8s.io/jobset\"\n  - \"kubeflow.org/mxjob\"\n  - \"kubeflow.org/paddlejob\"\n\
-    \  - \"kubeflow.org/pytorchjob\"\n  - \"kubeflow.org/tfjob\"\n  - \"kubeflow.org/xgboostjob\"\n\
-    # - \"pod\"\n# podOptions:\n#   namespaceSelector:\n#     matchExpressions:\n\
-    #       - key: kubernetes.io/metadata.name\n#         operator: NotIn\n#     \
-    \    values: [ kube-system, kueue-system ]\n"
+  controller_manager_config.yaml: |
+    apiVersion: config.kueue.x-k8s.io/v1beta1
+    kind: Configuration
+    health:
+      healthProbeBindAddress: :8081
+    metrics:
+      bindAddress: :8080
+    webhook:
+      port: 9443
+    leaderElection:
+      leaderElect: true
+      resourceName: c1f6bfd2.kueue.x-k8s.io
+    controller:
+      groupKindConcurrency:
+        Job.batch: 5
+        Pod: 5
+        Workload.kueue.x-k8s.io: 5
+        LocalQueue.kueue.x-k8s.io: 1
+        ClusterQueue.kueue.x-k8s.io: 1
+        ResourceFlavor.kueue.x-k8s.io: 1
+    clientConnection:
+      qps: 50
+      burst: 100
+    internalCertManagement:
+      enable: true
+      webhookServiceName: "kueue-webhook-service"
+      webhookSecretName: "kueue-webhook-server-cert"
+    integrations:
+      frameworks:
+      - "batch/job"
+      - "kubeflow.org/mpijob"
+      - "ray.io/rayjob"
+      - "ray.io/raycluster"
+      - "jobset.x-k8s.io/jobset"
+      - "kubeflow.org/mxjob"
+      - "kubeflow.org/paddlejob"
+      - "kubeflow.org/pytorchjob"
+      - "kubeflow.org/tfjob"
+      - "kubeflow.org/xgboostjob"
 kind: ConfigMap
 metadata:
   labels:
@@ -1635,6 +1658,7 @@ webhooks:
       values:
       - kube-system
       - kueue-system
+      - default
   rules:
   - apiGroups:
     - ''
@@ -1917,6 +1941,7 @@ webhooks:
       values:
       - kube-system
       - kueue-system
+      - default
   rules:
   - apiGroups:
     - ''

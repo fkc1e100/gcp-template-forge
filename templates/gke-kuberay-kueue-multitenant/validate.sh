@@ -43,9 +43,9 @@ if [ -d "$WORKLOAD_DIR" ]; then
   kubectl wait --for=condition=Established crd/rayclusters.ray.io --timeout=2m
   kubectl wait --for=condition=Established crd/clusterqueues.kueue.x-k8s.io --timeout=2m
 
+  kubectl apply --server-side -f "$WORKLOAD_DIR/01-namespaces.yaml"
   kubectl apply --server-side -f "$WORKLOAD_DIR/01-kuberay-operator.yaml"
   kubectl apply --server-side -f "$WORKLOAD_DIR/01-kueue-operator.yaml"
-  kubectl apply --server-side -f "$WORKLOAD_DIR/01-namespaces.yaml"
 
   # 2. Operator Readiness (MUST be ready before applying custom resources)
   echo "Test 2: Operator Readiness..."
