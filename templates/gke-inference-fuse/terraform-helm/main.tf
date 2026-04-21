@@ -269,8 +269,8 @@ ${yamlencode({
   # Default values for vllm-inference
   replicaCount = 1
   image = {
-    repository = "vllm/vllm-openai"
-    tag        = "latest"
+    repository = "google/cloud-sdk"
+    tag        = "slim"
   }
   resources = {
     limits = {

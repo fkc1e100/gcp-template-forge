@@ -78,7 +78,7 @@ resource "google_container_cluster" "topology_cluster" {
 
   resource_labels = {
     project  = "gcp-template-forge"
-    template = var.uid_suffix != "" ? "gke-topology-aware-routing-${var.uid_suffix}" : "gke-topology-aware-routing"
+    template = "gke-topology-aware-routing"
   }
 
   remove_default_node_pool = true
@@ -169,12 +169,12 @@ resource "google_container_node_pool" "primary_nodes" {
 
     labels = {
       project  = "gcp-template-forge"
-      template = var.uid_suffix != "" ? "gke-topology-aware-routing-${var.uid_suffix}" : "gke-topology-aware-routing"
+      template = "gke-topology-aware-routing"
     }
 
     resource_labels = {
       project  = "gcp-template-forge"
-      template = var.uid_suffix != "" ? "gke-topology-aware-routing-${var.uid_suffix}" : "gke-topology-aware-routing"
+      template = "gke-topology-aware-routing"
     }
   }
 }
