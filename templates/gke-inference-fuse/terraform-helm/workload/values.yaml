@@ -24,7 +24,7 @@ bucketName: "gke-inference-fuse-bucket"
 gcpServiceAccountEmail: ""
 
 serviceAccount:
-  name: "vllm-sa-inference"
+  name: "gke-inference-fuse-sa"
 
 resources:
   limits:

@@ -606,7 +606,9 @@ jobs:
           if [[ "${{ matrix.template }}" == *"gke-inference-fuse"* ]]; then
             # Recalculate unique names used in kcc-apply
             BUCKET_NAME="gke-inference-fuse-${UID_SUFFIX}-kcc-bucket"
-            EXTRA_ARGS="--set templateName=$(basename ${{ matrix.template }})-${UID_SUFFIX} --set bucketName=${BUCKET_NAME}"
+            KSA_NAME="gke-inference-fuse-${UID_SUFFIX}-sa"
+            GSA_EMAIL="gke-inference-fuse-${UID_SUFFIX}-sa@${{ env.PROJECT_ID }}.iam.gserviceaccount.com"
+            EXTRA_ARGS="--set templateName=$(basename ${{ matrix.template }})-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME} --set gcpServiceAccountEmail=${GSA_EMAIL}"
           fi
 
           for chart in $CHARTS; do
@@ -1233,7 +1235,9 @@ jobs:
           if [[ "${{ matrix.template }}" == *"gke-inference-fuse"* ]]; then
             # Recalculate unique names used in kcc-apply
             BUCKET_NAME="gke-inference-fuse-${UID_SUFFIX}-kcc-bucket"
-            EXTRA_ARGS="--set templateName=$(basename ${{ matrix.template }})-${UID_SUFFIX} --set bucketName=${BUCKET_NAME}"
+            KSA_NAME="gke-inference-fuse-${UID_SUFFIX}-sa"
+            GSA_EMAIL="gke-inference-fuse-${UID_SUFFIX}-sa@${{ env.PROJECT_ID }}.iam.gserviceaccount.com"
+            EXTRA_ARGS="--set templateName=$(basename ${{ matrix.template }})-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME} --set gcpServiceAccountEmail=${GSA_EMAIL}"
           fi
 
           for chart in $CHARTS; do

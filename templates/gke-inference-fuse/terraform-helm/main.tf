@@ -29,7 +29,7 @@ resource "random_id" "bucket_suffix" {
 locals {
   uid                = var.uid_suffix != "" ? var.uid_suffix : random_id.bucket_suffix.hex
   workload_gsa_email = var.service_account
-  ksa_name           = "vllm-sa-${local.uid}"
+  ksa_name           = "gke-inference-fuse-${local.uid}-sa"
   bucket_name        = "gke-inference-tf-${local.uid}-bucket"
 }
 
