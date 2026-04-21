@@ -49,6 +49,10 @@ spec:
             requests:
               cpu: 1
               memory: 2Gi
+        tolerations:
+        - effect: NoSchedule
+          key: nvidia.com/gpu
+          operator: Exists
   rayVersion: 2.9.0
   workerGroupSpecs:
   - groupName: gpu-group
@@ -116,6 +120,10 @@ spec:
             requests:
               cpu: 1
               memory: 2Gi
+        tolerations:
+        - effect: NoSchedule
+          key: nvidia.com/gpu
+          operator: Exists
   rayVersion: 2.9.0
   workerGroupSpecs:
   - groupName: gpu-group

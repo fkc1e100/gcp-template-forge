@@ -71,8 +71,8 @@ spec:
         hostPath:
           path: /etc/nvidia
       initContainers:
-      - image: "cos-nvidia-installer:fixed"
-        imagePullPolicy: Never
+      - image: "gcr.io/gke-release/nvidia-gpu-device-installer@sha256:2fdcb4955708c90967812169b1df78970e5b7f7ae8fa918e1180231d51a669e2"
+        imagePullPolicy: IfNotPresent
         name: nvidia-driver-installer
         resources:
           requests:

@@ -34,6 +34,7 @@ metadata:
     project: gcp-template-forge
     template: gke-kuberay-kueue-multitenant
   name: base-flavor
+spec: {}
 ---
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: ClusterQueue
@@ -57,17 +58,17 @@ spec:
       - name: nvidia.com/gpu
         nominalQuota: 2
       - name: cpu
-        nominalQuota: 8
+        nominalQuota: 16
       - name: memory
-        nominalQuota: 32Gi
+        nominalQuota: 64Gi
     - name: base-flavor
       resources:
       - name: nvidia.com/gpu
         nominalQuota: 0
       - name: cpu
-        nominalQuota: 4
+        nominalQuota: 8
       - name: memory
-        nominalQuota: 16Gi
+        nominalQuota: 32Gi
 ---
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: ClusterQueue
@@ -91,17 +92,17 @@ spec:
       - name: nvidia.com/gpu
         nominalQuota: 2
       - name: cpu
-        nominalQuota: 8
+        nominalQuota: 16
       - name: memory
-        nominalQuota: 32Gi
+        nominalQuota: 64Gi
     - name: base-flavor
       resources:
       - name: nvidia.com/gpu
         nominalQuota: 0
       - name: cpu
-        nominalQuota: 4
+        nominalQuota: 8
       - name: memory
-        nominalQuota: 16Gi
+        nominalQuota: 32Gi
 ---
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: LocalQueue
