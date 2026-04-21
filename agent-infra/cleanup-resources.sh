@@ -90,7 +90,7 @@ gcloud container clusters get-credentials $KCC_CLUSTER --region $REGION --projec
 if kubectl cluster-info &>/dev/null; then
   echo "Deleting all KCC-managed resources for orphaned environments..."
   KCC_TYPES="containercluster,computenetwork,computevpc,computesubnetwork,computerouter,computerouternat,computefirewall"
-  KCC_RESOURCES=$(kubectl get $KCC_TYPES -n $KCC_NAMESPACE -o name | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-|gke-kuberay-kueue-multitenant-|gke-kuberay-kueue-multitenant-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
+  KCC_RESOURCES=$(kubectl get $KCC_TYPES -n $KCC_NAMESPACE -o name | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-|gke-kuberay-kueue-multitenant-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
   
   for RES in $KCC_RESOURCES; do
     SKIP=false
@@ -123,7 +123,7 @@ fi
 echo "Searching for orphaned Terraform clusters..."
 TF_CLUSTERS=$(gcloud container clusters list \
 --project=$PROJECT \
---filter="(resourceLabels.project=gcp-template-forge OR name ~ latest-gke-features- OR name ~ enterprise-gke- OR name ~ basic-gke- OR name ~ gke- OR name ~ gke-topology-aware-routing-|gke-kuberay-kueue-multitenant- OR name ~ gke-kuberay-kueue-multitenant-) AND name != $KCC_CLUSTER" \
+--filter="(resourceLabels.project=gcp-template-forge OR name ~ latest-gke-features- OR name ~ enterprise-gke- OR name ~ basic-gke- OR name ~ gke- OR name ~ gke-topology-aware-routing-|gke-kuberay-kueue-multitenant-) AND name != $KCC_CLUSTER" \
 --format="value(name, zone.scope())")
 DELETED_CLUSTERS=false
 while read -r CLUSTER C_LOC; do
