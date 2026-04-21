@@ -51,7 +51,8 @@ spec:
             bucketName: "{{ .Values.bucketName }}"
             mountOptions: "implicit-dirs"
             fileCacheCapacity: "{{ .Values.cache.capacity }}"
+            fileCacheForMaxSecs: "{{ .Values.cache.fileCacheForMaxSecs }}"
             fileCacheForRangeRead: "true"
-            metadataCacheTTLSeconds: "{{ .Values.cache.maxAgeSeconds }}"
+            metadataCacheTtlSeconds: "{{ .Values.cache.metadataCacheTtlSeconds }}"
       restartPolicy: OnFailure
   backoffLimit: 3

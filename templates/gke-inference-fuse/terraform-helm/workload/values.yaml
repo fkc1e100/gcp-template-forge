@@ -43,5 +43,7 @@ tolerations:
 # GCS FUSE Caching parameters
 cache:
   capacity: "50Gi"
-  # maxAgeSeconds maps to metadataCacheTTLSeconds, which also controls the file cache TTL
-  maxAgeSeconds: 3600
+  # fileCacheForMaxSecs controls the TTL for the file cache (seconds)
+  # metadataCacheTtlSeconds controls the TTL for metadata caching (seconds)
+  fileCacheForMaxSecs: 3600
+  metadataCacheTtlSeconds: 3600

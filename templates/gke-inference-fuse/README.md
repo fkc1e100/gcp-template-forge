@@ -22,7 +22,7 @@ This template demonstrates how to achieve high-performance model loading on GKE 
 ## Key Features
 - **L4 GPU Acceleration**: Uses G2-standard-4 nodes with NVIDIA L4 GPUs.
 - **Local NVMe SSD Caching**: Specifically configures Local SSDs to back the GCS FUSE file cache.
-- **Advanced GCS FUSE Tuning**: Utilizes `fileCacheCapacity`, `fileCacheForRangeRead`, and `metadataCacheTTLSeconds` (which also controls file cache TTL) for optimal performance.
+- **Advanced GCS FUSE Tuning**: Utilizes `fileCacheCapacity`, `fileCacheForMaxSecs`, `fileCacheForRangeRead`, and `metadataCacheTtlSeconds` for optimal performance and persistent caching.
 - **Workload Identity**: Securely access GCS buckets without managing long-lived keys.
 - **vLLM / Mock Inference**: Deploys a lightweight inference server configured for GCS-based model serving (uses a dummy server for CI validation speed).
 
