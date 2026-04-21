@@ -251,6 +251,8 @@ jobs:
     outputs:
       tf_cluster: ${{ steps.tf-outputs.outputs.tf_cluster }}
       tf_location: ${{ steps.tf-outputs.outputs.tf_location }}
+      tf_bucket: ${{ steps.tf-outputs.outputs.tf_bucket }}
+      tf_ksa: ${{ steps.tf-outputs.outputs.tf_ksa }}
     steps:
       - uses: actions/checkout@v4
 
@@ -297,8 +299,12 @@ jobs:
           echo "tf_duration=${TF_DURATION}" >> $GITHUB_OUTPUT
           CLUSTER=$(terraform output -raw cluster_name 2>/dev/null || echo "")
           LOCATION=$(terraform output -raw cluster_location 2>/dev/null || echo "")
+          BUCKET=$(terraform output -raw bucket_name 2>/dev/null || echo "")
+          KSA=$(terraform output -raw ksa_name 2>/dev/null || echo "")
           echo "tf_cluster=${CLUSTER}" >> $GITHUB_OUTPUT
           echo "tf_location=${LOCATION}" >> $GITHUB_OUTPUT
+          echo "tf_bucket=${BUCKET}" >> $GITHUB_OUTPUT
+          echo "tf_ksa=${KSA}" >> $GITHUB_OUTPUT
 
   tf-test:
     name: "Test TF (${{ matrix.template }})"
@@ -348,7 +354,7 @@ jobs:
           EXTRA_ARGS=""
           if [[ "${{ matrix.template }}" == *"gke-inference-fuse"* ]]; then
             # Recalculate unique names used in tf-provision
-            BUCKET_NAME="gke-inference-tf-${UID_SUFFIX}-bucket"
+            BUCKET_NAME="gke-inference-fuse-tf-${UID_SUFFIX}-bucket"
             KSA_NAME="gke-inference-fuse-${UID_SUFFIX}-sa"
             EXTRA_ARGS="--set templateName=$(basename ${{ matrix.template }})-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME} --set gcpServiceAccountEmail=${{ env.WIF_SERVICE_ACCOUNT }}"
           fi
@@ -858,8 +864,12 @@ jobs:
           echo "tf_duration=${TF_DURATION}" >> $GITHUB_OUTPUT
           CLUSTER=$(terraform output -raw cluster_name 2>/dev/null || echo "")
           LOCATION=$(terraform output -raw cluster_location 2>/dev/null || echo "")
+          BUCKET=$(terraform output -raw bucket_name 2>/dev/null || echo "")
+          KSA=$(terraform output -raw ksa_name 2>/dev/null || echo "")
           echo "tf_cluster=${CLUSTER}" >> $GITHUB_OUTPUT
           echo "tf_location=${LOCATION}" >> $GITHUB_OUTPUT
+          echo "tf_bucket=${BUCKET}" >> $GITHUB_OUTPUT
+          echo "tf_ksa=${KSA}" >> $GITHUB_OUTPUT
           if [ -n "$CLUSTER" ] && [ -n "$LOCATION" ]; then
             ZONES=$(gcloud container clusters describe $CLUSTER --location=$LOCATION \
               --format="value(locations)" 2>/dev/null | tr ';' ', ' || echo "$LOCATION")
@@ -912,7 +922,7 @@ jobs:
           EXTRA_ARGS=""
           if [[ "${{ matrix.template }}" == *"gke-inference-fuse"* ]]; then
             # Recalculate unique names used in tf-provision
-            BUCKET_NAME="gke-inference-tf-${UID_SUFFIX}-bucket"
+            BUCKET_NAME="gke-inference-fuse-tf-${UID_SUFFIX}-bucket"
             KSA_NAME="gke-inference-fuse-${UID_SUFFIX}-sa"
             EXTRA_ARGS="--set templateName=$(basename ${{ matrix.template }})-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME} --set gcpServiceAccountEmail=${{ env.WIF_SERVICE_ACCOUNT }}"
           fi

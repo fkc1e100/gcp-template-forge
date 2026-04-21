@@ -30,8 +30,8 @@ locals {
   uid                = var.uid_suffix != "" ? var.uid_suffix : random_id.bucket_suffix.hex
   workload_gsa_email = var.service_account
   ksa_name           = "gke-inference-fuse-${local.uid}-sa"
-  # Use a more unique bucket name to avoid collisions in shared CI environments
-  bucket_name = "gke-inference-fuse-tf-${local.uid}-${random_id.bucket_suffix.hex}-bucket"
+  # Use a unique bucket name that matches the CI re-calculation
+  bucket_name = "gke-inference-fuse-tf-${local.uid}-bucket"
 }
 
 # VPC Network

@@ -28,6 +28,10 @@ output "bucket_name" {
   value = google_storage_bucket.model_bucket.name
 }
 
+output "ksa_name" {
+  value = local.ksa_name
+}
+
 output "vllm_service_name" {
   value = "vllm-inference"
 }
