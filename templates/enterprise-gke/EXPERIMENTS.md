@@ -44,6 +44,7 @@
 | 67 | Final comprehensive audit and hash synchronization | ✅ Success | Verifying absolute functional parity and synchronizing documentation for production readiness | PR Ready |
 | 68 | Functional parity attempt for Secret Manager | ❌ Fail | secretManagerConfig is likely unsupported in the current KCC version (v1beta1) | Remove secretManagerConfig from both paths to maintain parity and ensure successful deployment |
 | 69 | Fix KCC failure by removing unsupported secretManagerConfig | ✅ Success | Removing secretManagerConfig and cleaning up KCC YAML comments (Commit ff77c20) | Finalized |
+| 70 | Fix Workload Identity timeout in CI | 🛠️ Applied | Added explicit WI binding for the CI service account when create_service_accounts is false | Verify in CI |
 
 ## Key Learnings
 
