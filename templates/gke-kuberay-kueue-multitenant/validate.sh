@@ -61,7 +61,7 @@ if [ -d "$WORKLOAD_DIR" ]; then
   kubectl wait --for=condition=Established crd/clusterqueues.kueue.x-k8s.io --timeout=5m || debug_failure "ClusterQueue CRD not established"
 
   echo "Installing NVIDIA GPU Drivers..."
-  kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/cos/daemonset-preloaded-l4.yaml
+  kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/cos/daemonset-preloaded-latest.yaml
   
   echo "Waiting for GPU nodes to become ready (with GPU capacity)..."
   for i in {1..20}; do
