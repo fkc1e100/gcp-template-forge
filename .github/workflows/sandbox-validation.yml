@@ -77,11 +77,7 @@ jobs:
           echo "has_templates=$([ "$DIRS" = "[]" ] && echo false || echo true)" >> $GITHUB_OUTPUT
           echo "Changed templates: $DIRS"
 
-      - name: Add Hold Label
-        if: github.event_name == 'pull_request'
-        run: gh pr edit ${{ github.event.number }} --add-label "hold"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
       - name: Remove repo-agent Label on Start
         if: github.event_name == 'pull_request'
@@ -128,7 +124,8 @@ jobs:
           ./agent-infra/local-lint.sh ${{ matrix.template }}
 
       - name: Helm template (render + validate YAML)
-        if: "hashFiles(format('{0}/terraform-helm/**', matrix.template)) != ''"
+
+if: "hashFiles(format('{0}/terraform-helm/**', matrix.template)) != ''"
         run: |
           CHARTS=$(find ${{ matrix.template }}/terraform-helm -name Chart.yaml -exec dirname {} \; 2>/dev/null)
           if [ -z "$CHARTS" ]; then exit 0; fi
@@ -192,31 +189,7 @@ jobs:
             exit 1
           fi
 
-      - name: Report lint failure to PR
-        if: failure() && github.event_name == 'pull_request'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const template = '${{ matrix.template }}';
-            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: [
-                `### CI Lint failure: \`${template}\``,
-                ``,
-                `One or more lint checks failed — see [run logs](${runUrl}) for the exact error.`,
-                ``,
-                `**Common causes:**`,
-                `- Template directory named \`Terraform_HELM/\` or similar instead of \`terraform-helm/\``,
-                `- \`google_container_cluster\` missing \`deletion_protection = false\``,
-                `- Terraform fmt or validate error`,
-                `- KCC manifest YAML syntax error`,
-                ``,
-                `Please investigate the lint failure, fix the issue, and push a new commit.`,
-              ].join('\n'),
-            });
+
 
   # ── 3. Pre-deploy Quota Cleanup ──────────────────────────────────────────
   pre-cleanup:
@@ -226,7 +199,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Authenticate to GCP
+
+- name: Authenticate to GCP
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
@@ -336,7 +310,8 @@ jobs:
           if [ -z "$CHARTS" ]; then echo "No Helm charts found -- skipping"; exit 0; fi
           TIMEOUT="60m"
           if [ -f "${{ matrix.template }}/.timeout" ]; then
-            TIMEOUT=$(cat ${{ matrix.template }}/.timeout)
+
+TIMEOUT=$(cat ${{ matrix.template }}/.timeout)
           fi
           for chart in $CHARTS; do
             echo "=== Helm deploy: $chart ==="
@@ -439,11 +414,7 @@ jobs:
               body: `### Deploy & Test TF+Helm: \`${template}\` complete.`,
             });
 
-      - name: Remove Hold Label on Failure
-        if: failure() && github.event_name == 'pull_request'
-        run: gh pr edit ${{ github.event.number }} --remove-label "hold"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
       - name: Cancel workflow on failure
         if: failure()
@@ -530,27 +501,28 @@ jobs:
         run: |
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
-          
+
           # Check if template intends to create a cluster
           HAS_CLUSTER=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print('true' if docs else 'false')")
-          
+
           if [ "$HAS_CLUSTER" = "true" ]; then
             # Try to get cluster name and location from the management cluster using the unique label
             CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-${UID_SUFFIX} -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
             LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-${UID_SUFFIX} -o jsonpath='{.items[0].spec.location}' 2>/dev/null || true)
-            
+
             # Fallback to local manifest parsing if not found in management cluster
             if [ -z "$CLUSTER_NAME" ]; then
                CLUSTER_NAME=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(docs[0]['metadata']['name'] if docs else '')")
             fi
-            if [ -z "$LOCATION" ]; then
+
+if [ -z "$LOCATION" ]; then
                LOCATION=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(docs[0]['spec']['location'] if docs else '')")
             fi
           else
             CLUSTER_NAME=""
             LOCATION=""
           fi
-          
+
           echo "cluster_name=${CLUSTER_NAME}" >> $GITHUB_OUTPUT
           echo "location=${LOCATION}" >> $GITHUB_OUTPUT
 
@@ -656,7 +628,8 @@ jobs:
 
       - name: Install GKE Auth Plugin
         run: |
-          curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --yes --batch --dearmor -o /usr/share/keyrings/cloud.google.gpg
+
+curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --yes --batch --dearmor -o /usr/share/keyrings/cloud.google.gpg
           echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
           sudo apt-get update && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
           sudo apt-get update && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
@@ -745,7 +718,8 @@ jobs:
             echo "skip=false" >> $GITHUB_OUTPUT
             exit 0
           fi
-          CHANGED=$(git diff --name-only "$VALIDATED_COMMIT" HEAD -- "${TEMPLATE}/" \
+
+CHANGED=$(git diff --name-only "$VALIDATED_COMMIT" HEAD -- "${TEMPLATE}/" \
             | grep -v '\.validated$' | grep -v 'README\.md$' || true)
           if [ -n "$CHANGED" ]; then
             echo "Template changed since last validation (${VALIDATED_COMMIT}):"
@@ -835,7 +809,8 @@ jobs:
         id: tf-verify
         if: steps.tf-creds.outcome == 'success'
         run: |
-          CLUSTER="${{ steps.tf-outputs.outputs.tf_cluster }}"
+
+CLUSTER="${{ steps.tf-outputs.outputs.tf_cluster }}"
           LOCATION="${{ steps.tf-outputs.outputs.tf_location }}"
           kubectl get nodes
           gcloud container clusters describe $CLUSTER --location=$LOCATION \
@@ -921,7 +896,8 @@ jobs:
                 continue
               }
               echo "$SCAN_OUT"
-              SCAN_NAME=$(echo "$SCAN_OUT" | grep '^name:' | head -1 | awk '{print $2}' || true)
+
+SCAN_NAME=$(echo "$SCAN_OUT" | grep '^name:' | head -1 | awk '{print $2}' || true)
               if [ -n "$SCAN_NAME" ]; then
                 VULNS=$(gcloud artifacts docker images list-vulnerabilities "$SCAN_NAME" \
                   --project="$PROJECT" \
@@ -1013,7 +989,8 @@ jobs:
   validate-kcc:
     name: "Validate KCC (${{ matrix.template }})"
     needs: detect-changes
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 120
     strategy:
@@ -1118,7 +1095,8 @@ jobs:
         run: echo "Drift test placeholder -- template-specific tests go here."
 
       - name: Get KCC Workload Cluster Info
-        id: kcc-workload-info
+
+id: kcc-workload-info
         if: steps.kcc-wait.outcome == 'success' || steps.kcc-cluster-ready.outcome == 'success'
         run: |
           RUN_ID="${{ github.run_id }}"
@@ -1190,7 +1168,7 @@ jobs:
           PROJECT="${{ env.PROJECT_ID }}"
           SCAN_WARNINGS=0
 
-          echo "=== GKE Security Posture configuration ==="
+echo "=== GKE Security Posture configuration ==="
           gcloud container clusters describe "$CLUSTER" --location="$LOCATION" \
             --project="$PROJECT" --format="yaml(securityPostureConfig)"
 
@@ -1282,16 +1260,13 @@ jobs:
       - name: Upload KCC results artifact
         if: always() && steps.skip-check.outputs.skip != 'true'
         uses: actions/upload-artifact@v4
-        with:
+
+with:
           name: kcc-results-${{ github.run_id }}-${{ strategy.job-index }}
           path: /tmp/kcc-results/result.json
           retention-days: 1
 
-      - name: Remove Hold Label on Failure
-        if: failure() && github.event_name == 'pull_request'
-        run: gh pr edit ${{ github.event.number }} --remove-label "hold"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
   # ── 5c. Post-merge: update README + write .validated (needs both above) ──
   publish-validated:
@@ -1388,7 +1363,8 @@ jobs:
           cumulative_file   = f'{template}/.agent-metrics-cumulative'
 
           current = {}
-          if os.path.exists(metrics_file):
+
+if os.path.exists(metrics_file):
               try:    current = json.load(open(metrics_file))
               except: pass
 
@@ -1478,7 +1454,8 @@ jobs:
               ("**Estimated cost**", cost,      "--"),
               ("**Commit**",         commit,    commit),
           ]
-          header = sep.join(["", "", "Terraform + Helm", "Config Connector", ""]).strip()
+
+header = sep.join(["", "", "Terraform + Helm", "Config Connector", ""]).strip()
           divider = sep.join(["", "---", "---", "---", ""]).strip()
           lines = ["\n\n## Validation Record\n", header, divider]
           for label, tf_val, kcc_val in rows:
@@ -1525,3 +1502,4 @@ jobs:
         run: gh pr edit ${{ github.event.number }} --add-label "repo-agent"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
