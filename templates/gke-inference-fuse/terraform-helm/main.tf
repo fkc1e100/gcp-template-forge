@@ -26,18 +26,9 @@ resource "random_id" "bucket_suffix" {
   byte_length = 4
 }
 
-resource "random_id" "sa_suffix" {
-  byte_length = 4
-}
-
-# Dedicated Service Account for the workload
-resource "google_service_account" "workload_sa" {
-  account_id   = "vllm-sa-${random_id.sa_suffix.hex}"
-  display_name = "VLLM Workload Service Account"
-}
-
 locals {
-  workload_gsa_email = google_service_account.workload_sa.email
+  workload_gsa_email = var.service_account
+  ksa_name           = "vllm-sa-${random_id.bucket_suffix.hex}"
 }
 
 # VPC Network
@@ -171,7 +162,7 @@ resource "google_container_node_pool" "gpu_pool" {
       mode = "GKE_METADATA"
     }
 
-    service_account = google_service_account.workload_sa.email
+    service_account = var.service_account
 
     labels = {
       project  = "gcp-template-forge"
@@ -196,13 +187,13 @@ resource "google_container_node_pool" "gpu_pool" {
 resource "google_storage_bucket_iam_member" "bucket_admin" {
   bucket = google_storage_bucket.model_bucket.name
   role   = "roles/storage.objectAdmin"
-  member = "serviceAccount:${google_service_account.workload_sa.email}"
+  member = "serviceAccount:${var.service_account}"
 }
 
-resource "google_service_account_iam_member" "workload_identity_user" {
-  service_account_id = google_service_account.workload_sa.name
-  role               = "roles/iam.workloadIdentityUser"
-  member             = "serviceAccount:${var.project_id}.svc.id.goog[default/vllm-sa-inference]"
+resource "google_project_iam_member" "workload_identity_user" {
+  project = var.project_id
+  role    = "roles/iam.workloadIdentityUser"
+  member  = "serviceAccount:${var.project_id}.svc.id.goog[default/${local.ksa_name}]"
 }
 
 # Generate values.yaml for the Helm chart
@@ -227,7 +218,7 @@ ${yamlencode({
   bucketName             = google_storage_bucket.model_bucket.name
   gcpServiceAccountEmail = local.workload_gsa_email
   serviceAccount = {
-    name = "vllm-sa-inference"
+    name = local.ksa_name
   }
   # Default values for vllm-inference
   replicaCount = 1
