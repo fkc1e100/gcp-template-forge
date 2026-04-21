@@ -190,6 +190,12 @@ resource "google_storage_bucket_iam_member" "bucket_admin" {
   member = "serviceAccount:${var.service_account}"
 }
 
+# NOTE: We use google_project_iam_member at the project level as a workaround.
+# In some CI environments, managing IAM policy directly on the Service Account 
+# can result in 403 Forbidden errors (iam.serviceAccounts.getIamPolicy).
+# Granting roles/iam.workloadIdentityUser at the project level ensures the 
+# Kubernetes Service Account can impersonate the Google Service Account 
+# while avoiding these permission issues during Terraform runs.
 resource "google_project_iam_member" "workload_identity_user" {
   project = var.project_id
   role    = "roles/iam.workloadIdentityUser"
