@@ -20,6 +20,8 @@ metadata:
   labels:
     app.kubernetes.io/name: {{ include "enterprise-workload.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
+    project: gcp-template-forge
+    template: enterprise-gke
 spec:
   scaleTargetRef:
     apiVersion: apps/v1

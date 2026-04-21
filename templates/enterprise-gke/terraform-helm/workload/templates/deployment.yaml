@@ -19,6 +19,8 @@ metadata:
   labels:
     app.kubernetes.io/name: {{ include "enterprise-workload.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
+    project: gcp-template-forge
+    template: enterprise-gke
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
@@ -32,6 +34,8 @@ spec:
       labels:
         app.kubernetes.io/name: {{ include "enterprise-workload.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
+        project: gcp-template-forge
+        template: enterprise-gke
     spec:
       serviceAccountName: {{ include "enterprise-workload.serviceAccountName" . }}
       securityContext:
