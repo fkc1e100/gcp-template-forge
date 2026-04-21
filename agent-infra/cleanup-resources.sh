@@ -169,7 +169,29 @@ for F in $FIREWALLS; do
   gcloud compute firewall-rules delete $F --project=$PROJECT --quiet || true
 done
 
-# Routers and NATs across all regions
+# 4. Clean up GCS Buckets (non-KCC)
+echo "Searching for orphaned GCS buckets..."
+# Match common patterns used by templates for both TF and KCC paths
+BUCKETS=$(gcloud storage buckets list --project=$PROJECT --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-inference-fuse-|gke-ai-inference-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-|gke-inference-tf-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete|gke-gca-2025-forge-tf-state" || true)
+
+for B in $BUCKETS; do
+  SKIP=false
+  for RUN_ID in $ALL_ACTIVE; do
+    SUFFIX="${RUN_ID: -6}"
+    if [ -n "$RUN_ID" ] && ([[ "$B" == *"$RUN_ID"* ]] || [[ "$B" == *"$SUFFIX"* ]]); then
+      echo "Skipping active bucket: $B"
+      SKIP=true
+      break
+    fi
+  done
+  
+  if [ "$SKIP" = false ]; then
+    echo "Deleting orphaned bucket: $B"
+    gcloud storage buckets delete gs://$B --project=$PROJECT --quiet || true
+  fi
+done
+
+# 5. Clean up Routers and NATs across all regions
 REGIONS=$(gcloud compute regions list --project=$PROJECT --format="value(name)")
 for RGN in $REGIONS; do
   ROUTERS=$(gcloud compute routers list --project=$PROJECT --regions=$RGN --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-inference-fuse-|gke-ai-inference-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
