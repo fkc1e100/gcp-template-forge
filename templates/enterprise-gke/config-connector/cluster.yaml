@@ -50,7 +50,7 @@ spec:
     enabled: true
     provider: CALICO
   binaryAuthorization:
-    evaluationMode: DISABLED
+    evaluationMode: PROJECT_SINGLETON_POLICY_ENFORCE
   loggingConfig:
     enableComponents:
       - SYSTEM_COMPONENTS

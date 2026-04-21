@@ -122,7 +122,7 @@ resource "google_container_cluster" "enterprise_cluster" {
   }
 
   binary_authorization {
-    evaluation_mode = "DISABLED"
+    evaluation_mode = "PROJECT_SINGLETON_POLICY_ENFORCE"
   }
 
   logging_config {
