@@ -43,7 +43,7 @@ spec:
   resourceRef:
     apiVersion: storage.cnrm.cloud.google.com/v1beta1
     kind: StorageBucket
-    name: gke-inference-kcc-bucket
+    name: gke-inference-fuse-kcc-bucket
   role: roles/storage.objectAdmin
   # NOTE: Replace 'gca-gke-2025' with your actual project ID
   member: serviceAccount:gca-gke-2025.svc.id.goog[default/vllm-sa-inference]

@@ -60,7 +60,7 @@ if [ -z "${BUCKET_NAME}" ]; then
   if [[ "${CLUSTER_NAME}" == *"-tf" ]]; then
     DETECTED_BUCKET=$(gcloud storage buckets list --project ${PROJECT_ID} --filter="name ~ gke-inference-tf.*-bucket" --format="value(name)" --limit 1)
   elif [[ "${CLUSTER_NAME}" == *"-kcc" ]]; then
-    DETECTED_BUCKET=$(gcloud storage buckets list --project ${PROJECT_ID} --filter="name ~ gke-inference-kcc.*-bucket" --format="value(name)" --limit 1)
+    DETECTED_BUCKET=$(gcloud storage buckets list --project ${PROJECT_ID} --filter="name ~ gke-inference-fuse.*-kcc-bucket" --format="value(name)" --limit 1)
   fi
   
   # Fallback to general detection

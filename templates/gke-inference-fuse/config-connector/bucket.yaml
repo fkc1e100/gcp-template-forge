@@ -15,7 +15,7 @@
 apiVersion: storage.cnrm.cloud.google.com/v1beta1
 kind: StorageBucket
 metadata:
-  name: gke-inference-kcc-bucket
+  name: gke-inference-fuse-kcc-bucket
   namespace: forge-management
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
