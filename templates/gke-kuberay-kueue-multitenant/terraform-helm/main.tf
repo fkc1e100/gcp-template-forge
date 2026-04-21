@@ -97,7 +97,7 @@ resource "google_container_node_pool" "system_nodes" {
   name       = "gke-kuberay-kueue-multitenant-sys"
   location   = var.region
   cluster    = google_container_cluster.gke_kuberay_kueue_multitenant_cluster.name
-  node_count = 1
+  node_count = 2
 
   node_config {
     spot         = true

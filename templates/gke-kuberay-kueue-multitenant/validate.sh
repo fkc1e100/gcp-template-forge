@@ -25,10 +25,27 @@ REGION=${REGION:-"us-central1"}
 export KUBECONFIG=$(mktemp)
 trap 'rm -f "$KUBECONFIG"' EXIT
 
+# Helper for debugging failures
+debug_failure() {
+  local msg=$1
+  echo "Error: $msg"
+  echo "=== Debug Info: Nodes ==="
+  kubectl get nodes
+  echo "=== Debug Info: Pods (kueue-system) ==="
+  kubectl get pods -n kueue-system
+  echo "=== Debug Info: Pods (default) ==="
+  kubectl get pods -n default
+  echo "=== Debug Info: Events (all) ==="
+  kubectl get events -A --sort-by='.lastTimestamp' | tail -n 50
+  echo "=== Debug Info: Kueue Operator Logs ==="
+  kubectl logs -l control-plane=controller-manager -n kueue-system --all-containers --tail=100 || echo "Could not fetch Kueue logs"
+  exit 1
+}
+
 # 1. Cluster Connectivity
 echo "Test 1: Cluster Connectivity..."
 gcloud container clusters get-credentials ${CLUSTER_NAME} --region ${REGION} --project ${PROJECT_ID}
-kubectl cluster-info
+kubectl cluster-info || debug_failure "Failed to connect to cluster"
 echo "Connectivity passed."
 
 # 1.5 Apply Workload in stages to avoid webhook race conditions
@@ -40,53 +57,45 @@ if [ -d "$WORKLOAD_DIR" ]; then
   kubectl apply --server-side -f "$WORKLOAD_DIR/00-kueue-operator-crds.yaml"
   
   echo "Waiting for CRDs to be established..."
-  kubectl wait --for=condition=Established crd/rayclusters.ray.io --timeout=2m
-  kubectl wait --for=condition=Established crd/clusterqueues.kueue.x-k8s.io --timeout=2m
+  kubectl wait --for=condition=Established crd/rayclusters.ray.io --timeout=2m || debug_failure "RayCluster CRD not established"
+  kubectl wait --for=condition=Established crd/clusterqueues.kueue.x-k8s.io --timeout=2m || debug_failure "ClusterQueue CRD not established"
 
   kubectl apply --server-side -f "$WORKLOAD_DIR/01-namespaces.yaml"
   kubectl apply --server-side -f "$WORKLOAD_DIR/01-kuberay-operator.yaml"
   kubectl apply --server-side -f "$WORKLOAD_DIR/01-kueue-operator.yaml"
 
-  # 2. Operator Readiness (MUST be ready before applying custom resources)
+  # 2. Operator Readiness
   echo "Test 2: Operator Readiness..."
   echo "Checking KubeRay Operator..."
-  kubectl wait --for=condition=available deployment/kuberay-operator -n default --timeout=15m || {
-    echo "KubeRay Operator failed to become ready."
-    kubectl describe deployment kuberay-operator -n default
-    kubectl get pods -l app.kubernetes.io/name=kuberay-operator -A
-    exit 1
-  }
+  kubectl wait --for=condition=available deployment/kuberay-operator -n default --timeout=15m || debug_failure "KubeRay Operator failed to become ready"
 
   echo "Checking Kueue Operator..."
-  kubectl wait --for=condition=available deployment/kueue-controller-manager -n kueue-system --timeout=15m || {
-    echo "Kueue Operator failed to become ready."
-    kubectl describe deployment kueue-controller-manager -n kueue-system
-    kubectl get pods -l control-plane=controller-manager -n kueue-system
-    kubectl logs -l control-plane=controller-manager -n kueue-system --all-containers --tail=100
-    exit 1
-  }
+  kubectl wait --for=condition=available deployment/kueue-controller-manager -n kueue-system --timeout=15m || debug_failure "Kueue Operator failed to become ready"
   echo "Operators are ready."
 
-  # 2.5 Apply Custom Resources (after webhooks are ready)
+  # 2.5 Apply Custom Resources (with retries for webhook readiness)
   echo "Applying Custom Resources..."
-  # Re-apply with --server-side to ensure any webhook-mutated fields are preserved
-  kubectl apply --server-side -f "$WORKLOAD_DIR/02-kueue-config.yaml"
-  kubectl apply --server-side -f "$WORKLOAD_DIR/03-ray-clusters.yaml"
+  applied=false
+  for i in {1..6}; do
+    if kubectl apply --server-side -f "$WORKLOAD_DIR/02-kueue-config.yaml" && \
+       kubectl apply --server-side -f "$WORKLOAD_DIR/03-ray-clusters.yaml"; then
+      applied=true
+      break
+    fi
+    echo "Wait for webhooks to be ready (attempt $i/6)..."
+    sleep 20
+  done
+  if [ "$applied" = false ]; then
+    debug_failure "Failed to apply custom resources after several attempts (webhook race condition)"
+  fi
 else
   echo "Warning: config-connector-workload directory not found at $WORKLOAD_DIR"
-  # If we are in TF path and directory is missing (unlikely given PR files), 
-  # we still expect operators to be present from Helm.
   echo "Checking Operator Readiness (expecting Helm install)..."
-  kubectl wait --for=condition=available deployment/kuberay-operator -n default --timeout=15m || {
-    echo "KubeRay Operator (Helm) failed to become ready."
-    kubectl describe deployment kuberay-operator -n default
-    exit 1
-  }
-  kubectl wait --for=condition=available deployment/kueue-controller-manager -n kueue-system --timeout=15m || {
-    echo "Kueue Operator (Helm) failed to become ready."
-    kubectl describe deployment kueue-controller-manager -n kueue-system
-    exit 1
-  }
+  kubectl wait --for=condition=available deployment/kuberay-operator -n default --timeout=15m || debug_failure "KubeRay Operator (Helm) failed to become ready"
+  kubectl wait --for=condition=available deployment/kueue-controller-manager -n kueue-system --timeout=15m || debug_failure "Kueue Operator (Helm) failed to become ready"
+  
+  # Even if WORKLOAD_DIR is missing, we still need to apply the resources in TF path
+  # Wait, in TF path, the directory IS present because it's part of the repo.
 fi
 
 # 3. Kueue Resource Readiness
@@ -102,15 +111,12 @@ for i in {1..12}; do
   echo "Waiting for Kueue resources (attempt $i/12)..."
   sleep 10
   if [ $i -eq 12 ]; then
-    echo "Error: Kueue resources failed to become present."
-    exit 1
+    debug_failure "Kueue resources failed to become present"
   fi
 done
 
 # 4. RayCluster Readiness
 echo "Test 4: RayCluster Readiness..."
-# RayClusters take time to provision head pods and GPU worker nodes
-# Increase timeout to 25m to allow for GPU node provisioning
 set +e
 kubectl wait --for=jsonpath='{.status.state}'=ready raycluster/raycluster-team-a -n team-a --timeout=25m
 RESULT_A=$?
@@ -119,14 +125,7 @@ RESULT_B=$?
 set -e
 
 if [ $RESULT_A -ne 0 ] || [ $RESULT_B -ne 0 ]; then
-  echo "Error: RayClusters failed to become ready."
-  echo "=== Debug Info: Pods ==="
-  kubectl get pods -A
-  echo "=== Debug Info: RayClusters ==="
-  kubectl get raycluster -A
-  echo "=== Debug Info: Events ==="
-  kubectl get events -A --sort-by='.lastTimestamp' | tail -n 50
-  exit 1
+  debug_failure "RayClusters failed to become ready"
 fi
 echo "RayClusters are ready."
 

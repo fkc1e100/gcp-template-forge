@@ -26,7 +26,7 @@ spec:
   clusterRef:
     name: gke-kuberay-kueue-multitenant
   location: us-central1
-  nodeCount: 1
+  nodeCount: 2
   nodeConfig:
     spot: true
     machineType: e2-standard-4
