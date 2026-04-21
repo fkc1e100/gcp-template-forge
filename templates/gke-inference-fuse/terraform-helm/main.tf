@@ -26,8 +26,18 @@ resource "random_id" "bucket_suffix" {
   byte_length = 4
 }
 
+resource "random_id" "sa_suffix" {
+  byte_length = 4
+}
+
+# Dedicated Service Account for the workload
+resource "google_service_account" "workload_sa" {
+  account_id   = "vllm-sa-${random_id.sa_suffix.hex}"
+  display_name = "VLLM Workload Service Account"
+}
+
 locals {
-  workload_gsa_email = var.service_account
+  workload_gsa_email = google_service_account.workload_sa.email
 }
 
 # VPC Network
@@ -161,7 +171,7 @@ resource "google_container_node_pool" "gpu_pool" {
       mode = "GKE_METADATA"
     }
 
-    service_account = var.service_account
+    service_account = google_service_account.workload_sa.email
 
     labels = {
       project  = "gcp-template-forge"
@@ -186,11 +196,11 @@ resource "google_container_node_pool" "gpu_pool" {
 resource "google_storage_bucket_iam_member" "bucket_admin" {
   bucket = google_storage_bucket.model_bucket.name
   role   = "roles/storage.objectAdmin"
-  member = "serviceAccount:${var.service_account}"
+  member = "serviceAccount:${google_service_account.workload_sa.email}"
 }
 
 resource "google_service_account_iam_member" "workload_identity_user" {
-  service_account_id = "projects/${var.project_id}/serviceAccounts/${var.service_account}"
+  service_account_id = google_service_account.workload_sa.name
   role               = "roles/iam.workloadIdentityUser"
   member             = "serviceAccount:${var.project_id}.svc.id.goog[default/vllm-sa-inference]"
 }
