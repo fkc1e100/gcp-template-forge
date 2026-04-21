@@ -110,3 +110,4 @@ kubectl delete -f config-connector-workload/workload.yaml
 kubectl delete job stage-model # If not using workload.yaml for cleanup
 kubectl delete -f config-connector/
 ```
+<!-- Trigger CI -->
