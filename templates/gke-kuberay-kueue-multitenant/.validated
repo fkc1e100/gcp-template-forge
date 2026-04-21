@@ -1,4 +1,5 @@
-validated_at: 2026-04-21T10:00:00Z
-commit: 9db53c1cdc014dbd094d750553a2e4a4c6b7074e
-tf_helm: success
-kcc: success
+51a8fe488f9d46a0a5bbc579c22f51e21c70311a
+templates/gke-kuberay-kueue-multitenant
+success
+2026-04-21
+us-central1
