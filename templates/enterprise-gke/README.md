@@ -10,7 +10,6 @@ This template provides an enterprise-grade Google Kubernetes Engine (GKE) archit
 - **Cloud NAT** — Enables egress for private nodes without public IP addresses.
 - **Master Authorized Networks** — Restricts access to the GKE control plane to specified IP ranges.
 - **Workload Identity** — Seamless IAM integration for Kubernetes workloads.
-- **Secret Manager** — Integration via Secrets Store CSI driver for secure credential management.
 
 ## Deployment Paths
 
@@ -82,7 +81,7 @@ To verify the deployment:
 ## Workload Details
 - **Application**: Nginx-based production-ready workload
 - **Access**: LoadBalancer
-- **Dependencies**: Google Secret Manager (via Secrets Store CSI), IAM Workload Identity
+- **Dependencies**: IAM Workload Identity
 
 ## Enabled Features
 - [x] Workload Identity

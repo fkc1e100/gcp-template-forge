@@ -41,10 +41,10 @@ spec:
   workloadIdentityConfig:
     workloadPool: "gca-gke-2025.svc.id.goog"
   masterAuthorizedNetworksConfig:
+    # Defaulting to 0.0.0.0/0 is for CI/Sandbox convenience.
+    # In production, this should be restricted to known administrative CIDR ranges.
     cidrBlocks:
-      - # Defaulting to 0.0.0.0/0 is for CI/Sandbox convenience.
-        # In production, this should be restricted to known administrative CIDR ranges.
-        cidrBlock: "0.0.0.0/0"
+      - cidrBlock: "0.0.0.0/0"
         displayName: "all-admin"
   networkPolicy:
     enabled: true
@@ -63,7 +63,5 @@ spec:
   securityPostureConfig:
     mode: BASIC
     vulnerabilityMode: VULNERABILITY_ENTERPRISE
-  secretManagerConfig:
-    enabled: true
   releaseChannel:
     channel: REGULAR
