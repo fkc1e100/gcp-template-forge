@@ -15,26 +15,47 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "hello-world.fullname" . }}
+  name: hello-world
   labels:
-    {{- include "hello-world.labels" . | nindent 4 }}
+    app.kubernetes.io/name: hello-world
+    app.kubernetes.io/instance: release
     project: gcp-template-forge
     template: basic-gke-hello-world
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: 3
   selector:
     matchLabels:
-      {{- include "hello-world.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/name: hello-world
+      app.kubernetes.io/instance: release
   template:
     metadata:
       labels:
-        {{- include "hello-world.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/name: hello-world
+        app.kubernetes.io/instance: release
         project: gcp-template-forge
         template: basic-gke-hello-world
     spec:
       containers:
       - name: hello-app
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        image: us-docker.pkg.dev/google-samples/containers/gke/hello-app:1.0
         ports:
         - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-world
+  labels:
+    app.kubernetes.io/name: hello-world
+    app.kubernetes.io/instance: release
+    project: gcp-template-forge
+    template: basic-gke-hello-world
+spec:
+  type: LoadBalancer
+  selector:
+    app.kubernetes.io/name: hello-world
+    app.kubernetes.io/instance: release
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
