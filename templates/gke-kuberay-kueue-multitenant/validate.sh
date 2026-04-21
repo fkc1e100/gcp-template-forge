@@ -97,8 +97,10 @@ if [ -d "$WORKLOAD_DIR" ]; then
     debug_failure "Failed to apply custom resources after several attempts (webhook race condition)"
   fi
 
-  echo "Installing NVIDIA GPU Drivers..."
-  kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/cos/daemonset-preloaded-latest.yaml
+  # GPU Driver installation is now handled by 00-gpu-driver-installer.yaml in config-connector-workload
+  # or by the Helm chart in the terraform-helm path.
+  echo "Verifying NVIDIA GPU Driver Installer..."
+  kubectl get daemonset nvidia-driver-installer -n kube-system || echo "Warning: nvidia-driver-installer not found yet."
   
   echo "Waiting for GPU nodes to become ready (with GPU capacity)..."
   echo "Note: This may take several minutes as the autoscaler provisions GPU nodes for the RayClusters."
