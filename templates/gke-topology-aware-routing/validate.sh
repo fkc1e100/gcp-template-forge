@@ -71,35 +71,54 @@ sleep 30
 echo "Test 3: Topology Spread Check..."
 
 # Get actual zones where nodes are available in this cluster
-ACTUAL_NODE_ZONES_LIST=$(kubectl get nodes -o jsonpath='{.items[*].metadata.labels.topology\.kubernetes\.io/zone}' | tr ' ' '\n' | sort | uniq | grep -v "^$")
-ACTUAL_NODE_ZONES_COUNT=$(echo "${ACTUAL_NODE_ZONES_LIST}" | wc -l)
+# We retry a few times to allow node labels to be fully populated (though they should be ready)
+for i in {1..6}; do
+  ACTUAL_NODE_ZONES_LIST=$(kubectl get nodes -o jsonpath='{.items[*].metadata.labels.topology\.kubernetes\.io/zone}' | tr ' ' '\n' | sort | uniq | grep -v "^$")
+  ACTUAL_NODE_ZONES_COUNT=$(echo "${ACTUAL_NODE_ZONES_LIST}" | wc -l)
+  if [ "$ACTUAL_NODE_ZONES_COUNT" -gt 0 ]; then break; fi
+  echo "Waiting for node zone labels (attempt $i/6)..."
+  sleep 10
+done
 echo "Nodes are currently provisioned in $ACTUAL_NODE_ZONES_COUNT zones: $(echo ${ACTUAL_NODE_ZONES_LIST} | tr '\n' ' ')"
 
 if [ "$ACTUAL_NODE_ZONES_COUNT" -lt 2 ]; then
   echo "Warning: Only $ACTUAL_NODE_ZONES_COUNT zones available. Topology spread tests might be limited."
 fi
 
-# Get zones of frontend pods by looking at the nodes they are running on
-FRONTEND_NODES=$(kubectl get pods -l app=frontend -n ${NAMESPACE} -o jsonpath='{.items[*].spec.nodeName}')
-FRONTEND_ZONES_LIST=$(for node in ${FRONTEND_NODES}; do kubectl get node ${node} -o jsonpath='{.metadata.labels.topology\.kubernetes\.io/zone}'; echo; done | sort | uniq | grep -v "^$")
-FRONTEND_ZONES_COUNT=$(echo "${FRONTEND_ZONES_LIST}" | wc -l)
-echo "Frontend pods are running in zones: $(echo ${FRONTEND_ZONES_LIST} | tr '\n' ' ') (Count: ${FRONTEND_ZONES_COUNT})"
+# Retry the pod zone check to allow pods to be scheduled and ready
+for i in {1..12}; do
+  echo "Checking pod distribution across zones (attempt $i/12)..."
+  
+  # Get zones of frontend pods by looking at the nodes they are running on
+  FRONTEND_NODES=$(kubectl get pods -l app=frontend -n ${NAMESPACE} -o jsonpath='{.items[*].spec.nodeName}')
+  FRONTEND_ZONES_LIST=$(for node in ${FRONTEND_NODES}; do kubectl get node ${node} -o jsonpath='{.metadata.labels.topology\.kubernetes\.io/zone}'; echo; done | sort | uniq | grep -v "^$")
+  FRONTEND_ZONES_COUNT=$(echo "${FRONTEND_ZONES_LIST}" | wc -l)
+  
+  # Get zones of backend pods by looking at the nodes they are running on
+  BACKEND_NODES=$(kubectl get pods -l app=backend -n ${NAMESPACE} -o jsonpath='{.items[*].spec.nodeName}')
+  BACKEND_ZONES_LIST=$(for node in ${BACKEND_NODES}; do kubectl get node ${node} -o jsonpath='{.metadata.labels.topology\.kubernetes\.io/zone}'; echo; done | sort | uniq | grep -v "^$")
+  BACKEND_ZONES_COUNT=$(echo "${BACKEND_ZONES_LIST}" | wc -l)
+  
+  echo "Frontend pods in $FRONTEND_ZONES_COUNT zones: $(echo ${FRONTEND_ZONES_LIST} | tr '\n' ' ')"
+  echo "Backend pods in $BACKEND_ZONES_COUNT zones: $(echo ${BACKEND_ZONES_LIST} | tr '\n' ' ')"
 
-# Get zones of backend pods by looking at the nodes they are running on
-BACKEND_NODES=$(kubectl get pods -l app=backend -n ${NAMESPACE} -o jsonpath='{.items[*].spec.nodeName}')
-BACKEND_ZONES_LIST=$(for node in ${BACKEND_NODES}; do kubectl get node ${node} -o jsonpath='{.metadata.labels.topology\.kubernetes\.io/zone}'; echo; done | sort | uniq | grep -v "^$")
-BACKEND_ZONES_COUNT=$(echo "${BACKEND_ZONES_LIST}" | wc -l)
-echo "Backend pods are running in zones: $(echo ${BACKEND_ZONES_LIST} | tr '\n' ' ') (Count: ${BACKEND_ZONES_COUNT})"
-
-if [ "$FRONTEND_ZONES_COUNT" -lt "$ACTUAL_NODE_ZONES_COUNT" ]; then
-  echo "Frontend pods are not spread across all available zones (found $FRONTEND_ZONES_COUNT, expected $ACTUAL_NODE_ZONES_COUNT)."
-  exit 1
-fi
-if [ "$BACKEND_ZONES_COUNT" -lt "$ACTUAL_NODE_ZONES_COUNT" ]; then
-  echo "Backend pods are not spread across all available zones (found $BACKEND_ZONES_COUNT, expected $ACTUAL_NODE_ZONES_COUNT)."
-  exit 1
-fi
-echo "Topology spread validated."
+  if [ "$FRONTEND_ZONES_COUNT" -ge "$ACTUAL_NODE_ZONES_COUNT" ] && [ "$BACKEND_ZONES_COUNT" -ge "$ACTUAL_NODE_ZONES_COUNT" ]; then
+    echo "Topology spread validated."
+    break
+  fi
+  
+  if [ $i -eq 12 ]; then
+    echo "Error: Pods are not spread across all available zones."
+    echo "=== Debug: Frontend Pods Status ==="
+    kubectl get pods -l app=frontend -n ${NAMESPACE} -o wide
+    echo "=== Debug: Backend Pods Status ==="
+    kubectl get pods -l app=backend -n ${NAMESPACE} -o wide
+    echo "=== Debug: Node Status ==="
+    kubectl get nodes -L topology.kubernetes.io/zone
+    exit 1
+  fi
+  sleep 15
+done
 
 # 4. Service Annotation Check
 echo "Test 4: Service Annotation Check..."

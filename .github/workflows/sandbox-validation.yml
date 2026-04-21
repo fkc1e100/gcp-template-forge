@@ -379,6 +379,7 @@ jobs:
       - name: Delete KCC resources
         if: always() && steps.kcc-apply.outcome == 'success'
         run: |
+          gcloud container clusters get-credentials ${{ env.KCC_CLUSTER }} --location ${{ env.KCC_REGION }} --project ${{ env.PROJECT_ID }}
           kubectl delete -n $KCC_NAMESPACE -f ${{ matrix.template }}/config-connector/ --wait=true --timeout=900s || true
 
   # ── 4c. PR close: cleanup orphaned infra ──────────────────────────────────
