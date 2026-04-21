@@ -17,6 +17,19 @@
 # which can be problematic in some CI environments.
 
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMServiceAccount
+metadata:
+  name: gke-inference-fuse-sa
+  namespace: forge-management
+  labels:
+    project: gcp-template-forge
+    template: gke-inference-fuse
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
+spec:
+  displayName: "GKE Inference FUSE Service Account"
+---
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPolicyMember
 metadata:
   name: gke-inference-fuse-bucket-admin-ksa
@@ -32,5 +45,24 @@ spec:
     kind: StorageBucket
     name: gke-inference-fuse-bucket
   role: roles/storage.objectAdmin
+  # NOTE: Replace 'gca-gke-2025' with your actual project ID
+  member: serviceAccount:gca-gke-2025.svc.id.goog[default/vllm-sa-inference]
+---
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMPolicyMember
+metadata:
+  name: gke-inference-fuse-wi-binding
+  namespace: forge-management
+  labels:
+    project: gcp-template-forge
+    template: gke-inference-fuse
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
+spec:
+  resourceRef:
+    apiVersion: iam.cnrm.cloud.google.com/v1beta1
+    kind: IAMServiceAccount
+    name: gke-inference-fuse-sa
+  role: roles/iam.workloadIdentityUser
   # NOTE: Replace 'gca-gke-2025' with your actual project ID
   member: serviceAccount:gca-gke-2025.svc.id.goog[default/vllm-sa-inference]

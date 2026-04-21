@@ -19,7 +19,7 @@ metadata:
   namespace: default
   annotations:
     # NOTE: Replace <PROJECT_ID> with your actual project ID
-    iam.gke.io/gcp-service-account: vllm-sa-inference@<PROJECT_ID>.iam.gserviceaccount.com
+    iam.gke.io/gcp-service-account: gke-inference-fuse-sa@<PROJECT_ID>.iam.gserviceaccount.com
   labels:
     project: gcp-template-forge
     template: gke-inference-fuse
