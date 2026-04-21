@@ -77,12 +77,6 @@ jobs:
           echo "has_templates=$([ "$DIRS" = "[]" ] && echo false || echo true)" >> $GITHUB_OUTPUT
           echo "Changed templates: $DIRS"
 
-      - name: Add Hold Label
-        if: github.event_name == 'pull_request'
-        run: gh pr edit ${{ github.event.number }} --add-label "hold"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Remove repo-agent Label on Start
         if: github.event_name == 'pull_request'
         run: gh pr edit ${{ github.event.number }} --remove-label "repo-agent" || true
@@ -191,32 +185,6 @@ jobs:
             echo "ERROR: lifecycle prevent_destroy = true found — this blocks automated teardown"
             exit 1
           fi
-
-      - name: Report lint failure to PR
-        if: failure() && github.event_name == 'pull_request'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const template = '${{ matrix.template }}';
-            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: [
-                `### CI Lint failure: \`${template}\``,
-                ``,
-                `One or more lint checks failed — see [run logs](${runUrl}) for the exact error.`,
-                ``,
-                `**Common causes:**`,
-                `- Template directory named \`Terraform_HELM/\` or similar instead of \`terraform-helm/\``,
-                `- \`google_container_cluster\` missing \`deletion_protection = false\``,
-                `- Terraform fmt or validate error`,
-                `- KCC manifest YAML syntax error`,
-                ``,
-                `Please investigate the lint failure, fix the issue, and push a new commit.`,
-              ].join('\n'),
-            });
 
   # ── 3. Pre-deploy Quota Cleanup ──────────────────────────────────────────
   pre-cleanup:
@@ -469,17 +437,11 @@ jobs:
               body: `### Deploy & Test TF+Helm: \`${template}\` complete.`,
             });
 
-      - name: Remove Hold Label on Failure
-        if: failure() && github.event_name == 'pull_request'
-        run: gh pr edit ${{ github.event.number }} --remove-label "hold"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Cancel workflow on failure
         if: failure()
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh run cancel ${{ github.run_id }}
+        run: gh pr edit ${{ github.event.number }} --add-label "repo-agent" && gh run cancel ${{ github.run_id }}
 
   # ── 4b. PR: KCC deploy → wait → delete (parallel with deploy-test-tf) ─────
   kcc-apply:
@@ -1076,10 +1038,6 @@ jobs:
           retention-days: 1
 
   # ── 5b. Post-merge: independent KCC cluster: apply → wait Ready → delete ─
-  #   Runs in parallel with validate-tf-helm. TF resources use -tf suffix
-  #   (e.g. basic-gke-tf, basic-gke-tf-vpc) and KCC resources use -kcc suffix
-  #   (e.g. basic-gke-kcc, basic-gke-kcc-vpc), so there is no GCP-level name
-  #   collision and both jobs can run concurrently.
   validate-kcc:
     name: "Validate KCC (${{ matrix.template }})"
     needs: detect-changes
@@ -1370,12 +1328,6 @@ jobs:
           name: kcc-results-${{ github.run_id }}-${{ strategy.job-index }}
           path: /tmp/kcc-results/result.json
           retention-days: 1
-
-      - name: Remove Hold Label on Failure
-        if: failure() && github.event_name == 'pull_request'
-        run: gh pr edit ${{ github.event.number }} --remove-label "hold"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # ── 5c. Post-merge: update README + write .validated (needs both above) ──
   publish-validated:
