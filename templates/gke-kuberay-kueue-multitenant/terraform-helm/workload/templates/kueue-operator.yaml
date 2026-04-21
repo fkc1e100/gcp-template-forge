@@ -1461,14 +1461,12 @@ data:
     \ 5\n    LocalQueue.kueue.x-k8s.io: 1\n    ClusterQueue.kueue.x-k8s.io: 1\n  \
     \  ResourceFlavor.kueue.x-k8s.io: 1\nclientConnection:\n  qps: 50\n  burst: 100\n\
     #pprofBindAddress: :8082\n#waitForPodsReady:\n#  enable: true\n#manageJobsWithoutQueueName:\
-    \ true\ninternalCertManagement:
-  enable: true
-  webhookServiceName: "kueue-webhook-service"
-  webhookSecretName: "kueue-webhook-server-cert"
-    \  - \"kubeflow.org/mpijob\"\n  - \"ray.io/rayjob\"\n  - \"ray.io/raycluster\"\
-    \n  - \"jobset.x-k8s.io/jobset\"\n  - \"kubeflow.org/mxjob\"\n  - \"kubeflow.org/paddlejob\"\
-    \n  - \"kubeflow.org/pytorchjob\"\n  - \"kubeflow.org/tfjob\"\n  - \"kubeflow.org/xgboostjob\"\
-    \n# - \"pod\"\n# podOptions:\n#   namespaceSelector:\n#     matchExpressions:\n\
+    \ true\ninternalCertManagement:\n  enable: true\n  webhookServiceName: \"kueue-webhook-service\"\n\
+    \  webhookSecretName: \"kueue-webhook-server-cert\"\nintegrations:\n  frameworks:\n\
+    \  - \"batch/job\"\n  - \"kubeflow.org/mpijob\"\n  - \"ray.io/rayjob\"\n  - \"ray.io/raycluster\"\n\
+    \  - \"jobset.x-k8s.io/jobset\"\n  - \"kubeflow.org/mxjob\"\n  - \"kubeflow.org/paddlejob\"\n\
+    \  - \"kubeflow.org/pytorchjob\"\n  - \"kubeflow.org/tfjob\"\n  - \"kubeflow.org/xgboostjob\"\n\
+    # - \"pod\"\n# podOptions:\n#   namespaceSelector:\n#     matchExpressions:\n\
     #       - key: kubernetes.io/metadata.name\n#         operator: NotIn\n#     \
     \    values: [ kube-system, kueue-system ]\n"
 kind: ConfigMap
