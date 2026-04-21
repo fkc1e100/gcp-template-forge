@@ -104,9 +104,8 @@ spec:
             bucketName: "{{ .Values.bucketName }}"
             mountOptions: "implicit-dirs"
             fileCacheCapacity: "{{ .Values.cache.capacity }}"
-            fileCacheForMaxSecs: "{{ .Values.cache.fileCacheForMaxSecs }}"
             fileCacheForRangeRead: "true"
-            metadataCacheTtlSeconds: "{{ .Values.cache.metadataCacheTtlSeconds }}"
+            metadataCacheTTLSeconds: "{{ .Values.cache.metadataCacheTTLSeconds }}"
       nodeSelector:
         {{- toYaml .Values.nodeSelector | nindent 8 }}
       tolerations:

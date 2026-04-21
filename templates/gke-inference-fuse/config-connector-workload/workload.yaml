@@ -124,9 +124,8 @@ spec:
             bucketName: <BUCKET_NAME>
             mountOptions: "implicit-dirs"
             fileCacheCapacity: "50Gi"
-            fileCacheForMaxSecs: "3600"
             fileCacheForRangeRead: "true"
-            metadataCacheTtlSeconds: "3600"
+            metadataCacheTTLSeconds: "3600"
       nodeSelector:
         gpu: l4
       tolerations:
@@ -174,9 +173,8 @@ spec:
             bucketName: <BUCKET_NAME>
             mountOptions: "implicit-dirs"
             fileCacheCapacity: "50Gi"
-            fileCacheForMaxSecs: "3600"
             fileCacheForRangeRead: "true"
-            metadataCacheTtlSeconds: "3600"
+            metadataCacheTTLSeconds: "3600"
       restartPolicy: OnFailure
   backoffLimit: 3
 ---

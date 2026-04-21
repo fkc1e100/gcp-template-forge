@@ -294,8 +294,7 @@ ${yamlencode({
   ]
   cache = {
     capacity                = "50Gi"
-    fileCacheForMaxSecs     = 3600
-    metadataCacheTtlSeconds = 3600
+    metadataCacheTTLSeconds = 3600
   }
 })}
 EOF
