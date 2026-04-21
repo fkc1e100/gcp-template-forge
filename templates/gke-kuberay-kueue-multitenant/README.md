@@ -88,12 +88,12 @@ kubectl delete -n forge-management -f config-connector/
 |  | Terraform + Helm | Config Connector |
 | --- | --- | --- |
 | **Status** | success | success |
-| **Date** | 2026-04-20 | 2026-04-20 |
+| **Date** | 2026-04-21 | 2026-04-21 |
 | **Duration** | n/a | n/a |
 | **Region** | us-central1 | us-central1 (KCC cluster) |
 | **Zones** | us-central1-a,b,c | us-central1-a,b,c |
 | **Cluster** | gke-kuberay-kueue-multitenant | gke-kuberay-kueue-multitenant |
 | **Agent tokens** | not recorded | (shared session) |
 | **Estimated cost** | - | -- |
-| **Commit** | 1d54412 | 1d54412 |
+| **Commit** | 71ddff5 | 71ddff5 |
 
