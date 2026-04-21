@@ -264,7 +264,7 @@ resource "local_file" "helm_values" {
 ${yamlencode({
   templateName           = var.uid_suffix != "" ? "gke-inference-fuse-${var.uid_suffix}" : "gke-inference-fuse"
   bucketName             = google_storage_bucket.model_bucket.name
-  gcpServiceAccountEmail = local.workload_gsa_email
+  gcpServiceAccountEmail = ""
   serviceAccount = {
     name = local.ksa_name
   }
