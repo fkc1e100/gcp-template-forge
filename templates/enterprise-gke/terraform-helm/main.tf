@@ -209,14 +209,6 @@ resource "google_service_account_iam_member" "workload_identity_binding" {
   member             = "serviceAccount:${var.project_id}.svc.id.goog[${each.value}/gke-workload-sa]"
 }
 
-# Workload Identity binding for CI/Sandbox (using the provided service account)
-resource "google_service_account_iam_member" "workload_identity_binding_ci" {
-  for_each           = (!var.create_service_accounts && var.service_account != "") ? toset(["default", "gke-workload"]) : []
-  service_account_id = "projects/${var.project_id}/serviceAccounts/${var.service_account}"
-  role               = "roles/iam.workloadIdentityUser"
-  member             = "serviceAccount:${var.project_id}.svc.id.goog[${each.value}/gke-workload-sa]"
-}
-
 # GCP Service Account for Nodes
 resource "google_service_account" "node_sa" {
   count        = var.create_service_accounts ? 1 : 0
