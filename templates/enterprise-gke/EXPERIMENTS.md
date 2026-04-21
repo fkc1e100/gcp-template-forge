@@ -75,3 +75,4 @@
 | 91 | Fix Network Policy addon and provider alignment | ✅ Success | Adding missing addons_config for Network Policy and switching to google-beta provider for cluster/node pool | Finalized |
 | 92 | Final out-of-scope revert and mandate audit | ✅ Success | Reverting accidental changes to basic-gke-hello-world and performing final comprehensive audit for production readiness | Finalized |
 | 93 | Final comprehensive audit and PR description synchronization | ✅ Success | Verified absolute functional parity, security posture, and documentation accuracy. PR description updated to reflect full scope of enterprise features. | Finalized |
+| 94 | Align KCC addonsConfig with Terraform | ✅ Success | Adding missing addonsConfig.networkPolicyConfig to KCC cluster manifest for absolute functional parity with Terraform | Finalized |

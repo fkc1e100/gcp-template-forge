@@ -89,6 +89,8 @@ To verify the deployment:
 - [x] Private cluster + Cloud NAT
 - [x] Master Authorized Networks
 - [x] Binary Authorization
+- [x] Network Policy (Calico)
+- [x] Security Posture Monitoring
 - [x] Vertical / Horizontal Pod Autoscaler
 - [x] Config Connector resources: ContainerCluster, ContainerNodePool, ComputeNetwork, ComputeSubnetwork, IAMServiceAccount, IAMPolicyMember, ComputeRouter, ComputeRouterNAT, Deployment, Service
 - [ ] Confidential GKE Nodes
