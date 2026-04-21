@@ -179,7 +179,7 @@ resource "google_container_node_pool" "gpu_nodes" {
 # Generate values.yaml for Helm
 resource "local_file" "helm_values" {
   filename = "${path.module}/workload/values.yaml"
-  content  = yamlencode({
+  content = yamlencode({
     clusterName = var.cluster_name
     projectID   = var.project_id
     region      = var.region
