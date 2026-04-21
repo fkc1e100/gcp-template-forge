@@ -94,11 +94,22 @@ if kubectl cluster-info &>/dev/null; then
   
   for RES in $KCC_RESOURCES; do
     SKIP=false
+    # Extract suffix (last 6 digits) from resource name if possible
+    RES_SUFFIX=$(echo "$RES" | grep -oE "[0-9]{6}$" || echo "")
+    
     for RUN_ID in $ALL_ACTIVE; do
-      if [ -n "$RUN_ID" ] && [[ "$RES" == *"$RUN_ID"* ]]; then
-        echo "Skipping active resource: $RES"
-        SKIP=true
-        break
+      if [ -n "$RUN_ID" ]; then
+        # Check if full RUN_ID is in resource name OR if resource suffix matches end of RUN_ID
+        if [[ "$RES" == *"$RUN_ID"* ]]; then
+          echo "Skipping active resource (full ID match): $RES"
+          SKIP=true
+          break
+        fi
+        if [ -n "$RES_SUFFIX" ] && [[ "$RUN_ID" == *"$RES_SUFFIX" ]]; then
+          echo "Skipping active resource (suffix match $RES_SUFFIX): $RES"
+          SKIP=true
+          break
+        fi
       fi
     done
     if [ "$SKIP" = false ]; then
@@ -119,11 +130,21 @@ while read -r CLUSTER C_LOC; do
   [ -z "$CLUSTER" ] && continue
   
   SKIP=false
+  # Extract suffix (last 6 digits) from cluster name if possible
+  CLUSTER_SUFFIX=$(echo "$CLUSTER" | grep -oE "[0-9]{6}(-tf)?$" | grep -oE "[0-9]{6}" || echo "")
+
   for RUN_ID in $ALL_ACTIVE; do
-    if [ -n "$RUN_ID" ] && [[ "$CLUSTER" == *"$RUN_ID"* ]]; then
-      echo "Skipping active cluster: $CLUSTER"
-      SKIP=true
-      break
+    if [ -n "$RUN_ID" ]; then
+      if [[ "$CLUSTER" == *"$RUN_ID"* ]]; then
+        echo "Skipping active cluster (full ID match): $CLUSTER"
+        SKIP=true
+        break
+      fi
+      if [ -n "$CLUSTER_SUFFIX" ] && [[ "$RUN_ID" == *"$CLUSTER_SUFFIX" ]]; then
+        echo "Skipping active cluster (suffix match $CLUSTER_SUFFIX): $CLUSTER"
+        SKIP=true
+        break
+      fi
     fi
   done
   

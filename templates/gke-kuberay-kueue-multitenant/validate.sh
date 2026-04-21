@@ -60,22 +60,6 @@ if [ -d "$WORKLOAD_DIR" ]; then
   kubectl wait --for=condition=Established crd/rayclusters.ray.io --timeout=5m || debug_failure "RayCluster CRD not established"
   kubectl wait --for=condition=Established crd/clusterqueues.kueue.x-k8s.io --timeout=5m || debug_failure "ClusterQueue CRD not established"
 
-  echo "Installing NVIDIA GPU Drivers..."
-  kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/cos/daemonset-preloaded-latest.yaml
-  
-  echo "Waiting for GPU nodes to become ready (with GPU capacity)..."
-  for i in {1..20}; do
-    if kubectl get nodes -o jsonpath='{.items[*].status.capacity}' | grep -q "nvidia.com/gpu"; then
-      echo "GPU capacity detected on nodes."
-      break
-    fi
-    echo "Waiting for GPU capacity (attempt $i/20)..."
-    sleep 30
-    if [ $i -eq 20 ]; then
-      echo "Warning: GPU capacity not detected on nodes after 10 minutes. RayClusters may fail to start."
-    fi
-  done
-
   kubectl apply --server-side -f "$WORKLOAD_DIR/01-namespaces.yaml"
 
   # Check if operators are already installed (TF path)
@@ -112,6 +96,23 @@ if [ -d "$WORKLOAD_DIR" ]; then
   if [ "$applied" = false ]; then
     debug_failure "Failed to apply custom resources after several attempts (webhook race condition)"
   fi
+
+  echo "Installing NVIDIA GPU Drivers..."
+  kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/cos/daemonset-preloaded-latest.yaml
+  
+  echo "Waiting for GPU nodes to become ready (with GPU capacity)..."
+  echo "Note: This may take several minutes as the autoscaler provisions GPU nodes for the RayClusters."
+  for i in {1..30}; do
+    if kubectl get nodes -o jsonpath='{.items[*].status.capacity}' | grep -q "nvidia.com/gpu"; then
+      echo "GPU capacity detected on nodes."
+      break
+    fi
+    echo "Waiting for GPU capacity (attempt $i/30)..."
+    sleep 30
+    if [ $i -eq 30 ]; then
+      echo "Warning: GPU capacity not detected on nodes after 15 minutes. RayClusters may fail to start."
+    fi
+  done
 else
   echo "Warning: config-connector-workload directory not found at $WORKLOAD_DIR"
   echo "Checking Operator Readiness (expecting Helm install)..."
