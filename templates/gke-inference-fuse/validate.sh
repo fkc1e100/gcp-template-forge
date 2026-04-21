@@ -53,6 +53,21 @@ if [ -z "${CLUSTER_NAME}" ]; then
   fi
 fi
 
+# 0a. Template Label Detection
+# Detect the unique template label used for this run (to handle CI suffixes)
+TEMPLATE_LABEL="gke-inference-fuse"
+if [[ "${CLUSTER_NAME}" == *"-"* ]]; then
+  # Try to extract suffix from cluster name (e.g. gke-inference-fuse-123456-tf)
+  SUFFIX=$(echo ${CLUSTER_NAME} | grep -oE "[0-9]{6}" || true)
+  if [ -n "${SUFFIX}" ]; then
+    # Try finding pods with this suffix in their template label
+    if kubectl get pods --all-namespaces -l template=${TEMPLATE_LABEL}-${SUFFIX} >/dev/null 2>&1; then
+      TEMPLATE_LABEL="gke-inference-fuse-${SUFFIX}"
+      echo "Detected unique template label: ${TEMPLATE_LABEL}"
+    fi
+  fi
+fi
+
 # Detect Bucket Name
 if [ -z "${BUCKET_NAME}" ]; then
   echo "Attempting to detect bucket..."
@@ -114,9 +129,9 @@ echo "Test 4: Workload Readiness..."
 DEPLOY_NAME="vllm-inference"
 
 # Detect Job name using label
-JOB_NAME=$(kubectl get job -n ${NAMESPACE} -l component=staging,template=gke-inference-fuse -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
+JOB_NAME=$(kubectl get job -n ${NAMESPACE} -l component=staging,template=${TEMPLATE_LABEL} -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
 if [ -z "${JOB_NAME}" ]; then
-  echo "WARNING: Could not detect Job with label component=staging,template=gke-inference-fuse, falling back to names..."
+  echo "WARNING: Could not detect Job with label component=staging,template=${TEMPLATE_LABEL}, falling back to names..."
   if kubectl get job release-vllm-inference-stage -n ${NAMESPACE} >/dev/null 2>&1; then
     JOB_NAME="release-vllm-inference-stage"
   elif kubectl get job vllm-inference-stage -n ${NAMESPACE} >/dev/null 2>&1; then
@@ -142,7 +157,7 @@ echo "Workload is available."
 # 5. Sidecar and Mount Verification
 echo "Test 5: Sidecar and Mount Verification..."
 # Target the pod from the deployment, avoiding staging jobs
-POD_NAME=$(kubectl get pods -n ${NAMESPACE} -l app=vllm,template=gke-inference-fuse -o jsonpath='{.items[?(@.status.phase=="Running")].metadata.name}' | awk '{print $1}')
+POD_NAME=$(kubectl get pods -n ${NAMESPACE} -l app=vllm,template=${TEMPLATE_LABEL} -o jsonpath='{.items[?(@.status.phase=="Running")].metadata.name}' | awk '{print $1}')
 
 if [ -z "$POD_NAME" ]; then
   echo "ERROR: Could not find a running vLLM pod. Checking all pods with app=vllm:"
