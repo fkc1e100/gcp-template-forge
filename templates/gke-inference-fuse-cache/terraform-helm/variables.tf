@@ -32,25 +32,25 @@ variable "zone" {
 variable "cluster_name" {
   description = "The name of the GKE cluster"
   type        = string
-  default     = "gke-inference-fuse"
+  default     = "gke-inf-fuse-cache"
 }
 
 variable "network_name" {
   description = "The name of the VPC network"
   type        = string
-  default     = "gke-inference-fuse-vpc"
+  default     = "gke-inf-fuse-cache-vpc"
 }
 
 variable "subnet_name" {
   description = "The name of the subnet"
   type        = string
-  default     = "gke-inference-fuse-subnet"
+  default     = "gke-inf-fuse-cache-subnet"
 }
 
 variable "bucket_name" {
   description = "The name of the GCS bucket for model storage"
   type        = string
-  default     = "gke-inference-fuse-bucket"
+  default     = "gke-inf-fuse-cache-bucket"
 }
 
 variable "service_account" {

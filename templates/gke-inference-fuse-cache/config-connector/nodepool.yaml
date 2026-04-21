@@ -15,17 +15,17 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
 metadata:
-  name: gke-inference-fuse-gpu-pool
+  name: gke-inf-fuse-cache-gpu-pool
   namespace: forge-management
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
   labels:
     project: gcp-template-forge
-    template: gke-inference-fuse
+    template: gke-inf-fuse-cache
 spec:
   location: us-central1
   clusterRef:
-    name: gke-inference-fuse-kcc
+    name: gke-inf-fuse-cache-kcc
   nodeCount: 1
   # Restrict to a single zone that supports L4 GPUs
   nodeLocations:
@@ -48,37 +48,37 @@ spec:
     workloadMetadataConfig:
       mode: GKE_METADATA
     serviceAccountRef:
-      name: gke-inference-fuse-sa
+      name: gke-inf-fuse-cache-sa
     labels:
       project: gcp-template-forge
-      template: gke-inference-fuse
+      template: gke-inf-fuse-cache
       gpu: l4
 ---
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
 metadata:
-  name: gke-inference-fuse-system-pool
+  name: gke-inf-fuse-cache-system-pool
   namespace: forge-management
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
   labels:
     project: gcp-template-forge
-    template: gke-inference-fuse
+    template: gke-inf-fuse-cache
 spec:
   location: us-central1
   clusterRef:
-    name: gke-inference-fuse-kcc
+    name: gke-inf-fuse-cache-kcc
   nodeCount: 1
   nodeConfig:
     machineType: e2-standard-2
     diskType: pd-balanced
     diskSizeGb: 50
     serviceAccountRef:
-      name: gke-inference-fuse-sa
+      name: gke-inf-fuse-cache-sa
     oauthScopes:
       - "https://www.googleapis.com/auth/cloud-platform"
     workloadMetadataConfig:
       mode: GKE_METADATA
     labels:
       project: gcp-template-forge
-      template: gke-inference-fuse
+      template: gke-inf-fuse-cache

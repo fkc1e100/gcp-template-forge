@@ -12,35 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: container.cnrm.cloud.google.com/v1beta1
-kind: ContainerCluster
+apiVersion: storage.cnrm.cloud.google.com/v1beta1
+kind: StorageBucket
 metadata:
-  name: gke-inference-fuse-kcc
+  name: gke-inf-fuse-cache-kcc-bucket
   namespace: forge-management
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
-    cnrm.cloud.google.com/remove-default-node-pool: "true"
+    cnrm.cloud.google.com/force-destroy: "true"
   labels:
     project: gcp-template-forge
-    template: gke-inference-fuse
+    template: gke-inf-fuse-cache
 spec:
   location: us-central1
-  # Restrict to a single zone that supports L4 GPUs to save quota and improve reliability
-  nodeLocations:
-    - us-central1-a
-  networkRef:
-    name: gke-inference-fuse-vpc
-  subnetworkRef:
-    name: gke-inference-fuse-subnet
-  initialNodeCount: 1
-  ipAllocationPolicy:
-    clusterSecondaryRangeName: pods
-    servicesSecondaryRangeName: services
-  workloadIdentityConfig:
-    workloadPool: gca-gke-2025.svc.id.goog
-  releaseChannel:
-    channel: REGULAR
-  # Enable GCS FUSE CSI Driver
-  addonsConfig:
-    gcsFuseCsiDriverConfig:
-      enabled: true
+  storageClass: STANDARD
+  uniformBucketLevelAccess: true

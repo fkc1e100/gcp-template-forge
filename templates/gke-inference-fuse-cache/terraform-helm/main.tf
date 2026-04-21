@@ -29,9 +29,9 @@ resource "random_id" "bucket_suffix" {
 locals {
   uid                = var.uid_suffix != "" ? var.uid_suffix : random_id.bucket_suffix.hex
   workload_gsa_email = var.service_account
-  ksa_name           = "gke-inference-fuse-${local.uid}-sa"
+  ksa_name           = "gke-inf-fuse-cache-${local.uid}-sa"
   # Use a unique bucket name that matches the CI re-calculation
-  bucket_name = "gke-inference-fuse-tf-${local.uid}-bucket"
+  bucket_name = "gke-inf-fuse-cache-tf-${local.uid}-bucket"
 }
 
 # VPC Network
@@ -69,7 +69,7 @@ resource "google_storage_bucket" "model_bucket" {
 
   labels = {
     project  = "gcp-template-forge"
-    template = var.uid_suffix != "" ? "gke-inference-fuse-${var.uid_suffix}" : "gke-inference-fuse"
+    template = var.uid_suffix != "" ? "gke-inf-fuse-cache-${var.uid_suffix}" : "gke-inf-fuse-cache"
   }
 }
 
@@ -86,7 +86,7 @@ resource "google_container_cluster" "primary" {
 
   resource_labels = {
     project  = "gcp-template-forge"
-    template = var.uid_suffix != "" ? "gke-inference-fuse-${var.uid_suffix}" : "gke-inference-fuse"
+    template = var.uid_suffix != "" ? "gke-inf-fuse-cache-${var.uid_suffix}" : "gke-inf-fuse-cache"
   }
 
   remove_default_node_pool = true
@@ -169,13 +169,13 @@ resource "google_container_node_pool" "gpu_pool" {
 
     labels = {
       project  = "gcp-template-forge"
-      template = var.uid_suffix != "" ? "gke-inference-fuse-${var.uid_suffix}" : "gke-inference-fuse"
+      template = var.uid_suffix != "" ? "gke-inf-fuse-cache-${var.uid_suffix}" : "gke-inf-fuse-cache"
       gpu      = "l4"
     }
 
     resource_labels = {
       project  = "gcp-template-forge"
-      template = var.uid_suffix != "" ? "gke-inference-fuse-${var.uid_suffix}" : "gke-inference-fuse"
+      template = var.uid_suffix != "" ? "gke-inf-fuse-cache-${var.uid_suffix}" : "gke-inf-fuse-cache"
     }
   }
 
@@ -210,12 +210,12 @@ resource "google_container_node_pool" "system_pool" {
 
     labels = {
       project  = "gcp-template-forge"
-      template = var.uid_suffix != "" ? "gke-inference-fuse-${var.uid_suffix}" : "gke-inference-fuse"
+      template = var.uid_suffix != "" ? "gke-inf-fuse-cache-${var.uid_suffix}" : "gke-inf-fuse-cache"
     }
 
     resource_labels = {
       project  = "gcp-template-forge"
-      template = var.uid_suffix != "" ? "gke-inference-fuse-${var.uid_suffix}" : "gke-inference-fuse"
+      template = var.uid_suffix != "" ? "gke-inf-fuse-cache-${var.uid_suffix}" : "gke-inf-fuse-cache"
     }
   }
 
@@ -262,7 +262,7 @@ resource "local_file" "helm_values" {
 # limitations under the License.
 
 ${yamlencode({
-  templateName           = var.uid_suffix != "" ? "gke-inference-fuse-${var.uid_suffix}" : "gke-inference-fuse"
+  templateName           = var.uid_suffix != "" ? "gke-inf-fuse-cache-${var.uid_suffix}" : "gke-inf-fuse-cache"
   bucketName             = google_storage_bucket.model_bucket.name
   gcpServiceAccountEmail = ""
   serviceAccount = {

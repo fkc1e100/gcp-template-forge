@@ -15,14 +15,14 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: gke-inference-fuse-sa
+  name: gke-inf-fuse-cache-sa
   namespace: default
   annotations:
     # NOTE: Replace <PROJECT_ID> with your actual project ID
-    iam.gke.io/gcp-service-account: gke-inference-fuse-sa@<PROJECT_ID>.iam.gserviceaccount.com
+    iam.gke.io/gcp-service-account: gke-inf-fuse-cache-sa@<PROJECT_ID>.iam.gserviceaccount.com
   labels:
     project: gcp-template-forge
-    template: gke-inference-fuse
+    template: gke-inf-fuse-cache
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -30,7 +30,7 @@ metadata:
   name: vllm-inference
   labels:
     project: gcp-template-forge
-    template: gke-inference-fuse
+    template: gke-inf-fuse-cache
     app: vllm
 spec:
   progressDeadlineSeconds: 3600
@@ -38,12 +38,12 @@ spec:
   selector:
     matchLabels:
       app: vllm
-      template: gke-inference-fuse
+      template: gke-inf-fuse-cache
   template:
     metadata:
       labels:
         project: gcp-template-forge
-        template: gke-inference-fuse
+        template: gke-inf-fuse-cache
         app: vllm
         gpu: l4
       annotations:
@@ -52,7 +52,7 @@ spec:
         gke-gcsfuse/memory-limit: "2Gi"
         gke-gcsfuse/ephemeral-storage-limit: "60Gi"
     spec:
-      serviceAccountName: gke-inference-fuse-sa
+      serviceAccountName: gke-inf-fuse-cache-sa
       initContainers:
       - name: wait-for-model
         image: busybox:latest
@@ -143,7 +143,7 @@ metadata:
   namespace: default
   labels:
     project: gcp-template-forge
-    template: gke-inference-fuse
+    template: gke-inf-fuse-cache
     component: staging
 spec:
   template:
@@ -151,7 +151,7 @@ spec:
       annotations:
         gke-gcsfuse/volumes: "true"
     spec:
-      serviceAccountName: gke-inference-fuse-sa
+      serviceAccountName: gke-inf-fuse-cache-sa
       containers:
       - name: stager
         image: google/cloud-sdk:slim
@@ -189,7 +189,7 @@ metadata:
   namespace: default
   labels:
     project: gcp-template-forge
-    template: gke-inference-fuse
+    template: gke-inf-fuse-cache
     app: vllm
 spec:
   ports:
