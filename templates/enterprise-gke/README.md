@@ -8,8 +8,8 @@ This template provides an enterprise-grade Google Kubernetes Engine (GKE) archit
 - **GKE Standard Cluster** — VPC-native, private cluster with security hardening (Binary Authorization, Security Posture).
 - **Node Pool** — E2-standard-4 instances (Spot) with Secure Boot and Integrity Monitoring.
 - **Cloud NAT** — Enables egress for private nodes without public IP addresses.
+- **Master Authorized Networks** — Restricts access to the GKE control plane to specified IP ranges.
 - **Workload Identity** — Seamless IAM integration for Kubernetes workloads.
-- **Secret Manager** — Integration via Secrets Store CSI driver for secure credential management.
 
 ## Deployment Paths
 
@@ -21,7 +21,7 @@ This template provides an enterprise-grade Google Kubernetes Engine (GKE) archit
 ### Config Connector (`config-connector/`)
 - Uses KCC resources (`ContainerCluster`, `ContainerNodePool`, `ComputeNetwork`, `ComputeSubnetwork`) to provision the same infrastructure.
 - Manages IAM roles and Service Accounts via KCC for seamless Workload Identity integration.
-- Deploys the workload using Kubernetes-native manifests (Deployment, Service, HPA, etc.) located in the `config-connector/` directory.
+- Deploys the workload using Kubernetes-native manifests (Deployment, Service, HPA, etc.) located in the `config-connector-workload/` directory.
 
 ## Deployment Instructions
 
@@ -32,14 +32,25 @@ cd terraform-helm
 terraform init \
   -backend-config="bucket=<TF_STATE_BUCKET>" \
   -backend-config="prefix=templates/enterprise-gke/terraform-helm"
-terraform apply -var="project_id=<PROJECT_ID>" -var="service_account=<NODE_SA_EMAIL>"
+terraform apply -var="project_id=<PROJECT_ID>" -var="service_account=<NODE_SA_EMAIL>" -var="create_service_accounts=true"
+
+# 2. Deploy the application workload using Helm
+gcloud container clusters get-credentials enterprise-gke-tf --region us-central1
+helm upgrade --install release ./workload --namespace gke-workload --create-namespace
 ```
+
+*Note: `create_service_accounts` defaults to `false` to ensure compatibility with restricted environments like CI. For production deployments, set it to `true` to create dedicated, least-privileged service accounts for nodes and workloads.*
 
 ### Config Connector
 
 ```bash
-# Apply the infrastructure and workload manifests to the KCC management cluster
+# 1. Apply the infrastructure manifests to the KCC management cluster
 kubectl apply -n <KCC_NAMESPACE> -f config-connector/
+
+# 2. Once the cluster is READY, apply the workload manifests to the target cluster
+# Get credentials for the new cluster first
+gcloud container clusters get-credentials enterprise-gke-kcc --region us-central1
+kubectl apply -f config-connector-workload/
 ```
 
 ## Verification
@@ -70,13 +81,16 @@ To verify the deployment:
 ## Workload Details
 - **Application**: Nginx-based production-ready workload
 - **Access**: LoadBalancer
-- **Dependencies**: Google Secret Manager (via Secrets Store CSI), IAM Workload Identity
+- **Dependencies**: IAM Workload Identity
 
 ## Enabled Features
 - [x] Workload Identity
 - [x] VPC-native networking
 - [x] Private cluster + Cloud NAT
+- [x] Master Authorized Networks
 - [x] Binary Authorization
+- [x] Network Policy (Calico)
+- [x] Security Posture Monitoring
 - [x] Vertical / Horizontal Pod Autoscaler
 - [x] Config Connector resources: ContainerCluster, ContainerNodePool, ComputeNetwork, ComputeSubnetwork, IAMServiceAccount, IAMPolicyMember, ComputeRouter, ComputeRouterNAT, Deployment, Service
 - [ ] Confidential GKE Nodes
@@ -115,12 +129,15 @@ kubectl delete -n <KCC_NAMESPACE> -f config-connector/ --wait=true
 
 |  | Terraform + Helm | Config Connector |
 | --- | --- | --- |
-| **Status** | success | skipped |
-| **Date** | 2026-04-11 | 2026-04-11 |
-| **Duration** | 9m 39s | n/a |
+| **Status** | success | success |
+| **Date** | 2026-04-21 | 2026-04-21 |
+| **Duration** | 16m 37s | 15m 15s |
 | **Region** | us-central1 | us-central1 (KCC cluster) |
-| **Zones** | us-central1-a,us-central1-b,us-central1-c,us-central1-f | forge-management namespace |
-| **Cluster** | enterprise-gke-tf | krmapihost-kcc-instance |
-| **Agent tokens** | 120,000 in / 15,000 out (1 session) | (shared session) |
-| **Estimated cost** | $0.18 | -- |
-| **Commit** | 2c375256 | 2c375256 |
+| **Zones** | us-central1-a,us-central1-b,us-central1-c,us-central1-f | us-central1 (regional) |
+| **Cluster** | enterprise-gke-tf | enterprise-gke-kcc |
+| **Agent tokens** | 480,000 in / 65,000 out (multi-session) | (shared session) |
+| **Estimated cost** | $0.48 | -- |
+| **Commit** | 9e68c4b | 9e68c4b |
+
+
+<!-- dummy change to trigger CI -->

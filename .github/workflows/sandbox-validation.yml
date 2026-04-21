@@ -124,8 +124,7 @@ jobs:
           ./agent-infra/local-lint.sh ${{ matrix.template }}
 
       - name: Helm template (render + validate YAML)
-
-if: "hashFiles(format('{0}/terraform-helm/**', matrix.template)) != ''"
+        if: "hashFiles(format('{0}/terraform-helm/**', matrix.template)) != ''"
         run: |
           CHARTS=$(find ${{ matrix.template }}/terraform-helm -name Chart.yaml -exec dirname {} \; 2>/dev/null)
           if [ -z "$CHARTS" ]; then exit 0; fi
@@ -989,8 +988,7 @@ SCAN_NAME=$(echo "$SCAN_OUT" | grep '^name:' | head -1 | awk '{print $2}' || tru
   validate-kcc:
     name: "Validate KCC (${{ matrix.template }})"
     needs: detect-changes
-
-if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 120
     strategy:
@@ -1260,8 +1258,7 @@ echo "=== GKE Security Posture configuration ==="
       - name: Upload KCC results artifact
         if: always() && steps.skip-check.outputs.skip != 'true'
         uses: actions/upload-artifact@v4
-
-with:
+        with:
           name: kcc-results-${{ github.run_id }}-${{ strategy.job-index }}
           path: /tmp/kcc-results/result.json
           retention-days: 1

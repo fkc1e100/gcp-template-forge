@@ -32,7 +32,7 @@ metadata:
     template: enterprise-gke
   annotations:
     # UPDATE: Replace 'gca-gke-2025' with your actual GCP Project ID
-    iam.gke.io/gcp-service-account: enterprise-gke-kcc-sa@gca-gke-2025.iam.gserviceaccount.com
+    iam.gke.io/gcp-service-account: enterprise-gke-w-sa@gca-gke-2025.iam.gserviceaccount.com
 ---
 apiVersion: v1
 kind: ConfigMap
