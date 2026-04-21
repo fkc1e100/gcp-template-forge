@@ -17,12 +17,7 @@ kind: Job
 metadata:
   name: {{ include "workload.fullname" . }}-stage
   labels:
-    helm.sh/chart: {{ include "workload.chart" . }}
-    app.kubernetes.io/name: {{ include "workload.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    project: gcp-template-forge
-    template: gke-inference-fuse
+    {{- include "workload.labels" . | nindent 4 }}
     component: staging
 spec:
   template:
@@ -30,10 +25,8 @@ spec:
       annotations:
         gke-gcsfuse/volumes: "true"
       labels:
-        app.kubernetes.io/name: {{ include "workload.name" . }}
-        app.kubernetes.io/instance: {{ .Release.Name }}
-        project: gcp-template-forge
-        template: gke-inference-fuse
+        {{- include "workload.labels" . | nindent 8 }}
+        component: staging
     spec:
       serviceAccountName: {{ .Values.serviceAccount.name }}
       containers:

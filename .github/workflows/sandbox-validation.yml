@@ -350,7 +350,7 @@ jobs:
             # Recalculate unique names used in tf-provision
             BUCKET_NAME="gke-inference-tf-${UID_SUFFIX}-bucket"
             KSA_NAME="vllm-sa-${UID_SUFFIX}"
-            EXTRA_ARGS="--set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME} --set gcpServiceAccountEmail=${{ env.WIF_SERVICE_ACCOUNT }}"
+            EXTRA_ARGS="--set templateName=$(basename ${{ matrix.template }})-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME} --set gcpServiceAccountEmail=${{ env.WIF_SERVICE_ACCOUNT }}"
           fi
 
           for chart in $CHARTS; do
@@ -509,7 +509,8 @@ jobs:
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
           echo "KCC_START=$(date -u +%s)" >> $GITHUB_ENV
-          find ${{ matrix.template }}/config-connector -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
+          # Update both infra and workload manifests with the unique suffix
+          find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
           kubectl apply -n $KCC_NAMESPACE \
             -f ${{ matrix.template }}/config-connector/
 
@@ -605,7 +606,7 @@ jobs:
           if [[ "${{ matrix.template }}" == *"gke-inference-fuse"* ]]; then
             # Recalculate unique names used in kcc-apply
             BUCKET_NAME="gke-inference-fuse-${UID_SUFFIX}-kcc-bucket"
-            EXTRA_ARGS="--set bucketName=${BUCKET_NAME}"
+            EXTRA_ARGS="--set templateName=$(basename ${{ matrix.template }})-${UID_SUFFIX} --set bucketName=${BUCKET_NAME}"
           fi
 
           for chart in $CHARTS; do
@@ -908,10 +909,10 @@ jobs:
           # Only set these for gke-inference-fuse
           EXTRA_ARGS=""
           if [[ "${{ matrix.template }}" == *"gke-inference-fuse"* ]]; then
-            # Recalculate unique names used in tf-apply
+            # Recalculate unique names used in tf-provision
             BUCKET_NAME="gke-inference-tf-${UID_SUFFIX}-bucket"
             KSA_NAME="vllm-sa-${UID_SUFFIX}"
-            EXTRA_ARGS="--set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME} --set gcpServiceAccountEmail=${{ env.WIF_SERVICE_ACCOUNT }}"
+            EXTRA_ARGS="--set templateName=$(basename ${{ matrix.template }})-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME} --set gcpServiceAccountEmail=${{ env.WIF_SERVICE_ACCOUNT }}"
           fi
 
           for chart in $CHARTS; do
@@ -1232,7 +1233,7 @@ jobs:
           if [[ "${{ matrix.template }}" == *"gke-inference-fuse"* ]]; then
             # Recalculate unique names used in kcc-apply
             BUCKET_NAME="gke-inference-fuse-${UID_SUFFIX}-kcc-bucket"
-            EXTRA_ARGS="--set bucketName=${BUCKET_NAME}"
+            EXTRA_ARGS="--set templateName=$(basename ${{ matrix.template }})-${UID_SUFFIX} --set bucketName=${BUCKET_NAME}"
           fi
 
           for chart in $CHARTS; do
