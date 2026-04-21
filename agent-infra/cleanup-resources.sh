@@ -95,7 +95,8 @@ if kubectl cluster-info &>/dev/null; then
   for RES in $KCC_RESOURCES; do
     SKIP=false
     for RUN_ID in $ALL_ACTIVE; do
-      if [ -n "$RUN_ID" ] && [[ "$RES" == *"$RUN_ID"* ]]; then
+      SUFFIX="${RUN_ID: -6}"
+      if [ -n "$RUN_ID" ] && ([[ "$RES" == *"$RUN_ID"* ]] || [[ "$RES" == *"$SUFFIX"* ]]); then
         echo "Skipping active resource: $RES"
         SKIP=true
         break
@@ -121,7 +122,8 @@ while read -r CLUSTER C_LOC; do
   
   SKIP=false
   for RUN_ID in $ALL_ACTIVE; do
-    if [ -n "$RUN_ID" ] && [[ "$CLUSTER" == *"$RUN_ID"* ]]; then
+    SUFFIX="${RUN_ID: -6}"
+    if [ -n "$RUN_ID" ] && ([[ "$CLUSTER" == *"$RUN_ID"* ]] || [[ "$CLUSTER" == *"$SUFFIX"* ]]); then
       echo "Skipping active cluster: $CLUSTER"
       SKIP=true
       break
