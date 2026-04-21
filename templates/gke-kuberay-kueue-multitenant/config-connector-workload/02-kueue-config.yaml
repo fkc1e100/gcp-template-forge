@@ -19,6 +19,13 @@ metadata:
     project: gcp-template-forge
     template: gke-kuberay-kueue-multitenant
   name: default-flavor
+spec:
+  nodeLabels:
+    cloud.google.com/gke-accelerator: nvidia-l4
+  tolerations:
+  - key: "nvidia.com/gpu"
+    operator: "Exists"
+    effect: "NoSchedule"
 ---
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: ClusterQueue
@@ -29,6 +36,11 @@ metadata:
   name: team-a-cq
 spec:
   cohort: gpu-cohort
+  namespaceSelector:
+    matchExpressions:
+    - key: kubernetes.io/metadata.name
+      operator: In
+      values: ["team-a"]
   resourceGroups:
   - coveredResources: ["nvidia.com/gpu"]
     flavors:
@@ -46,6 +58,11 @@ metadata:
   name: team-b-cq
 spec:
   cohort: gpu-cohort
+  namespaceSelector:
+    matchExpressions:
+    - key: kubernetes.io/metadata.name
+      operator: In
+      values: ["team-b"]
   resourceGroups:
   - coveredResources: ["nvidia.com/gpu"]
     flavors:

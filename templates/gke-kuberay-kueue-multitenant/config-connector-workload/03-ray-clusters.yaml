@@ -22,6 +22,7 @@ metadata:
   name: raycluster-team-a
   namespace: team-a
 spec:
+  suspend: true
   headGroupSpec:
     rayStartParams:
       dashboard-host: 0.0.0.0
@@ -88,6 +89,7 @@ metadata:
   name: raycluster-team-b
   namespace: team-b
 spec:
+  suspend: true
   headGroupSpec:
     rayStartParams:
       dashboard-host: 0.0.0.0
