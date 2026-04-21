@@ -356,7 +356,7 @@ jobs:
             # Recalculate unique names used in tf-provision
             BUCKET_NAME="gke-inference-fuse-tf-${UID_SUFFIX}-bucket"
             KSA_NAME="gke-inference-fuse-${UID_SUFFIX}-sa"
-            EXTRA_ARGS="--set templateName=$(basename ${{ matrix.template }})-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME} --set gcpServiceAccountEmail=${{ env.WIF_SERVICE_ACCOUNT }}"
+            EXTRA_ARGS="--set templateName=$(basename ${{ matrix.template }})-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME}"
           fi
 
           for chart in $CHARTS; do
@@ -614,7 +614,7 @@ jobs:
             BUCKET_NAME="gke-inference-fuse-${UID_SUFFIX}-kcc-bucket"
             KSA_NAME="gke-inference-fuse-${UID_SUFFIX}-sa"
             GSA_EMAIL="gke-inference-fuse-${UID_SUFFIX}-sa@${{ env.PROJECT_ID }}.iam.gserviceaccount.com"
-            EXTRA_ARGS="--set templateName=$(basename ${{ matrix.template }})-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME} --set gcpServiceAccountEmail=${GSA_EMAIL}"
+            EXTRA_ARGS="--set templateName=$(basename ${{ matrix.template }})-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME}"
           fi
 
           for chart in $CHARTS; do
@@ -924,7 +924,7 @@ jobs:
             # Recalculate unique names used in tf-provision
             BUCKET_NAME="gke-inference-fuse-tf-${UID_SUFFIX}-bucket"
             KSA_NAME="gke-inference-fuse-${UID_SUFFIX}-sa"
-            EXTRA_ARGS="--set templateName=$(basename ${{ matrix.template }})-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME} --set gcpServiceAccountEmail=${{ env.WIF_SERVICE_ACCOUNT }}"
+            EXTRA_ARGS="--set templateName=$(basename ${{ matrix.template }})-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME}"
           fi
 
           for chart in $CHARTS; do
@@ -1247,7 +1247,7 @@ jobs:
             BUCKET_NAME="gke-inference-fuse-${UID_SUFFIX}-kcc-bucket"
             KSA_NAME="gke-inference-fuse-${UID_SUFFIX}-sa"
             GSA_EMAIL="gke-inference-fuse-${UID_SUFFIX}-sa@${{ env.PROJECT_ID }}.iam.gserviceaccount.com"
-            EXTRA_ARGS="--set templateName=$(basename ${{ matrix.template }})-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME} --set gcpServiceAccountEmail=${GSA_EMAIL}"
+            EXTRA_ARGS="--set templateName=$(basename ${{ matrix.template }})-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME}"
           fi
 
           for chart in $CHARTS; do
