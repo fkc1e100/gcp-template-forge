@@ -282,7 +282,12 @@ jobs:
             TIMEOUT="60m"
             [ -f "${{ matrix.template }}/.timeout" ] && TIMEOUT=$(cat ${{ matrix.template }}/.timeout)
             for chart in $CHARTS; do
-              helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT" --server-side
+              # Apply CRDs first with server-side apply to handle large ones (Helm 3 doesn't support --server-side)
+              if [ -d "$chart/crds" ]; then
+                echo "Applying CRDs from $chart/crds using server-side apply..."
+                kubectl apply --server-side -f "$chart/crds" --recursive
+              fi
+              helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT"
             done
           fi
           if [ -f "${{ matrix.template }}/validate.sh" ]; then
@@ -298,7 +303,10 @@ jobs:
         run: |
           if [ -n "${{ env.tf_cluster }}" ]; then
             helm uninstall release --wait --timeout=5m || true
-            kubectl delete gateway,ingress --all -A --wait=true --timeout=2m || true
+            if kubectl get crd gateways.gateway.networking.k8s.io >/dev/null 2>&1; then
+              kubectl delete gateway --all -A --wait=true --timeout=2m || true
+            fi
+            kubectl delete ingress --all -A --wait=true --timeout=2m || true
           fi
           terraform destroy -auto-approve -input=false || true
 
@@ -508,7 +516,13 @@ jobs:
           curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
           CHARTS=$(find ${{ matrix.template }}/terraform-helm -name Chart.yaml -exec dirname {} \; 2>/dev/null)
           TIMEOUT="60m"; [ -f "${{ matrix.template }}/.timeout" ] && TIMEOUT=$(cat ${{ matrix.template }}/.timeout)
-          for chart in $CHARTS; do helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT" --server-side; done
+          for chart in $CHARTS; do
+            if [ -d "$chart/crds" ]; then
+              echo "Applying CRDs from $chart/crds using server-side apply..."
+              kubectl apply --server-side -f "$chart/crds" --recursive
+            fi
+            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT"
+          done
           [ -f "${{ matrix.template }}/validate.sh" ] && { export CLUSTER_NAME="${{ steps.tf-outputs.outputs.tf_cluster }}"; export REGION="${{ steps.tf-outputs.outputs.tf_location }}"; chmod +x ${{ matrix.template }}/validate.sh; ./${{ matrix.template }}/validate.sh; }
       - name: Teardown
         if: always() && steps.tf-apply.outcome != 'skipped'
@@ -516,7 +530,10 @@ jobs:
         run: |
           if [ -n "${{ steps.tf-outputs.outputs.tf_cluster }}" ]; then
             helm uninstall release --wait --timeout=5m || true
-            kubectl delete gateway,ingress --all -A --wait=true --timeout=2m || true
+            if kubectl get crd gateways.gateway.networking.k8s.io >/dev/null 2>&1; then
+              kubectl delete gateway --all -A --wait=true --timeout=2m || true
+            fi
+            kubectl delete ingress --all -A --wait=true --timeout=2m || true
           fi
           terraform destroy -auto-approve -input=false || true
       - name: Fallback
