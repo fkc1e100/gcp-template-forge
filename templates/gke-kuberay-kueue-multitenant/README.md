@@ -101,3 +101,6 @@ kubectl delete -n forge-management -f config-connector/
 | **Estimated cost** | - | -- |
 | **Commit** | f3ed8cd | f3ed8cd |
 
+
+
+<!-- dummy change to trigger CI -->
