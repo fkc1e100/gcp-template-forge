@@ -50,7 +50,7 @@ variable "subnet_name" {
 variable "bucket_name" {
   description = "The name of the GCS bucket for model storage"
   type        = string
-  default     = "gke-inference-fuse-bucket"
+  default     = "gke-ai-inference-bucket"
 }
 
 variable "service_account" {

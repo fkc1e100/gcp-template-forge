@@ -20,7 +20,7 @@ image:
   pullPolicy: IfNotPresent
   tag: "latest"
 
-bucketName: "gke-inference-fuse-bucket"
+bucketName: "gke-ai-inference-bucket"
 gcpServiceAccountEmail: ""
 
 serviceAccount:

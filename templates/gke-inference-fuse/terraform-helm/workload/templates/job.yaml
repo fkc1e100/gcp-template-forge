@@ -60,9 +60,5 @@ spec:
             fileCacheCapacity: "{{ .Values.cache.capacity }}"
             fileCacheForRangeRead: "true"
             metadataCacheTTLSeconds: "{{ .Values.cache.maxAgeSeconds }}"
-      nodeSelector:
-        {{- toYaml .Values.nodeSelector | nindent 8 }}
-      tolerations:
-        {{- toYaml .Values.tolerations | nindent 8 }}
       restartPolicy: OnFailure
   backoffLimit: 3

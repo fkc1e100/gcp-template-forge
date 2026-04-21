@@ -183,6 +183,46 @@ resource "google_container_node_pool" "gpu_pool" {
   }
 }
 
+# System Node Pool for non-GPU workloads (e.g. model staging)
+resource "google_container_node_pool" "system_pool" {
+  name       = "system-pool"
+  location   = var.region
+  cluster    = google_container_cluster.primary.name
+  node_count = 1
+
+  node_config {
+    machine_type = "e2-standard-2"
+    disk_size_gb = 50
+    disk_type    = "pd-balanced"
+
+    service_account = var.service_account
+
+    oauth_scopes = [
+      "https://www.googleapis.com/auth/cloud-platform",
+    ]
+
+    workload_metadata_config {
+      mode = "GKE_METADATA"
+    }
+
+    labels = {
+      project  = "gcp-template-forge"
+      template = "gke-inference-fuse"
+    }
+
+    resource_labels = {
+      project  = "gcp-template-forge"
+      template = "gke-inference-fuse"
+    }
+  }
+
+  timeouts {
+    create = "30m"
+    update = "30m"
+    delete = "30m"
+  }
+}
+
 # IAM for Workload Identity
 resource "google_storage_bucket_iam_member" "bucket_admin" {
   bucket = google_storage_bucket.model_bucket.name

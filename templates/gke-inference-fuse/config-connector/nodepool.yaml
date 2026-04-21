@@ -53,3 +53,32 @@ spec:
       project: gcp-template-forge
       template: gke-inference-fuse
       gpu: l4
+---
+apiVersion: container.cnrm.cloud.google.com/v1beta1
+kind: ContainerNodePool
+metadata:
+  name: gke-inference-fuse-system-pool
+  namespace: forge-management
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
+  labels:
+    project: gcp-template-forge
+    template: gke-inference-fuse
+spec:
+  location: us-central1
+  clusterRef:
+    name: gke-inference-fuse-kcc
+  nodeCount: 1
+  nodeConfig:
+    machineType: e2-standard-2
+    diskType: pd-balanced
+    diskSizeGb: 50
+    serviceAccountRef:
+      name: gke-inference-fuse-sa
+    oauthScopes:
+      - "https://www.googleapis.com/auth/cloud-platform"
+    workloadMetadataConfig:
+      mode: GKE_METADATA
+    labels:
+      project: gcp-template-forge
+      template: gke-inference-fuse
