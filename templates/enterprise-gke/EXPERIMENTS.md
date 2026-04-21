@@ -80,3 +80,5 @@
 | 96 | Final comprehensive audit and PR readiness | ✅ Success | Verified absolute functional parity, security posture, and mandate compliance. PR is in a finalized, production-ready state and the hold label has been removed. | Finalized |
 | 97 | Transient GCP internal error in Provision TF | ❌ Fail | 'Internal error' during subnetwork creation in Terraform path; KCC path passed successfully | Re-trigger CI to confirm success |
 | 98 | Re-trigger CI after documenting flake | Pending | Re-triggering CI to verify that Attempt 96 was indeed stable and 97 was a flake | Finalize PR |
+| 99 | Investigate and identify out-of-scope pollution | ✅ Success | Identified that basic-gke-hello-world still contained out-of-scope changes despite previous revert claims | Revert to main |
+| 100 | Perfect revert of out-of-scope changes | ✅ Success | Perfectly reverted all changes to basic-gke-hello-world using git checkout main and confirmed with git diff main --name-only. PR is now strictly focused on issue #73. | Finalized |
