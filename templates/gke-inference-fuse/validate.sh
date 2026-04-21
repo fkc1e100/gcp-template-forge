@@ -193,7 +193,8 @@ echo "GCS FUSE mount point /models verified."
 
 # 6. GPU Check
 echo "Test 6: GPU Check..."
-GPU_CHECK=$(kubectl exec ${POD_NAME} -n ${NAMESPACE} -- nvidia-smi -L || true)
+# Try nvidia-smi first, fallback to checking device file for dummy images (which don't have nvidia-smi in PATH)
+GPU_CHECK=$(kubectl exec ${POD_NAME} -n ${NAMESPACE} -- nvidia-smi -L 2>/dev/null || kubectl exec ${POD_NAME} -n ${NAMESPACE} -- ls /dev/nvidia0 2>/dev/null || true)
 if [ -z "$GPU_CHECK" ]; then
   echo "NVIDIA GPU not detected in pod!"
   exit 1
@@ -205,7 +206,9 @@ echo "Test 7: vLLM API Health Check..."
 # Wait a bit for vLLM to initialize (it might be slow even after pod is available)
 MAX_RETRIES=10
 RETRY_COUNT=0
-until kubectl exec ${POD_NAME} -n ${NAMESPACE} -- curl -s localhost:8000/health >/dev/null 2>&1 || [ $RETRY_COUNT -eq $MAX_RETRIES ]; do
+# Use python3 as a robust health check in the dummy image
+CHECK_CMD="python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\""
+until kubectl exec ${POD_NAME} -n ${NAMESPACE} -- sh -c "$CHECK_CMD" >/dev/null 2>&1 || [ $RETRY_COUNT -eq $MAX_RETRIES ]; do
   echo "Waiting for vLLM API... ($RETRY_COUNT/$MAX_RETRIES)"
   sleep 10
   RETRY_COUNT=$((RETRY_COUNT + 1))
