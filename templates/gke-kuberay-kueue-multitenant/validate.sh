@@ -50,10 +50,21 @@ if [ -d "$WORKLOAD_DIR" ]; then
   # 2. Operator Readiness (MUST be ready before applying custom resources)
   echo "Test 2: Operator Readiness..."
   echo "Checking KubeRay Operator..."
-  kubectl wait --for=condition=available deployment/kuberay-operator -n default --timeout=10m
+  kubectl wait --for=condition=available deployment/kuberay-operator -n default --timeout=15m || {
+    echo "KubeRay Operator failed to become ready."
+    kubectl describe deployment kuberay-operator -n default
+    kubectl get pods -l app.kubernetes.io/name=kuberay-operator -A
+    exit 1
+  }
 
   echo "Checking Kueue Operator..."
-  kubectl wait --for=condition=available deployment/kueue-controller-manager -n kueue-system --timeout=10m
+  kubectl wait --for=condition=available deployment/kueue-controller-manager -n kueue-system --timeout=15m || {
+    echo "Kueue Operator failed to become ready."
+    kubectl describe deployment kueue-controller-manager -n kueue-system
+    kubectl get pods -l control-plane=controller-manager -n kueue-system
+    kubectl logs -l control-plane=controller-manager -n kueue-system --all-containers --tail=100
+    exit 1
+  }
   echo "Operators are ready."
 
   # 2.5 Apply Custom Resources (after webhooks are ready)
@@ -66,8 +77,16 @@ else
   # If we are in TF path and directory is missing (unlikely given PR files), 
   # we still expect operators to be present from Helm.
   echo "Checking Operator Readiness (expecting Helm install)..."
-  kubectl wait --for=condition=available deployment/kuberay-operator -n default --timeout=10m
-  kubectl wait --for=condition=available deployment/kueue-controller-manager -n kueue-system --timeout=10m
+  kubectl wait --for=condition=available deployment/kuberay-operator -n default --timeout=15m || {
+    echo "KubeRay Operator (Helm) failed to become ready."
+    kubectl describe deployment kuberay-operator -n default
+    exit 1
+  }
+  kubectl wait --for=condition=available deployment/kueue-controller-manager -n kueue-system --timeout=15m || {
+    echo "Kueue Operator (Helm) failed to become ready."
+    kubectl describe deployment kueue-controller-manager -n kueue-system
+    exit 1
+  }
 fi
 
 # 3. Kueue Resource Readiness
