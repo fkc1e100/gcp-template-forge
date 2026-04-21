@@ -17,6 +17,9 @@ kind: ServiceAccount
 metadata:
   name: vllm-sa-inference
   namespace: default
+  annotations:
+    # NOTE: Replace <PROJECT_ID> with your actual project ID
+    iam.gke.io/gcp-service-account: vllm-sa-inference@<PROJECT_ID>.iam.gserviceaccount.com
   labels:
     project: gcp-template-forge
     template: gke-inference-fuse
@@ -117,8 +120,8 @@ spec:
         csi:
           driver: gcsfuse.csi.storage.gke.io
           volumeAttributes:
-            # NOTE: Update this to match your actual bucket name
-            bucketName: gke-inference-fuse-bucket
+            # NOTE: Replace <BUCKET_NAME> with your actual bucket name
+            bucketName: <BUCKET_NAME>
             mountOptions: "implicit-dirs"
             fileCacheCapacity: "50Gi"
             fileCacheForRangeRead: "true"
@@ -167,8 +170,8 @@ spec:
         csi:
           driver: gcsfuse.csi.storage.gke.io
           volumeAttributes:
-            # NOTE: Update this to match your actual bucket name
-            bucketName: gke-inference-fuse-bucket
+            # NOTE: Replace <BUCKET_NAME> with your actual bucket name
+            bucketName: <BUCKET_NAME>
             mountOptions: "implicit-dirs"
             fileCacheCapacity: "50Gi"
             fileCacheForRangeRead: "true"
