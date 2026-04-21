@@ -26,6 +26,9 @@ metadata:
 spec:
   location: us-central1
   initialNodeCount: 1
+  resourceLabels:
+    project: gcp-template-forge
+    template: enterprise-gke
   networkingMode: VPC_NATIVE
   networkRef:
     name: enterprise-gke-kcc-vpc
