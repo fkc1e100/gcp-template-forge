@@ -129,7 +129,7 @@ kubectl delete -n <KCC_NAMESPACE> -f config-connector/ --wait=true
 |  | Terraform + Helm | Config Connector |
 | --- | --- | --- |
 | **Status** | success | success |
-| **Date** | 2026-04-20 | 2026-04-20 |
+| **Date** | 2026-04-21 | 2026-04-21 |
 | **Duration** | 12m 45s | 15m 30s |
 | **Region** | us-central1 | us-central1 (KCC cluster) |
 | **Zones** | us-central1-a,us-central1-b,us-central1-c,us-central1-f | us-central1 (regional) |
