@@ -57,3 +57,9 @@ variable "service_account" {
   description = "The service account email to use for the node pool"
   type        = string
 }
+
+variable "uid_suffix" {
+  description = "A unique suffix for resource identification in shared environments"
+  type        = string
+  default     = ""
+}

@@ -93,11 +93,13 @@ if kubectl cluster-info &>/dev/null; then
   KCC_RESOURCES=$(kubectl get $KCC_TYPES -n $KCC_NAMESPACE -o name | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-inference-fuse-|gke-ai-inference-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
   
   for RES in $KCC_RESOURCES; do
+    # Try to get the 'template' label value for more robust active resource detection
+    T_LABEL=$(kubectl get $RES -n $KCC_NAMESPACE -o jsonpath='{.metadata.labels.template}' 2>/dev/null || true)
     SKIP=false
     for RUN_ID in $ALL_ACTIVE; do
       SUFFIX="${RUN_ID: -6}"
-      if [ -n "$RUN_ID" ] && ([[ "$RES" == *"$RUN_ID"* ]] || [[ "$RES" == *"$SUFFIX"* ]]); then
-        echo "Skipping active resource: $RES"
+      if [ -n "$RUN_ID" ] && ([[ "$RES" == *"$RUN_ID"* ]] || [[ "$RES" == *"$SUFFIX"* ]] || [[ "$T_LABEL" == *"$SUFFIX"* ]]); then
+        echo "Skipping active resource (name: $RES, template_label: $T_LABEL)"
         SKIP=true
         break
       fi
@@ -114,17 +116,17 @@ echo "Searching for orphaned Terraform clusters..."
 TF_CLUSTERS=$(gcloud container clusters list \
   --project=$PROJECT \
   --filter="(resourceLabels.project=gcp-template-forge OR name ~ latest-gke-features- OR name ~ enterprise-gke- OR name ~ basic-gke- OR name ~ gke- OR name ~ gke-topology-aware-routing-) AND name != $KCC_CLUSTER" \
-  --format="value(name, zone.scope())")
+  --format="value(name, zone.scope(), resourceLabels.template)")
 
 DELETED_CLUSTERS=false
-while read -r CLUSTER C_LOC; do
+while read -r CLUSTER C_LOC T_LABEL; do
   [ -z "$CLUSTER" ] && continue
   
   SKIP=false
   for RUN_ID in $ALL_ACTIVE; do
     SUFFIX="${RUN_ID: -6}"
-    if [ -n "$RUN_ID" ] && ([[ "$CLUSTER" == *"$RUN_ID"* ]] || [[ "$CLUSTER" == *"$SUFFIX"* ]]); then
-      echo "Skipping active cluster: $CLUSTER"
+    if [ -n "$RUN_ID" ] && ([[ "$CLUSTER" == *"$RUN_ID"* ]] || [[ "$CLUSTER" == *"$SUFFIX"* ]] || [[ "$T_LABEL" == *"$SUFFIX"* ]]); then
+      echo "Skipping active cluster (name: $CLUSTER, template_label: $T_LABEL)"
       SKIP=true
       break
     fi

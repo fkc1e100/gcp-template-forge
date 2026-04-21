@@ -66,7 +66,7 @@ resource "google_storage_bucket" "model_bucket" {
 
   labels = {
     project  = "gcp-template-forge"
-    template = "gke-inference-fuse"
+    template = var.uid_suffix != "" ? "gke-inference-fuse-${var.uid_suffix}" : "gke-inference-fuse"
   }
 }
 
@@ -83,7 +83,7 @@ resource "google_container_cluster" "primary" {
 
   resource_labels = {
     project  = "gcp-template-forge"
-    template = "gke-inference-fuse"
+    template = var.uid_suffix != "" ? "gke-inference-fuse-${var.uid_suffix}" : "gke-inference-fuse"
   }
 
   remove_default_node_pool = true
@@ -166,13 +166,13 @@ resource "google_container_node_pool" "gpu_pool" {
 
     labels = {
       project  = "gcp-template-forge"
-      template = "gke-inference-fuse"
+      template = var.uid_suffix != "" ? "gke-inference-fuse-${var.uid_suffix}" : "gke-inference-fuse"
       gpu      = "l4"
     }
 
     resource_labels = {
       project  = "gcp-template-forge"
-      template = "gke-inference-fuse"
+      template = var.uid_suffix != "" ? "gke-inference-fuse-${var.uid_suffix}" : "gke-inference-fuse"
     }
   }
 
@@ -207,12 +207,12 @@ resource "google_container_node_pool" "system_pool" {
 
     labels = {
       project  = "gcp-template-forge"
-      template = "gke-inference-fuse"
+      template = var.uid_suffix != "" ? "gke-inference-fuse-${var.uid_suffix}" : "gke-inference-fuse"
     }
 
     resource_labels = {
       project  = "gcp-template-forge"
-      template = "gke-inference-fuse"
+      template = var.uid_suffix != "" ? "gke-inference-fuse-${var.uid_suffix}" : "gke-inference-fuse"
     }
   }
 
