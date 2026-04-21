@@ -57,12 +57,36 @@ if [ -d "$WORKLOAD_DIR" ]; then
   kubectl apply --server-side -f "$WORKLOAD_DIR/00-kueue-operator-crds.yaml"
   
   echo "Waiting for CRDs to be established..."
-  kubectl wait --for=condition=Established crd/rayclusters.ray.io --timeout=2m || debug_failure "RayCluster CRD not established"
-  kubectl wait --for=condition=Established crd/clusterqueues.kueue.x-k8s.io --timeout=2m || debug_failure "ClusterQueue CRD not established"
+  kubectl wait --for=condition=Established crd/rayclusters.ray.io --timeout=5m || debug_failure "RayCluster CRD not established"
+  kubectl wait --for=condition=Established crd/clusterqueues.kueue.x-k8s.io --timeout=5m || debug_failure "ClusterQueue CRD not established"
+
+  echo "Installing NVIDIA GPU Drivers..."
+  kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/cos/daemonset-preloaded-l4.yaml
+  
+  echo "Waiting for GPU nodes to become ready (with GPU capacity)..."
+  for i in {1..20}; do
+    if kubectl get nodes -o jsonpath='{.items[*].status.capacity}' | grep -q "nvidia.com/gpu"; then
+      echo "GPU capacity detected on nodes."
+      break
+    fi
+    echo "Waiting for GPU capacity (attempt $i/20)..."
+    sleep 30
+    if [ $i -eq 20 ]; then
+      echo "Warning: GPU capacity not detected on nodes after 10 minutes. RayClusters may fail to start."
+    fi
+  done
 
   kubectl apply --server-side -f "$WORKLOAD_DIR/01-namespaces.yaml"
-  kubectl apply --server-side -f "$WORKLOAD_DIR/01-kuberay-operator.yaml"
-  kubectl apply --server-side -f "$WORKLOAD_DIR/01-kueue-operator.yaml"
+
+  # Check if operators are already installed (TF path)
+  if kubectl get deployment kuberay-operator -n default >/dev/null 2>&1 && \
+     kubectl get deployment kueue-controller-manager -n kueue-system >/dev/null 2>&1; then
+    echo "Operators already present, skipping redundant application."
+  else
+    echo "Applying Operators from $WORKLOAD_DIR..."
+    kubectl apply --server-side -f "$WORKLOAD_DIR/01-kuberay-operator.yaml"
+    kubectl apply --server-side -f "$WORKLOAD_DIR/01-kueue-operator.yaml"
+  fi
 
   # 2. Operator Readiness
   echo "Test 2: Operator Readiness..."

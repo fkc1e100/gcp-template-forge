@@ -13,15 +13,6 @@
 # limitations under the License.
 
 apiVersion: v1
-kind: Namespace
-metadata:
-  labels:
-    control-plane: controller-manager
-    project: gcp-template-forge
-    template: gke-kuberay-kueue-multitenant
-  name: kueue-system
----
-apiVersion: v1
 kind: ServiceAccount
 metadata:
   labels:
