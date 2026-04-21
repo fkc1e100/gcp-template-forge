@@ -56,7 +56,18 @@ fi
 # Detect Bucket Name
 if [ -z "${BUCKET_NAME}" ]; then
   echo "Attempting to detect bucket..."
-  DETECTED_BUCKET=$(gcloud storage buckets list --project ${PROJECT_ID} --filter="name ~ ${BUCKET_NAME_BASE}.*-bucket" --format="value(name)" --limit 1)
+  # Try specific names based on cluster type
+  if [[ "${CLUSTER_NAME}" == *"-tf" ]]; then
+    DETECTED_BUCKET=$(gcloud storage buckets list --project ${PROJECT_ID} --filter="name ~ gke-inference-tf.*-bucket" --format="value(name)" --limit 1)
+  elif [[ "${CLUSTER_NAME}" == *"-kcc" ]]; then
+    DETECTED_BUCKET=$(gcloud storage buckets list --project ${PROJECT_ID} --filter="name ~ gke-inference-kcc.*-bucket" --format="value(name)" --limit 1)
+  fi
+  
+  # Fallback to general detection
+  if [ -z "${DETECTED_BUCKET}" ]; then
+    DETECTED_BUCKET=$(gcloud storage buckets list --project ${PROJECT_ID} --filter="name ~ ${BUCKET_NAME_BASE}.*-bucket" --format="value(name)" --limit 1)
+  fi
+
   if [ -n "${DETECTED_BUCKET}" ]; then
     BUCKET_NAME="${DETECTED_BUCKET}"
     echo "Detected bucket: ${BUCKET_NAME}"
@@ -151,15 +162,16 @@ if [ -z "$SIDECAR_EXISTS" ]; then
 fi
 
 # Check mount point
-MOUNT_CHECK=$(kubectl exec ${POD_NAME} -n ${NAMESPACE} -c vllm-openai -- mount | grep "/models type fuse.gcsfuse" || true)
-# Wait, container name might be different in KCC vs Helm
-if [ -z "$MOUNT_CHECK" ]; then
-  # Try without specifying container
-  MOUNT_CHECK=$(kubectl exec ${POD_NAME} -n ${NAMESPACE} -- mount | grep "/models type fuse.gcsfuse" || true)
-fi
+echo "Checking mount point /models..."
+MOUNT_CHECK=$(kubectl exec ${POD_NAME} -n ${NAMESPACE} -c vllm-openai -- df -T /models | grep "fuse" || true)
 
 if [ -z "$MOUNT_CHECK" ]; then
   echo "GCS FUSE mount point /models not found or incorrect type!"
+  echo "Debugging information:"
+  echo "--- Mounts in pod ---"
+  kubectl exec ${POD_NAME} -n ${NAMESPACE} -c vllm-openai -- mount | grep "/models" || echo "/models not found in mount output"
+  echo "--- Filesystem types ---"
+  kubectl exec ${POD_NAME} -n ${NAMESPACE} -c vllm-openai -- df -T
   exit 1
 fi
 echo "GCS FUSE mount point /models verified."

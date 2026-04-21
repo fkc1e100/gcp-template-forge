@@ -348,7 +348,7 @@ jobs:
           EXTRA_ARGS=""
           if [[ "${{ matrix.template }}" == *"gke-inference-fuse"* ]]; then
             # Recalculate unique names used in tf-provision
-            BUCKET_NAME="gke-inference-fuse-${UID_SUFFIX}-bucket"
+            BUCKET_NAME="gke-inference-tf-${UID_SUFFIX}-bucket"
             KSA_NAME="vllm-sa-${UID_SUFFIX}"
             EXTRA_ARGS="--set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME} --set gcpServiceAccountEmail=${{ env.WIF_SERVICE_ACCOUNT }}"
           fi
@@ -604,7 +604,7 @@ jobs:
           EXTRA_ARGS=""
           if [[ "${{ matrix.template }}" == *"gke-inference-fuse"* ]]; then
             # Recalculate unique names used in kcc-apply
-            BUCKET_NAME="gke-inference-fuse-${UID_SUFFIX}-bucket"
+            BUCKET_NAME="gke-inference-kcc-${UID_SUFFIX}-bucket"
             EXTRA_ARGS="--set bucketName=${BUCKET_NAME}"
           fi
 
@@ -909,7 +909,7 @@ jobs:
           EXTRA_ARGS=""
           if [[ "${{ matrix.template }}" == *"gke-inference-fuse"* ]]; then
             # Recalculate unique names used in tf-apply
-            BUCKET_NAME="gke-inference-fuse-${UID_SUFFIX}-bucket"
+            BUCKET_NAME="gke-inference-tf-${UID_SUFFIX}-bucket"
             KSA_NAME="vllm-sa-${UID_SUFFIX}"
             EXTRA_ARGS="--set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME} --set gcpServiceAccountEmail=${{ env.WIF_SERVICE_ACCOUNT }}"
           fi
@@ -1231,7 +1231,7 @@ jobs:
           EXTRA_ARGS=""
           if [[ "${{ matrix.template }}" == *"gke-inference-fuse"* ]]; then
             # Recalculate unique names used in kcc-apply
-            BUCKET_NAME="gke-inference-fuse-${UID_SUFFIX}-bucket"
+            BUCKET_NAME="gke-inference-kcc-${UID_SUFFIX}-bucket"
             EXTRA_ARGS="--set bucketName=${BUCKET_NAME}"
           fi
 

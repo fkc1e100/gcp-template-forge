@@ -30,7 +30,7 @@ locals {
   uid                = var.uid_suffix != "" ? var.uid_suffix : random_id.bucket_suffix.hex
   workload_gsa_email = var.service_account
   ksa_name           = "vllm-sa-${local.uid}"
-  bucket_name        = "gke-inference-fuse-${local.uid}-bucket"
+  bucket_name        = "gke-inference-tf-${local.uid}-bucket"
 }
 
 # VPC Network
