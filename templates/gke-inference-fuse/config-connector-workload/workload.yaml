@@ -99,7 +99,7 @@ spec:
           driver: gcsfuse.csi.storage.gke.io
           volumeAttributes:
             # NOTE: Update this to match your actual bucket name
-            bucketName: gke-ai-inference-bucket
+            bucketName: gke-inference-fuse-bucket
             mountOptions: "implicit-dirs"
             fileCacheCapacity: "50Gi"
             fileCacheForRangeRead: "true"
@@ -149,7 +149,7 @@ spec:
           driver: gcsfuse.csi.storage.gke.io
           volumeAttributes:
             # NOTE: Update this to match your actual bucket name
-            bucketName: gke-ai-inference-bucket
+            bucketName: gke-inference-fuse-bucket
             mountOptions: "implicit-dirs"
             fileCacheCapacity: "50Gi"
             fileCacheForRangeRead: "true"

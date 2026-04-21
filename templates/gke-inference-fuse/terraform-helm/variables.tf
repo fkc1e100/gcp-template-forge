@@ -26,7 +26,7 @@ variable "region" {
 variable "zone" {
   description = "The zone to deploy the node pool in"
   type        = string
-  default     = "us-central1-b"
+  default     = "us-central1-a"
 }
 
 variable "cluster_name" {
@@ -50,7 +50,7 @@ variable "subnet_name" {
 variable "bucket_name" {
   description = "The name of the GCS bucket for model storage"
   type        = string
-  default     = "gke-ai-inference-bucket"
+  default     = "gke-inference-fuse-bucket"
 }
 
 variable "service_account" {

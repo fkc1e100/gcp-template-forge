@@ -27,8 +27,10 @@ resource "random_id" "bucket_suffix" {
 }
 
 locals {
+  uid                = var.uid_suffix != "" ? var.uid_suffix : random_id.bucket_suffix.hex
   workload_gsa_email = var.service_account
-  ksa_name           = "vllm-sa-${random_id.bucket_suffix.hex}"
+  ksa_name           = "vllm-sa-${local.uid}"
+  bucket_name        = "${var.bucket_name}-${local.uid}"
 }
 
 # VPC Network
@@ -58,7 +60,7 @@ resource "google_compute_subnetwork" "subnet" {
 
 # GCS Bucket for models
 resource "google_storage_bucket" "model_bucket" {
-  name          = "${var.bucket_name}-${random_id.bucket_suffix.hex}"
+  name          = local.bucket_name
   location      = var.region
   force_destroy = true
 

@@ -20,7 +20,7 @@ echo "Starting GKE Inference FUSE Cache Validation Tests..."
 PROJECT_ID=${PROJECT_ID:-"gca-gke-2025"}
 REGION=${REGION:-"us-central1"}
 NAMESPACE=${NAMESPACE:-"default"}
-BUCKET_NAME_BASE="gke-ai-inference-bucket"
+BUCKET_NAME_BASE="gke-inference-fuse-bucket"
 
 # 0. Cluster Detection
 if [ -z "${CLUSTER_NAME}" ]; then

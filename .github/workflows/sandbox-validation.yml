@@ -340,9 +340,22 @@ jobs:
           if [ -f "${{ matrix.template }}/.timeout" ]; then
             TIMEOUT=$(cat ${{ matrix.template }}/.timeout)
           fi
+
+          RUN_ID="${{ github.run_id }}"
+          UID_SUFFIX="${RUN_ID: -6}"
+          
+          # Only set these for gke-inference-fuse
+          EXTRA_ARGS=""
+          if [[ "${{ matrix.template }}" == *"gke-inference-fuse"* ]]; then
+            # Recalculate unique names used in tf-provision
+            BUCKET_NAME="gke-inference-fuse-bucket-${UID_SUFFIX}"
+            KSA_NAME="vllm-sa-${UID_SUFFIX}"
+            EXTRA_ARGS="--set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME} --set gcpServiceAccountEmail=${{ env.WIF_SERVICE_ACCOUNT }}"
+          fi
+
           for chart in $CHARTS; do
             echo "=== Helm deploy: $chart ==="
-            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT"
+            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT" ${EXTRA_ARGS}
           done
 
           if [ -f "${{ matrix.template }}/validate.sh" ]; then
@@ -583,9 +596,21 @@ jobs:
           if [ -f "${{ matrix.template }}/.timeout" ]; then
             TIMEOUT=$(cat ${{ matrix.template }}/.timeout)
           fi
+
+          RUN_ID="${{ github.run_id }}"
+          UID_SUFFIX="${RUN_ID: -6}"
+          
+          # Only set these for gke-inference-fuse
+          EXTRA_ARGS=""
+          if [[ "${{ matrix.template }}" == *"gke-inference-fuse"* ]]; then
+            # Recalculate unique names used in kcc-apply
+            BUCKET_NAME="gke-inference-fuse-bucket-${UID_SUFFIX}"
+            EXTRA_ARGS="--set bucketName=${BUCKET_NAME}"
+          fi
+
           for chart in $CHARTS; do
             echo "=== Helm deploy: $chart ==="
-            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT"
+            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT" ${EXTRA_ARGS}
           done
 
           if [ -f "${{ matrix.template }}/validate.sh" ]; then
@@ -876,9 +901,22 @@ jobs:
           if [ -f "${{ matrix.template }}/.timeout" ]; then
             TIMEOUT=$(cat ${{ matrix.template }}/.timeout)
           fi
+
+          RUN_ID="${{ github.run_id }}"
+          UID_SUFFIX="${RUN_ID: -6}"
+          
+          # Only set these for gke-inference-fuse
+          EXTRA_ARGS=""
+          if [[ "${{ matrix.template }}" == *"gke-inference-fuse"* ]]; then
+            # Recalculate unique names used in tf-apply
+            BUCKET_NAME="gke-inference-fuse-bucket-${UID_SUFFIX}"
+            KSA_NAME="vllm-sa-${UID_SUFFIX}"
+            EXTRA_ARGS="--set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME} --set gcpServiceAccountEmail=${{ env.WIF_SERVICE_ACCOUNT }}"
+          fi
+
           for chart in $CHARTS; do
             echo "=== Helm deploy: $chart ==="
-            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT"
+            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT" ${EXTRA_ARGS}
           done
 
           # Run template-specific validation if present
@@ -1185,9 +1223,21 @@ jobs:
           if [ -f "${{ matrix.template }}/.timeout" ]; then
             TIMEOUT=$(cat ${{ matrix.template }}/.timeout)
           fi
+
+          RUN_ID="${{ github.run_id }}"
+          UID_SUFFIX="${RUN_ID: -6}"
+          
+          # Only set these for gke-inference-fuse
+          EXTRA_ARGS=""
+          if [[ "${{ matrix.template }}" == *"gke-inference-fuse"* ]]; then
+            # Recalculate unique names used in kcc-apply
+            BUCKET_NAME="gke-inference-fuse-bucket-${UID_SUFFIX}"
+            EXTRA_ARGS="--set bucketName=${BUCKET_NAME}"
+          fi
+
           for chart in $CHARTS; do
             echo "=== Helm deploy: $chart ==="
-            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT"
+            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT" ${EXTRA_ARGS}
           done
 
           # Run template-specific validation if present
