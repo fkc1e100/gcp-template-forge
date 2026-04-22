@@ -21,12 +21,68 @@ metadata:
   name: team-a
 ---
 apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: team-a-quota
+  namespace: team-a
+spec:
+  hard:
+    pods: "20"
+    requests.cpu: "16"
+    requests.memory: 64Gi
+    limits.cpu: "32"
+    limits.memory: 128Gi
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: team-a-limits
+  namespace: team-a
+spec:
+  limits:
+  - default:
+      cpu: 500m
+      memory: 1Gi
+    defaultRequest:
+      cpu: 100m
+      memory: 512Mi
+    type: Container
+---
+apiVersion: v1
 kind: Namespace
 metadata:
   labels:
     project: gcp-template-forge
     template: gke-kuberay-kueue-multitenant
   name: team-b
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: team-b-quota
+  namespace: team-b
+spec:
+  hard:
+    pods: "20"
+    requests.cpu: "16"
+    requests.memory: 64Gi
+    limits.cpu: "32"
+    limits.memory: 128Gi
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: team-b-limits
+  namespace: team-b
+spec:
+  limits:
+  - default:
+      cpu: 500m
+      memory: 1Gi
+    defaultRequest:
+      cpu: 100m
+      memory: 512Mi
+    type: Container
 ---
 apiVersion: v1
 kind: Namespace

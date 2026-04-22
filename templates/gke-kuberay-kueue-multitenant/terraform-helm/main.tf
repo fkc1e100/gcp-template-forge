@@ -122,6 +122,12 @@ resource "google_container_node_pool" "system_nodes" {
       template = "gke-kuberay-kueue-multitenant"
     }
   }
+
+  timeouts {
+    create = "30m"
+    update = "30m"
+    delete = "30m"
+  }
 }
 
 # GPU Node Pool (Autoscaled)
@@ -174,6 +180,12 @@ resource "google_container_node_pool" "gpu_nodes" {
       value  = "present"
       effect = "NO_SCHEDULE"
     }
+  }
+
+  timeouts {
+    create = "30m"
+    update = "30m"
+    delete = "30m"
   }
 
   depends_on = [google_container_cluster.gke_kuberay_kueue_multitenant_cluster]

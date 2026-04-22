@@ -12,10 +12,11 @@ This template demonstrates how to set up a multi-tenant Ray environment on GKE u
 - **Multi-Tenancy Configuration**:
   - **Namespaces**: `team-a` and `team-b`.
   - **Kueue Resources**:
-    - `ResourceFlavor`: `default-flavor`.
+    - `ResourceFlavor`: `base-flavor` and `default-flavor`.
     - `ClusterQueues`: `team-a-cq` and `team-b-cq` sharing a common `gpu-cohort`.
     - `LocalQueues`: `team-a-lq` and `team-b-lq` in their respective namespaces.
-  - **Quotas**: Each team has a nominal quota of 2 GPUs but can borrow up to the total capacity (4 GPUs) if the other team is not using it.
+  - **Quotas**: Each team has a nominal quota of 2 GPUs but can borrow up to the total capacity (4 GPUs) if the other team is not using it. `base-flavor` has 0 GPU quota to steer head pods to non-GPU nodes.
+  - **ResourceQuota & LimitRange**: Applied to `team-a` and `team-b` to manage non-batch workload resources.
 
 ## Deployment Paths
 
@@ -31,31 +32,47 @@ terraform init \
 terraform apply -var="project_id=<PROJECT_ID>" -var="service_account=<SERVICE_ACCOUNT_EMAIL>"
 ```
 
-The Helm chart in `workload/` installs:
-1. KubeRay and Kueue operators.
-2. Team namespaces.
+> **Note**: GKE provisioning typically takes **up to 30 minutes**.
 
-The remaining resources (`ResourceFlavor`, `ClusterQueues`, `LocalQueues`, and sample `RayCluster` resources) are applied by the `validate.sh` script (or can be applied manually from `config-connector-workload/`) to ensure the Kueue webhooks are ready before the resources are created.
+The Helm chart in `workload/` installs everything needed: operators, namespaces, Kueue resources, and sample RayClusters.
 
 ### Config Connector (`config-connector/`)
 
 This path uses Google Cloud Config Connector (KCC) to manage GCP resources as Kubernetes objects.
 
 ```bash
+# Update project-id in config-connector/cluster.yaml if necessary
+# (Default is gca-gke-2025)
+
 # Apply infrastructure resources to the management cluster
 kubectl apply -n forge-management -f config-connector/
 
-# Wait for infrastructure to be ready
+# Wait for infrastructure to be ready (up to 30 minutes)
 # You can check the status using:
 kubectl get -n forge-management -f config-connector/
 
-# Note: GKE clusters and node pools can take up to 10-15 minutes to provision.
 # Once all resources show READY: True, apply the workload to the workload cluster:
 # (Ensure you are connected to the newly created workload cluster)
 kubectl apply --server-side -f config-connector-workload/
 ```
 
+## Security & Isolation
+
+### GPU Driver Installer
+The `nvidia-driver-installer` DaemonSet runs in the `kube-system` namespace with:
+- **Privileged**: Required for loading kernel modules.
+- **HostNetwork & HostPID**: Required for interacting with the host OS.
+
+### Ray Dashboard
+The Ray dashboard is exposed on `0.0.0.0:8265` within the pod. For production, it is recommended to use a `NetworkPolicy` to restrict access or use an Ingress with authentication.
+
 ## Verification
+
+The `validate.sh` script performs comprehensive checks on operator readiness, Kueue configurations, and RayCluster status. It does NOT deploy resources; it only validates the state.
+
+```bash
+./validate.sh
+```
 
 ### 1. Check Operators
 Verify that both KubeRay and Kueue operators are running:
@@ -69,13 +86,6 @@ Check that the ClusterQueues and LocalQueues are active:
 kubectl get clusterqueue
 kubectl get localqueue -A
 ```
-
-### 3. Test Equitable Sharing
-The template deploys two RayClusters, each requesting 1 GPU.
-1. Scale `raycluster-team-a` to 4 replicas (requesting 4 GPUs).
-2. Observe that Kueue allows it to borrow GPUs from the cohort if `team-b` is idle.
-3. Deploy a Ray job in `team-b`.
-4. Observe that Kueue ensures `team-b` gets its nominal quota, potentially pre-empting or holding `team-a`'s borrowing pods.
 
 ## Cleanup
 
