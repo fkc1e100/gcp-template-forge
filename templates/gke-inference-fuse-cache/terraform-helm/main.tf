@@ -240,16 +240,18 @@ resource "google_container_node_pool" "system_pool" {
 # This avoids the need for the KSA to impersonate a GSA, which can be
 # problematic in some CI environments. This is a resource-level binding.
 resource "google_storage_bucket_iam_member" "bucket_admin_ksa" {
-  bucket = google_storage_bucket.model_bucket.name
-  role   = "roles/storage.objectAdmin"
-  member = "serviceAccount:${var.project_id}.svc.id.goog[default/${local.ksa_name}]"
+  bucket  = google_storage_bucket.model_bucket.name
+  role    = "roles/storage.objectAdmin"
+  member  = "serviceAccount:${var.project_id}.svc.id.goog[default/${local.ksa_name}]"
+  project = var.project_id
 }
 
 # Also grant permissions to the node's GSA as a fallback (optional but helps robustness)
 resource "google_storage_bucket_iam_member" "bucket_admin_gsa" {
-  bucket = google_storage_bucket.model_bucket.name
-  role   = "roles/storage.objectAdmin"
-  member = "serviceAccount:${var.service_account}"
+  bucket  = google_storage_bucket.model_bucket.name
+  role    = "roles/storage.objectAdmin"
+  member  = "serviceAccount:${var.service_account}"
+  project = var.project_id
 }
 
 # Generate values.yaml for the Helm chart
