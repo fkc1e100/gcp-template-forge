@@ -13,6 +13,7 @@
 # limitations under the License.
 
 # Default values for vllm-inference.
+templateName: "gke-inf-fuse-cache"
 replicaCount: 1
 
 image:
@@ -20,11 +21,11 @@ image:
   pullPolicy: IfNotPresent
   tag: "slim"
 
-bucketName: "gke-inference-fuse-bucket"
+bucketName: "gke-inf-fuse-cache-bucket"
 gcpServiceAccountEmail: ""
 
 serviceAccount:
-  name: "gke-inference-fuse-sa"
+  name: "gke-inf-fuse-cache-sa"
 
 resources:
   limits:

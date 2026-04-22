@@ -53,5 +53,7 @@ spec:
             fileCacheCapacity: "{{ .Values.cache.capacity }}"
             fileCacheForRangeRead: "true"
             metadataCacheTTLSeconds: "{{ .Values.cache.metadataCacheTTLSeconds }}"
+            metadataStatCacheCapacity: "{{ .Values.cache.statCacheCapacity }}"
+            metadataTypeCacheCapacity: "{{ .Values.cache.typeCacheCapacity }}"
       restartPolicy: OnFailure
   backoffLimit: 3
