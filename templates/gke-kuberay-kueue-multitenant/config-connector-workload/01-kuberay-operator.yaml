@@ -109,7 +109,7 @@ metadata:
   name: kuberay-operator
   namespace: default
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app.kubernetes.io/name: kuberay
@@ -121,7 +121,9 @@ spec:
         template: gke-kuberay-kueue-multitenant
     spec:
       containers:
-      - env:
+      - args:
+        - --leader-elect
+        env:
         - name: RAY_CLUSTER_IMAGE
           value: rayproject/ray:2.9.0
         image: quay.io/kuberay/operator:v1.1.1

@@ -18,6 +18,19 @@ This template demonstrates how to set up a multi-tenant Ray environment on GKE u
   - **Quotas**: Each team has a nominal quota of 2 GPUs but can borrow up to the total capacity (4 GPUs) if the other team is not using it. `base-flavor` has 0 GPU quota to steer head pods to non-GPU nodes.
   - **ResourceQuota & LimitRange**: Applied to `team-a` and `team-b` to manage non-batch workload resources.
 
+## Kueue Resource Management
+
+### Cohorts & Borrowing
+Both teams belong to the `gpu-cohort`. This allows a team to "borrow" unused GPU quota from the other team. For example, if Team B is idle, Team A can use all 4 GPUs. However, as soon as Team B requests resources, Kueue will manage the allocation according to the nominal quotas.
+
+### Preemption Policies
+Kueue's preemption is configured to ensure that borrowing workloads are preempted when the rightful owner of the quota requests it. In this template:
+- `RayCluster` resources are admitted via `LocalQueues`.
+- When a higher-priority or "rightful owner" workload enters the queue, Kueue will trigger preemption of lower-priority borrowing workloads to reclaim the `nominalQuota`.
+
+### Explicit Timeouts
+This template uses an explicit **30-minute timeout** for GKE node pool operations in Terraform. This is necessary because GPU node provisioning and autoscaling can occasionally take longer than default timeouts due to resource availability or quota checks.
+
 ## Deployment Paths
 
 ### Terraform + Helm (`terraform-helm/`)

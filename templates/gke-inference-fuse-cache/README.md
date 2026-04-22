@@ -58,7 +58,8 @@ This template demonstrates how to achieve high-performance model loading on GKE 
     terraform apply -var="project_id=<PROJECT_ID>"
     ```
     This will also generate a `workload/values.yaml` file.
-    > **Note**: Infrastructure provisioning typically takes **up to 30 minutes**.
+
+    > **Note**: Infrastructure provisioning typically takes **up to 30 minutes**. This template uses explicit **30-minute timeouts** for node pool operations to account for GPU availability and autoscaling.
 
 2.  **Deploy Workload**:
     ```bash
