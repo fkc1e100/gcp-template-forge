@@ -14,6 +14,8 @@
 - [latest-gke-features](templates/latest-gke-features/) — Advanced GKE features (Gateway API, NAP, Native Sidecars, Image Streaming, Security Posture)
 - [gke-topology-aware-routing](templates/gke-topology-aware-routing/) — Cost-optimized egress via Topology-Aware Routing and Gateway API
 - [gke-fqdn-egress-security](templates/gke-fqdn-egress-security/) — Zero-Trust AI egress security via FQDN Network Policies (Enterprise feature)
+- [gke-inference-fuse-cache](templates/gke-inference-fuse-cache/) — High-performance AI inference with GCS FUSE cache and L4 GPUs
+- [gke-kuberay-kueue-multitenant](templates/gke-kuberay-kueue-multitenant/) — Multi-tenant Ray environment on GKE with Kueue for equitable GPU sharing
 
 ## External Documentation (fetch before writing code)
 
