@@ -97,7 +97,7 @@ jobs:
           # Filter for KCC supported templates
           KCC_DIRS=""
           for dir in $DIRS; do
-            if [ -f "$dir/config-connector/cluster.yaml" ] || [ -f "$dir/config-connector/network.yaml" ]; then
+            if ls "$dir/config-connector/"*.yaml >/dev/null 2>&1; then
               if [ ! -f "$dir/.kcc-unsupported" ]; then
                 KCC_DIRS="$KCC_DIRS $dir"
               fi
@@ -1470,6 +1470,9 @@ jobs:
             TF_CLUSTER=$(python3  -c "import json; d=json.load(open('$TF_RESULT_FILE')); print(d.get('cluster',''))")
             TF_LOCATION=$(python3 -c "import json; d=json.load(open('$TF_RESULT_FILE')); print(d.get('location',''))")
             TF_ZONES=$(python3    -c "import json; d=json.load(open('$TF_RESULT_FILE')); print(d.get('zones',''))")
+          elif [ ! -f "${TEMPLATE}/terraform-helm/main.tf" ]; then
+            TF_STATUS="skipped"
+            TF_DURATION=""; TF_CLUSTER=""; TF_LOCATION=""; TF_ZONES=""
           else
             TF_STATUS="$TF_JOB_RESULT"; TF_DURATION=""; TF_CLUSTER=""; TF_LOCATION=""; TF_ZONES=""
           fi
@@ -1480,6 +1483,9 @@ jobs:
           elif [ -n "$KCC_RESULT_FILE" ]; then
             KCC_STATUS=$(python3   -c "import json; d=json.load(open('$KCC_RESULT_FILE')); print(d.get('status',''))")
             KCC_DURATION=$(python3 -c "import json; d=json.load(open('$KCC_RESULT_FILE')); print(d.get('duration',''))")
+          elif ! ls "${TEMPLATE}/config-connector/"*.yaml >/dev/null 2>&1; then
+            KCC_STATUS="skipped"
+            KCC_DURATION=""
           else
             KCC_STATUS="$KCC_JOB_RESULT"; KCC_DURATION=""
           fi
