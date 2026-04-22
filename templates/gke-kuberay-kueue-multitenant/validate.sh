@@ -84,7 +84,20 @@ if [ -d "$WORKLOAD_DIR" ]; then
   # 2.5 Apply Custom Resources (with retries for webhook readiness)
   # This stage is separated from the operator installation to avoid race conditions 
   # where the Kueue mutating webhooks are not yet ready when custom resources are created.
+  # Since failurePolicy is set to Ignore to prevent installation failures, we MUST 
+  # explicitly wait for the webhook service endpoints to be ready here.
   echo "Applying Custom Resources..."
+  
+  echo "Waiting for Kueue webhook service endpoints..."
+  for i in {1..15}; do
+    if kubectl get endpoints kueue-webhook-service -n kueue-system -o jsonpath='{.subsets[0].addresses[0].ip}' >/dev/null 2>&1; then
+      echo "Webhook service endpoints are ready."
+      break
+    fi
+    echo "Waiting for webhook service endpoints (attempt $i/15)..."
+    sleep 10
+  done
+
   applied=false
   for i in {1..6}; do
     if kubectl apply --server-side -f "$WORKLOAD_DIR/02-kueue-config.yaml" && \
@@ -92,7 +105,7 @@ if [ -d "$WORKLOAD_DIR" ]; then
       applied=true
       break
     fi
-    echo "Wait for webhooks to be ready (attempt $i/6)..."
+    echo "Wait for custom resources to be accepted (attempt $i/6)..."
     sleep 20
   done
   if [ "$applied" = false ]; then
