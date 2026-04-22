@@ -25,10 +25,10 @@ spec:
   - Ingress
   ingress:
   - from:
-    - podSelector: {} # Allow from all pods in the same namespace
-    ports:
-    - protocol: TCP
-      port: 8265
+    - podSelector: {} # Allow all traffic from pods in the same namespace
+    # No ports specified means all ports are allowed from the same namespace.
+    # This ensures Ray internal traffic (GCS, etc.) is not blocked while
+    # still restricting dashboard (and other) access to the local namespace.
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -43,7 +43,4 @@ spec:
   - Ingress
   ingress:
   - from:
-    - podSelector: {} # Allow from all pods in the same namespace
-    ports:
-    - protocol: TCP
-      port: 8265
+    - podSelector: {} # Allow all traffic from pods in the same namespace

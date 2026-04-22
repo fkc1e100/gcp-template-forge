@@ -77,7 +77,7 @@ The `nvidia-driver-installer` DaemonSet runs in the `kube-system` namespace with
 - **HostNetwork & HostPID**: Required for interacting with the host OS.
 
 ### Ray Dashboard
-The Ray dashboard is exposed on `0.0.0.0:8265` within the pod. For production, it is recommended to use a `NetworkPolicy` to restrict access or use an Ingress with authentication.
+The Ray dashboard is exposed on `0.0.0.0:8265` within the head pod. This template includes a `NetworkPolicy` (`ray-dashboard-restriction`) in both `team-a` and `team-b` namespaces that restricts ingress to the head pod from only within the same namespace. For production, you may want to further restrict this to specific monitoring namespaces or use an Ingress with authentication.
 
 ## Verification
 
