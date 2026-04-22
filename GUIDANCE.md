@@ -124,7 +124,10 @@ If Jetski encounters an error, it must follow these resolution paths rather than
 * **API Quota / Rate Limiting (GCP or GitHub):**  
   * *Action:* Implement exponential backoff. If GCP hardware limits are hit (e.g., "GPU quota exceeded"), fall back to a standard node pool to test pipeline logic, noting the hardware fallback in the final PR/Issue.  
 * **KCC Resource Incompatibility:**  
-  * *Action:* If Config Connector fails to apply a generated resource, attempt *one* automatic syntax correction. If it fails again, fall back to generating native Terraform for that specific component and log the KCC failure.
+  * *Action:* If Config Connector fails to apply a generated resource, attempt *one* automatic syntax correction. If it fails again, fall back to generating native Terraform for that specific component and log the KCC failure.  
+* **KCC Missing Functionality (e.g., DWS/queuedProvisioning):**  
+  * *Action:* If a template requires a core feature that KCC does not yet support, do NOT move forward with a KCC template. Instead, create a `.kcc-unsupported` marker file in the template directory to skip KCC CI tests.  
+  * *Documentation:* Output in the template's `README.md` that this feature is not available in KCC, and link to open Issues/PRs on the KCC OSS repository (or flag that there isn't an issue and one needs to be created).
 
 ### **5.3. Code Quality & Standards**
 
