@@ -28,17 +28,21 @@ output "cluster_location" {
 }
 
 output "region" {
-  value = var.region
+  description = "The region where the resources are deployed"
+  value       = var.region
 }
 
 output "bucket_name" {
-  value = google_storage_bucket.model_bucket.name
+  description = "The name of the GCS bucket used for model storage"
+  value       = google_storage_bucket.model_bucket.name
 }
 
 output "ksa_name" {
-  value = local.ksa_name
+  description = "The name of the Kubernetes Service Account"
+  value       = local.ksa_name
 }
 
 output "vllm_service_name" {
-  value = "vllm-inference"
+  description = "The name of the vLLM inference service"
+  value       = "vllm-inference"
 }
