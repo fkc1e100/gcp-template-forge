@@ -45,6 +45,7 @@ jobs:
     timeout-minutes: 120
     outputs:
       templates: ${{ steps.find.outputs.templates }}
+      kcc_templates: ${{ steps.find.outputs.kcc_templates }}
       has_templates: ${{ steps.find.outputs.has_templates }}
     steps:
       - uses: actions/checkout@v4
@@ -67,15 +68,30 @@ jobs:
             fi
             DIFF_HEAD=${{ github.sha }}
           fi
-          DIRS=$(git diff --name-only "$BASE" "$DIFF_HEAD" \
+          
+          # Find all changed template directories
+          CHANGED_FILES=$(git diff --name-only "$BASE" "$DIFF_HEAD")
+          DIRS=$(echo "$CHANGED_FILES" \
             | grep '^templates/' \
             | grep -v '\.md$' \
             | awk -F/ '{print $1"/"$2}' \
-            | sort -u \
-            | jq -Rnc '[inputs | select(length>0)]')
-          echo "templates=$DIRS" >> $GITHUB_OUTPUT
-          echo "has_templates=$([ "$DIRS" = "[]" ] && echo false || echo true)" >> $GITHUB_OUTPUT
-          echo "Changed templates: $DIRS"
+            | sort -u)
+          
+          TEMPLATES=$(echo "$DIRS" | jq -Rnc '[inputs | select(length>0)]')
+          echo "templates=$TEMPLATES" >> $GITHUB_OUTPUT
+          echo "has_templates=$([ "$TEMPLATES" = "[]" ] && echo false || echo true)" >> $GITHUB_OUTPUT
+          echo "Changed templates: $TEMPLATES"
+
+          # Filter for KCC supported templates
+          KCC_DIRS=""
+          for dir in $DIRS; do
+            if [ ! -f "$dir/.kcc-unsupported" ]; then
+              KCC_DIRS="$KCC_DIRS $dir"
+            fi
+          done
+          KCC_TEMPLATES=$(echo "$KCC_DIRS" | tr ' ' '\n' | sort -u | jq -Rnc '[inputs | select(length>0)]')
+          echo "kcc_templates=$KCC_TEMPLATES" >> $GITHUB_OUTPUT
+          echo "KCC supported templates: $KCC_TEMPLATES"
 
       - name: Remove repo-agent Label on Start
         if: github.event_name == 'pull_request'
@@ -171,7 +187,7 @@ jobs:
           fi
 
       - name: Check no KCC abandon annotations
-        if: "hashFiles(format('{0}/config-connector', matrix.template)) != '' && hashFiles(format('{0}/.kcc-unsupported', matrix.template)) == ''"
+        if: "hashFiles(format('{0}/config-connector/**', matrix.template)) != '' && hashFiles(format('{0}/.kcc-unsupported', matrix.template)) == ''"
         run: |
           if grep -r 'deletion-policy.*abandon' ${{ matrix.template }}/config-connector/ >/dev/null 2>&1; then
             echo "ERROR: cnrm.cloud.google.com/deletion-policy: abandon found -- this orphans GCP resources"
@@ -471,13 +487,13 @@ jobs:
   kcc-apply:
     name: "KCC Apply (${{ matrix.template }})"
     needs: [ detect-changes, lint, pre-cleanup ]
-    if: github.event_name == 'pull_request' && hashFiles(format('{0}/.kcc-unsupported', matrix.template)) == ''
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
-        template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
+        template: ${{ fromJson(needs.detect-changes.outputs.kcc_templates) }}
     steps:
       - uses: actions/checkout@v4
 
@@ -523,13 +539,13 @@ jobs:
   kcc-test:
     name: "KCC Test (${{ matrix.template }})"
     needs: [ kcc-apply, detect-changes ]
-    if: github.event_name == 'pull_request' && hashFiles(format('{0}/.kcc-unsupported', matrix.template)) == ''
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
-        template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
+        template: ${{ fromJson(needs.detect-changes.outputs.kcc_templates) }}
     steps:
       - uses: actions/checkout@v4
 
@@ -627,13 +643,13 @@ jobs:
   kcc-teardown:
     name: "KCC Teardown (${{ matrix.template }})"
     needs: [ kcc-apply, kcc-test, detect-changes ]
-    if: always() && hashFiles(format('{0}/.kcc-unsupported', matrix.template)) == ''
+    if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
-        template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
+        template: ${{ fromJson(needs.detect-changes.outputs.kcc_templates) }}
     steps:
       - uses: actions/checkout@v4
 
@@ -1087,13 +1103,13 @@ jobs:
   validate-kcc:
     name: "Validate KCC (${{ matrix.template }})"
     needs: detect-changes
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && hashFiles(format('{0}/.kcc-unsupported', matrix.template)) == ''
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix:
-        template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
+        template: ${{ fromJson(needs.detect-changes.outputs.kcc_templates) }}
 
     steps:
       - uses: actions/checkout@v4
@@ -1444,7 +1460,10 @@ jobs:
             TF_STATUS="$TF_JOB_RESULT"; TF_DURATION=""; TF_CLUSTER=""; TF_LOCATION=""; TF_ZONES=""
           fi
 
-          if [ -n "$KCC_RESULT_FILE" ]; then
+          if [ -f "${TEMPLATE}/.kcc-unsupported" ]; then
+            KCC_STATUS="skipped"
+            KCC_DURATION=""
+          elif [ -n "$KCC_RESULT_FILE" ]; then
             KCC_STATUS=$(python3   -c "import json; d=json.load(open('$KCC_RESULT_FILE')); print(d.get('status',''))")
             KCC_DURATION=$(python3 -c "import json; d=json.load(open('$KCC_RESULT_FILE')); print(d.get('duration',''))")
           else
