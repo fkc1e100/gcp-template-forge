@@ -36,6 +36,11 @@ resource "google_compute_subnetwork" "subnet" {
   network                  = google_compute_network.vpc.id
   private_ip_google_access = true
 
+  labels = {
+    project  = "gcp-template-forge"
+    template = "enterprise-gke"
+  }
+
   secondary_ip_range {
     range_name    = "pods"
     ip_cidr_range = "10.20.0.0/14"
