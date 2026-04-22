@@ -33,8 +33,9 @@ terraform apply -var="project_id=<PROJECT_ID>" -var="service_account=<SERVICE_AC
 
 The Helm chart in `workload/` installs:
 1. KubeRay and Kueue operators.
-2. Kueue `ResourceFlavor`, `ClusterQueues`, and `LocalQueues`.
-3. Team namespaces and sample `RayCluster` resources.
+2. Team namespaces.
+
+The remaining resources (`ResourceFlavor`, `ClusterQueues`, `LocalQueues`, and sample `RayCluster` resources) are applied by the `validate.sh` script (or can be applied manually from `config-connector-workload/`) to ensure the Kueue webhooks are ready before the resources are created.
 
 ### Config Connector (`config-connector/`)
 
