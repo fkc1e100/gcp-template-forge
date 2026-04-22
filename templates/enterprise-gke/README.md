@@ -131,10 +131,10 @@ kubectl delete -n <KCC_NAMESPACE> -f config-connector/ --wait=true
 | --- | --- | --- |
 | **Status** | success | success |
 | **Date** | 2026-04-22 | 2026-04-22 |
-| **Duration** | 16m 37s | 15m 15s |
+| **Duration** | 21m 59s | 21m 57s |
 | **Region** | us-central1 | us-central1 (KCC cluster) |
 | **Zones** | us-central1-a,us-central1-b,us-central1-c,us-central1-f | us-central1 (regional) |
 | **Cluster** | enterprise-gke-tf | enterprise-gke-kcc |
-| **Agent tokens** | 480,000 in / 65,000 out (multi-session) | (shared session) |
-| **Estimated cost** | $0.48 | -- |
-| **Commit** | fa132c6 | fa132c6 |
+| **Agent tokens** | 495,000 in / 70,000 out (multi-session) | (shared session) |
+| **Estimated cost** | $0.55 | -- |
+| **Commit** | dde1b73 | dde1b73 |
