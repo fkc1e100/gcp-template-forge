@@ -47,11 +47,6 @@ resource "google_compute_subnetwork" "gke_kuberay_kueue_multitenant_subnet" {
     range_name    = "services"
     ip_cidr_range = "10.8.0.0/20"
   }
-
-  labels = {
-    project  = "gcp-template-forge"
-    template = "gke-kuberay-kueue-multitenant"
-  }
 }
 
 # GKE Cluster
