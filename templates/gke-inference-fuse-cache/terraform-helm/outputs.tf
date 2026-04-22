@@ -13,11 +13,18 @@
 # limitations under the License.
 
 output "cluster_name" {
-  value = google_container_cluster.primary.name
+  description = "The name of the GKE cluster"
+  value       = google_container_cluster.primary.name
+}
+
+output "cluster_endpoint" {
+  description = "The IP address of the GKE cluster master"
+  value       = google_container_cluster.primary.endpoint
 }
 
 output "cluster_location" {
-  value = google_container_cluster.primary.location
+  description = "The location of the GKE cluster"
+  value       = google_container_cluster.primary.location
 }
 
 output "region" {

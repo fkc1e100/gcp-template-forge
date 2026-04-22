@@ -17,6 +17,11 @@ output "cluster_name" {
   value       = google_container_cluster.gke_kuberay_kueue_multitenant_cluster.name
 }
 
+output "cluster_endpoint" {
+  description = "The IP address of the GKE cluster master"
+  value       = google_container_cluster.gke_kuberay_kueue_multitenant_cluster.endpoint
+}
+
 output "cluster_location" {
   description = "The location of the GKE cluster"
   value       = google_container_cluster.gke_kuberay_kueue_multitenant_cluster.location
