@@ -37,6 +37,7 @@ resource "google_compute_subnetwork" "gke_kuberay_kueue_multitenant_subnet" {
   region                   = var.region
   network                  = google_compute_network.gke_kuberay_kueue_multitenant_vpc.id
   private_ip_google_access = true
+  project                  = var.project_id
 
   secondary_ip_range {
     range_name    = "pods"
