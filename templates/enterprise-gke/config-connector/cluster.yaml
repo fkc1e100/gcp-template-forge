@@ -66,5 +66,5 @@ spec:
   securityPostureConfig:
     mode: BASIC
     vulnerabilityMode: VULNERABILITY_ENTERPRISE
-  release_channel:
+  releaseChannel:
     channel: REGULAR
