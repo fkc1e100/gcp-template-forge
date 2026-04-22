@@ -17,6 +17,8 @@ variable "project_id" {
   type        = string
 }
 
+# Triggering CI validation.
+
 variable "region" {
   description = "The region to deploy to"
   type        = string
