@@ -130,11 +130,11 @@ kubectl delete -n <KCC_NAMESPACE> -f config-connector/ --wait=true
 |  | Terraform + Helm | Config Connector |
 | --- | --- | --- |
 | **Status** | success | success |
-| **Date** | 2026-04-21 | 2026-04-21 |
+| **Date** | 2026-04-22 | 2026-04-22 |
 | **Duration** | 16m 37s | 15m 15s |
 | **Region** | us-central1 | us-central1 (KCC cluster) |
 | **Zones** | us-central1-a,us-central1-b,us-central1-c,us-central1-f | us-central1 (regional) |
 | **Cluster** | enterprise-gke-tf | enterprise-gke-kcc |
 | **Agent tokens** | 480,000 in / 65,000 out (multi-session) | (shared session) |
 | **Estimated cost** | $0.48 | -- |
-| **Commit** | 838a436 | 838a436 |
+| **Commit** | b129793 | b129793 |
