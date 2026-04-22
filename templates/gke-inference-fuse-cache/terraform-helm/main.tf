@@ -65,6 +65,7 @@ resource "google_compute_subnetwork" "subnet" {
 resource "google_storage_bucket" "model_bucket" {
   name          = local.bucket_name
   location      = var.region
+  project       = var.project_id
   force_destroy = true
 
   uniform_bucket_level_access = true
@@ -80,6 +81,7 @@ resource "google_container_cluster" "primary" {
   provider = google-beta
   name     = var.cluster_name
   location = var.region
+  project  = var.project_id
 
   # Restrict to a single zone that supports L4 GPUs to save quota and improve reliability
   node_locations = [var.zone]
@@ -130,6 +132,7 @@ resource "google_container_node_pool" "gpu_pool" {
   name       = "l4-gpu-pool"
   location   = var.region
   cluster    = google_container_cluster.primary.name
+  project    = var.project_id
   node_count = 1
 
   # Restrict to a single zone that supports L4 GPUs
@@ -193,6 +196,7 @@ resource "google_container_node_pool" "system_pool" {
   name       = "system-pool"
   location   = var.region
   cluster    = google_container_cluster.primary.name
+  project    = var.project_id
   node_count = 1
 
   # Restrict to the same zone as the GPU pool

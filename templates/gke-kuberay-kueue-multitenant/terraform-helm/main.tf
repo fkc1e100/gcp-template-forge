@@ -54,6 +54,7 @@ resource "google_compute_subnetwork" "gke_kuberay_kueue_multitenant_subnet" {
 resource "google_container_cluster" "gke_kuberay_kueue_multitenant_cluster" {
   name     = var.cluster_name
   location = var.region
+  project  = var.project_id
 
   deletion_protection = false
 
@@ -98,6 +99,7 @@ resource "google_container_node_pool" "system_nodes" {
   name       = "gke-kuberay-kueue-multitenant-sys"
   location   = var.region
   cluster    = google_container_cluster.gke_kuberay_kueue_multitenant_cluster.name
+  project    = var.project_id
   node_count = 2
 
   node_config {
@@ -128,6 +130,7 @@ resource "google_container_node_pool" "gpu_nodes" {
   name     = "gke-kuberay-kueue-multitenant-gpu"
   location = var.region
   cluster  = google_container_cluster.gke_kuberay_kueue_multitenant_cluster.name
+  project  = var.project_id
 
   node_locations = [
     "${var.region}-a",
