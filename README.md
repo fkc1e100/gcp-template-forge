@@ -192,6 +192,8 @@ templates/<name>/
 | [latest-gke-features](templates/latest-gke-features/) | GKE Standard + Gateway API + NAP + Native Sidecars | GKE Standard + Native Sidecars + Gateway API | — |
 | [gke-fqdn-egress-security](templates/gke-fqdn-egress-security/) | GKE Standard + FQDN Network Policies + AI Egress | GKE Standard + KCC Networking | — |
 | [gke-topology-aware-routing](templates/gke-topology-aware-routing/) | GKE Standard + Topology-Aware Routing + Gateway API | GKE Standard + Topology-Aware Routing + Gateway API | — |
+| [gke-inference-fuse-cache](templates/gke-inference-fuse-cache/) | GKE Standard + GCS FUSE Cache + L4 GPUs | GKE Standard + GCS FUSE Cache + L4 GPUs | — |
+| [gke-kuberay-kueue-multitenant](templates/gke-kuberay-kueue-multitenant/) | GKE Standard + KubeRay + Kueue + L4 GPUs | GKE Standard + KubeRay + Kueue + L4 GPUs | — |
 
 ---
 
