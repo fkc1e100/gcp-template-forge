@@ -69,6 +69,9 @@ spec:
   clusterRef:
     name: gke-inf-fuse-cache-kcc
   nodeCount: 1
+  # Restrict to the same zone as the GPU pool
+  nodeLocations:
+    - us-central1-a
   nodeConfig:
     machineType: e2-standard-2
     diskType: pd-balanced

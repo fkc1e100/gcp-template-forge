@@ -193,6 +193,9 @@ resource "google_container_node_pool" "system_pool" {
   cluster    = google_container_cluster.primary.name
   node_count = 1
 
+  # Restrict to the same zone as the GPU pool
+  node_locations = [var.zone]
+
   node_config {
     machine_type = "e2-standard-2"
     disk_size_gb = 50
