@@ -82,6 +82,8 @@ if [ -d "$WORKLOAD_DIR" ]; then
   echo "Operators are ready."
 
   # 2.5 Apply Custom Resources (with retries for webhook readiness)
+  # This stage is separated from the operator installation to avoid race conditions 
+  # where the Kueue mutating webhooks are not yet ready when custom resources are created.
   echo "Applying Custom Resources..."
   applied=false
   for i in {1..6}; do
