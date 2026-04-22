@@ -23,13 +23,14 @@ This document outlines the plan for verifying the `gke-kuberay-kueue-multitenant
 
 ## 1. Infrastructure Verification (Terraform)
 - [ ] Run `terraform plan` to ensure VPC, Subnet, Cluster, and Node Pools are correctly defined.
+- [ ] Verify that explicit `timeouts` (30m) are set on all node pools.
 - [ ] Verify that the GPU node pool has the correct taints (`nvidia.com/gpu: NoSchedule`) and labels.
 - [ ] Verify that GKE managed driver installation is enabled.
 - [ ] Run `terraform apply` and wait for cluster readiness.
 
 ## 2. Workload Verification (Helm / Kubernetes)
 - [ ] Verify that `team-a` and `team-b` namespaces are created.
-- [ ] Verify that KubeRay and Kueue operators are running.
+- [ ] Verify that KubeRay and Kueue operators are running with 2 replicas for High Availability.
 - [ ] Verify that Kueue `ResourceFlavor`, `ClusterQueues`, and `LocalQueues` are correctly configured with cohorts.
 - [ ] Verify that `RayCluster` resources in each namespace are admitted by Kueue.
 

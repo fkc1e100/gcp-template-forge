@@ -18,7 +18,7 @@ metadata:
   name: gke-inf-fuse-cache-kcc-bucket
   namespace: forge-management
   annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025
+    cnrm.cloud.google.com/project-id: gca-gke-2025 # UPDATE: Replace with your GCP Project ID
     cnrm.cloud.google.com/force-destroy: "true"
   labels:
     project: gcp-template-forge

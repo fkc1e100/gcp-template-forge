@@ -21,7 +21,7 @@ metadata:
     project: gcp-template-forge
     template: gke-kuberay-kueue-multitenant
   annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025
+    cnrm.cloud.google.com/project-id: gca-gke-2025 # UPDATE: Replace with your GCP Project ID
     cnrm.cloud.google.com/remove-default-node-pool: "true"
 spec:
   location: us-central1
@@ -34,7 +34,7 @@ spec:
     clusterSecondaryRangeName: pods
     servicesSecondaryRangeName: services
   workloadIdentityConfig:
-    workloadPool: gca-gke-2025.svc.id.goog
+    workloadPool: gca-gke-2025.svc.id.goog # UPDATE: Replace 'gca-gke-2025' with your GCP Project ID
   releaseChannel:
     channel: REGULAR
   loggingConfig:
