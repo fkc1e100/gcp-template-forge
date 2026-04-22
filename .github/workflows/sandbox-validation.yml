@@ -124,8 +124,7 @@ jobs:
           ./agent-infra/local-lint.sh ${{ matrix.template }}
 
       - name: Helm template (render + validate YAML)
-
-if: "hashFiles(format('{0}/terraform-helm/**', matrix.template)) != ''"
+        if: "hashFiles(format('{0}/terraform-helm/**', matrix.template)) != ''"
         run: |
           CHARTS=$(find ${{ matrix.template }}/terraform-helm -name Chart.yaml -exec dirname {} \; 2>/dev/null)
           if [ -z "$CHARTS" ]; then exit 0; fi
@@ -199,8 +198,7 @@ if: "hashFiles(format('{0}/terraform-helm/**', matrix.template)) != ''"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-- name: Authenticate to GCP
+      - name: Authenticate to GCP
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
@@ -310,8 +308,7 @@ if: "hashFiles(format('{0}/terraform-helm/**', matrix.template)) != ''"
           if [ -z "$CHARTS" ]; then echo "No Helm charts found -- skipping"; exit 0; fi
           TIMEOUT="60m"
           if [ -f "${{ matrix.template }}/.timeout" ]; then
-
-TIMEOUT=$(cat ${{ matrix.template }}/.timeout)
+            TIMEOUT=$(cat ${{ matrix.template }}/.timeout)
           fi
           for chart in $CHARTS; do
             echo "=== Helm deploy: $chart ==="
@@ -514,8 +511,7 @@ TIMEOUT=$(cat ${{ matrix.template }}/.timeout)
             if [ -z "$CLUSTER_NAME" ]; then
                CLUSTER_NAME=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(docs[0]['metadata']['name'] if docs else '')")
             fi
-
-if [ -z "$LOCATION" ]; then
+            if [ -z "$LOCATION" ]; then
                LOCATION=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(docs[0]['spec']['location'] if docs else '')")
             fi
           else
@@ -628,10 +624,8 @@ if [ -z "$LOCATION" ]; then
 
       - name: Install GKE Auth Plugin
         run: |
-
-curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --yes --batch --dearmor -o /usr/share/keyrings/cloud.google.gpg
+          curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --yes --batch --dearmor -o /usr/share/keyrings/cloud.google.gpg
           echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
-          sudo apt-get update && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
           sudo apt-get update && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
 
       # ── TF cleanup ──────────────────────────────────────────────────────────
@@ -718,8 +712,7 @@ curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --ye
             echo "skip=false" >> $GITHUB_OUTPUT
             exit 0
           fi
-
-CHANGED=$(git diff --name-only "$VALIDATED_COMMIT" HEAD -- "${TEMPLATE}/" \
+          CHANGED=$(git diff --name-only "$VALIDATED_COMMIT" HEAD -- "${TEMPLATE}/" \
             | grep -v '\.validated$' | grep -v 'README\.md$' || true)
           if [ -n "$CHANGED" ]; then
             echo "Template changed since last validation (${VALIDATED_COMMIT}):"
@@ -741,7 +734,6 @@ CHANGED=$(git diff --name-only "$VALIDATED_COMMIT" HEAD -- "${TEMPLATE}/" \
         run: |
           curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --yes --batch --dearmor -o /usr/share/keyrings/cloud.google.gpg
           echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
-          sudo apt-get update && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
           sudo apt-get update && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
 
       - name: Setup Terraform
@@ -809,8 +801,7 @@ CHANGED=$(git diff --name-only "$VALIDATED_COMMIT" HEAD -- "${TEMPLATE}/" \
         id: tf-verify
         if: steps.tf-creds.outcome == 'success'
         run: |
-
-CLUSTER="${{ steps.tf-outputs.outputs.tf_cluster }}"
+          CLUSTER="${{ steps.tf-outputs.outputs.tf_cluster }}"
           LOCATION="${{ steps.tf-outputs.outputs.tf_location }}"
           kubectl get nodes
           gcloud container clusters describe $CLUSTER --location=$LOCATION \
@@ -896,8 +887,7 @@ CLUSTER="${{ steps.tf-outputs.outputs.tf_cluster }}"
                 continue
               }
               echo "$SCAN_OUT"
-
-SCAN_NAME=$(echo "$SCAN_OUT" | grep '^name:' | head -1 | awk '{print $2}' || true)
+              SCAN_NAME=$(echo "$SCAN_OUT" | grep '^name:' | head -1 | awk '{print $2}' || true)
               if [ -n "$SCAN_NAME" ]; then
                 VULNS=$(gcloud artifacts docker images list-vulnerabilities "$SCAN_NAME" \
                   --project="$PROJECT" \
@@ -989,8 +979,7 @@ SCAN_NAME=$(echo "$SCAN_OUT" | grep '^name:' | head -1 | awk '{print $2}' || tru
   validate-kcc:
     name: "Validate KCC (${{ matrix.template }})"
     needs: detect-changes
-
-if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 120
     strategy:
@@ -1040,7 +1029,6 @@ if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --yes --batch --dearmor -o /usr/share/keyrings/cloud.google.gpg
           echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
-          sudo apt-get update && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
           sudo apt-get update && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
 
       - name: Get KCC cluster credentials
@@ -1095,8 +1083,7 @@ if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: echo "Drift test placeholder -- template-specific tests go here."
 
       - name: Get KCC Workload Cluster Info
-
-id: kcc-workload-info
+        id: kcc-workload-info
         if: steps.kcc-wait.outcome == 'success' || steps.kcc-cluster-ready.outcome == 'success'
         run: |
           RUN_ID="${{ github.run_id }}"
@@ -1168,7 +1155,7 @@ id: kcc-workload-info
           PROJECT="${{ env.PROJECT_ID }}"
           SCAN_WARNINGS=0
 
-echo "=== GKE Security Posture configuration ==="
+          echo "=== GKE Security Posture configuration ==="
           gcloud container clusters describe "$CLUSTER" --location="$LOCATION" \
             --project="$PROJECT" --format="yaml(securityPostureConfig)"
 
@@ -1260,8 +1247,7 @@ echo "=== GKE Security Posture configuration ==="
       - name: Upload KCC results artifact
         if: always() && steps.skip-check.outputs.skip != 'true'
         uses: actions/upload-artifact@v4
-
-with:
+        with:
           name: kcc-results-${{ github.run_id }}-${{ strategy.job-index }}
           path: /tmp/kcc-results/result.json
           retention-days: 1
@@ -1363,8 +1349,7 @@ with:
           cumulative_file   = f'{template}/.agent-metrics-cumulative'
 
           current = {}
-
-if os.path.exists(metrics_file):
+          if os.path.exists(metrics_file):
               try:    current = json.load(open(metrics_file))
               except: pass
 
@@ -1455,7 +1440,7 @@ if os.path.exists(metrics_file):
               ("**Commit**",         commit,    commit),
           ]
 
-header = sep.join(["", "", "Terraform + Helm", "Config Connector", ""]).strip()
+          header = sep.join(["", "", "Terraform + Helm", "Config Connector", ""]).strip()
           divider = sep.join(["", "---", "---", "---", ""]).strip()
           lines = ["\n\n## Validation Record\n", header, divider]
           for label, tf_val, kcc_val in rows:
