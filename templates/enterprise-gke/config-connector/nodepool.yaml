@@ -42,9 +42,6 @@ spec:
     shieldedInstanceConfig:
       enableSecureBoot: true
       enableIntegrityMonitoring: true
-    resourceLabels:
-      project: gcp-template-forge
-      template: enterprise-gke
     labels:
       project: gcp-template-forge
       template: enterprise-gke

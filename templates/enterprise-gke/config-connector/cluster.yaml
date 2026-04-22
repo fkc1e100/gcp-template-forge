@@ -66,8 +66,5 @@ spec:
   securityPostureConfig:
     mode: BASIC
     vulnerabilityMode: VULNERABILITY_ENTERPRISE
-  resourceLabels:
-    project: gcp-template-forge
-    template: enterprise-gke
-  releaseChannel:
+  release_channel:
     channel: REGULAR
