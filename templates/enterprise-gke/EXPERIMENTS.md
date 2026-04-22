@@ -89,3 +89,4 @@
 | 105 | Final clean PR from fresh branch | ✅ Success | Re-implementing issue #73 on fresh branch resolved CI pollution and confirmed absolute functional parity. | Finalized |
 | 106 | Final review and documentation alignment | ✅ Success | Synchronized README with the latest validated commit hash (838a436) and performed final audit. PR is ready for merging. | Finalized |
 | 107 | Final audit and absolute hash synchronization | ✅ Success | Synchronized documentation with the latest validated commit hash (b129793) and performed final security/parity audit. | Finalized |
+| 108 | Fix missing KCC resourceLabels and CI teardown lock | ✅ Success | Added missing resourceLabels to KCC cluster/nodepool and added stale lock cleanup to CI teardown to prevent blocked runs. | Finalized |
