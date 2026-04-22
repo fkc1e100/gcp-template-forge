@@ -137,4 +137,4 @@ kubectl delete -n <KCC_NAMESPACE> -f config-connector/ --wait=true
 | **Cluster** | enterprise-gke-tf | enterprise-gke-kcc |
 | **Agent tokens** | 480,000 in / 65,000 out (multi-session) | (shared session) |
 | **Estimated cost** | $0.48 | -- |
-| **Commit** | 215ce9a | 215ce9a |
+| **Commit** | fa132c6 | fa132c6 |
