@@ -140,4 +140,4 @@ kubectl delete -n <KCC_NAMESPACE> -f config-connector/ --wait=true
 | **Commit** | 9e68c4b | 9e68c4b |
 
 
-<!-- dummy change to trigger CI - Turn 2 -->
+<!-- dummy change to trigger CI -->
