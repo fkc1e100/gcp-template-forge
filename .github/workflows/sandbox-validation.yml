@@ -45,6 +45,7 @@ jobs:
     timeout-minutes: 120
     outputs:
       templates: ${{ steps.find.outputs.templates }}
+      tf_templates: ${{ steps.find.outputs.tf_templates }}
       kcc_templates: ${{ steps.find.outputs.kcc_templates }}
       has_templates: ${{ steps.find.outputs.has_templates }}
     steps:
@@ -82,11 +83,24 @@ jobs:
           echo "has_templates=$([ "$TEMPLATES" = "[]" ] && echo false || echo true)" >> $GITHUB_OUTPUT
           echo "Changed templates: $TEMPLATES"
 
+          # Filter for TF supported templates (must have main.tf)
+          TF_DIRS=""
+          for dir in $DIRS; do
+            if [ -f "$dir/terraform-helm/main.tf" ]; then
+              TF_DIRS="$TF_DIRS $dir"
+            fi
+          done
+          TF_TEMPLATES=$(echo "$TF_DIRS" | tr ' ' '\n' | sort -u | jq -Rnc '[inputs | select(length>0)]')
+          echo "tf_templates=$TF_TEMPLATES" >> $GITHUB_OUTPUT
+          echo "TF supported templates: $TF_TEMPLATES"
+
           # Filter for KCC supported templates
           KCC_DIRS=""
           for dir in $DIRS; do
-            if [ ! -f "$dir/.kcc-unsupported" ]; then
-              KCC_DIRS="$KCC_DIRS $dir"
+            if [ -f "$dir/config-connector/cluster.yaml" ] || [ -f "$dir/config-connector/network.yaml" ]; then
+              if [ ! -f "$dir/.kcc-unsupported" ]; then
+                KCC_DIRS="$KCC_DIRS $dir"
+              fi
             fi
           done
           KCC_TEMPLATES=$(echo "$KCC_DIRS" | tr ' ' '\n' | sort -u | jq -Rnc '[inputs | select(length>0)]')
@@ -231,7 +245,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
+        template: ${{ fromJson(needs.detect-changes.outputs.tf_templates) }}
     outputs:
       tf_cluster: ${{ steps.tf-outputs.outputs.tf_cluster }}
       tf_location: ${{ steps.tf-outputs.outputs.tf_location }}
@@ -302,7 +316,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
+        template: ${{ fromJson(needs.detect-changes.outputs.tf_templates) }}
     steps:
       - uses: actions/checkout@v4
 
@@ -383,7 +397,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
+        template: ${{ fromJson(needs.detect-changes.outputs.tf_templates) }}
     steps:
       - uses: actions/checkout@v4
 
@@ -795,7 +809,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
+        template: ${{ fromJson(needs.detect-changes.outputs.tf_templates) }}
 
     steps:
       - uses: actions/checkout@v4
