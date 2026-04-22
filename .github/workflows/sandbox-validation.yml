@@ -45,8 +45,6 @@ jobs:
     timeout-minutes: 120
     outputs:
       templates: ${{ steps.find.outputs.templates }}
-      tf_templates: ${{ steps.find.outputs.tf_templates }}
-      kcc_templates: ${{ steps.find.outputs.kcc_templates }}
       has_templates: ${{ steps.find.outputs.has_templates }}
     steps:
       - uses: actions/checkout@v4
@@ -56,8 +54,8 @@ jobs:
       - name: Find changed template directories
         id: find
         run: |
+          git fetch origin ${{ github.base_ref }}
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            git fetch origin ${{ github.base_ref }}
             PR_HEAD="${{ github.event.pull_request.head.sha }}"
             BASE=$(git merge-base "origin/${{ github.base_ref }}" "$PR_HEAD")
             DIFF_HEAD="$PR_HEAD"
@@ -69,43 +67,17 @@ jobs:
             fi
             DIFF_HEAD=${{ github.sha }}
           fi
-          
-          # Find all changed template directories
-          CHANGED_FILES=$(git diff --name-only "$BASE" "$DIFF_HEAD")
-          DIRS=$(echo "$CHANGED_FILES" \
+          DIRS=$(git diff --name-only "$BASE" "$DIFF_HEAD" \
             | grep '^templates/' \
             | grep -v '\.md$' \
             | awk -F/ '{print $1"/"$2}' \
-            | sort -u)
-          
-          TEMPLATES=$(echo "$DIRS" | jq -Rnc '[inputs | select(length>0)]')
-          echo "templates=$TEMPLATES" >> $GITHUB_OUTPUT
-          echo "has_templates=$([ "$TEMPLATES" = "[]" ] && echo false || echo true)" >> $GITHUB_OUTPUT
-          echo "Changed templates: $TEMPLATES"
+            | sort -u \
+            | jq -Rnc '[inputs | select(length>0)]')
+          echo "templates=$DIRS" >> $GITHUB_OUTPUT
+          echo "has_templates=$([ "$DIRS" = "[]" ] && echo false || echo true)" >> $GITHUB_OUTPUT
+          echo "Changed templates: $DIRS"
 
-          # Filter for TF supported templates (must have main.tf)
-          TF_DIRS=""
-          for dir in $DIRS; do
-            if [ -f "$dir/terraform-helm/main.tf" ]; then
-              TF_DIRS="$TF_DIRS $dir"
-            fi
-          done
-          TF_TEMPLATES=$(echo "$TF_DIRS" | tr ' ' '\n' | sort -u | jq -Rnc '[inputs | select(length>0)]')
-          echo "tf_templates=$TF_TEMPLATES" >> $GITHUB_OUTPUT
-          echo "TF supported templates: $TF_TEMPLATES"
 
-          # Filter for KCC supported templates
-          KCC_DIRS=""
-          for dir in $DIRS; do
-            if ls "$dir/config-connector/"*.yaml >/dev/null 2>&1; then
-              if [ ! -f "$dir/.kcc-unsupported" ]; then
-                KCC_DIRS="$KCC_DIRS $dir"
-              fi
-            fi
-          done
-          KCC_TEMPLATES=$(echo "$KCC_DIRS" | tr ' ' '\n' | sort -u | jq -Rnc '[inputs | select(length>0)]')
-          echo "kcc_templates=$KCC_TEMPLATES" >> $GITHUB_OUTPUT
-          echo "KCC supported templates: $KCC_TEMPLATES"
 
       - name: Remove repo-agent Label on Start
         if: github.event_name == 'pull_request'
@@ -152,7 +124,8 @@ jobs:
           ./agent-infra/local-lint.sh ${{ matrix.template }}
 
       - name: Helm template (render + validate YAML)
-        if: "hashFiles(format('{0}/terraform-helm/**', matrix.template)) != ''"
+
+if: "hashFiles(format('{0}/terraform-helm/**', matrix.template)) != ''"
         run: |
           CHARTS=$(find ${{ matrix.template }}/terraform-helm -name Chart.yaml -exec dirname {} \; 2>/dev/null)
           if [ -z "$CHARTS" ]; then exit 0; fi
@@ -171,7 +144,7 @@ jobs:
           done
 
       - name: KCC manifest syntax check
-        if: "hashFiles(format('{0}/config-connector/**', matrix.template)) != '' && hashFiles(format('{0}/.kcc-unsupported', matrix.template)) == ''"
+        if: "hashFiles(format('{0}/config-connector/**', matrix.template)) != ''"
         run: |
           # Basic YAML syntax validation
           python3 -c "
@@ -201,7 +174,7 @@ jobs:
           fi
 
       - name: Check no KCC abandon annotations
-        if: "hashFiles(format('{0}/config-connector/**', matrix.template)) != '' && hashFiles(format('{0}/.kcc-unsupported', matrix.template)) == ''"
+        if: "hashFiles(format('{0}/config-connector', matrix.template)) != ''"
         run: |
           if grep -r 'deletion-policy.*abandon' ${{ matrix.template }}/config-connector/ >/dev/null 2>&1; then
             echo "ERROR: cnrm.cloud.google.com/deletion-policy: abandon found -- this orphans GCP resources"
@@ -216,6 +189,8 @@ jobs:
             exit 1
           fi
 
+
+
   # ── 3. Pre-deploy Quota Cleanup ──────────────────────────────────────────
   pre-cleanup:
     name: "Quota Cleanup"
@@ -224,7 +199,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Authenticate to GCP
+
+- name: Authenticate to GCP
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
@@ -245,12 +221,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        template: ${{ fromJson(needs.detect-changes.outputs.tf_templates) }}
+        template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
     outputs:
       tf_cluster: ${{ steps.tf-outputs.outputs.tf_cluster }}
       tf_location: ${{ steps.tf-outputs.outputs.tf_location }}
-      tf_bucket: ${{ steps.tf-outputs.outputs.tf_bucket }}
-      tf_ksa: ${{ steps.tf-outputs.outputs.tf_ksa }}
     steps:
       - uses: actions/checkout@v4
 
@@ -278,15 +252,10 @@ jobs:
         run: |
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
-          BASE_NAME=$(basename ${{ matrix.template }})
-          if [[ "${{ matrix.template }}" == *"gke-inference-fuse-cache"* ]]; then
-            BASE_NAME="gke-inf-fuse-cache"
-          fi
           echo "TF_START=$(date -u +%s)" >> $GITHUB_ENV
-          export TF_VAR_cluster_name="${BASE_NAME}-${UID_SUFFIX}-tf"
-          export TF_VAR_network_name="${BASE_NAME}-${UID_SUFFIX}-tf-vpc"
-          export TF_VAR_subnet_name="${BASE_NAME}-${UID_SUFFIX}-tf-subnet"
-          export TF_VAR_uid_suffix="${UID_SUFFIX}"
+          export TF_VAR_cluster_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf"
+          export TF_VAR_network_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf-vpc"
+          export TF_VAR_subnet_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf-subnet"
           terraform init \
             -backend-config="bucket=$TF_STATE_BUCKET" \
             -backend-config="prefix=${{ matrix.template }}-${{ github.run_id }}/terraform-helm"
@@ -301,12 +270,8 @@ jobs:
           echo "tf_duration=${TF_DURATION}" >> $GITHUB_OUTPUT
           CLUSTER=$(terraform output -raw cluster_name 2>/dev/null || echo "")
           LOCATION=$(terraform output -raw cluster_location 2>/dev/null || echo "")
-          BUCKET=$(terraform output -raw bucket_name 2>/dev/null || echo "")
-          KSA=$(terraform output -raw ksa_name 2>/dev/null || echo "")
           echo "tf_cluster=${CLUSTER}" >> $GITHUB_OUTPUT
           echo "tf_location=${LOCATION}" >> $GITHUB_OUTPUT
-          echo "tf_bucket=${BUCKET}" >> $GITHUB_OUTPUT
-          echo "tf_ksa=${KSA}" >> $GITHUB_OUTPUT
 
   tf-test:
     name: "Test TF (${{ matrix.template }})"
@@ -316,7 +281,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        template: ${{ fromJson(needs.detect-changes.outputs.tf_templates) }}
+        template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
     steps:
       - uses: actions/checkout@v4
 
@@ -327,16 +292,11 @@ jobs:
           wif_service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
 
       - name: Get TF cluster credentials
-        run: |
-          RUN_ID="${{ github.run_id }}"
-          UID_SUFFIX="${RUN_ID: -6}"
-          BASE_NAME=$(basename ${{ matrix.template }})
-          if [[ "${{ matrix.template }}" == *"gke-inference-fuse-cache"* ]]; then
-            BASE_NAME="gke-inf-fuse-cache"
-          fi
-          CLUSTER_NAME="${BASE_NAME}-${UID_SUFFIX}-tf"
-          echo "CLUSTER_NAME=${CLUSTER_NAME}" >> $GITHUB_ENV
-          gcloud container clusters get-credentials "${CLUSTER_NAME}" --region us-central1 --project ${{ env.PROJECT_ID }}
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ needs.tf-provision.outputs.tf_cluster }}
+          location: ${{ needs.tf-provision.outputs.tf_location }}
+          project_id: ${{ env.PROJECT_ID }}
 
       - name: Verify Terraform cluster is RUNNING
         run: |
@@ -350,30 +310,18 @@ jobs:
           if [ -z "$CHARTS" ]; then echo "No Helm charts found -- skipping"; exit 0; fi
           TIMEOUT="60m"
           if [ -f "${{ matrix.template }}/.timeout" ]; then
-            TIMEOUT=$(cat ${{ matrix.template }}/.timeout)
-          fi
 
-          RUN_ID="${{ github.run_id }}"
-          UID_SUFFIX="${RUN_ID: -6}"
-          
-          # Only set these for gke-inf-fuse-cache
-          EXTRA_ARGS=""
-          if [[ "${{ matrix.template }}" == *"gke-inference-fuse-cache"* ]]; then
-            # Recalculate unique names used in tf-provision
-            BUCKET_NAME="gke-inf-fuse-cache-tf-${UID_SUFFIX}-bucket"
-            KSA_NAME="gke-inf-fuse-cache-${UID_SUFFIX}-sa"
-            EXTRA_ARGS="--set templateName=gke-inf-fuse-cache-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME}"
+TIMEOUT=$(cat ${{ matrix.template }}/.timeout)
           fi
-
           for chart in $CHARTS; do
             echo "=== Helm deploy: $chart ==="
-            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT" ${EXTRA_ARGS}
+            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT"
           done
 
           if [ -f "${{ matrix.template }}/validate.sh" ]; then
             echo "=== Running template-specific validation: ${{ matrix.template }}/validate.sh ==="
-            export CLUSTER_NAME="${{ env.CLUSTER_NAME }}"
-            export REGION="us-central1"
+            export CLUSTER_NAME="${{ needs.tf-provision.outputs.tf_cluster }}"
+            export REGION="${{ needs.tf-provision.outputs.tf_location }}"
             chmod +x ${{ matrix.template }}/validate.sh
             ./${{ matrix.template }}/validate.sh
           fi
@@ -381,8 +329,8 @@ jobs:
       - name: Security scan — GCP native
         continue-on-error: true
         run: |
-          CLUSTER="${{ env.CLUSTER_NAME }}"
-          LOCATION="us-central1"
+          CLUSTER="${{ needs.tf-provision.outputs.tf_cluster }}"
+          LOCATION="${{ needs.tf-provision.outputs.tf_location }}"
           PROJECT="${{ env.PROJECT_ID }}"
           echo "=== GKE Security Posture configuration ==="
           gcloud container clusters describe "$CLUSTER" --location="$LOCATION" \
@@ -397,7 +345,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        template: ${{ fromJson(needs.detect-changes.outputs.tf_templates) }}
+        template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
     steps:
       - uses: actions/checkout@v4
 
@@ -411,19 +359,15 @@ jobs:
         uses: hashicorp/setup-terraform@v3
 
       - name: Get TF cluster credentials
-        if: always()
-        run: |
-          RUN_ID="${{ github.run_id }}"
-          UID_SUFFIX="${RUN_ID: -6}"
-          BASE_NAME=$(basename ${{ matrix.template }})
-          if [[ "${{ matrix.template }}" == *"gke-inference-fuse-cache"* ]]; then
-            BASE_NAME="gke-inf-fuse-cache"
-          fi
-          CLUSTER_NAME="${BASE_NAME}-${UID_SUFFIX}-tf"
-          echo "CLUSTER_NAME=${CLUSTER_NAME}" >> $GITHUB_ENV
-          gcloud container clusters get-credentials "${CLUSTER_NAME}" --region us-central1 --project ${{ env.PROJECT_ID }} || true
+        if: always() && needs.tf-provision.outputs.tf_cluster != ''
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ needs.tf-provision.outputs.tf_cluster }}
+          location: ${{ needs.tf-provision.outputs.tf_location }}
+          project_id: ${{ env.PROJECT_ID }}
 
       - name: Helm uninstall (teardown)
+        if: always() && needs.tf-provision.outputs.tf_cluster != ''
         run: |
           echo "Uninstalling Helm release to clean up NEGs and LoadBalancers..."
           curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
@@ -432,11 +376,7 @@ jobs:
           echo "Waiting for NEGs to be cleaned up..."
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
-          BASE_NAME=$(basename ${{ matrix.template }})
-          if [[ "${{ matrix.template }}" == *"gke-inference-fuse-cache"* ]]; then
-            BASE_NAME="gke-inf-fuse-cache"
-          fi
-          NETWORK_NAME="${BASE_NAME}-${UID_SUFFIX}-tf-vpc"
+          NETWORK_NAME="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf-vpc"
           for i in {1..20}; do
             NEGS=$(gcloud compute network-endpoint-groups list --filter="network:($NETWORK_NAME)" --project="${{ env.PROJECT_ID }}" --format="value(name)" 2>/dev/null || true)
             if [ -z "$NEGS" ]; then
@@ -450,16 +390,6 @@ jobs:
       - name: Terraform destroy
         working-directory: ${{ matrix.template }}/terraform-helm
         run: |
-          RUN_ID="${{ github.run_id }}"
-          UID_SUFFIX="${RUN_ID: -6}"
-          BASE_NAME=$(basename ${{ matrix.template }})
-          if [[ "${{ matrix.template }}" == *"gke-inference-fuse-cache"* ]]; then
-            BASE_NAME="gke-inf-fuse-cache"
-          fi
-          export TF_VAR_cluster_name="${BASE_NAME}-${UID_SUFFIX}-tf"
-          export TF_VAR_network_name="${BASE_NAME}-${UID_SUFFIX}-tf-vpc"
-          export TF_VAR_subnet_name="${BASE_NAME}-${UID_SUFFIX}-tf-subnet"
-          export TF_VAR_uid_suffix="${UID_SUFFIX}"
           terraform init \
             -backend-config="bucket=$TF_STATE_BUCKET" \
             -backend-config="prefix=${{ matrix.template }}-${{ github.run_id }}/terraform-helm"
@@ -468,15 +398,8 @@ jobs:
       - name: Fallback gcloud cluster delete
         if: failure()
         run: |
-          RUN_ID="${{ github.run_id }}"
-          UID_SUFFIX="${RUN_ID: -6}"
-          BASE_NAME=$(basename ${{ matrix.template }})
-          if [[ "${{ matrix.template }}" == *"gke-inference-fuse-cache"* ]]; then
-            BASE_NAME="gke-inf-fuse-cache"
-          fi
-          CLUSTER_NAME="${BASE_NAME}-${UID_SUFFIX}-tf"
-          gcloud container clusters delete "${CLUSTER_NAME}" \
-            --location="us-central1" \
+          gcloud container clusters delete "${{ needs.tf-provision.outputs.tf_cluster }}" \
+            --location="${{ needs.tf-provision.outputs.tf_location }}" \
             --project="${{ env.PROJECT_ID }}" --quiet --async || true
 
       - name: Post TF+Helm summary to PR
@@ -491,11 +414,13 @@ jobs:
               body: `### Deploy & Test TF+Helm: \`${template}\` complete.`,
             });
 
+
+
       - name: Cancel workflow on failure
         if: failure()
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh pr edit ${{ github.event.number }} --add-label "repo-agent" && gh run cancel ${{ github.run_id }}
+        run: gh run cancel ${{ github.run_id }}
 
   # ── 4b. PR: KCC deploy → wait → delete (parallel with deploy-test-tf) ─────
   kcc-apply:
@@ -507,7 +432,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        template: ${{ fromJson(needs.detect-changes.outputs.kcc_templates) }}
+        template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
     steps:
       - uses: actions/checkout@v4
 
@@ -531,11 +456,7 @@ jobs:
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
           echo "KCC_START=$(date -u +%s)" >> $GITHUB_ENV
-          # Update both infra and workload manifests with the unique suffix
-          find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
-          if [[ "${{ matrix.template }}" == *"gke-inference-fuse-cache"* ]]; then
-            find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/gke-inf-fuse-cache/gke-inf-fuse-cache-${UID_SUFFIX}/g" {} +
-          fi
+          find ${{ matrix.template }}/config-connector -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
           kubectl apply -n $KCC_NAMESPACE \
             -f ${{ matrix.template }}/config-connector/
 
@@ -553,13 +474,12 @@ jobs:
   kcc-test:
     name: "KCC Test (${{ matrix.template }})"
     needs: [ kcc-apply, detect-changes ]
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
-        template: ${{ fromJson(needs.detect-changes.outputs.kcc_templates) }}
+        template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
     steps:
       - uses: actions/checkout@v4
 
@@ -581,31 +501,28 @@ jobs:
         run: |
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
-          BASE_NAME=$(basename ${{ matrix.template }})
-          if [[ "${{ matrix.template }}" == *"gke-inference-fuse-cache"* ]]; then
-            BASE_NAME="gke-inf-fuse-cache"
-          fi
-          
+
           # Check if template intends to create a cluster
           HAS_CLUSTER=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print('true' if docs else 'false')")
-          
+
           if [ "$HAS_CLUSTER" = "true" ]; then
             # Try to get cluster name and location from the management cluster using the unique label
-            CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=${BASE_NAME}-${UID_SUFFIX} -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
-            LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=${BASE_NAME}-${UID_SUFFIX} -o jsonpath='{.items[0].spec.location}' 2>/dev/null || true)
-            
+            CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-${UID_SUFFIX} -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
+            LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-${UID_SUFFIX} -o jsonpath='{.items[0].spec.location}' 2>/dev/null || true)
+
             # Fallback to local manifest parsing if not found in management cluster
             if [ -z "$CLUSTER_NAME" ]; then
                CLUSTER_NAME=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(docs[0]['metadata']['name'] if docs else '')")
             fi
-            if [ -z "$LOCATION" ]; then
+
+if [ -z "$LOCATION" ]; then
                LOCATION=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(docs[0]['spec']['location'] if docs else '')")
             fi
           else
             CLUSTER_NAME=""
             LOCATION=""
           fi
-          
+
           echo "cluster_name=${CLUSTER_NAME}" >> $GITHUB_OUTPUT
           echo "location=${LOCATION}" >> $GITHUB_OUTPUT
 
@@ -627,23 +544,9 @@ jobs:
           if [ -f "${{ matrix.template }}/.timeout" ]; then
             TIMEOUT=$(cat ${{ matrix.template }}/.timeout)
           fi
-
-          RUN_ID="${{ github.run_id }}"
-          UID_SUFFIX="${RUN_ID: -6}"
-          
-          # Only set these for gke-inf-fuse-cache
-          EXTRA_ARGS=""
-          if [[ "${{ matrix.template }}" == *"gke-inference-fuse-cache"* ]]; then
-            # Recalculate unique names used in kcc-apply
-            BUCKET_NAME="gke-inf-fuse-cache-${UID_SUFFIX}-kcc-bucket"
-            KSA_NAME="gke-inf-fuse-cache-${UID_SUFFIX}-sa"
-            GSA_EMAIL="gke-inf-fuse-cache-${UID_SUFFIX}-sa@${{ env.PROJECT_ID }}.iam.gserviceaccount.com"
-            EXTRA_ARGS="--set templateName=gke-inf-fuse-cache-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME}"
-          fi
-
           for chart in $CHARTS; do
             echo "=== Helm deploy: $chart ==="
-            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT" ${EXTRA_ARGS}
+            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT"
           done
 
           if [ -f "${{ matrix.template }}/validate.sh" ]; then
@@ -663,7 +566,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        template: ${{ fromJson(needs.detect-changes.outputs.kcc_templates) }}
+        template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
     steps:
       - uses: actions/checkout@v4
 
@@ -682,12 +585,6 @@ jobs:
 
       - name: Delete KCC resources
         run: |
-          RUN_ID="${{ github.run_id }}"
-          UID_SUFFIX="${RUN_ID: -6}"
-          find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
-          if [[ "${{ matrix.template }}" == *"gke-inference-fuse-cache"* ]]; then
-            find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/gke-inf-fuse-cache/gke-inf-fuse-cache-${UID_SUFFIX}/g" {} +
-          fi
           kubectl delete \
             -n $KCC_NAMESPACE \
             -f ${{ matrix.template }}/config-connector/ \
@@ -731,7 +628,8 @@ jobs:
 
       - name: Install GKE Auth Plugin
         run: |
-          curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --yes --batch --dearmor -o /usr/share/keyrings/cloud.google.gpg
+
+curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --yes --batch --dearmor -o /usr/share/keyrings/cloud.google.gpg
           echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
           sudo apt-get update && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
           sudo apt-get update && sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
@@ -749,14 +647,9 @@ jobs:
         run: |
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
-          BASE_NAME=$(basename ${{ matrix.template }})
-          if [[ "${{ matrix.template }}" == *"gke-inference-fuse-cache"* ]]; then
-            BASE_NAME="gke-inf-fuse-cache"
-          fi
-          export TF_VAR_cluster_name="${BASE_NAME}-${UID_SUFFIX}-tf"
-          export TF_VAR_network_name="${BASE_NAME}-${UID_SUFFIX}-tf-vpc"
-          export TF_VAR_subnet_name="${BASE_NAME}-${UID_SUFFIX}-tf-subnet"
-          export TF_VAR_uid_suffix="${UID_SUFFIX}"
+          export TF_VAR_cluster_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf"
+          export TF_VAR_network_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf-vpc"
+          export TF_VAR_subnet_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf-subnet"
           terraform init \
             -backend-config="bucket=${{ env.TF_STATE_BUCKET }}" \
             -backend-config="prefix=${{ matrix.template }}-${{ github.run_id }}/terraform-helm" \
@@ -786,12 +679,6 @@ jobs:
       - name: KCC cleanup (delete if any resources exist)
         if: "hashFiles(format('{0}/config-connector/**', matrix.template)) != ''"
         run: |
-          RUN_ID="${{ github.run_id }}"
-          UID_SUFFIX="${RUN_ID: -6}"
-          find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
-          if [[ "${{ matrix.template }}" == *"gke-inference-fuse-cache"* ]]; then
-            find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/gke-inf-fuse-cache/gke-inf-fuse-cache-${UID_SUFFIX}/g" {} +
-          fi
           kubectl delete \
             -n ${{ env.KCC_NAMESPACE }} \
             -f ${{ matrix.template }}/config-connector/ \
@@ -809,7 +696,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        template: ${{ fromJson(needs.detect-changes.outputs.tf_templates) }}
+        template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
 
     steps:
       - uses: actions/checkout@v4
@@ -831,7 +718,8 @@ jobs:
             echo "skip=false" >> $GITHUB_OUTPUT
             exit 0
           fi
-          CHANGED=$(git diff --name-only "$VALIDATED_COMMIT" HEAD -- "${TEMPLATE}/" \
+
+CHANGED=$(git diff --name-only "$VALIDATED_COMMIT" HEAD -- "${TEMPLATE}/" \
             | grep -v '\.validated$' | grep -v 'README\.md$' || true)
           if [ -n "$CHANGED" ]; then
             echo "Template changed since last validation (${VALIDATED_COMMIT}):"
@@ -879,15 +767,10 @@ jobs:
         run: |
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
-          BASE_NAME=$(basename ${{ matrix.template }})
-          if [[ "${{ matrix.template }}" == *"gke-inference-fuse-cache"* ]]; then
-            BASE_NAME="gke-inf-fuse-cache"
-          fi
           echo "TF_START=$(date -u +%s)" >> $GITHUB_ENV
-          export TF_VAR_cluster_name="${BASE_NAME}-${UID_SUFFIX}-tf"
-          export TF_VAR_network_name="${BASE_NAME}-${UID_SUFFIX}-tf-vpc"
-          export TF_VAR_subnet_name="${BASE_NAME}-${UID_SUFFIX}-tf-subnet"
-          export TF_VAR_uid_suffix="${UID_SUFFIX}"
+          export TF_VAR_cluster_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf"
+          export TF_VAR_network_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf-vpc"
+          export TF_VAR_subnet_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf-subnet"
           terraform init \
             -backend-config="bucket=$TF_STATE_BUCKET" \
             -backend-config="prefix=${{ matrix.template }}-${{ github.run_id }}/terraform-helm"
@@ -902,12 +785,8 @@ jobs:
           echo "tf_duration=${TF_DURATION}" >> $GITHUB_OUTPUT
           CLUSTER=$(terraform output -raw cluster_name 2>/dev/null || echo "")
           LOCATION=$(terraform output -raw cluster_location 2>/dev/null || echo "")
-          BUCKET=$(terraform output -raw bucket_name 2>/dev/null || echo "")
-          KSA=$(terraform output -raw ksa_name 2>/dev/null || echo "")
           echo "tf_cluster=${CLUSTER}" >> $GITHUB_OUTPUT
           echo "tf_location=${LOCATION}" >> $GITHUB_OUTPUT
-          echo "tf_bucket=${BUCKET}" >> $GITHUB_OUTPUT
-          echo "tf_ksa=${KSA}" >> $GITHUB_OUTPUT
           if [ -n "$CLUSTER" ] && [ -n "$LOCATION" ]; then
             ZONES=$(gcloud container clusters describe $CLUSTER --location=$LOCATION \
               --format="value(locations)" 2>/dev/null | tr ';' ', ' || echo "$LOCATION")
@@ -930,7 +809,8 @@ jobs:
         id: tf-verify
         if: steps.tf-creds.outcome == 'success'
         run: |
-          CLUSTER="${{ steps.tf-outputs.outputs.tf_cluster }}"
+
+CLUSTER="${{ steps.tf-outputs.outputs.tf_cluster }}"
           LOCATION="${{ steps.tf-outputs.outputs.tf_location }}"
           kubectl get nodes
           gcloud container clusters describe $CLUSTER --location=$LOCATION \
@@ -952,22 +832,9 @@ jobs:
           if [ -f "${{ matrix.template }}/.timeout" ]; then
             TIMEOUT=$(cat ${{ matrix.template }}/.timeout)
           fi
-
-          RUN_ID="${{ github.run_id }}"
-          UID_SUFFIX="${RUN_ID: -6}"
-          
-          # Only set these for gke-inf-fuse-cache
-          EXTRA_ARGS=""
-          if [[ "${{ matrix.template }}" == *"gke-inference-fuse-cache"* ]]; then
-            # Recalculate unique names used in tf-provision
-            BUCKET_NAME="gke-inf-fuse-cache-tf-${UID_SUFFIX}-bucket"
-            KSA_NAME="gke-inf-fuse-cache-${UID_SUFFIX}-sa"
-            EXTRA_ARGS="--set templateName=gke-inf-fuse-cache-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME}"
-          fi
-
           for chart in $CHARTS; do
             echo "=== Helm deploy: $chart ==="
-            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT" ${EXTRA_ARGS}
+            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT"
           done
 
           # Run template-specific validation if present
@@ -1029,7 +896,8 @@ jobs:
                 continue
               }
               echo "$SCAN_OUT"
-              SCAN_NAME=$(echo "$SCAN_OUT" | grep '^name:' | head -1 | awk '{print $2}' || true)
+
+SCAN_NAME=$(echo "$SCAN_OUT" | grep '^name:' | head -1 | awk '{print $2}' || true)
               if [ -n "$SCAN_NAME" ]; then
                 VULNS=$(gcloud artifacts docker images list-vulnerabilities "$SCAN_NAME" \
                   --project="$PROJECT" \
@@ -1114,16 +982,21 @@ jobs:
           retention-days: 1
 
   # ── 5b. Post-merge: independent KCC cluster: apply → wait Ready → delete ─
+  #   Runs in parallel with validate-tf-helm. TF resources use -tf suffix
+  #   (e.g. basic-gke-tf, basic-gke-tf-vpc) and KCC resources use -kcc suffix
+  #   (e.g. basic-gke-kcc, basic-gke-kcc-vpc), so there is no GCP-level name
+  #   collision and both jobs can run concurrently.
   validate-kcc:
     name: "Validate KCC (${{ matrix.template }})"
     needs: detect-changes
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix:
-        template: ${{ fromJson(needs.detect-changes.outputs.kcc_templates) }}
+        template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
 
     steps:
       - uses: actions/checkout@v4
@@ -1187,10 +1060,7 @@ jobs:
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
           echo "KCC_START=$(date -u +%s)" >> $GITHUB_ENV
-          find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
-          if [[ "${{ matrix.template }}" == *"gke-inference-fuse-cache"* ]]; then
-            find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/gke-inf-fuse-cache/gke-inf-fuse-cache-${UID_SUFFIX}/g" {} +
-          fi
+          find ${{ matrix.template }}/config-connector -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
           kubectl apply -n $KCC_NAMESPACE \
             -f ${{ matrix.template }}/config-connector/
 
@@ -1225,17 +1095,14 @@ jobs:
         run: echo "Drift test placeholder -- template-specific tests go here."
 
       - name: Get KCC Workload Cluster Info
-        id: kcc-workload-info
+
+id: kcc-workload-info
         if: steps.kcc-wait.outcome == 'success' || steps.kcc-cluster-ready.outcome == 'success'
         run: |
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
-          BASE_NAME=$(basename ${{ matrix.template }})
-          if [[ "${{ matrix.template }}" == *"gke-inference-fuse-cache"* ]]; then
-            BASE_NAME="gke-inf-fuse-cache"
-          fi
           CLUSTER_COUNT=$(kubectl get containerclusters.container.cnrm.cloud.google.com \
-            -n $KCC_NAMESPACE -l template=${BASE_NAME}-${UID_SUFFIX} --no-headers 2>/dev/null | wc -l || echo "0")
+            -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-${UID_SUFFIX} --no-headers 2>/dev/null | wc -l || echo "0")
           if [ "$CLUSTER_COUNT" -eq 0 ]; then
              CLUSTER_COUNT=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(len(docs))")
           fi
@@ -1243,8 +1110,8 @@ jobs:
             echo "has_cluster=false" >> $GITHUB_OUTPUT
             exit 0
           fi
-          CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=${BASE_NAME}-${UID_SUFFIX} -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
-          LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=${BASE_NAME}-${UID_SUFFIX} -o jsonpath='{.items[0].spec.location}' 2>/dev/null || true)
+          CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-${UID_SUFFIX} -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
+          LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=$(basename ${{ matrix.template }})-${UID_SUFFIX} -o jsonpath='{.items[0].spec.location}' 2>/dev/null || true)
           if [ -z "$CLUSTER_NAME" ]; then
              CLUSTER_NAME=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(docs[0]['metadata']['name'] if docs else '')")
              LOCATION=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(docs[0]['spec']['location'] if docs else '')")
@@ -1277,23 +1144,9 @@ jobs:
           if [ -f "${{ matrix.template }}/.timeout" ]; then
             TIMEOUT=$(cat ${{ matrix.template }}/.timeout)
           fi
-
-          RUN_ID="${{ github.run_id }}"
-          UID_SUFFIX="${RUN_ID: -6}"
-          
-          # Only set these for gke-inf-fuse-cache
-          EXTRA_ARGS=""
-          if [[ "${{ matrix.template }}" == *"gke-inference-fuse-cache"* ]]; then
-            # Recalculate unique names used in kcc-apply
-            BUCKET_NAME="gke-inf-fuse-cache-${UID_SUFFIX}-kcc-bucket"
-            KSA_NAME="gke-inf-fuse-cache-${UID_SUFFIX}-sa"
-            GSA_EMAIL="gke-inf-fuse-cache-${UID_SUFFIX}-sa@${{ env.PROJECT_ID }}.iam.gserviceaccount.com"
-            EXTRA_ARGS="--set templateName=gke-inf-fuse-cache-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME}"
-          fi
-
           for chart in $CHARTS; do
             echo "=== Helm deploy: $chart ==="
-            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT" ${EXTRA_ARGS}
+            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT"
           done
 
           # Run template-specific validation if present
@@ -1315,7 +1168,7 @@ jobs:
           PROJECT="${{ env.PROJECT_ID }}"
           SCAN_WARNINGS=0
 
-          echo "=== GKE Security Posture configuration ==="
+echo "=== GKE Security Posture configuration ==="
           gcloud container clusters describe "$CLUSTER" --location="$LOCATION" \
             --project="$PROJECT" --format="yaml(securityPostureConfig)"
 
@@ -1407,10 +1260,13 @@ jobs:
       - name: Upload KCC results artifact
         if: always() && steps.skip-check.outputs.skip != 'true'
         uses: actions/upload-artifact@v4
-        with:
+
+with:
           name: kcc-results-${{ github.run_id }}-${{ strategy.job-index }}
           path: /tmp/kcc-results/result.json
           retention-days: 1
+
+
 
   # ── 5c. Post-merge: update README + write .validated (needs both above) ──
   publish-validated:
@@ -1418,9 +1274,7 @@ jobs:
     needs: [detect-changes, validate-tf-helm, validate-kcc]
     if: >-
       github.event_name == 'push' && github.ref == 'refs/heads/main' &&
-      !cancelled() &&
-      (needs.validate-tf-helm.result == 'success' || needs.validate-tf-helm.result == 'skipped') &&
-      (needs.validate-kcc.result == 'success' || needs.validate-kcc.result == 'skipped')
+      !cancelled()
     runs-on: ubuntu-latest
     timeout-minutes: 120
     strategy:
@@ -1470,22 +1324,13 @@ jobs:
             TF_CLUSTER=$(python3  -c "import json; d=json.load(open('$TF_RESULT_FILE')); print(d.get('cluster',''))")
             TF_LOCATION=$(python3 -c "import json; d=json.load(open('$TF_RESULT_FILE')); print(d.get('location',''))")
             TF_ZONES=$(python3    -c "import json; d=json.load(open('$TF_RESULT_FILE')); print(d.get('zones',''))")
-          elif [ ! -f "${TEMPLATE}/terraform-helm/main.tf" ]; then
-            TF_STATUS="skipped"
-            TF_DURATION=""; TF_CLUSTER=""; TF_LOCATION=""; TF_ZONES=""
           else
             TF_STATUS="$TF_JOB_RESULT"; TF_DURATION=""; TF_CLUSTER=""; TF_LOCATION=""; TF_ZONES=""
           fi
 
-          if [ -f "${TEMPLATE}/.kcc-unsupported" ]; then
-            KCC_STATUS="skipped"
-            KCC_DURATION=""
-          elif [ -n "$KCC_RESULT_FILE" ]; then
+          if [ -n "$KCC_RESULT_FILE" ]; then
             KCC_STATUS=$(python3   -c "import json; d=json.load(open('$KCC_RESULT_FILE')); print(d.get('status',''))")
             KCC_DURATION=$(python3 -c "import json; d=json.load(open('$KCC_RESULT_FILE')); print(d.get('duration',''))")
-          elif ! ls "${TEMPLATE}/config-connector/"*.yaml >/dev/null 2>&1; then
-            KCC_STATUS="skipped"
-            KCC_DURATION=""
           else
             KCC_STATUS="$KCC_JOB_RESULT"; KCC_DURATION=""
           fi
@@ -1518,7 +1363,8 @@ jobs:
           cumulative_file   = f'{template}/.agent-metrics-cumulative'
 
           current = {}
-          if os.path.exists(metrics_file):
+
+if os.path.exists(metrics_file):
               try:    current = json.load(open(metrics_file))
               except: pass
 
@@ -1608,7 +1454,8 @@ jobs:
               ("**Estimated cost**", cost,      "--"),
               ("**Commit**",         commit,    commit),
           ]
-          header = sep.join(["", "", "Terraform + Helm", "Config Connector", ""]).strip()
+
+header = sep.join(["", "", "Terraform + Helm", "Config Connector", ""]).strip()
           divider = sep.join(["", "---", "---", "---", ""]).strip()
           lines = ["\n\n## Validation Record\n", header, divider]
           for label, tf_val, kcc_val in rows:
@@ -1655,3 +1502,4 @@ jobs:
         run: gh pr edit ${{ github.event.number }} --add-label "repo-agent"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

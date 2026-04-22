@@ -38,9 +38,7 @@ for template in $TEMPLATES; do
   echo "--- Checking structure of $template_name ---"
   MISSING=""
   [ ! -d "${template}/terraform-helm" ] && MISSING="${MISSING} terraform-helm/"
-  if [ ! -f "${template}/.kcc-unsupported" ]; then
-    [ ! -d "${template}/config-connector" ] && MISSING="${MISSING} config-connector/"
-  fi
+  [ ! -d "${template}/config-connector" ] && MISSING="${MISSING} config-connector/"
   if [ -n "$MISSING" ]; then
     echo "ERROR: Template '${template_name}' is missing required directories:${MISSING}"
     exit 1

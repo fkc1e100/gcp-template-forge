@@ -1,8 +1,3 @@
 external/
 .terraform/
 *.log
-actionlint
-*.exe
-*.dll
-*.so
-*.dylib
