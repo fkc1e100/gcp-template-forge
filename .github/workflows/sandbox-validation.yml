@@ -380,6 +380,14 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
+      - name: Break stale TF state lock (if any)
+        if: "hashFiles(format('{0}/terraform-helm/**', matrix.template)) != ''"
+        run: |
+          RUN_ID="${{ github.run_id }}"
+          UID_SUFFIX="${RUN_ID: -6}"
+          gsutil rm "gs://${TF_STATE_BUCKET}/${{ matrix.template }}-${{ github.run_id }}/terraform-helm/default.tflock" \
+            2>/dev/null && echo "Stale state lock removed" || echo "No stale lock present"
+
       - name: Get TF cluster credentials
         if: always()
         run: |
