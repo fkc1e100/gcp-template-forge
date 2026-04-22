@@ -48,101 +48,25 @@ gcloud container clusters get-credentials ${CLUSTER_NAME} --region ${REGION} --p
 kubectl cluster-info || debug_failure "Failed to connect to cluster"
 echo "Connectivity passed."
 
-# 1.5 Apply Workload in stages to avoid webhook race conditions
-WORKLOAD_DIR="$(dirname "$0")/config-connector-workload"
-if [ -d "$WORKLOAD_DIR" ]; then
-  echo "Applying CRDs and Operators from $WORKLOAD_DIR..."
-  # We use --server-side apply to handle large CRDs (e.g. KubeRay) that exceed the annotation limit.
-  kubectl apply --server-side -f "$WORKLOAD_DIR/00-kuberay-operator-crds.yaml"
-  kubectl apply --server-side -f "$WORKLOAD_DIR/00-kueue-operator-crds.yaml"
-  
-  echo "Waiting for CRDs to be established..."
-  kubectl wait --for=condition=Established crd/rayclusters.ray.io --timeout=5m || debug_failure "RayCluster CRD not established"
-  kubectl wait --for=condition=Established crd/clusterqueues.kueue.x-k8s.io --timeout=5m || debug_failure "ClusterQueue CRD not established"
+# 2. Operator Readiness
+echo "Test 2: Operator Readiness..."
+echo "Waiting for CRDs to be established..."
+# These CRDs should have been installed by Helm or manually applied from config-connector-workload
+kubectl wait --for=condition=Established crd/rayclusters.ray.io --timeout=5m || debug_failure "RayCluster CRD not established"
+kubectl wait --for=condition=Established crd/clusterqueues.kueue.x-k8s.io --timeout=5m || debug_failure "ClusterQueue CRD not established"
 
-  kubectl apply --server-side -f "$WORKLOAD_DIR/01-namespaces.yaml"
+echo "Checking KubeRay Operator..."
+kubectl wait --for=condition=available deployment/kuberay-operator -n default --timeout=15m || debug_failure "KubeRay Operator failed to become ready"
 
-  # Check if operators are already installed (TF path)
-  if kubectl get deployment kuberay-operator -n default >/dev/null 2>&1 && \
-     kubectl get deployment kueue-controller-manager -n kueue-system >/dev/null 2>&1; then
-    echo "Operators already present, skipping redundant application."
-  else
-    echo "Applying Operators from $WORKLOAD_DIR..."
-    kubectl apply --server-side -f "$WORKLOAD_DIR/01-kuberay-operator.yaml"
-    kubectl apply --server-side -f "$WORKLOAD_DIR/01-kueue-operator.yaml"
-  fi
-
-  # 2. Operator Readiness
-  echo "Test 2: Operator Readiness..."
-  echo "Checking KubeRay Operator..."
-  kubectl wait --for=condition=available deployment/kuberay-operator -n default --timeout=15m || debug_failure "KubeRay Operator failed to become ready"
-
-  echo "Checking Kueue Operator..."
-  kubectl wait --for=condition=available deployment/kueue-controller-manager -n kueue-system --timeout=15m || debug_failure "Kueue Operator failed to become ready"
-  echo "Operators are ready."
-
-  # 2.5 Apply Custom Resources (with retries for webhook readiness)
-  # This stage is separated from the operator installation to avoid race conditions 
-  # where the Kueue mutating webhooks are not yet ready when custom resources are created.
-  # Since failurePolicy is set to Ignore to prevent installation failures, we MUST 
-  # explicitly wait for the webhook service endpoints to be ready here.
-  echo "Applying Custom Resources..."
-  
-  echo "Waiting for Kueue webhook service endpoints..."
-  for i in {1..15}; do
-    if kubectl get endpoints kueue-webhook-service -n kueue-system -o jsonpath='{.subsets[0].addresses[0].ip}' >/dev/null 2>&1; then
-      echo "Webhook service endpoints are ready."
-      break
-    fi
-    echo "Waiting for webhook service endpoints (attempt $i/15)..."
-    sleep 10
-  done
-
-  applied=false
-  for i in {1..6}; do
-    if kubectl apply --server-side -f "$WORKLOAD_DIR/02-kueue-config.yaml" && \
-       kubectl apply --server-side -f "$WORKLOAD_DIR/03-ray-clusters.yaml"; then
-      applied=true
-      break
-    fi
-    echo "Wait for custom resources to be accepted (attempt $i/6)..."
-    sleep 20
-  done
-  if [ "$applied" = false ]; then
-    debug_failure "Failed to apply custom resources after several attempts (webhook race condition)"
-  fi
-
-  # GPU Driver installation is now handled by 00-gpu-driver-installer.yaml in config-connector-workload
-  # or by the Helm chart in the terraform-helm path.
-  echo "Verifying NVIDIA GPU Driver Installer..."
-  kubectl get daemonset nvidia-driver-installer -n kube-system || echo "Warning: nvidia-driver-installer not found yet."
-  
-  echo "Waiting for GPU nodes to become ready (with GPU capacity)..."
-  echo "Note: This may take several minutes as the autoscaler provisions GPU nodes for the RayClusters."
-  for i in {1..30}; do
-    if kubectl get nodes -o jsonpath='{.items[*].status.capacity}' | grep -q "nvidia.com/gpu"; then
-      echo "GPU capacity detected on nodes."
-      break
-    fi
-    echo "Waiting for GPU capacity (attempt $i/30)..."
-    sleep 30
-    if [ $i -eq 30 ]; then
-      echo "Warning: GPU capacity not detected on nodes after 15 minutes. RayClusters may fail to start."
-    fi
-  done
-else
-  echo "Warning: config-connector-workload directory not found at $WORKLOAD_DIR"
-  echo "Checking Operator Readiness (expecting Helm install)..."
-  kubectl wait --for=condition=available deployment/kuberay-operator -n default --timeout=15m || debug_failure "KubeRay Operator (Helm) failed to become ready"
-  kubectl wait --for=condition=available deployment/kueue-controller-manager -n kueue-system --timeout=15m || debug_failure "Kueue Operator (Helm) failed to become ready"
-  
-  # Even if WORKLOAD_DIR is missing, we still need to apply the resources in TF path
-  # Wait, in TF path, the directory IS present because it's part of the repo.
-fi
+echo "Checking Kueue Operator..."
+kubectl wait --for=condition=available deployment/kueue-controller-manager -n kueue-system --timeout=15m || debug_failure "Kueue Operator failed to become ready"
+echo "Operators are ready."
 
 # 3. Kueue Resource Readiness
 echo "Test 3: Kueue Resource Readiness..."
-for i in {1..12}; do
+# Resources should have been installed by Helm or config-connector-workload
+echo "Waiting for Kueue resources..."
+for i in {1..30}; do
   if kubectl get clusterqueue team-a-cq && \
      kubectl get clusterqueue team-b-cq && \
      kubectl get localqueue team-a-lq -n team-a && \
@@ -150,15 +74,22 @@ for i in {1..12}; do
     echo "Kueue resources are present."
     break
   fi
-  echo "Waiting for Kueue resources (attempt $i/12)..."
+  echo "Waiting for Kueue resources (attempt $i/30)..."
   sleep 10
-  if [ $i -eq 12 ]; then
+  if [ $i -eq 30 ]; then
     debug_failure "Kueue resources failed to become present"
   fi
 done
 
 # 4. RayCluster Readiness
 echo "Test 4: RayCluster Readiness..."
+# These should have been installed by Helm or config-connector-workload
+echo "Waiting for RayClusters to become ready..."
+echo "Note: This triggers autoscaling for GPU nodes, which can take several minutes."
+
+# Verify GPU Driver installer is present
+kubectl get daemonset nvidia-driver-installer -n kube-system || echo "Warning: nvidia-driver-installer not found yet."
+
 set +e
 kubectl wait --for=jsonpath='{.status.state}'=ready raycluster/raycluster-team-a -n team-a --timeout=25m
 RESULT_A=$?
@@ -169,6 +100,11 @@ set -e
 if [ $RESULT_A -ne 0 ] || [ $RESULT_B -ne 0 ]; then
   debug_failure "RayClusters failed to become ready"
 fi
-echo "RayClusters are ready."
+
+# 5. Resource isolation verification
+echo "Test 5: Resource Isolation Verification..."
+kubectl get resourcequota team-a-quota -n team-a || debug_failure "ResourceQuota for team-a not found"
+kubectl get limitrange team-a-limits -n team-a || debug_failure "LimitRange for team-a not found"
+echo "Resource isolation is configured."
 
 echo "All Validation Tests passed successfully!"

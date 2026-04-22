@@ -58,6 +58,7 @@ This template demonstrates how to achieve high-performance model loading on GKE 
     terraform apply -var="project_id=<PROJECT_ID>"
     ```
     This will also generate a `workload/values.yaml` file.
+    > **Note**: Infrastructure provisioning typically takes **up to 30 minutes**.
 
 2.  **Deploy Workload**:
     ```bash
@@ -75,6 +76,8 @@ This template demonstrates how to achieve high-performance model loading on GKE 
 
 1.  **Apply Infrastructure**:
     ```bash
+    # Update project-id in config-connector/cluster.yaml if necessary
+    # (Default is gca-gke-2025)
     kubectl apply -f config-connector/
     ```
 
