@@ -18,7 +18,7 @@ metadata:
   name: gke-inf-fuse-cache-gpu-pool
   namespace: forge-management
   annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025
+    cnrm.cloud.google.com/project-id: gca-gke-2025 # UPDATE: Replace with your GCP Project ID
   labels:
     project: gcp-template-forge
     template: gke-inf-fuse-cache
@@ -60,7 +60,7 @@ metadata:
   name: gke-inf-fuse-cache-system-pool
   namespace: forge-management
   annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025
+    cnrm.cloud.google.com/project-id: gca-gke-2025 # UPDATE: Replace with your GCP Project ID
   labels:
     project: gcp-template-forge
     template: gke-inf-fuse-cache

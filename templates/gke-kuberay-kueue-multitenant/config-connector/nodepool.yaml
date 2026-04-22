@@ -21,7 +21,7 @@ metadata:
     project: gcp-template-forge
     template: gke-kuberay-kueue-multitenant
   annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025
+    cnrm.cloud.google.com/project-id: gca-gke-2025 # UPDATE: Replace with your GCP Project ID
 spec:
   clusterRef:
     name: gke-kuberay-kueue-multitenant
@@ -47,7 +47,7 @@ metadata:
     project: gcp-template-forge
     template: gke-kuberay-kueue-multitenant
   annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025
+    cnrm.cloud.google.com/project-id: gca-gke-2025 # UPDATE: Replace with your GCP Project ID
 spec:
   clusterRef:
     name: gke-kuberay-kueue-multitenant
