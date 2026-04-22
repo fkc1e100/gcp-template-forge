@@ -138,6 +138,3 @@ kubectl delete -n <KCC_NAMESPACE> -f config-connector/ --wait=true
 | **Agent tokens** | 480,000 in / 65,000 out (multi-session) | (shared session) |
 | **Estimated cost** | $0.48 | -- |
 | **Commit** | 9e68c4b | 9e68c4b |
-
-
-<!-- dummy change to trigger CI -->
