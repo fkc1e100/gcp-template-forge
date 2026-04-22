@@ -55,8 +55,8 @@ jobs:
       - name: Find changed template directories
         id: find
         run: |
-          git fetch origin ${{ github.base_ref }}
           if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch origin ${{ github.base_ref }}
             PR_HEAD="${{ github.event.pull_request.head.sha }}"
             BASE=$(git merge-base "origin/${{ github.base_ref }}" "$PR_HEAD")
             DIFF_HEAD="$PR_HEAD"
