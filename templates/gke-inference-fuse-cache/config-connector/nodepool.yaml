@@ -1,0 +1,87 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: container.cnrm.cloud.google.com/v1beta1
+kind: ContainerNodePool
+metadata:
+  name: gke-inf-fuse-cache-gpu-pool
+  namespace: forge-management
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
+  labels:
+    project: gcp-template-forge
+    template: gke-inf-fuse-cache
+spec:
+  location: us-central1
+  clusterRef:
+    name: gke-inf-fuse-cache-kcc
+  nodeCount: 1
+  # Restrict to a single zone that supports L4 GPUs
+  nodeLocations:
+    - us-central1-a
+  nodeConfig:
+    spot: false
+    machineType: g2-standard-4
+    diskType: pd-balanced
+    diskSizeGb: 50
+    guestAccelerator:
+      - type: nvidia-l4
+        count: 1
+        # Automatically install NVIDIA GPU drivers
+        gpuDriverInstallationConfig:
+          gpuDriverVersion: DEFAULT
+    ephemeralStorageLocalSsdConfig:
+      localSsdCount: 1
+    oauthScopes:
+      - "https://www.googleapis.com/auth/cloud-platform"
+    workloadMetadataConfig:
+      mode: GKE_METADATA
+    serviceAccountRef:
+      name: gke-inf-fuse-cache-sa
+    labels:
+      project: gcp-template-forge
+      template: gke-inf-fuse-cache
+      gpu: l4
+---
+apiVersion: container.cnrm.cloud.google.com/v1beta1
+kind: ContainerNodePool
+metadata:
+  name: gke-inf-fuse-cache-system-pool
+  namespace: forge-management
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
+  labels:
+    project: gcp-template-forge
+    template: gke-inf-fuse-cache
+spec:
+  location: us-central1
+  clusterRef:
+    name: gke-inf-fuse-cache-kcc
+  nodeCount: 1
+  # Restrict to the same zone as the GPU pool
+  nodeLocations:
+    - us-central1-a
+  nodeConfig:
+    machineType: e2-standard-2
+    diskType: pd-balanced
+    diskSizeGb: 50
+    serviceAccountRef:
+      name: gke-inf-fuse-cache-sa
+    oauthScopes:
+      - "https://www.googleapis.com/auth/cloud-platform"
+    workloadMetadataConfig:
+      mode: GKE_METADATA
+    labels:
+      project: gcp-template-forge
+      template: gke-inf-fuse-cache
