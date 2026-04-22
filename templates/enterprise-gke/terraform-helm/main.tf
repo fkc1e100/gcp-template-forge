@@ -84,8 +84,8 @@ resource "google_container_cluster" "enterprise_cluster" {
   initial_node_count       = 1
 
   networking_mode = "VPC_NATIVE"
-  network         = google_compute_network.vpc.name
-  subnetwork      = google_compute_subnetwork.subnet.name
+  network         = google_compute_network.vpc.id
+  subnetwork      = google_compute_subnetwork.subnet.id
 
   ip_allocation_policy {
     cluster_secondary_range_name  = "pods"
@@ -121,6 +121,13 @@ resource "google_container_cluster" "enterprise_cluster" {
     network_policy_config {
       disabled = false
     }
+    gcp_filestore_csi_driver_config {
+      enabled = true
+    }
+  }
+
+  secret_manager_config {
+    enabled = true
   }
 
   network_policy {
@@ -244,13 +251,6 @@ resource "google_project_iam_member" "node_monitoring_metric" {
   member  = "serviceAccount:${google_service_account.node_sa[0].email}"
 }
 
-resource "google_project_iam_member" "node_monitoring_viewer" {
-  count   = var.create_service_accounts ? 1 : 0
-  project = var.project_id
-  role    = "roles/monitoring.viewer"
-  member  = "serviceAccount:${google_service_account.node_sa[0].email}"
-}
-
 resource "google_project_iam_member" "node_metadata_writer" {
   count   = var.create_service_accounts ? 1 : 0
   project = var.project_id
@@ -260,7 +260,7 @@ resource "google_project_iam_member" "node_metadata_writer" {
 
 # Generate values.yaml for the Helm chart
 resource "local_file" "helm_values" {
-  filename = "${path.module}/workload/values.yaml"
+  filename = "${path.module}/workload/values.generated.yaml"
   content  = <<-EOF
 # Copyright 2026 Google LLC
 #

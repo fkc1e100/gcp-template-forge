@@ -50,7 +50,7 @@ variable "service_account" {
 variable "create_service_accounts" {
   description = "Whether to create dedicated service accounts. Set to false in environments with restricted IAM permissions (like CI)."
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "master_authorized_networks" {
@@ -59,12 +59,5 @@ variable "master_authorized_networks" {
     cidr_block   = string
     display_name = string
   }))
-  default = [
-    {
-      # Defaulting to 0.0.0.0/0 is for CI/Sandbox convenience.
-      # In production, this should be restricted to known administrative CIDR ranges.
-      cidr_block   = "0.0.0.0/0"
-      display_name = "all-admin"
-    }
-  ]
+  default = []
 }

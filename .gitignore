@@ -1,3 +1,4 @@
 external/
 .terraform/
 *.log
+*.generated.yaml

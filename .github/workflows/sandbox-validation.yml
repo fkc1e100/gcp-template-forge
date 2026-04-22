@@ -310,12 +310,16 @@ if: "hashFiles(format('{0}/terraform-helm/**', matrix.template)) != ''"
           if [ -z "$CHARTS" ]; then echo "No Helm charts found -- skipping"; exit 0; fi
           TIMEOUT="60m"
           if [ -f "${{ matrix.template }}/.timeout" ]; then
-
-TIMEOUT=$(cat ${{ matrix.template }}/.timeout)
+            TIMEOUT=$(cat ${{ matrix.template }}/.timeout)
           fi
           for chart in $CHARTS; do
             echo "=== Helm deploy: $chart ==="
-            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT"
+            VALUES_FILE=""
+            if [ -f "$chart/values.generated.yaml" ]; then
+              echo "Using generated values file: $chart/values.generated.yaml"
+              VALUES_FILE="-f $chart/values.generated.yaml"
+            fi
+            helm upgrade --install release "$chart" $VALUES_FILE --wait --timeout="$TIMEOUT"
           done
 
           if [ -f "${{ matrix.template }}/validate.sh" ]; then
@@ -546,7 +550,12 @@ if [ -z "$LOCATION" ]; then
           fi
           for chart in $CHARTS; do
             echo "=== Helm deploy: $chart ==="
-            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT"
+            VALUES_FILE=""
+            if [ -f "$chart/values.generated.yaml" ]; then
+              echo "Using generated values file: $chart/values.generated.yaml"
+              VALUES_FILE="-f $chart/values.generated.yaml"
+            fi
+            helm upgrade --install release "$chart" $VALUES_FILE --wait --timeout="$TIMEOUT"
           done
 
           if [ -f "${{ matrix.template }}/validate.sh" ]; then
@@ -834,7 +843,12 @@ CLUSTER="${{ steps.tf-outputs.outputs.tf_cluster }}"
           fi
           for chart in $CHARTS; do
             echo "=== Helm deploy: $chart ==="
-            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT"
+            VALUES_FILE=""
+            if [ -f "$chart/values.generated.yaml" ]; then
+              echo "Using generated values file: $chart/values.generated.yaml"
+              VALUES_FILE="-f $chart/values.generated.yaml"
+            fi
+            helm upgrade --install release "$chart" $VALUES_FILE --wait --timeout="$TIMEOUT"
           done
 
           # Run template-specific validation if present
@@ -1146,7 +1160,12 @@ id: kcc-workload-info
           fi
           for chart in $CHARTS; do
             echo "=== Helm deploy: $chart ==="
-            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT"
+            VALUES_FILE=""
+            if [ -f "$chart/values.generated.yaml" ]; then
+              echo "Using generated values file: $chart/values.generated.yaml"
+              VALUES_FILE="-f $chart/values.generated.yaml"
+            fi
+            helm upgrade --install release "$chart" $VALUES_FILE --wait --timeout="$TIMEOUT"
           done
 
           # Run template-specific validation if present

@@ -161,8 +161,18 @@ echo "Cleaning up orphaned Networking resources..."
 # Firewalls
 FIREWALLS=$(gcloud compute firewall-rules list --project=$PROJECT --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
 for F in $FIREWALLS; do
-  echo "Deleting firewall: $F"
-  gcloud compute firewall-rules delete $F --project=$PROJECT --quiet || true
+  SKIP=false
+  for RUN_ID in $ALL_ACTIVE; do
+    if [ -n "$RUN_ID" ] && [[ "$F" == *"$RUN_ID"* ]]; then
+      echo "Skipping active firewall: $F"
+      SKIP=true
+      break
+    fi
+  done
+  if [ "$SKIP" = false ]; then
+    echo "Deleting firewall: $F"
+    gcloud compute firewall-rules delete $F --project=$PROJECT --quiet || true
+  fi
 done
 
 # Routers and NATs across all regions
@@ -170,16 +180,26 @@ REGIONS=$(gcloud compute regions list --project=$PROJECT --format="value(name)")
 for RGN in $REGIONS; do
   ROUTERS=$(gcloud compute routers list --project=$PROJECT --regions=$RGN --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
   for R in $ROUTERS; do
-    echo "Checking NATs for router $R in $RGN"
-    NATS=$(gcloud compute routers describe $R --project=$PROJECT --region=$RGN --format="value(nats.name)" | tr ';' ' ')
-    if [ -n "$NATS" ]; then
-      for NAT in $NATS; do
-        echo "Deleting NAT $NAT from router $R"
-        gcloud compute routers nats delete $NAT --router=$R --region=$RGN --project=$PROJECT --quiet || true
-      done
+    SKIP=false
+    for RUN_ID in $ALL_ACTIVE; do
+      if [ -n "$RUN_ID" ] && [[ "$R" == *"$RUN_ID"* ]]; then
+        echo "Skipping active router: $R"
+        SKIP=true
+        break
+      fi
+    done
+    if [ "$SKIP" = false ]; then
+      echo "Checking NATs for router $R in $RGN"
+      NATS=$(gcloud compute routers describe $R --project=$PROJECT --region=$RGN --format="value(nats.name)" | tr ';' ' ')
+      if [ -n "$NATS" ]; then
+        for NAT in $NATS; do
+          echo "Deleting NAT $NAT from router $R"
+          gcloud compute routers nats delete $NAT --router=$R --region=$RGN --project=$PROJECT --quiet || true
+        done
+      fi
+      echo "Deleting router $R"
+      gcloud compute routers delete $R --region=$RGN --project=$PROJECT --quiet || true
     fi
-    echo "Deleting router $R"
-    gcloud compute routers delete $R --region=$RGN --project=$PROJECT --quiet || true
   done
 done
 
@@ -221,16 +241,36 @@ done
 for RGN in $REGIONS; do
   SUBNETS=$(gcloud compute networks subnets list --project=$PROJECT --regions=$RGN --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
   for S in $SUBNETS; do
-    echo "Deleting subnet $S in $RGN"
-    gcloud compute networks subnets delete $S --region=$RGN --project=$PROJECT --quiet || true
+    SKIP=false
+    for RUN_ID in $ALL_ACTIVE; do
+      if [ -n "$RUN_ID" ] && [[ "$S" == *"$RUN_ID"* ]]; then
+        echo "Skipping active subnet: $S"
+        SKIP=true
+        break
+      fi
+    done
+    if [ "$SKIP" = false ]; then
+      echo "Deleting subnet $S in $RGN"
+      gcloud compute networks subnets delete $S --region=$RGN --project=$PROJECT --quiet || true
+    fi
   done
 done
 
 # Networks (VPCs)
 NETWORKS=$(gcloud compute networks list --project=$PROJECT --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
 for N in $NETWORKS; do
-  echo "Initiating deletion of network $N..."
-  gcloud compute networks delete $N --project=$PROJECT --quiet || true
+  SKIP=false
+  for RUN_ID in $ALL_ACTIVE; do
+    if [ -n "$RUN_ID" ] && [[ "$N" == *"$RUN_ID"* ]]; then
+      echo "Skipping active network: $N"
+      SKIP=true
+      break
+    fi
+  done
+  if [ "$SKIP" = false ]; then
+    echo "Initiating deletion of network $N..."
+    gcloud compute networks delete $N --project=$PROJECT --quiet || true
+  fi
 done
 
 echo "Waiting for networks to be fully deleted..."

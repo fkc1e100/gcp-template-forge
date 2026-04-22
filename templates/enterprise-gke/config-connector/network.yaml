@@ -20,8 +20,6 @@ metadata:
   labels:
     project: gcp-template-forge
     template: enterprise-gke
-  annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   autoCreateSubnetworks: false
 ---
@@ -33,8 +31,6 @@ metadata:
   labels:
     project: gcp-template-forge
     template: enterprise-gke
-  annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   ipCidrRange: 10.16.0.0/20
   region: us-central1

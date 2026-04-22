@@ -20,8 +20,6 @@ metadata:
   labels:
     project: gcp-template-forge
     template: enterprise-gke
-  annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   location: us-central1
   clusterRef:
