@@ -594,9 +594,16 @@ jobs:
         run: |
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
-          BASE_NAME=$(basename ${{ matrix.template }})
+          FULL_NAME=$(basename ${{ matrix.template }})
+          BASE_NAME="${FULL_NAME}"
           if [[ "${{ matrix.template }}" == *"gke-inference-fuse-cache"* ]]; then
             BASE_NAME="gke-inf-fuse-cache"
+          fi
+          
+          # Update both infra and workload manifests with the unique suffix so fallback parsing works
+          find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/${FULL_NAME}/${FULL_NAME}-${UID_SUFFIX}/g" {} +
+          if [[ "${{ matrix.template }}" == *"gke-inference-fuse-cache"* ]]; then
+            find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/gke-inf-fuse-cache/gke-inf-fuse-cache-${UID_SUFFIX}/g" {} +
           fi
           
           # Check if template intends to create a cluster
@@ -604,8 +611,9 @@ jobs:
           
           if [ "$HAS_CLUSTER" = "true" ]; then
             # Try to get cluster name and location from the management cluster using the unique label
-            CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=${BASE_NAME}-${UID_SUFFIX} -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
-            LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=${BASE_NAME}-${UID_SUFFIX} -o jsonpath='{.items[0].spec.location}' 2>/dev/null || true)
+            # Use FULL_NAME for the label search as it is more consistent with our labeling strategy
+            CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=${FULL_NAME}-${UID_SUFFIX} -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
+            LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=${FULL_NAME}-${UID_SUFFIX} -o jsonpath='{.items[0].spec.location}' 2>/dev/null || true)
             
             # Fallback to local manifest parsing if not found in management cluster
             if [ -z "$CLUSTER_NAME" ]; then
@@ -1246,12 +1254,20 @@ jobs:
         run: |
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
-          BASE_NAME=$(basename ${{ matrix.template }})
+          FULL_NAME=$(basename ${{ matrix.template }})
+          BASE_NAME="${FULL_NAME}"
           if [[ "${{ matrix.template }}" == *"gke-inference-fuse-cache"* ]]; then
             BASE_NAME="gke-inf-fuse-cache"
           fi
+          
+          # Update both infra and workload manifests with the unique suffix so fallback parsing works
+          find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/${FULL_NAME}/${FULL_NAME}-${UID_SUFFIX}/g" {} +
+          if [[ "${{ matrix.template }}" == *"gke-inference-fuse-cache"* ]]; then
+            find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/gke-inf-fuse-cache/gke-inf-fuse-cache-${UID_SUFFIX}/g" {} +
+          fi
+
           CLUSTER_COUNT=$(kubectl get containerclusters.container.cnrm.cloud.google.com \
-            -n $KCC_NAMESPACE -l template=${BASE_NAME}-${UID_SUFFIX} --no-headers 2>/dev/null | wc -l || echo "0")
+            -n $KCC_NAMESPACE -l template=${FULL_NAME}-${UID_SUFFIX} --no-headers 2>/dev/null | wc -l || echo "0")
           if [ "$CLUSTER_COUNT" -eq 0 ]; then
              CLUSTER_COUNT=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(len(docs))")
           fi
@@ -1259,8 +1275,8 @@ jobs:
             echo "has_cluster=false" >> $GITHUB_OUTPUT
             exit 0
           fi
-          CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=${BASE_NAME}-${UID_SUFFIX} -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
-          LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=${BASE_NAME}-${UID_SUFFIX} -o jsonpath='{.items[0].spec.location}' 2>/dev/null || true)
+          CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=${FULL_NAME}-${UID_SUFFIX} -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
+          LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=${FULL_NAME}-${UID_SUFFIX} -o jsonpath='{.items[0].spec.location}' 2>/dev/null || true)
           if [ -z "$CLUSTER_NAME" ]; then
              CLUSTER_NAME=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(docs[0]['metadata']['name'] if docs else '')")
              LOCATION=$(python3 -c "import yaml, pathlib; docs=[d for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml') if p.is_file() for d in yaml.safe_load_all(p.read_text()) if d and d.get('kind')=='ContainerCluster']; print(docs[0]['spec']['location'] if docs else '')")
