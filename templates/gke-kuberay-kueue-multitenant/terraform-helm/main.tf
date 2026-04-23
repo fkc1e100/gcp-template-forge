@@ -103,7 +103,7 @@ resource "google_container_node_pool" "system_nodes" {
   node_count = 2
 
   node_config {
-    spot         = true
+    spot         = false
     machine_type = "e2-standard-4"
     disk_size_gb = 50
     disk_type    = "pd-standard"
@@ -150,7 +150,7 @@ resource "google_container_node_pool" "gpu_nodes" {
   }
 
   node_config {
-    spot         = true
+    spot         = false
     machine_type = "g2-standard-4"
     disk_size_gb = 100
     disk_type    = "pd-standard"

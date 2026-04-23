@@ -39,6 +39,8 @@ debug_failure() {
   kubectl get events -A --sort-by='.lastTimestamp' | tail -n 50
   echo "=== Debug Info: Kueue Operator Logs ==="
   kubectl logs -l control-plane=controller-manager -n kueue-system --all-containers --tail=100 || echo "Could not fetch Kueue logs"
+  echo "=== Debug Info: KubeRay Operator Logs ==="
+  kubectl logs -l app.kubernetes.io/name=kuberay -n default --all-containers --tail=100 || echo "Could not fetch KubeRay logs"
   exit 1
 }
 
