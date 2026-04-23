@@ -39,7 +39,7 @@ gcloud container clusters get-credentials enterprise-gke-tf --region us-central1
 helm upgrade --install release ./workload --namespace gke-workload --create-namespace
 ```
 
-*Note: `create_service_accounts` defaults to `false` to ensure compatibility with restricted environments like CI. For production deployments, set it to `true` to create dedicated, least-privileged service accounts for nodes and workloads.*
+*Note: `create_service_accounts` defaults to `true` to ensure dedicated, least-privileged service accounts are created for nodes and workloads out-of-the-box. In environments with extremely restricted IAM permissions, you can set it to `false` to fall back to the default node service account.*
 
 ### Config Connector
 

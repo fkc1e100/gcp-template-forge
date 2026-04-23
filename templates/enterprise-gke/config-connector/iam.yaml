@@ -81,10 +81,6 @@ spec:
     serviceAccountRef:
       name: enterprise-gke-n-sa
   role: roles/logging.logWriter
-  resourceRef:
-    apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
-    kind: Project
-    external: gca-gke-2025
 ---
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPolicyMember
@@ -99,10 +95,6 @@ spec:
     serviceAccountRef:
       name: enterprise-gke-n-sa
   role: roles/monitoring.metricWriter
-  resourceRef:
-    apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
-    kind: Project
-    external: gca-gke-2025
 ---
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPolicyMember
@@ -117,7 +109,3 @@ spec:
     serviceAccountRef:
       name: enterprise-gke-n-sa
   role: roles/stackdriver.resourceMetadata.writer
-  resourceRef:
-    apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
-    kind: Project
-    external: gca-gke-2025
