@@ -30,9 +30,10 @@ locals {
   uid                = var.uid_suffix != "" ? var.uid_suffix : random_id.bucket_suffix.hex
   workload_gsa_email = var.service_account
   # Use abbreviated name for KSA and bucket if uid_suffix is provided (matches CI)
-  base_name   = var.uid_suffix != "" ? "gke-inf-fuse-cache" : "gke-inference-fuse-cache"
-  ksa_name    = "${local.base_name}-${local.uid}-sa"
-  bucket_name = "${local.base_name}-tf-${local.uid}-bucket"
+  base_name      = var.uid_suffix != "" ? "gke-inf-fuse-cache" : "gke-inference-fuse-cache"
+  template_label = var.uid_suffix != "" ? "gke-inference-fuse-cache-${var.uid_suffix}" : "gke-inference-fuse-cache"
+  ksa_name       = "${local.base_name}-${local.uid}-sa"
+  bucket_name    = "${local.base_name}-tf-${local.uid}-bucket"
 }
 
 # VPC Network
@@ -73,7 +74,7 @@ resource "google_storage_bucket" "model_bucket" {
 
   labels = {
     project  = "gcp-template-forge"
-    template = "${local.base_name}-${local.uid}"
+    template = local.template_label
   }
 }
 
@@ -91,7 +92,7 @@ resource "google_container_cluster" "primary" {
 
   resource_labels = {
     project  = "gcp-template-forge"
-    template = "${local.base_name}-${local.uid}"
+    template = local.template_label
   }
 
   remove_default_node_pool = true
@@ -175,13 +176,13 @@ resource "google_container_node_pool" "gpu_pool" {
 
     labels = {
       project  = "gcp-template-forge"
-      template = "${local.base_name}-${local.uid}"
+      template = local.template_label
       gpu      = "l4"
     }
 
     resource_labels = {
       project  = "gcp-template-forge"
-      template = "${local.base_name}-${local.uid}"
+      template = local.template_label
     }
   }
 
@@ -220,12 +221,12 @@ resource "google_container_node_pool" "system_pool" {
 
     labels = {
       project  = "gcp-template-forge"
-      template = "${local.base_name}-${local.uid}"
+      template = local.template_label
     }
 
     resource_labels = {
       project  = "gcp-template-forge"
-      template = "${local.base_name}-${local.uid}"
+      template = local.template_label
     }
   }
 
@@ -272,7 +273,7 @@ resource "local_file" "helm_values" {
 # limitations under the License.
 
 ${yamlencode({
-  templateName           = "${local.base_name}-${local.uid}"
+  templateName           = local.template_label
   bucketName             = google_storage_bucket.model_bucket.name
   gcpServiceAccountEmail = ""
   serviceAccount = {
