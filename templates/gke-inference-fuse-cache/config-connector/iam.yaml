@@ -46,7 +46,7 @@ spec:
     name: gke-inf-fuse-cache-kcc-bucket
   role: roles/storage.objectAdmin
   # NOTE: Replace 'gca-gke-2025' with your actual project ID
-  member: serviceAccount:gca-gke-2025.svc.id.goog[default/gke-inf-fuse-cache-sa]
+  member: serviceAccount:gca-gke-2025.svc.id.goog[default/gke-inf-fuse-cache-sa] # UPDATE: Replace 'gca-gke-2025' with your GCP Project ID
 ---
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPolicyMember
@@ -83,4 +83,4 @@ spec:
     name: gke-inf-fuse-cache-sa
   role: roles/iam.workloadIdentityUser
   # NOTE: Replace 'gca-gke-2025' with your actual project ID
-  member: serviceAccount:gca-gke-2025.svc.id.goog[default/gke-inf-fuse-cache-sa]
+  member: serviceAccount:gca-gke-2025.svc.id.goog[default/gke-inf-fuse-cache-sa] # UPDATE: Replace 'gca-gke-2025' with your GCP Project ID
