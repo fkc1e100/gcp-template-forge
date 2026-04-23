@@ -18,4 +18,5 @@ jobs:
             gh pr edit $pr_num --repo fkc1e100/gcp-template-forge --add-label "needs-rebase"
           done
         env:
-          GITHUB_TOKEN: ${{ secrets.CODEBOT_PAT }} # Using CODEBOT_PAT for sufficient permissions
+          GH_TOKEN: ${{ secrets.CODEBOT_PAT }} # Using GH_TOKEN for sufficient permissions
+
