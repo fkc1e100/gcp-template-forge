@@ -199,4 +199,59 @@ spec:
     name: http
   selector:
     app: vllm
+    template: gke-inf-fuse-cache
   type: ClusterIP
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: gke-inf-fuse-cache-quota
+  namespace: default
+  labels:
+    project: gcp-template-forge
+    template: gke-inf-fuse-cache
+spec:
+  hard:
+    pods: "10"
+    requests.nvidia.com/gpu: "1"
+    limits.nvidia.com/gpu: "1"
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: gke-inf-fuse-cache-limits
+  namespace: default
+  labels:
+    project: gcp-template-forge
+    template: gke-inf-fuse-cache
+spec:
+  limits:
+  - default:
+      cpu: 500m
+      memory: 1Gi
+    defaultRequest:
+      cpu: 100m
+      memory: 512Mi
+    type: Container
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: vllm-inference-restriction
+  namespace: default
+  labels:
+    project: gcp-template-forge
+    template: gke-inf-fuse-cache
+spec:
+  podSelector:
+    matchLabels:
+      app: vllm
+      template: gke-inf-fuse-cache
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector: {} # Allow traffic from any pod in the same namespace
+    ports:
+    - protocol: TCP
+      port: 8000

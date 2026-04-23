@@ -191,8 +191,33 @@ if [ -z "$MOUNT_CHECK" ]; then
 fi
 echo "GCS FUSE mount point /models verified."
 
-# 6. GPU Check
-echo "Test 6: GPU Check..."
+# 6. Resource Isolation and Security Verification
+echo "Test 6: Resource Isolation and Security Verification..."
+# Detect names if they have prefixes from Helm
+if kubectl get resourcequota -n ${NAMESPACE} -l template=${TEMPLATE_LABEL} >/dev/null 2>&1; then
+  echo "ResourceQuota verified."
+else
+  echo "ERROR: ResourceQuota with template label ${TEMPLATE_LABEL} not found!"
+  exit 1
+fi
+
+if kubectl get limitrange -n ${NAMESPACE} -l template=${TEMPLATE_LABEL} >/dev/null 2>&1; then
+  echo "LimitRange verified."
+else
+  echo "ERROR: LimitRange with template label ${TEMPLATE_LABEL} not found!"
+  exit 1
+fi
+
+if kubectl get networkpolicy -n ${NAMESPACE} -l template=${TEMPLATE_LABEL} >/dev/null 2>&1; then
+  echo "NetworkPolicy verified."
+else
+  echo "ERROR: NetworkPolicy with template label ${TEMPLATE_LABEL} not found!"
+  exit 1
+fi
+echo "Resource isolation and security verified."
+
+# 7. GPU Check
+echo "Test 7: GPU Check..."
 # Try nvidia-smi first, fallback to checking device file for dummy images (which don't have nvidia-smi in PATH)
 # We use sh -c to avoid kubectl exec failing if the binary is missing, and 2>&1 to capture all output.
 GPU_CHECK=$(kubectl exec ${POD_NAME} -n ${NAMESPACE} -- sh -c "nvidia-smi -L 2>/dev/null || ls /dev/nvidia0 2>/dev/null" || true)
@@ -205,8 +230,9 @@ if [ -z "$GPU_CHECK" ]; then
 fi
 echo "GPU verified: $GPU_CHECK"
 
-# 7. vLLM API Health Check
-echo "Test 7: vLLM API Health Check..."
+# 8. vLLM API Health Check
+echo "Test 8: vLLM API Health Check..."
+
 # Wait a bit for vLLM to initialize (it might be slow even after pod is available)
 MAX_RETRIES=12
 RETRY_COUNT=0

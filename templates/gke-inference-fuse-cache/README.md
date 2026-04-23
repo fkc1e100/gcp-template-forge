@@ -94,6 +94,18 @@ This template demonstrates how to achieve high-performance model loading on GKE 
     kubectl apply -f config-connector-workload/workload.yaml
     ```
 
+## Security & Isolation
+
+### Resource Management
+This template includes native Kubernetes `ResourceQuota` and `LimitRange` objects in the `default` namespace to:
+- **Enforce GPU Quotas**: Limits the total number of GPUs that can be requested by pods in the namespace.
+- **Default Resources**: Sets reasonable default CPU and Memory requests/limits for all containers to ensure predictable scheduling.
+
+### Network Policy
+A `NetworkPolicy` (`vllm-inference-restriction`) is included to:
+- **Restrict Ingress**: Only allows traffic to the vLLM inference service (port 8000) from within the same namespace.
+- **Isolate Workload**: Prevents unauthorized cluster-wide access to the model serving endpoint.
+
 ## Performance Benefits
 By using Local SSDs for the GCS FUSE cache:
 1.  **Reduced TTFT**: Models are loaded at NVMe speeds (GB/s) after the first pull.
