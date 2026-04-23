@@ -1503,4 +1503,12 @@ header = sep.join(["", "", "Terraform + Helm", "Config Connector", ""]).strip()
         run: gh pr edit ${{ github.event.number }} --add-label "repo-agent"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Auto-merge PR on success
+        if: >-
+          needs.tf-test.result == 'success' &&
+          (needs.kcc-test.result == 'success' || needs.kcc-test.result == 'skipped')
+        run: gh pr merge ${{ github.event.number }} --merge --delete-branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.CODEBOT_PAT }}
+
 
