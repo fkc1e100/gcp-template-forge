@@ -161,7 +161,7 @@ spec:
     spec:
       containers:
       - args:
-        - --leader-elect
+        - --enable-leader-election
         env:
         - name: RAY_CLUSTER_IMAGE
           value: rayproject/ray:2.9.0
