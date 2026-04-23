@@ -60,7 +60,7 @@ resource "google_container_cluster" "gke_kuberay_kueue_multitenant_cluster" {
 
   resource_labels = {
     project  = "gcp-template-forge"
-    template = "gke-kuberay-kueue-multitenant"
+    template = var.uid_suffix != "" ? "gke-kuberay-kueue-multitenant-${var.uid_suffix}" : "gke-kuberay-kueue-multitenant"
   }
 
   remove_default_node_pool = true
@@ -113,13 +113,13 @@ resource "google_container_node_pool" "system_nodes" {
 
     labels = {
       project  = "gcp-template-forge"
-      template = "gke-kuberay-kueue-multitenant"
+      template = var.uid_suffix != "" ? "gke-kuberay-kueue-multitenant-${var.uid_suffix}" : "gke-kuberay-kueue-multitenant"
       pool     = "system"
     }
 
     resource_labels = {
       project  = "gcp-template-forge"
-      template = "gke-kuberay-kueue-multitenant"
+      template = var.uid_suffix != "" ? "gke-kuberay-kueue-multitenant-${var.uid_suffix}" : "gke-kuberay-kueue-multitenant"
     }
   }
 
@@ -172,7 +172,7 @@ resource "google_container_node_pool" "gpu_nodes" {
 
     resource_labels = {
       project  = "gcp-template-forge"
-      template = "gke-kuberay-kueue-multitenant"
+      template = var.uid_suffix != "" ? "gke-kuberay-kueue-multitenant-${var.uid_suffix}" : "gke-kuberay-kueue-multitenant"
     }
 
     taint {
