@@ -357,13 +357,15 @@ jobs:
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
           
-          # Only set these for gke-inf-fuse-cache
-          EXTRA_ARGS=""
+          EXTRA_ARGS="--set uidSuffix=${UID_SUFFIX}"
           if [[ "${{ matrix.template }}" == *"gke-inference-fuse-cache"* ]]; then
             # Recalculate unique names used in tf-provision
             BUCKET_NAME="gke-inf-fuse-cache-tf-${UID_SUFFIX}-bucket"
             KSA_NAME="gke-inf-fuse-cache-${UID_SUFFIX}-sa"
-            EXTRA_ARGS="--set templateName=gke-inf-fuse-cache-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME}"
+            EXTRA_ARGS="${EXTRA_ARGS} --set templateName=gke-inf-fuse-cache-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME}"
+          fi
+          if [[ "${{ matrix.template }}" == *"gke-kuberay-kueue-multitenant"* ]]; then
+            EXTRA_ARGS="${EXTRA_ARGS} --set projectID=${{ env.PROJECT_ID }} --set region=us-central1 --set clusterName=${{ env.CLUSTER_NAME }}"
           fi
 
           for chart in $CHARTS; do
@@ -642,14 +644,16 @@ jobs:
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
           
-          # Only set these for gke-inf-fuse-cache
-          EXTRA_ARGS=""
+          EXTRA_ARGS="--set uidSuffix=${UID_SUFFIX}"
           if [[ "${{ matrix.template }}" == *"gke-inference-fuse-cache"* ]]; then
             # Recalculate unique names used in kcc-apply
             BUCKET_NAME="gke-inf-fuse-cache-${UID_SUFFIX}-kcc-bucket"
             KSA_NAME="gke-inf-fuse-cache-${UID_SUFFIX}-sa"
             GSA_EMAIL="gke-inf-fuse-cache-${UID_SUFFIX}-sa@${{ env.PROJECT_ID }}.iam.gserviceaccount.com"
-            EXTRA_ARGS="--set templateName=gke-inf-fuse-cache-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME}"
+            EXTRA_ARGS="${EXTRA_ARGS} --set templateName=gke-inf-fuse-cache-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME}"
+          fi
+          if [[ "${{ matrix.template }}" == *"gke-kuberay-kueue-multitenant"* ]]; then
+            EXTRA_ARGS="${EXTRA_ARGS} --set projectID=${{ env.PROJECT_ID }} --set region=us-central1 --set clusterName=${{ steps.kcc-workload-info.outputs.cluster_name }}"
           fi
 
           for chart in $CHARTS; do
