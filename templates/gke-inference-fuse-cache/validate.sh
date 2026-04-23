@@ -56,13 +56,17 @@ fi
 # 0a. Template Label Detection
 # Detect the unique template label used for this run (to handle CI suffixes)
 TEMPLATE_LABEL="gke-inference-fuse-cache"
+if [[ "${CLUSTER_NAME}" == *"gke-inf-fuse-cache"* ]]; then
+  TEMPLATE_LABEL="gke-inf-fuse-cache"
+fi
+
 if [[ "${CLUSTER_NAME}" == *"-"* ]]; then
-  # Try to extract suffix from cluster name (e.g. gke-inference-fuse-cache-123456-tf)
+  # Try to extract suffix from cluster name (e.g. gke-inf-fuse-cache-123456-tf)
   SUFFIX=$(echo ${CLUSTER_NAME} | grep -oE "[0-9]{6}" || true)
   if [ -n "${SUFFIX}" ]; then
     # Try finding pods with this suffix in their template label
     if kubectl get pods --all-namespaces -l template=${TEMPLATE_LABEL}-${SUFFIX} >/dev/null 2>&1; then
-      TEMPLATE_LABEL="gke-inference-fuse-cache-${SUFFIX}"
+      TEMPLATE_LABEL="${TEMPLATE_LABEL}-${SUFFIX}"
       echo "Detected unique template label: ${TEMPLATE_LABEL}"
     fi
   fi
