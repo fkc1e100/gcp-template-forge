@@ -93,8 +93,8 @@ echo "Test 5: RayCluster Readiness..."
 echo "Waiting for RayClusters to become ready..."
 echo "Note: This triggers autoscaling for GPU nodes, which can take several minutes."
 
-# Verify GPU Driver installer is present
-kubectl get daemonset nvidia-driver-installer -n kube-system || echo "Warning: nvidia-driver-installer not found yet."
+# Verify GPU Driver installation is initiated via GKE annotation
+kubectl get nodes -l cloud.google.com/gke-accelerator=nvidia-l4 -o jsonpath='{.items[*].metadata.labels.cloud\.google\.com/gke-gpu-driver-version}' | grep -q "DEFAULT" || echo "Warning: GPU nodes found but GKE driver version label not yet present."
 
 set +e
 echo "Waiting for raycluster-team-a..."
