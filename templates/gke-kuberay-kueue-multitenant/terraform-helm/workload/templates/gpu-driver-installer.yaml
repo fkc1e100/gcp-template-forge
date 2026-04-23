@@ -20,7 +20,7 @@ metadata:
   labels:
     k8s-app: nvidia-driver-installer
     project: gcp-template-forge
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
 spec:
   selector:
     matchLabels:
@@ -33,7 +33,7 @@ spec:
         name: nvidia-driver-installer
         k8s-app: nvidia-driver-installer
         project: gcp-template-forge
-        template: gke-kuberay-kueue-multitenant
+        template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
     spec:
       priorityClassName: system-node-critical
       affinity:

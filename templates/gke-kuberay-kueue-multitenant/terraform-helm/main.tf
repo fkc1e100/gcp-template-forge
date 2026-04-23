@@ -214,6 +214,7 @@ ${yamlencode({
   clusterName = var.cluster_name
   projectID   = var.project_id
   region      = var.region
+  uidSuffix   = var.uid_suffix
 })}
 EOF
 }

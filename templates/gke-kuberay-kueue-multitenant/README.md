@@ -81,7 +81,7 @@ The Ray dashboard is exposed on `0.0.0.0:8265` within the head pod. This templat
 
 ## Verification
 
-The `validate.sh` script performs comprehensive checks on operator readiness, Kueue configurations, and RayCluster status. It also handles the application of the specific `RayCluster` and `Kueue` custom resources to ensure they are only applied once the operators' mutating webhooks are fully ready.
+The `validate.sh` script performs comprehensive checks on operator readiness, Kueue configurations, and RayCluster status. It strictly performs validation and readiness checks, as all deployment actions are delegated to the CI pipeline and Helm.
 
 ```bash
 ./validate.sh

@@ -17,7 +17,7 @@ kind: Namespace
 metadata:
   labels:
     project: gcp-template-forge
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: team-a
 ---
 apiVersion: v1
@@ -53,7 +53,7 @@ kind: Namespace
 metadata:
   labels:
     project: gcp-template-forge
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: team-b
 ---
 apiVersion: v1
@@ -90,5 +90,5 @@ metadata:
   labels:
     control-plane: controller-manager
     project: gcp-template-forge
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-system
