@@ -71,10 +71,11 @@ kubectl apply --server-side -f config-connector-workload/
 
 ## Security & Isolation
 
-### GPU Driver Installer
-The `nvidia-driver-installer` DaemonSet runs in the `kube-system` namespace with:
-- **Privileged**: Required for loading kernel modules.
-- **HostNetwork & HostPID**: Required for interacting with the host OS.
+### GPU Driver Installation
+This template uses the **GKE-native GPU driver installation** (`gpu_driver_installation_config`). This is the recommended best practice as it:
+- **Reduces Security Risk**: Eliminates the need for running privileged containers with `hostNetwork` and `hostPID` to install drivers.
+- **Improved Reliability**: GKE automatically manages the driver lifecycle and ensures compatibility with the node's OS and GPU hardware.
+- **Faster Provisioning**: Drivers are installed as part of the node boot process.
 
 ### Ray Dashboard
 The Ray dashboard is exposed on `0.0.0.0:8265` within the head pod. This template includes a `NetworkPolicy` (`ray-dashboard-restriction`) in both `team-a` and `team-b` namespaces that restricts ingress to the head pod from only within the same namespace. For production, you may want to further restrict this to specific monitoring namespaces or use an Ingress with authentication.

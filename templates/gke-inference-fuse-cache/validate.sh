@@ -56,15 +56,13 @@ fi
 # 0a. Template Label Detection
 # Detect the unique template label used for this run (to handle CI suffixes)
 TEMPLATE_LABEL="gke-inference-fuse-cache"
-if [[ "${CLUSTER_NAME}" == *"gke-inf-fuse-cache"* ]]; then
-  TEMPLATE_LABEL="gke-inf-fuse-cache"
-fi
 
 if [[ "${CLUSTER_NAME}" == *"-"* ]]; then
   # Try to extract suffix from cluster name (e.g. gke-inf-fuse-cache-123456-tf)
   SUFFIX=$(echo ${CLUSTER_NAME} | grep -oE "[0-9]{6}" || true)
   if [ -n "${SUFFIX}" ]; then
     # Try finding pods with this suffix in their template label
+    # First try the standard name, then fallback to any label containing the suffix if needed
     if kubectl get pods --all-namespaces -l template=${TEMPLATE_LABEL}-${SUFFIX} >/dev/null 2>&1; then
       TEMPLATE_LABEL="${TEMPLATE_LABEL}-${SUFFIX}"
       echo "Detected unique template label: ${TEMPLATE_LABEL}"
@@ -77,14 +75,14 @@ if [ -z "${BUCKET_NAME}" ]; then
   echo "Attempting to detect bucket..."
   # Try specific names based on cluster type
   if [[ "${CLUSTER_NAME}" == *"-tf" ]]; then
-    DETECTED_BUCKET=$(gcloud storage buckets list --project ${PROJECT_ID} --filter="name ~ gke-inference-fuse-cache-tf.*-bucket" --format="value(name)" --limit 1)
+    DETECTED_BUCKET=$(gcloud storage buckets list --project ${PROJECT_ID} --filter="name ~ gke-inference-fuse-cache-tf.*-bucket OR name ~ gke-inf-fuse-cache-tf.*-bucket" --format="value(name)" --limit 1)
   elif [[ "${CLUSTER_NAME}" == *"-kcc" ]]; then
-    DETECTED_BUCKET=$(gcloud storage buckets list --project ${PROJECT_ID} --filter="name ~ gke-inference-fuse-cache.*-kcc-bucket" --format="value(name)" --limit 1)
+    DETECTED_BUCKET=$(gcloud storage buckets list --project ${PROJECT_ID} --filter="name ~ gke-inference-fuse-cache.*-kcc-bucket OR name ~ gke-inf-fuse-cache.*-kcc-bucket" --format="value(name)" --limit 1)
   fi
   
   # Fallback to general detection
   if [ -z "${DETECTED_BUCKET}" ]; then
-    DETECTED_BUCKET=$(gcloud storage buckets list --project ${PROJECT_ID} --filter="name ~ ${BUCKET_NAME_BASE}.*-bucket" --format="value(name)" --limit 1)
+    DETECTED_BUCKET=$(gcloud storage buckets list --project ${PROJECT_ID} --filter="name ~ ${BUCKET_NAME_BASE}.*-bucket OR name ~ gke-inf-fuse-cache.*-bucket" --format="value(name)" --limit 1)
   fi
 
   if [ -n "${DETECTED_BUCKET}" ]; then
