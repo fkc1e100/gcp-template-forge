@@ -330,6 +330,7 @@ jobs:
         run: |
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
+          echo "UID_SUFFIX=${UID_SUFFIX}" >> $GITHUB_ENV
           BASE_NAME=$(basename ${{ matrix.template }})
           if [[ "${{ matrix.template }}" == *"gke-inference-fuse-cache"* ]]; then
             BASE_NAME="gke-inf-fuse-cache"
@@ -367,13 +368,15 @@ jobs:
 
           for chart in $CHARTS; do
             echo "=== Helm deploy: $chart ==="
-            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT" ${EXTRA_ARGS}
+            # Removed --wait to let validate.sh handle resource readiness with better debug info
+            helm upgrade --install release "$chart" --timeout="$TIMEOUT" ${EXTRA_ARGS}
           done
 
           if [ -f "${{ matrix.template }}/validate.sh" ]; then
             echo "=== Running template-specific validation: ${{ matrix.template }}/validate.sh ==="
             export CLUSTER_NAME="${{ env.CLUSTER_NAME }}"
             export REGION="us-central1"
+            export UID_SUFFIX="${{ env.UID_SUFFIX }}"
             chmod +x ${{ matrix.template }}/validate.sh
             ./${{ matrix.template }}/validate.sh
           fi
@@ -651,13 +654,15 @@ jobs:
 
           for chart in $CHARTS; do
             echo "=== Helm deploy: $chart ==="
-            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT" ${EXTRA_ARGS}
+            # Removed --wait to let validate.sh handle resource readiness with better debug info
+            helm upgrade --install release "$chart" --timeout="$TIMEOUT" ${EXTRA_ARGS}
           done
 
           if [ -f "${{ matrix.template }}/validate.sh" ]; then
             echo "=== Running template-specific validation (KCC): ${{ matrix.template }}/validate.sh ==="
             export CLUSTER_NAME="${{ steps.kcc-workload-info.outputs.cluster_name }}"
             export REGION="${{ steps.kcc-workload-info.outputs.location }}"
+            export UID_SUFFIX="${UID_SUFFIX}"
             chmod +x ${{ matrix.template }}/validate.sh
             ./${{ matrix.template }}/validate.sh
           fi

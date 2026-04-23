@@ -62,10 +62,32 @@ echo "Checking Kueue Operator..."
 kubectl wait --for=condition=available deployment/kueue-controller-manager -n kueue-system --timeout=15m || debug_failure "Kueue Operator failed to become ready"
 echo "Operators are ready."
 
-# 3. Kueue Resource Readiness
-echo "Test 3: Kueue Resource Readiness..."
-# Resources should have been installed by Helm or config-connector-workload
-echo "Waiting for Kueue resources..."
+# 3. Apply Custom Resources
+echo "Test 3: Applying Custom Resources..."
+SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
+TEMPLATE_NAME=$(basename "$SCRIPT_DIR")
+
+# Apply UID_SUFFIX if present (for CI parity)
+apply_manifest() {
+  local file=$1
+  if [ -n "$UID_SUFFIX" ]; then
+    echo "Applying $file with UID_SUFFIX=$UID_SUFFIX..."
+    sed "s/${TEMPLATE_NAME}/${TEMPLATE_NAME}-${UID_SUFFIX}/g" "$file" | kubectl apply -f -
+  else
+    echo "Applying $file..."
+    kubectl apply -f "$file"
+  fi
+}
+
+# Apply Kueue resources first
+apply_manifest "$SCRIPT_DIR/config-connector-workload/02-kueue-config.yaml"
+
+# Apply RayCluster resources
+apply_manifest "$SCRIPT_DIR/config-connector-workload/03-ray-clusters.yaml"
+
+# 4. Kueue Resource Readiness
+echo "Test 4: Kueue Resource Readiness..."
+# ... (rest of the script)
 for i in {1..30}; do
   if kubectl get clusterqueue team-a-cq && \
      kubectl get clusterqueue team-b-cq && \
@@ -81,8 +103,8 @@ for i in {1..30}; do
   fi
 done
 
-# 4. RayCluster Readiness
-echo "Test 4: RayCluster Readiness..."
+# 5. RayCluster Readiness
+echo "Test 5: RayCluster Readiness..."
 # These should have been installed by Helm or config-connector-workload
 echo "Waiting for RayClusters to become ready..."
 echo "Note: This triggers autoscaling for GPU nodes, which can take several minutes."
@@ -109,8 +131,8 @@ if [ $RESULT_A -ne 0 ] || [ $RESULT_B -ne 0 ]; then
   debug_failure "RayClusters failed to become ready"
 fi
 
-# 5. Resource isolation verification
-echo "Test 5: Resource Isolation Verification..."
+# 6. Resource isolation verification
+echo "Test 6: Resource Isolation Verification..."
 kubectl get resourcequota team-a-quota -n team-a || debug_failure "ResourceQuota for team-a not found"
 kubectl get limitrange team-a-limits -n team-a || debug_failure "LimitRange for team-a not found"
 kubectl get networkpolicy ray-dashboard-restriction -n team-a || debug_failure "NetworkPolicy for team-a not found"
