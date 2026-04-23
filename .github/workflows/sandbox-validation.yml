@@ -367,10 +367,8 @@ jobs:
             # Recalculate unique names used in tf-provision
             BUCKET_NAME="gke-inf-fuse-cache-tf-${UID_SUFFIX}-bucket"
             KSA_NAME="gke-inf-fuse-cache-${UID_SUFFIX}-sa"
-            GSA_EMAIL="gke-inf-fuse-cache-${UID_SUFFIX}-sa@${{ env.PROJECT_ID }}.iam.gserviceaccount.com"
-            EXTRA_ARGS="${EXTRA_ARGS} --set templateName=gke-inference-fuse-cache-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME} --set gcpServiceAccountEmail=${GSA_EMAIL}"
-          fi
-          if [[ "${{ matrix.template }}" == *"gke-kuberay-kueue-multitenant"* ]]; then
+            EXTRA_ARGS="${EXTRA_ARGS} --set templateName=gke-inference-fuse-cache-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME}"
+          fi          if [[ "${{ matrix.template }}" == *"gke-kuberay-kueue-multitenant"* ]]; then
             EXTRA_ARGS="${EXTRA_ARGS} --set projectID=${{ env.PROJECT_ID }} --set region=us-central1 --set clusterName=${{ env.CLUSTER_NAME }}"
           fi
 
@@ -990,10 +988,8 @@ jobs:
           if [ "$SHORT_NAME" == "gke-inf-fuse-cache" ]; then
             BUCKET_NAME="${SHORT_NAME}-tf-${UID_SUFFIX}-bucket"
             KSA_NAME="${SHORT_NAME}-${UID_SUFFIX}-sa"
-            GSA_EMAIL="${SHORT_NAME}-${UID_SUFFIX}-sa@${{ env.PROJECT_ID }}.iam.gserviceaccount.com"
-            EXTRA_ARGS="--set templateName=$(basename ${{ matrix.template }})-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME} --set gcpServiceAccountEmail=${GSA_EMAIL}"
+            EXTRA_ARGS="--set templateName=$(basename ${{ matrix.template }})-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME}"
           fi
-
           for chart in $CHARTS; do
             echo "=== Helm deploy: $chart ==="
             # Removed --wait to let validate.sh handle resource readiness with better debug info
