@@ -83,7 +83,7 @@ jobs:
 
 
       - name: Remove repo-agent Label on Start
-        if: github.event_name == 'pull_request' && needs.detect-changes.outputs.has_templates == 'true'
+        if: github.event_name == 'pull_request' && steps.find.outputs.has_templates == 'true'
         run: gh pr edit ${{ github.event.number }} --remove-label "repo-agent" || true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
