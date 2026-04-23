@@ -367,7 +367,8 @@ jobs:
             # Recalculate unique names used in tf-provision
             BUCKET_NAME="gke-inf-fuse-cache-tf-${UID_SUFFIX}-bucket"
             KSA_NAME="gke-inf-fuse-cache-${UID_SUFFIX}-sa"
-            EXTRA_ARGS="${EXTRA_ARGS} --set templateName=gke-inference-fuse-cache-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME}"
+            GSA_EMAIL="gke-inf-fuse-cache-${UID_SUFFIX}-sa@${{ env.PROJECT_ID }}.iam.gserviceaccount.com"
+            EXTRA_ARGS="${EXTRA_ARGS} --set templateName=gke-inference-fuse-cache-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME} --set gcpServiceAccountEmail=${GSA_EMAIL}"
           fi
           if [[ "${{ matrix.template }}" == *"gke-kuberay-kueue-multitenant"* ]]; then
             EXTRA_ARGS="${EXTRA_ARGS} --set projectID=${{ env.PROJECT_ID }} --set region=us-central1 --set clusterName=${{ env.CLUSTER_NAME }}"
@@ -668,7 +669,7 @@ jobs:
             BUCKET_NAME="gke-inf-fuse-cache-${UID_SUFFIX}-kcc-bucket"
             KSA_NAME="gke-inf-fuse-cache-${UID_SUFFIX}-sa"
             GSA_EMAIL="gke-inf-fuse-cache-${UID_SUFFIX}-sa@${{ env.PROJECT_ID }}.iam.gserviceaccount.com"
-            EXTRA_ARGS="${EXTRA_ARGS} --set templateName=gke-inference-fuse-cache-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME}"
+            EXTRA_ARGS="${EXTRA_ARGS} --set templateName=gke-inference-fuse-cache-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME} --set gcpServiceAccountEmail=${GSA_EMAIL}"
           fi
           if [[ "${{ matrix.template }}" == *"gke-kuberay-kueue-multitenant"* ]]; then
             EXTRA_ARGS="${EXTRA_ARGS} --set projectID=${{ env.PROJECT_ID }} --set region=us-central1 --set clusterName=${{ steps.kcc-workload-info.outputs.cluster_name }}"
@@ -1005,7 +1006,8 @@ jobs:
             # Recalculate unique names used in tf-provision
             BUCKET_NAME="gke-inf-fuse-cache-tf-${UID_SUFFIX}-bucket"
             KSA_NAME="gke-inf-fuse-cache-${UID_SUFFIX}-sa"
-            EXTRA_ARGS="--set templateName=gke-inference-fuse-cache-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME}"
+            GSA_EMAIL="gke-inf-fuse-cache-${UID_SUFFIX}-sa@${{ env.PROJECT_ID }}.iam.gserviceaccount.com"
+            EXTRA_ARGS="--set templateName=gke-inference-fuse-cache-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME} --set gcpServiceAccountEmail=${GSA_EMAIL}"
           fi
 
           for chart in $CHARTS; do
@@ -1340,7 +1342,7 @@ jobs:
             BUCKET_NAME="gke-inf-fuse-cache-${UID_SUFFIX}-kcc-bucket"
             KSA_NAME="gke-inf-fuse-cache-${UID_SUFFIX}-sa"
             GSA_EMAIL="gke-inf-fuse-cache-${UID_SUFFIX}-sa@${{ env.PROJECT_ID }}.iam.gserviceaccount.com"
-            EXTRA_ARGS="--set templateName=gke-inference-fuse-cache-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME}"
+            EXTRA_ARGS="--set templateName=gke-inference-fuse-cache-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME} --set gcpServiceAccountEmail=${GSA_EMAIL}"
           fi
 
           for chart in $CHARTS; do
