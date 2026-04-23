@@ -503,17 +503,8 @@ jobs:
             --location="us-central1" \
             --project="${{ env.PROJECT_ID }}" --quiet --async || true
 
-      - name: Post TF+Helm summary to PR
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const template = '${{ matrix.template }}';
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `### Deploy & Test TF+Helm: \`${template}\` complete.`,
-            });
+      # Step removed to reduce comment noise on PRs.
+
 
       - name: Cancel workflow on failure
         if: failure()
@@ -729,17 +720,8 @@ jobs:
             -f ${{ matrix.template }}/config-connector/ \
             --wait=true --timeout=900s || true
 
-      - name: Post KCC summary to PR
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const template = '${{ matrix.template }}';
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `### Deploy & Test KCC: \`${template}\` complete.`,
-            });
+      # Step removed to reduce comment noise on PRs.
+
 
   # ── 4c. PR close: destroy any cluster left up by failed deploy-test runs ────
   cleanup-pr-infra:
