@@ -1,9 +1,17 @@
 name: Sandbox Validation
 
 on:
-  workflow_dispatch:
   push:
+    branches: [ main ]
+    paths:
+      - 'templates/**'
+      - 'agent-infra/**'
   pull_request:
+    branches: [ main ]
+    types: [opened, synchronize, reopened, closed]
+    paths:
+      - 'templates/**'
+      - 'agent-infra/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
