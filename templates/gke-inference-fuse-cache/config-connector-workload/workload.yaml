@@ -214,9 +214,9 @@ spec:
   hard:
     pods: "10"
     requests.cpu: "8"
-    requests.memory: 16Gi
+    requests.memory: "16Gi"
     limits.cpu: "16"
-    limits.memory: 32Gi
+    limits.memory: "32Gi"
     requests.nvidia.com/gpu: "1"
     limits.nvidia.com/gpu: "1"
 ---

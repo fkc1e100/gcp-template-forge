@@ -32,9 +32,9 @@ spec:
   hard:
     pods: "20"
     requests.cpu: "16"
-    requests.memory: 64Gi
+    requests.memory: "64Gi"
     limits.cpu: "32"
-    limits.memory: 128Gi
+    limits.memory: "128Gi"
 ---
 apiVersion: v1
 kind: LimitRange
@@ -74,9 +74,9 @@ spec:
   hard:
     pods: "20"
     requests.cpu: "16"
-    requests.memory: 64Gi
+    requests.memory: "64Gi"
     limits.cpu: "32"
-    limits.memory: 128Gi
+    limits.memory: "128Gi"
 ---
 apiVersion: v1
 kind: LimitRange
