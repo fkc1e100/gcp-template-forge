@@ -30,9 +30,9 @@ locals {
   uid                = var.uid_suffix != "" ? var.uid_suffix : random_id.bucket_suffix.hex
   workload_gsa_email = var.service_account
   # Use abbreviated name for KSA and bucket if uid_suffix is provided (matches CI)
-  base_name          = var.uid_suffix != "" ? "gke-inf-fuse-cache" : "gke-inference-fuse-cache"
-  ksa_name           = "${local.base_name}-${local.uid}-sa"
-  bucket_name        = "${local.base_name}-tf-${local.uid}-bucket"
+  base_name   = var.uid_suffix != "" ? "gke-inf-fuse-cache" : "gke-inference-fuse-cache"
+  ksa_name    = "${local.base_name}-${local.uid}-sa"
+  bucket_name = "${local.base_name}-tf-${local.uid}-bucket"
 }
 
 # VPC Network
@@ -64,14 +64,14 @@ resource "google_compute_subnetwork" "subnet" {
 
 # GCS Bucket for models
 resource "google_storage_bucket" "model_bucket" {
-  name                        = local.bucket_name
-  location                    = var.region
-  project                     = var.project_id
-  force_destroy               = true
+  name          = local.bucket_name
+  location      = var.region
+  project       = var.project_id
+  force_destroy = true
 
   uniform_bucket_level_access = true
 
-  labels                      = {
+  labels = {
     project  = "gcp-template-forge"
     template = "${local.base_name}-${local.uid}"
   }
@@ -79,17 +79,17 @@ resource "google_storage_bucket" "model_bucket" {
 
 # GKE Cluster
 resource "google_container_cluster" "primary" {
-  provider                 = google-beta
-  name                     = var.cluster_name
-  location                 = var.region
-  project                  = var.project_id
+  provider = google-beta
+  name     = var.cluster_name
+  location = var.region
+  project  = var.project_id
 
   # Restrict to a single zone that supports L4 GPUs to save quota and improve reliability
-  node_locations           = [var.zone]
+  node_locations = [var.zone]
 
-  deletion_protection      = false
+  deletion_protection = false
 
-  resource_labels          = {
+  resource_labels = {
     project  = "gcp-template-forge"
     template = "${local.base_name}-${local.uid}"
   }
@@ -97,8 +97,8 @@ resource "google_container_cluster" "primary" {
   remove_default_node_pool = true
   initial_node_count       = 1
 
-  network                  = google_compute_network.vpc.name
-  subnetwork               = google_compute_subnetwork.subnet.name
+  network    = google_compute_network.vpc.name
+  subnetwork = google_compute_subnetwork.subnet.name
 
   ip_allocation_policy {
     cluster_secondary_range_name  = "pods"
@@ -129,23 +129,23 @@ resource "google_container_cluster" "primary" {
 
 # GPU Node Pool with Local SSD
 resource "google_container_node_pool" "gpu_pool" {
-  provider       = google-beta
-  name           = "l4-gpu-pool"
-  location       = var.region
-  cluster        = google_container_cluster.primary.name
-  project        = var.project_id
-  node_count     = 1
+  provider   = google-beta
+  name       = "l4-gpu-pool"
+  location   = var.region
+  cluster    = google_container_cluster.primary.name
+  project    = var.project_id
+  node_count = 1
 
   # Restrict to a single zone that supports L4 GPUs
   node_locations = [var.zone]
 
   node_config {
     # Use on-demand instances for better availability (spot can be harder to find in some zones)
-    spot            = false
+    spot = false
 
-    machine_type    = "g2-standard-4"
-    disk_size_gb    = 50
-    disk_type       = "pd-balanced"
+    machine_type = "g2-standard-4"
+    disk_size_gb = 50
+    disk_type    = "pd-balanced"
 
     # G2-standard-4 has 1 x L4 GPU
     guest_accelerator {
@@ -163,7 +163,7 @@ resource "google_container_node_pool" "gpu_pool" {
       local_ssd_count = 1
     }
 
-    oauth_scopes    = [
+    oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform",
     ]
 
@@ -173,7 +173,7 @@ resource "google_container_node_pool" "gpu_pool" {
 
     service_account = var.service_account
 
-    labels          = {
+    labels = {
       project  = "gcp-template-forge"
       template = "${local.base_name}-${local.uid}"
       gpu      = "l4"
@@ -194,23 +194,23 @@ resource "google_container_node_pool" "gpu_pool" {
 
 # System Node Pool for non-GPU workloads (e.g. model staging)
 resource "google_container_node_pool" "system_pool" {
-  name           = "system-pool"
-  location       = var.region
-  cluster        = google_container_cluster.primary.name
-  project        = var.project_id
-  node_count     = 1
+  name       = "system-pool"
+  location   = var.region
+  cluster    = google_container_cluster.primary.name
+  project    = var.project_id
+  node_count = 1
 
   # Restrict to the same zone as the GPU pool
   node_locations = [var.zone]
 
   node_config {
-    machine_type    = "e2-standard-2"
-    disk_size_gb    = 50
-    disk_type       = "pd-balanced"
+    machine_type = "e2-standard-2"
+    disk_size_gb = 50
+    disk_type    = "pd-balanced"
 
     service_account = var.service_account
 
-    oauth_scopes    = [
+    oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform",
     ]
 
@@ -218,7 +218,7 @@ resource "google_container_node_pool" "system_pool" {
       mode = "GKE_METADATA"
     }
 
-    labels          = {
+    labels = {
       project  = "gcp-template-forge"
       template = "${local.base_name}-${local.uid}"
     }
@@ -279,12 +279,12 @@ ${yamlencode({
     name = local.ksa_name
   }
   # Default values for vllm-inference
-  replicaCount           = 1
-  image                  = {
+  replicaCount = 1
+  image        = {
     repository = "google/cloud-sdk"
     tag        = "slim"
   }
-  resources              = {
+  resources = {
     limits = {
       "nvidia.com/gpu" = 1
     }
@@ -292,17 +292,17 @@ ${yamlencode({
       "nvidia.com/gpu" = 1
     }
   }
-  nodeSelector           = {
+  nodeSelector = {
     gpu = "l4"
   }
-  tolerations            = [
+  tolerations = [
     {
       key      = "nvidia.com/gpu"
       operator = "Exists"
       effect   = "NoSchedule"
     }
   ]
-  cache                  = {
+  cache = {
     capacity                = "50Gi"
     metadataCacheTTLSeconds = 3600
     statCacheCapacity       = "512Mi"
