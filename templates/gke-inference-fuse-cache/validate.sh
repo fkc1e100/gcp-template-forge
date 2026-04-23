@@ -20,26 +20,26 @@ echo "Starting GKE Inference FUSE Cache Validation Tests..."
 PROJECT_ID=${PROJECT_ID:-"gca-gke-2025"}
 REGION=${REGION:-"us-central1"}
 NAMESPACE=${NAMESPACE:-"default"}
-BUCKET_NAME_BASE="gke-inf-fuse-cache"
+BUCKET_NAME_BASE="gke-inference-fuse-cache"
 
 # 0. Cluster Detection
 if [ -z "${CLUSTER_NAME}" ]; then
   echo "CLUSTER_NAME not set, attempting to detect cluster..."
   # Try exact names first
-  if gcloud container clusters describe gke-inf-fuse-cache --region ${REGION} --project ${PROJECT_ID} >/dev/null 2>&1; then
-    CLUSTER_NAME="gke-inf-fuse-cache"
+  if gcloud container clusters describe gke-inference-fuse-cache --region ${REGION} --project ${PROJECT_ID} >/dev/null 2>&1; then
+    CLUSTER_NAME="gke-inference-fuse-cache"
     echo "Detected Terraform cluster: ${CLUSTER_NAME}"
-  elif gcloud container clusters describe gke-inf-fuse-cache-kcc --region ${REGION} --project ${PROJECT_ID} >/dev/null 2>&1; then
-    CLUSTER_NAME="gke-inf-fuse-cache-kcc"
+  elif gcloud container clusters describe gke-inference-fuse-cache-kcc --region ${REGION} --project ${PROJECT_ID} >/dev/null 2>&1; then
+    CLUSTER_NAME="gke-inference-fuse-cache-kcc"
     echo "Detected Config Connector cluster: ${CLUSTER_NAME}"
   else
     # Try detecting via list with filter (to handle CI suffixes)
-    DETECTED_TF=$(gcloud container clusters list --project ${PROJECT_ID} --filter="name ~ gke-inf-fuse-cache.*-tf" --format="value(name)" --limit 1)
+    DETECTED_TF=$(gcloud container clusters list --project ${PROJECT_ID} --filter="name ~ gke-inference-fuse-cache.*-tf" --format="value(name)" --limit 1)
     if [ -n "${DETECTED_TF}" ]; then
       CLUSTER_NAME="${DETECTED_TF}"
       echo "Detected Terraform cluster (suffixed): ${CLUSTER_NAME}"
     else
-      DETECTED_KCC=$(gcloud container clusters list --project ${PROJECT_ID} --filter="name ~ gke-inf-fuse-cache.*-kcc" --format="value(name)" --limit 1)
+      DETECTED_KCC=$(gcloud container clusters list --project ${PROJECT_ID} --filter="name ~ gke-inference-fuse-cache.*-kcc" --format="value(name)" --limit 1)
       if [ -n "${DETECTED_KCC}" ]; then
         CLUSTER_NAME="${DETECTED_KCC}"
         echo "Detected Config Connector cluster (suffixed): ${CLUSTER_NAME}"
@@ -55,14 +55,14 @@ fi
 
 # 0a. Template Label Detection
 # Detect the unique template label used for this run (to handle CI suffixes)
-TEMPLATE_LABEL="gke-inf-fuse-cache"
+TEMPLATE_LABEL="gke-inference-fuse-cache"
 if [[ "${CLUSTER_NAME}" == *"-"* ]]; then
-  # Try to extract suffix from cluster name (e.g. gke-inf-fuse-cache-123456-tf)
+  # Try to extract suffix from cluster name (e.g. gke-inference-fuse-cache-123456-tf)
   SUFFIX=$(echo ${CLUSTER_NAME} | grep -oE "[0-9]{6}" || true)
   if [ -n "${SUFFIX}" ]; then
     # Try finding pods with this suffix in their template label
     if kubectl get pods --all-namespaces -l template=${TEMPLATE_LABEL}-${SUFFIX} >/dev/null 2>&1; then
-      TEMPLATE_LABEL="gke-inf-fuse-cache-${SUFFIX}"
+      TEMPLATE_LABEL="gke-inference-fuse-cache-${SUFFIX}"
       echo "Detected unique template label: ${TEMPLATE_LABEL}"
     fi
   fi
@@ -73,9 +73,9 @@ if [ -z "${BUCKET_NAME}" ]; then
   echo "Attempting to detect bucket..."
   # Try specific names based on cluster type
   if [[ "${CLUSTER_NAME}" == *"-tf" ]]; then
-    DETECTED_BUCKET=$(gcloud storage buckets list --project ${PROJECT_ID} --filter="name ~ gke-inf-fuse-cache-tf.*-bucket" --format="value(name)" --limit 1)
+    DETECTED_BUCKET=$(gcloud storage buckets list --project ${PROJECT_ID} --filter="name ~ gke-inference-fuse-cache-tf.*-bucket" --format="value(name)" --limit 1)
   elif [[ "${CLUSTER_NAME}" == *"-kcc" ]]; then
-    DETECTED_BUCKET=$(gcloud storage buckets list --project ${PROJECT_ID} --filter="name ~ gke-inf-fuse-cache.*-kcc-bucket" --format="value(name)" --limit 1)
+    DETECTED_BUCKET=$(gcloud storage buckets list --project ${PROJECT_ID} --filter="name ~ gke-inference-fuse-cache.*-kcc-bucket" --format="value(name)" --limit 1)
   fi
   
   # Fallback to general detection
