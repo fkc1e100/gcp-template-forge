@@ -25,6 +25,9 @@ kind: ResourceQuota
 metadata:
   name: team-a-quota
   namespace: team-a
+  labels:
+    project: gcp-template-forge
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
 spec:
   hard:
     pods: "20"
@@ -38,6 +41,9 @@ kind: LimitRange
 metadata:
   name: team-a-limits
   namespace: team-a
+  labels:
+    project: gcp-template-forge
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
 spec:
   limits:
   - default:
@@ -61,6 +67,9 @@ kind: ResourceQuota
 metadata:
   name: team-b-quota
   namespace: team-b
+  labels:
+    project: gcp-template-forge
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
 spec:
   hard:
     pods: "20"
@@ -74,6 +83,9 @@ kind: LimitRange
 metadata:
   name: team-b-limits
   namespace: team-b
+  labels:
+    project: gcp-template-forge
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
 spec:
   limits:
   - default:
