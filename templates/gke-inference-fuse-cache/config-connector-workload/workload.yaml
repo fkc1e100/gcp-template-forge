@@ -148,6 +148,10 @@ metadata:
 spec:
   template:
     metadata:
+      labels:
+        project: gcp-template-forge
+        template: gke-inference-fuse-cache
+        component: staging
       annotations:
         gke-gcsfuse/volumes: "true"
     spec:

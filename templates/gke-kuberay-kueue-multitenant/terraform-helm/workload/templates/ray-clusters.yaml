@@ -31,6 +31,7 @@ spec:
         labels:
           project: gcp-template-forge
           template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
+          ray.io/node-type: head
       spec:
         containers:
         - image: rayproject/ray:2.9.0
@@ -61,6 +62,7 @@ spec:
         labels:
           project: gcp-template-forge
           template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
+          ray.io/node-type: worker
       spec:
         containers:
         - image: rayproject/ray:2.9.0
@@ -98,6 +100,7 @@ spec:
         labels:
           project: gcp-template-forge
           template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
+          ray.io/node-type: head
       spec:
         containers:
         - image: rayproject/ray:2.9.0
@@ -128,6 +131,7 @@ spec:
         labels:
           project: gcp-template-forge
           template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
+          ray.io/node-type: worker
       spec:
         containers:
         - image: rayproject/ray:2.9.0
