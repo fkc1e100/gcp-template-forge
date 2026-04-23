@@ -828,10 +828,8 @@ jobs:
         run: |
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
-          find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
-          if [[ "${{ matrix.template }}" == *"gke-inference-fuse-cache"* ]]; then
-            find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/gke-inf-fuse-cache/gke-inf-fuse-cache-${UID_SUFFIX}/g" {} +
-          fi
+          ./agent-infra/prepare-manifests.sh ${{ matrix.template }} ${UID_SUFFIX}
+
           kubectl delete \
             -n ${{ env.KCC_NAMESPACE }} \
             -f ${{ matrix.template }}/config-connector/ \
@@ -919,8 +917,8 @@ jobs:
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
           BASE_NAME=$(basename ${{ matrix.template }})
-          if [[ "${{ matrix.template }}" == *"gke-inference-fuse-cache"* ]]; then
-            BASE_NAME="gke-inf-fuse-cache"
+          if [ -f "${{ matrix.template }}/.short_name" ]; then
+            BASE_NAME=$(cat ${{ matrix.template }}/.short_name)
           fi
           echo "TF_START=$(date -u +%s)" >> $GITHUB_ENV
           export TF_VAR_cluster_name="${BASE_NAME}-${UID_SUFFIX}-tf"
@@ -1001,13 +999,17 @@ jobs:
           UID_SUFFIX="${RUN_ID: -6}"
           
           # Only set these for gke-inf-fuse-cache
+          SHORT_NAME=$(basename ${{ matrix.template }})
+          if [ -f "${{ matrix.template }}/.short_name" ]; then
+            SHORT_NAME=$(cat ${{ matrix.template }}/.short_name)
+          fi
+          
           EXTRA_ARGS=""
-          if [[ "${{ matrix.template }}" == *"gke-inference-fuse-cache"* ]]; then
-            # Recalculate unique names used in tf-provision
-            BUCKET_NAME="gke-inf-fuse-cache-tf-${UID_SUFFIX}-bucket"
-            KSA_NAME="gke-inf-fuse-cache-${UID_SUFFIX}-sa"
-            GSA_EMAIL="gke-inf-fuse-cache-${UID_SUFFIX}-sa@${{ env.PROJECT_ID }}.iam.gserviceaccount.com"
-            EXTRA_ARGS="--set templateName=gke-inference-fuse-cache-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME} --set gcpServiceAccountEmail=${GSA_EMAIL}"
+          if [ "$SHORT_NAME" == "gke-inf-fuse-cache" ]; then
+            BUCKET_NAME="${SHORT_NAME}-tf-${UID_SUFFIX}-bucket"
+            KSA_NAME="${SHORT_NAME}-${UID_SUFFIX}-sa"
+            GSA_EMAIL="${SHORT_NAME}-${UID_SUFFIX}-sa@${{ env.PROJECT_ID }}.iam.gserviceaccount.com"
+            EXTRA_ARGS="--set templateName=$(basename ${{ matrix.template }})-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME} --set gcpServiceAccountEmail=${GSA_EMAIL}"
           fi
 
           for chart in $CHARTS; do
@@ -1233,10 +1235,8 @@ jobs:
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
           echo "KCC_START=$(date -u +%s)" >> $GITHUB_ENV
-          find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
-          if [[ "${{ matrix.template }}" == *"gke-inference-fuse-cache"* ]]; then
-            find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/gke-inf-fuse-cache/gke-inf-fuse-cache-${UID_SUFFIX}/g" {} +
-          fi
+          ./agent-infra/prepare-manifests.sh ${{ matrix.template }} ${UID_SUFFIX}
+
           kubectl apply -n $KCC_NAMESPACE \
             -f ${{ matrix.template }}/config-connector/
 
