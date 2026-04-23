@@ -61,6 +61,20 @@ rules:
   - configmaps
   - events
   - persistentvolumeclaims
+  - serviceaccounts
+  - endpoints
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - batch
+  resources:
+  - jobs
   verbs:
   - get
   - list
@@ -97,6 +111,19 @@ rules:
   - patch
   - delete
 - apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - roles
+  - rolebindings
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
   - autoscaling
   resources:
   - horizontalpodautoscalers
@@ -112,6 +139,7 @@ rules:
   - networking.k8s.io
   resources:
   - ingresses
+  - ingressclasses
   verbs:
   - get
   - list
@@ -162,6 +190,8 @@ spec:
       containers:
       - args:
         - --enable-leader-election
+        - --health-probe-bind-address=:8082
+        - --metrics-addr=:8080
         env:
         - name: RAY_CLUSTER_IMAGE
           value: rayproject/ray:2.9.0
@@ -178,13 +208,13 @@ spec:
         livenessProbe:
           httpGet:
             path: /healthz
-            port: 8081
+            port: 8082
           initialDelaySeconds: 15
           periodSeconds: 20
         readinessProbe:
           httpGet:
             path: /readyz
-            port: 8081
+            port: 8082
           initialDelaySeconds: 5
           periodSeconds: 10
         resources:
