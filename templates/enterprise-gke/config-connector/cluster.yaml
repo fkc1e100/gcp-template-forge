@@ -17,11 +17,12 @@ kind: ContainerCluster
 metadata:
   name: enterprise-gke-kcc
   namespace: forge-management
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
+    cnrm.cloud.google.com/remove-default-node-pool: "true"
   labels:
     project: gcp-template-forge
     template: enterprise-gke
-  annotations:
-    cnrm.cloud.google.com/remove-default-node-pool: "true"
 spec:
   location: us-central1
   initialNodeCount: 1
@@ -43,8 +44,6 @@ spec:
     # Set to a restricted range or empty for security. 
     # Placeholder for administrative access.
     cidrBlocks: []
-  secretManagerConfig:
-    enabled: true
   addonsConfig:
     networkPolicyConfig:
       disabled: false

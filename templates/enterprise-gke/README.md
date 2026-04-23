@@ -36,7 +36,7 @@ terraform apply -var="project_id=<PROJECT_ID>" -var="service_account=<NODE_SA_EM
 
 # 2. Deploy the application workload using Helm
 gcloud container clusters get-credentials enterprise-gke-tf --region us-central1
-helm upgrade --install release ./workload --namespace gke-workload --create-namespace
+helm upgrade --install release ./workload --namespace gke-workload --create-namespace -f ./workload/values.generated.yaml
 ```
 
 *Note: `create_service_accounts` defaults to `true` to ensure dedicated, least-privileged service accounts are created for nodes and workloads out-of-the-box. In environments with extremely restricted IAM permissions, you can set it to `false` to fall back to the default node service account.*
@@ -130,11 +130,12 @@ kubectl delete -n <KCC_NAMESPACE> -f config-connector/ --wait=true
 |  | Terraform + Helm | Config Connector |
 | --- | --- | --- |
 | **Status** | success | success |
-| **Date** | 2026-04-22 | 2026-04-22 |
+| **Date** | 2026-04-23 | 2026-04-23 |
 | **Duration** | 21m 59s | 21m 57s |
 | **Region** | us-central1 | us-central1 (KCC cluster) |
 | **Zones** | us-central1-a,us-central1-b,us-central1-c,us-central1-f | us-central1 (regional) |
 | **Cluster** | enterprise-gke-tf | enterprise-gke-kcc |
 | **Agent tokens** | 495,000 in / 70,000 out (multi-session) | (shared session) |
 | **Estimated cost** | $0.55 | -- |
-| **Commit** | dde1b73 | dde1b73 |# CI Trigger - Thu Apr 23 17:27:48 UTC 2026
+| **Commit** | 1721c66 | 1721c66 |
+# CI Trigger - Thu Apr 23 17:27:48 UTC 2026

@@ -17,6 +17,8 @@ kind: ContainerNodePool
 metadata:
   name: enterprise-gke-kcc-pool
   namespace: forge-management
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
   labels:
     project: gcp-template-forge
     template: enterprise-gke

@@ -17,6 +17,8 @@ kind: ComputeRouter
 metadata:
   name: enterprise-gke-kcc-router
   namespace: forge-management
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
   labels:
     project: gcp-template-forge
     template: enterprise-gke
@@ -30,6 +32,8 @@ kind: ComputeRouterNAT
 metadata:
   name: enterprise-gke-kcc-nat
   namespace: forge-management
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
   labels:
     project: gcp-template-forge
     template: enterprise-gke

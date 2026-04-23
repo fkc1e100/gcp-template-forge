@@ -94,3 +94,4 @@
 | 110 | Remove unsupported KCC resourceLabels | ✅ Success | Removed resourceLabels from KCC cluster and nodepool manifests as they are unsupported in the current KCC version and caused validation errors. Synchronized documentation with commit 215ce9a. | PR Ready |
 | 111 | Fix KCC cluster field casing (releaseChannel) | ✅ Success | Fixed snake_case 'release_channel' to camelCase 'releaseChannel' in KCC cluster manifest, resolving KCC Apply failure in CI. | Finalized |
 | 112 | Final validation and out-of-scope cleanup | ✅ Success | Removed out-of-scope templates and synchronized system files with main. Verified full implementation with successful CI validation. | Finalized |
+| 113 | Improve KCC portability and fix parity limitations | ✅ Success | Added project-id annotations to all KCC manifests and removed unsupported secretManagerConfig/gcpFilestoreCsiDriverConfig from KCC path. Updated README to use generated values for Helm. | Finalized |

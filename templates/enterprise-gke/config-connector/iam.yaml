@@ -17,6 +17,8 @@ kind: IAMServiceAccount
 metadata:
   name: enterprise-gke-w-sa
   namespace: forge-management
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
   labels:
     project: gcp-template-forge
     template: enterprise-gke
@@ -28,6 +30,8 @@ kind: IAMPolicyMember
 metadata:
   name: enterprise-gke-workload-wi-binding-workload
   namespace: forge-management
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
   labels:
     project: gcp-template-forge
     template: enterprise-gke
@@ -46,6 +50,8 @@ kind: IAMPolicyMember
 metadata:
   name: enterprise-gke-workload-wi-binding-default
   namespace: forge-management
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
   labels:
     project: gcp-template-forge
     template: enterprise-gke
@@ -62,6 +68,8 @@ kind: IAMServiceAccount
 metadata:
   name: enterprise-gke-n-sa
   namespace: forge-management
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
   labels:
     project: gcp-template-forge
     template: enterprise-gke
@@ -73,6 +81,8 @@ kind: IAMPolicyMember
 metadata:
   name: enterprise-gke-node-log-writer
   namespace: forge-management
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
   labels:
     project: gcp-template-forge
     template: enterprise-gke
@@ -87,6 +97,8 @@ kind: IAMPolicyMember
 metadata:
   name: enterprise-gke-node-metric-writer
   namespace: forge-management
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
   labels:
     project: gcp-template-forge
     template: enterprise-gke
@@ -101,6 +113,8 @@ kind: IAMPolicyMember
 metadata:
   name: enterprise-gke-node-metadata-writer
   namespace: forge-management
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
   labels:
     project: gcp-template-forge
     template: enterprise-gke

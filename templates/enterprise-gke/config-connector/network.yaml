@@ -17,6 +17,8 @@ kind: ComputeNetwork
 metadata:
   name: enterprise-gke-kcc-vpc
   namespace: forge-management
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
   labels:
     project: gcp-template-forge
     template: enterprise-gke
@@ -28,6 +30,8 @@ kind: ComputeSubnetwork
 metadata:
   name: enterprise-gke-kcc-subnet
   namespace: forge-management
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
   labels:
     project: gcp-template-forge
     template: enterprise-gke
