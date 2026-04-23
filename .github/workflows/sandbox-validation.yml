@@ -56,9 +56,10 @@ jobs:
         id: find
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            git fetch origin ${{ github.base_ref }}
+            BASE_REF="${{ github.base_ref }}"
+            git fetch origin "$BASE_REF"
             PR_HEAD="${{ github.event.pull_request.head.sha }}"
-            BASE=$(git merge-base "origin/${{ github.base_ref }}" "$PR_HEAD")
+            BASE=$(git merge-base "origin/$BASE_REF" "$PR_HEAD")
             DIFF_HEAD="$PR_HEAD"
           else
             # For push, use the 'before' SHA, or HEAD^1 if missing (first push)
