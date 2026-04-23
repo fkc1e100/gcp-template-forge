@@ -8,6 +8,9 @@ on:
 jobs:
   detect-and-label:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
     steps:
       - name: Detect Conflicting PRs and Label
         run: |
@@ -18,5 +21,5 @@ jobs:
             gh pr edit $pr_num --repo fkc1e100/gcp-template-forge --add-label "needs-rebase"
           done
         env:
-          GH_TOKEN: ${{ secrets.CODEBOT_PAT }} # Using GH_TOKEN for sufficient permissions
+          GH_TOKEN: ${{ github.token }}
 
