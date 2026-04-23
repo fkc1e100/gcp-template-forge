@@ -74,6 +74,7 @@ If the dashboard is inaccessible from specific devices or networks:
     *   How to verify the deployment (e.g., URLs to visit, kubectl commands).
     *   Cleanup instructions.
 *   **Strict Issue Scoping (Anti-Feature Creep):** The agent MUST strictly adhere to the scope of the assigned issue. Do NOT modify files or templates that are not directly related to the specific task. Avoid "feature creep" or attempting to fix similar issues in other files/templates unless explicitly instructed. Small, focused PRs are preferred over massive, all-encompassing changes to keep the CI pipeline healthy and prevent resource contention.
+*   **Workflow Fixes Separation:** The agent MUST NOT pile workflow fixes (e.g., `.github/workflows/` changes) in with template development issues. If the agent discovers a bug or improvement needed in the CI/CD workflows while working on a template, it MUST create a separate issue with the title/label prefix `[CI-BUG]` and address it in a separate PR.
 
 #### `fkc1e100/gcp-template-forge` (namespace for gcp-template-forge)
 ```yaml
