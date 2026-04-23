@@ -165,7 +165,7 @@ resource "google_container_node_pool" "gpu_nodes" {
 
     labels = {
       project                            = "gcp-template-forge"
-      template                           = "gke-kuberay-kueue-multitenant"
+      template                           = var.uid_suffix != "" ? "gke-kuberay-kueue-multitenant-${var.uid_suffix}" : "gke-kuberay-kueue-multitenant"
       pool                               = "gpu"
       "cloud.google.com/gke-accelerator" = "nvidia-l4"
     }
