@@ -27,7 +27,7 @@ resource "google_compute_network" "gke_kuberay_kueue_multitenant_vpc" {
   name                    = var.network_name
   auto_create_subnetworks = false
 
-  project = var.project_id
+  project                 = var.project_id
 }
 
 # Subnet
@@ -52,13 +52,13 @@ resource "google_compute_subnetwork" "gke_kuberay_kueue_multitenant_subnet" {
 
 # GKE Cluster
 resource "google_container_cluster" "gke_kuberay_kueue_multitenant_cluster" {
-  name     = var.cluster_name
-  location = var.region
-  project  = var.project_id
+  name                     = var.cluster_name
+  location                 = var.region
+  project                  = var.project_id
 
-  deletion_protection = false
+  deletion_protection      = false
 
-  resource_labels = {
+  resource_labels          = {
     project  = "gcp-template-forge"
     template = var.uid_suffix != "" ? "gke-kuberay-kueue-multitenant-${var.uid_suffix}" : "gke-kuberay-kueue-multitenant"
   }
@@ -66,8 +66,8 @@ resource "google_container_cluster" "gke_kuberay_kueue_multitenant_cluster" {
   remove_default_node_pool = true
   initial_node_count       = 1
 
-  network    = google_compute_network.gke_kuberay_kueue_multitenant_vpc.name
-  subnetwork = google_compute_subnetwork.gke_kuberay_kueue_multitenant_subnet.name
+  network                  = google_compute_network.gke_kuberay_kueue_multitenant_vpc.name
+  subnetwork               = google_compute_subnetwork.gke_kuberay_kueue_multitenant_subnet.name
 
   ip_allocation_policy {
     cluster_secondary_range_name  = "pods"
@@ -103,15 +103,15 @@ resource "google_container_node_pool" "system_nodes" {
   node_count = 2
 
   node_config {
-    spot         = false
-    machine_type = "e2-standard-4"
-    disk_size_gb = 50
-    disk_type    = "pd-standard"
+    spot            = false
+    machine_type    = "e2-standard-4"
+    disk_size_gb    = 50
+    disk_type       = "pd-standard"
 
     service_account = var.service_account
     oauth_scopes    = ["https://www.googleapis.com/auth/cloud-platform"]
 
-    labels = {
+    labels          = {
       project  = "gcp-template-forge"
       template = var.uid_suffix != "" ? "gke-kuberay-kueue-multitenant-${var.uid_suffix}" : "gke-kuberay-kueue-multitenant"
       pool     = "system"
@@ -132,11 +132,11 @@ resource "google_container_node_pool" "system_nodes" {
 
 # GPU Node Pool (Autoscaled)
 resource "google_container_node_pool" "gpu_nodes" {
-  provider = google-beta
-  name     = "gke-kuberay-kueue-multitenant-gpu"
-  location = var.region
-  cluster  = google_container_cluster.gke_kuberay_kueue_multitenant_cluster.name
-  project  = var.project_id
+  provider       = google-beta
+  name           = "gke-kuberay-kueue-multitenant-gpu"
+  location       = var.region
+  cluster        = google_container_cluster.gke_kuberay_kueue_multitenant_cluster.name
+  project        = var.project_id
 
   node_locations = [
     "${var.region}-a",
@@ -150,10 +150,10 @@ resource "google_container_node_pool" "gpu_nodes" {
   }
 
   node_config {
-    spot         = false
-    machine_type = "g2-standard-4"
-    disk_size_gb = 100
-    disk_type    = "pd-standard"
+    spot            = false
+    machine_type    = "g2-standard-4"
+    disk_size_gb    = 100
+    disk_type       = "pd-standard"
 
     service_account = var.service_account
     oauth_scopes    = ["https://www.googleapis.com/auth/cloud-platform"]
@@ -163,7 +163,7 @@ resource "google_container_node_pool" "gpu_nodes" {
       count = 1
     }
 
-    labels = {
+    labels          = {
       project                            = "gcp-template-forge"
       template                           = var.uid_suffix != "" ? "gke-kuberay-kueue-multitenant-${var.uid_suffix}" : "gke-kuberay-kueue-multitenant"
       pool                               = "gpu"
@@ -188,7 +188,7 @@ resource "google_container_node_pool" "gpu_nodes" {
     delete = "30m"
   }
 
-  depends_on = [google_container_cluster.gke_kuberay_kueue_multitenant_cluster]
+  depends_on     = [google_container_cluster.gke_kuberay_kueue_multitenant_cluster]
 }
 
 
