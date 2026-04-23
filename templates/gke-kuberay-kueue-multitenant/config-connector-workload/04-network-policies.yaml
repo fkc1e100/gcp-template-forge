@@ -17,6 +17,9 @@ kind: NetworkPolicy
 metadata:
   name: ray-dashboard-restriction
   namespace: team-a
+  labels:
+    project: gcp-template-forge
+    template: gke-kuberay-kueue-multitenant
 spec:
   podSelector:
     matchLabels:
@@ -35,6 +38,9 @@ kind: NetworkPolicy
 metadata:
   name: ray-dashboard-restriction
   namespace: team-b
+  labels:
+    project: gcp-template-forge
+    template: gke-kuberay-kueue-multitenant
 spec:
   podSelector:
     matchLabels:
