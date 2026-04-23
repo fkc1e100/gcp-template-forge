@@ -14,12 +14,12 @@
 
 provider "google" {
   project = var.project_id
-  region = var.region
+  region  = var.region
 }
 
 provider "google-beta" {
   project = var.project_id
-  region = var.region
+  region  = var.region
 }
 
 resource "random_id" "bucket_suffix" {
@@ -27,53 +27,53 @@ resource "random_id" "bucket_suffix" {
 }
 
 locals {
-  uid = var.uid_suffix != "" ? var.uid_suffix : random_id.bucket_suffix.hex
+  uid                = var.uid_suffix != "" ? var.uid_suffix : random_id.bucket_suffix.hex
   workload_gsa_email = var.service_account
   # Use abbreviated name for KSA and bucket if uid_suffix is provided (matches CI)
-  base_name = var.uid_suffix != "" ? "gke-inf-fuse-cache" : "gke-inference-fuse-cache"
+  base_name      = var.uid_suffix != "" ? "gke-inf-fuse-cache" : "gke-inference-fuse-cache"
   template_label = var.uid_suffix != "" ? "gke-inference-fuse-cache-${var.uid_suffix}" : "gke-inference-fuse-cache"
-  ksa_name = "${local.base_name}-${local.uid}-sa"
-  bucket_name = "${local.base_name}-tf-${local.uid}-bucket"
+  ksa_name       = "${local.base_name}-${local.uid}-sa"
+  bucket_name    = "${local.base_name}-tf-${local.uid}-bucket"
 }
 
 # VPC Network
 resource "google_compute_network" "vpc" {
-  name = var.network_name
+  name                    = var.network_name
   auto_create_subnetworks = false
-  project = var.project_id
+  project                 = var.project_id
 }
 
 # Subnet
 resource "google_compute_subnetwork" "subnet" {
-  name = var.subnet_name
-  ip_cidr_range = "10.10.0.0/20"
-  region = var.region
-  network = google_compute_network.vpc.id
+  name                     = var.subnet_name
+  ip_cidr_range            = "10.10.0.0/20"
+  region                   = var.region
+  network                  = google_compute_network.vpc.id
   private_ip_google_access = true
-  project = var.project_id
+  project                  = var.project_id
 
   secondary_ip_range {
-    range_name = "pods"
+    range_name    = "pods"
     ip_cidr_range = "10.11.0.0/16"
   }
 
   secondary_ip_range {
-    range_name = "services"
+    range_name    = "services"
     ip_cidr_range = "10.12.0.0/20"
   }
 }
 
 # GCS Bucket for models
 resource "google_storage_bucket" "model_bucket" {
-  name = local.bucket_name
-  location = var.region
-  project = var.project_id
+  name          = local.bucket_name
+  location      = var.region
+  project       = var.project_id
   force_destroy = true
 
   uniform_bucket_level_access = true
 
   labels = {
-    project = "gcp-template-forge"
+    project  = "gcp-template-forge"
     template = local.template_label
   }
 }
@@ -81,9 +81,9 @@ resource "google_storage_bucket" "model_bucket" {
 # GKE Cluster
 resource "google_container_cluster" "primary" {
   provider = google-beta
-  name = var.cluster_name
+  name     = var.cluster_name
   location = var.region
-  project = var.project_id
+  project  = var.project_id
 
   # Restrict to a single zone that supports L4 GPUs to save quota and improve reliability
   node_locations = [var.zone]
@@ -91,18 +91,18 @@ resource "google_container_cluster" "primary" {
   deletion_protection = false
 
   resource_labels = {
-    project = "gcp-template-forge"
+    project  = "gcp-template-forge"
     template = local.template_label
   }
 
   remove_default_node_pool = true
-  initial_node_count = 1
+  initial_node_count       = 1
 
-  network = google_compute_network.vpc.name
+  network    = google_compute_network.vpc.name
   subnetwork = google_compute_subnetwork.subnet.name
 
   ip_allocation_policy {
-    cluster_secondary_range_name = "pods"
+    cluster_secondary_range_name  = "pods"
     services_secondary_range_name = "services"
   }
 
@@ -130,11 +130,11 @@ resource "google_container_cluster" "primary" {
 
 # GPU Node Pool with Local SSD
 resource "google_container_node_pool" "gpu_pool" {
-  provider = google-beta
-  name = "l4-gpu-pool"
-  location = var.region
-  cluster = google_container_cluster.primary.name
-  project = var.project_id
+  provider   = google-beta
+  name       = "l4-gpu-pool"
+  location   = var.region
+  cluster    = google_container_cluster.primary.name
+  project    = var.project_id
   node_count = 1
 
   # Restrict to a single zone that supports L4 GPUs
@@ -146,11 +146,11 @@ resource "google_container_node_pool" "gpu_pool" {
 
     machine_type = "g2-standard-4"
     disk_size_gb = 50
-    disk_type = "pd-balanced"
+    disk_type    = "pd-balanced"
 
     # G2-standard-4 has 1 x L4 GPU
     guest_accelerator {
-      type = "nvidia-l4"
+      type  = "nvidia-l4"
       count = 1
 
       # Automatically install NVIDIA GPU drivers
@@ -175,13 +175,13 @@ resource "google_container_node_pool" "gpu_pool" {
     service_account = var.service_account
 
     labels = {
-      project = "gcp-template-forge"
+      project  = "gcp-template-forge"
       template = local.template_label
-      gpu = "l4"
+      gpu      = "l4"
     }
 
     resource_labels = {
-      project = "gcp-template-forge"
+      project  = "gcp-template-forge"
       template = local.template_label
     }
   }
@@ -195,10 +195,10 @@ resource "google_container_node_pool" "gpu_pool" {
 
 # System Node Pool for non-GPU workloads (e.g. model staging)
 resource "google_container_node_pool" "system_pool" {
-  name = "system-pool"
-  location = var.region
-  cluster = google_container_cluster.primary.name
-  project = var.project_id
+  name       = "system-pool"
+  location   = var.region
+  cluster    = google_container_cluster.primary.name
+  project    = var.project_id
   node_count = 1
 
   # Restrict to the same zone as the GPU pool
@@ -207,7 +207,7 @@ resource "google_container_node_pool" "system_pool" {
   node_config {
     machine_type = "e2-standard-2"
     disk_size_gb = 50
-    disk_type = "pd-balanced"
+    disk_type    = "pd-balanced"
 
     service_account = var.service_account
 
@@ -220,12 +220,12 @@ resource "google_container_node_pool" "system_pool" {
     }
 
     labels = {
-      project = "gcp-template-forge"
+      project  = "gcp-template-forge"
       template = local.template_label
     }
 
     resource_labels = {
-      project = "gcp-template-forge"
+      project  = "gcp-template-forge"
       template = local.template_label
     }
   }
@@ -243,14 +243,14 @@ resource "google_container_node_pool" "system_pool" {
 # problematic in some CI environments. This is a resource-level binding.
 resource "google_storage_bucket_iam_member" "bucket_admin_ksa" {
   bucket = google_storage_bucket.model_bucket.name
-  role = "roles/storage.objectAdmin"
+  role   = "roles/storage.objectAdmin"
   member = "serviceAccount:${var.project_id}.svc.id.goog[default/${local.ksa_name}]"
 }
 
 # Also grant permissions to the node's GSA as a fallback (optional but helps robustness)
 resource "google_storage_bucket_iam_member" "bucket_admin_gsa" {
   bucket = google_storage_bucket.model_bucket.name
-  role = "roles/storage.objectAdmin"
+  role   = "roles/storage.objectAdmin"
   member = "serviceAccount:${var.service_account}"
 }
 
@@ -273,8 +273,8 @@ resource "local_file" "helm_values" {
 # limitations under the License.
 
 ${yamlencode({
-  templateName = local.template_label
-  bucketName = google_storage_bucket.model_bucket.name
+  templateName           = local.template_label
+  bucketName             = google_storage_bucket.model_bucket.name
   gcpServiceAccountEmail = ""
   serviceAccount = {
     name = local.ksa_name
@@ -283,7 +283,7 @@ ${yamlencode({
   replicaCount = 1
   image = {
     repository = "google/cloud-sdk"
-    tag = "slim"
+    tag        = "slim"
   }
   resources = {
     limits = {
@@ -298,16 +298,16 @@ ${yamlencode({
   }
   tolerations = [
     {
-      key = "nvidia.com/gpu"
+      key      = "nvidia.com/gpu"
       operator = "Exists"
-      effect = "NoSchedule"
+      effect   = "NoSchedule"
     }
   ]
   cache = {
-    capacity = "50Gi"
+    capacity                = "50Gi"
     metadataCacheTTLSeconds = 3600
-    statCacheCapacity = "512Mi"
-    typeCacheCapacity = "64Mi"
+    statCacheCapacity       = "512Mi"
+    typeCacheCapacity       = "64Mi"
   }
 })}
 EOF
