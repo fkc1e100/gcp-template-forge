@@ -63,7 +63,8 @@ if [[ "${CLUSTER_NAME}" == *"-"* ]]; then
   if [ -n "${SUFFIX}" ]; then
     # Try finding pods with this suffix in their template label
     # First try the standard name, then fallback to any label containing the suffix if needed
-    if kubectl get pods --all-namespaces -l template=${TEMPLATE_LABEL}-${SUFFIX} >/dev/null 2>&1; then
+    PODS_EXIST=$(kubectl get pods --all-namespaces -l template=${TEMPLATE_LABEL}-${SUFFIX} -o name 2>/dev/null)
+    if [ -n "${PODS_EXIST}" ]; then
       TEMPLATE_LABEL="${TEMPLATE_LABEL}-${SUFFIX}"
       echo "Detected unique template label: ${TEMPLATE_LABEL}"
     fi
