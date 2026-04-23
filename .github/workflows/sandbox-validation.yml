@@ -1248,13 +1248,27 @@ jobs:
           KCC_START=$(date -u +%s)
           for i in {1..30}; do
             echo "=== Minute $i ==="
-            kubectl get containercluster,computenetwork,computesubnetwork,computerouter -n $KCC_NAMESPACE || true
+            
+            # Check for terminal failures
+            FAILURES=$(kubectl get -n $KCC_NAMESPACE -f ${{ matrix.template }}/config-connector/ -o json 2>/dev/null | jq -r '.items[]? | select(.status.conditions[]? | select(.type=="Ready" and .status=="False" and (.reason=="CreateFailed" or .reason=="UpdateFailed" or .reason=="InvalidConfig"))) | .metadata.name' || true)
+            
+            if [ -n "$FAILURES" ] && [ "$FAILURES" != "null" ]; then
+              echo "ERROR: Terminal failure detected in resources: $FAILURES"
+              kubectl get -n $KCC_NAMESPACE -f ${{ matrix.template }}/config-connector/ -o yaml || true
+              exit 1
+            fi
+            
             if kubectl wait -n $KCC_NAMESPACE --for=condition=Ready --all --timeout=60s -f ${{ matrix.template }}/config-connector/ &>/dev/null; then
               echo "All resources are Ready!"
               break
             fi
+            
+            # Print status of resources in this template
+            kubectl get -n $KCC_NAMESPACE -f ${{ matrix.template }}/config-connector/ || true
+            
             sleep 60
           done
+
           KCC_DURATION=$(( $(date -u +%s) - ${KCC_START} ))
           echo "kcc_duration=${KCC_DURATION}" >> $GITHUB_OUTPUT
 
