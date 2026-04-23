@@ -6,12 +6,14 @@ on:
     paths:
       - 'templates/**'
       - 'agent-infra/**'
+      - '.github/workflows/sandbox-validation.yml'
   pull_request:
     branches: [ main ]
     types: [opened, synchronize, reopened, closed]
     paths:
       - 'templates/**'
       - 'agent-infra/**'
+      - '.github/workflows/sandbox-validation.yml'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -81,7 +83,7 @@ jobs:
 
 
       - name: Remove repo-agent Label on Start
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && needs.detect-changes.outputs.has_templates == 'true'
         run: gh pr edit ${{ github.event.number }} --remove-label "repo-agent" || true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -102,7 +104,9 @@ jobs:
   lint:
     name: "Lint (${{ matrix.template }})"
     needs: detect-changes
+    if: needs.detect-changes.outputs.has_templates == 'true'
     runs-on: ubuntu-latest
+
     timeout-minutes: 120
     strategy:
       fail-fast: true
@@ -195,7 +199,7 @@ jobs:
   pre-cleanup:
     name: "Quota Cleanup"
     needs: [ detect-changes ]
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && needs.detect-changes.outputs.has_templates == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -215,8 +219,9 @@ jobs:
   tf-provision:
     name: "Provision TF (${{ matrix.template }})"
     needs: [ detect-changes, lint, pre-cleanup ]
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && needs.detect-changes.outputs.has_templates == 'true'
     runs-on: ubuntu-latest
+
     timeout-minutes: 60
     strategy:
       fail-fast: false
@@ -346,7 +351,7 @@ jobs:
   tf-teardown:
     name: "Teardown TF (${{ matrix.template }})"
     needs: [ tf-provision, tf-test, detect-changes ]
-    if: always()
+    if: always() && github.event_name == 'pull_request' && needs.detect-changes.outputs.has_templates == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -424,7 +429,7 @@ jobs:
   kcc-apply:
     name: "KCC Apply (${{ matrix.template }})"
     needs: [ detect-changes, lint, pre-cleanup ]
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && needs.detect-changes.outputs.has_templates == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
@@ -568,7 +573,7 @@ jobs:
   kcc-teardown:
     name: "KCC Teardown (${{ matrix.template }})"
     needs: [ kcc-apply, kcc-test, detect-changes ]
-    if: always()
+    if: always() && github.event_name == 'pull_request' && needs.detect-changes.outputs.has_templates == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -702,7 +707,7 @@ jobs:
   validate-tf-helm:
     name: "Validate TF+Helm (${{ matrix.template }})"
     needs: detect-changes
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.detect-changes.outputs.has_templates == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 120
     strategy:
@@ -1008,7 +1013,7 @@ jobs:
   validate-kcc:
     name: "Validate KCC (${{ matrix.template }})"
     needs: detect-changes
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.detect-changes.outputs.has_templates == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 120
     strategy:
@@ -1306,6 +1311,7 @@ jobs:
     needs: [detect-changes, validate-tf-helm, validate-kcc]
     if: >-
       github.event_name == 'push' && github.ref == 'refs/heads/main' &&
+      needs.detect-changes.outputs.has_templates == 'true' &&
       !cancelled()
     runs-on: ubuntu-latest
     timeout-minutes: 120
@@ -1524,7 +1530,7 @@ jobs:
   pr-completion:
     name: "PR Completion"
     needs: [detect-changes, lint, pre-cleanup, tf-provision, tf-test, tf-teardown, kcc-apply, kcc-test, kcc-teardown]
-    if: always() && github.event_name == 'pull_request'
+    if: always() && github.event_name == 'pull_request' && needs.detect-changes.outputs.has_templates == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
