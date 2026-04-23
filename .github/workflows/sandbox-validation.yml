@@ -978,7 +978,8 @@ jobs:
 
           for chart in $CHARTS; do
             echo "=== Helm deploy: $chart ==="
-            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT" ${EXTRA_ARGS}
+            # Removed --wait to let validate.sh handle resource readiness with better debug info
+            helm upgrade --install release "$chart" --timeout="$TIMEOUT" ${EXTRA_ARGS}
           done
 
           # Run template-specific validation if present
@@ -986,6 +987,7 @@ jobs:
             echo "=== Running template-specific validation: ${{ matrix.template }}/validate.sh ==="
             export CLUSTER_NAME="${{ steps.tf-outputs.outputs.tf_cluster }}"
             export REGION="${{ steps.tf-outputs.outputs.tf_location }}"
+            export UID_SUFFIX="${UID_SUFFIX}"
             chmod +x ${{ matrix.template }}/validate.sh
             ./${{ matrix.template }}/validate.sh
           fi
@@ -1303,7 +1305,8 @@ jobs:
 
           for chart in $CHARTS; do
             echo "=== Helm deploy: $chart ==="
-            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT" ${EXTRA_ARGS}
+            # Removed --wait to let validate.sh handle resource readiness with better debug info
+            helm upgrade --install release "$chart" --timeout="$TIMEOUT" ${EXTRA_ARGS}
           done
 
           # Run template-specific validation if present
@@ -1311,6 +1314,7 @@ jobs:
             echo "=== Running template-specific validation (KCC): ${{ matrix.template }}/validate.sh ==="
             export CLUSTER_NAME="${{ steps.kcc-workload-info.outputs.cluster_name }}"
             export REGION="${{ steps.kcc-workload-info.outputs.location }}"
+            export UID_SUFFIX="${UID_SUFFIX}"
             chmod +x ${{ matrix.template }}/validate.sh
             ./${{ matrix.template }}/validate.sh
           fi
