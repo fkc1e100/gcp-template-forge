@@ -5,8 +5,8 @@ This template demonstrates how to set up a multi-tenant Ray environment on GKE u
 ## Architecture
 
 - **GKE Standard Cluster** — A cluster with two node pools:
-  - **System Pool**: `e2-standard-4` spot instances for running operators (KubeRay, Kueue).
-  - **GPU Pool**: `g2-standard-4` (NVIDIA L4) spot instances for Ray worker nodes, with autoscaling (0-5 nodes). Restricted to zones `us-central1-a`, `us-central1-b`, and `us-central1-c` to ensure NVIDIA L4 availability.
+  - **System Pool**: `e2-standard-4` instances for running operators (KubeRay, Kueue).
+  - **GPU Pool**: `g2-standard-4` (NVIDIA L4) instances for Ray worker nodes, with autoscaling (0-5 nodes). Restricted to zones `us-central1-a`, `us-central1-b`, and `us-central1-c` to ensure NVIDIA L4 availability.
 - **KubeRay Operator** — Manages RayCluster life cycles.
 - **Kueue Operator** — Provides job queuing and resource management.
 - **Multi-Tenancy Configuration**:
