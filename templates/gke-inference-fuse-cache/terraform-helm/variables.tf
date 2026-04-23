@@ -13,18 +13,18 @@
 # limitations under the License.
 
 variable "project_id" {
-  description = "The GCP project ID to deploy resources in"
+  description = "The GCP project ID"
   type        = string
 }
 
 variable "region" {
-  description = "The region to deploy resources in"
+  description = "The region to deploy to"
   type        = string
   default     = "us-central1"
 }
 
 variable "zone" {
-  description = "The zone to deploy the node pool in"
+  description = "The zone to deploy to (must support L4 GPUs)"
   type        = string
   default     = "us-central1-a"
 }
@@ -44,17 +44,11 @@ variable "network_name" {
 variable "subnet_name" {
   description = "The name of the subnet"
   type        = string
-  default     = "gke-inference-fuse-cache-subnet"
-}
-
-variable "bucket_name" {
-  description = "The name of the GCS bucket for model storage"
-  type        = string
-  default     = "gke-inference-fuse-cache-bucket"
+  default     = "gke-inference-fuse-cache-sub"
 }
 
 variable "service_account" {
-  description = "The service account email to use for the node pool"
+  description = "The service account to use for the node pool"
   type        = string
 }
 
