@@ -54,8 +54,8 @@ jobs:
       - name: Find changed template directories
         id: find
         run: |
-          git fetch origin ${{ github.base_ref }}
           if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch origin ${{ github.base_ref }}
             PR_HEAD="${{ github.event.pull_request.head.sha }}"
             BASE=$(git merge-base "origin/${{ github.base_ref }}" "$PR_HEAD")
             DIFF_HEAD="$PR_HEAD"
@@ -255,6 +255,9 @@ jobs:
           export TF_VAR_cluster_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf"
           export TF_VAR_network_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf-vpc"
           export TF_VAR_subnet_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf-subnet"
+          if [[ "${{ matrix.template }}" == *"enterprise-gke"* ]]; then
+            export TF_VAR_master_authorized_networks='[{"cidr_block":"0.0.0.0/0","display_name":"CI-Access"}]'
+          fi
           terraform init \
             -backend-config="bucket=$TF_STATE_BUCKET" \
             -backend-config="prefix=${{ matrix.template }}-${{ github.run_id }}/terraform-helm"
@@ -453,6 +456,9 @@ jobs:
           # Replace template name and project ID with runtime values
           find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
           find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/gca-gke-2025/${{ env.PROJECT_ID }}/g" {} +
+          if [[ "${{ matrix.template }}" == *"enterprise-gke"* ]]; then
+            find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i 's/cidrBlocks: \[\]/cidrBlocks: [{"cidrBlock":"0.0.0.0\/0","displayName":"CI-Access"}]/g' {} +
+          fi
           kubectl apply -n $KCC_NAMESPACE \
             -f ${{ matrix.template }}/config-connector/
 
@@ -590,6 +596,9 @@ jobs:
           UID_SUFFIX="${RUN_ID: -6}"
           find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
           find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/gca-gke-2025/${{ env.PROJECT_ID }}/g" {} +
+          if [[ "${{ matrix.template }}" == *"enterprise-gke"* ]]; then
+            find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i 's/cidrBlocks: \[\]/cidrBlocks: [{"cidrBlock":"0.0.0.0\/0","displayName":"CI-Access"}]/g' {} +
+          fi
           kubectl delete \
             -n $KCC_NAMESPACE \
             -f ${{ matrix.template }}/config-connector/ \
@@ -678,6 +687,9 @@ jobs:
           UID_SUFFIX="${RUN_ID: -6}"
           find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
           find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/gca-gke-2025/${{ env.PROJECT_ID }}/g" {} +
+          if [[ "${{ matrix.template }}" == *"enterprise-gke"* ]]; then
+            find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i 's/cidrBlocks: \[\]/cidrBlocks: [{"cidrBlock":"0.0.0.0\/0","displayName":"CI-Access"}]/g' {} +
+          fi
           kubectl delete \
             -n ${{ env.KCC_NAMESPACE }} \
             -f ${{ matrix.template }}/config-connector/ \
@@ -770,6 +782,9 @@ jobs:
           export TF_VAR_cluster_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf"
           export TF_VAR_network_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf-vpc"
           export TF_VAR_subnet_name="$(basename ${{ matrix.template }})-${UID_SUFFIX}-tf-subnet"
+          if [[ "${{ matrix.template }}" == *"enterprise-gke"* ]]; then
+            export TF_VAR_master_authorized_networks='[{"cidr_block":"0.0.0.0/0","display_name":"CI-Access"}]'
+          fi
           terraform init \
             -backend-config="bucket=$TF_STATE_BUCKET" \
             -backend-config="prefix=${{ matrix.template }}-${{ github.run_id }}/terraform-helm"
@@ -1065,6 +1080,9 @@ jobs:
           # Replace template name and project ID with runtime values
           find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
           find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/gca-gke-2025/${{ env.PROJECT_ID }}/g" {} +
+          if [[ "${{ matrix.template }}" == *"enterprise-gke"* ]]; then
+            find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i 's/cidrBlocks: \[\]/cidrBlocks: [{"cidrBlock":"0.0.0.0\/0","displayName":"CI-Access"}]/g' {} +
+          fi
           kubectl apply -n $KCC_NAMESPACE \
             -f ${{ matrix.template }}/config-connector/
 
@@ -1100,7 +1118,6 @@ jobs:
 
       - name: Get KCC Workload Cluster Info
         id: kcc-workload-info
-        if: steps.kcc-wait.outcome == 'success' || steps.kcc-cluster-ready.outcome == 'success'
         run: |
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
@@ -1237,7 +1254,7 @@ jobs:
 
       - name: Restore KCC Management Cluster Credentials
         id: kcc-mgmt-creds-restore
-        if: always() && (steps.kcc-wait.outcome == 'success' || steps.kcc-cluster-ready.outcome == 'success')
+        if: always() && steps.kcc-apply.outcome == 'success'
         uses: google-github-actions/get-gke-credentials@v2
         with:
           cluster_name: ${{ env.KCC_CLUSTER }}
@@ -1252,6 +1269,9 @@ jobs:
           UID_SUFFIX="${RUN_ID: -6}"
           find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
           find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/gca-gke-2025/${{ env.PROJECT_ID }}/g" {} +
+          if [[ "${{ matrix.template }}" == *"enterprise-gke"* ]]; then
+            find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i 's/cidrBlocks: \[\]/cidrBlocks: [{"cidrBlock":"0.0.0.0\/0","displayName":"CI-Access"}]/g' {} +
+          fi
           kubectl delete \
             -n $KCC_NAMESPACE \
             -f ${{ matrix.template }}/config-connector/ \

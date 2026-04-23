@@ -102,17 +102,14 @@ resource "google_container_cluster" "enterprise_cluster" {
     workload_pool = "${var.project_id}.svc.id.goog"
   }
 
-  dynamic "master_authorized_networks_config" {
-    for_each = length(var.master_authorized_networks) > 0 ? [1] : []
-    content {
-      # Defaulting to 0.0.0.0/0 is for CI/Sandbox convenience.
-      # In production, this should be restricted to known administrative CIDR ranges.
-      dynamic "cidr_blocks" {
-        for_each = var.master_authorized_networks
-        content {
-          cidr_block   = cidr_blocks.value.cidr_block
-          display_name = cidr_blocks.value.display_name
-        }
+  master_authorized_networks_config {
+    # In production, this should be restricted to known administrative CIDR ranges.
+    # An empty list here with the config enabled effectively blocks all public access to the master.
+    dynamic "cidr_blocks" {
+      for_each = var.master_authorized_networks
+      content {
+        cidr_block   = cidr_blocks.value.cidr_block
+        display_name = cidr_blocks.value.display_name
       }
     }
   }
