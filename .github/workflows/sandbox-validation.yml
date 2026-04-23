@@ -1642,16 +1642,42 @@ jobs:
           git commit -m "ci: validate ${TEMPLATE} [skip ci]" || true
           git push
 
-  pr-completion:
-    name: "PR Completion"
+  label-failure:
+    name: "Label Failure"
     needs: [detect-changes, lint, pre-cleanup, tf-provision, tf-test, tf-teardown, kcc-apply, kcc-test, kcc-teardown]
-    if: always() && github.event_name == 'pull_request'
+    if: >-
+      always() && github.event_name == 'pull_request' &&
+      (needs.tf-test.result == 'failure' || needs.kcc-test.result == 'failure' || needs.lint.result == 'failure' || needs.detect-changes.result == 'failure')
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Add repo-agent label on failure
-        if: failure()
+      - name: Add repo-agent label
         run: gh pr edit ${{ github.event.number }} --add-label "repo-agent"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  auto-merge:
+    name: "Auto-merge"
+    needs: [tf-test, kcc-test]
+    if: >-
+      (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch') &&
+      needs.tf-test.result == 'success' &&
+      (needs.kcc-test.result == 'success' || needs.kcc-test.result == 'skipped')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve PR Number
+        id: resolve-pr
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "pr_number=${{ github.event.number }}" >> $GITHUB_OUTPUT
+          else
+            PR_NUM=$(gh pr list --repo fkc1e100/gcp-template-forge --head ${{ github.ref_name }} --json number --jq '.[0].number')
+            echo "pr_number=$PR_NUM" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Merge PR
+        if: steps.resolve-pr.outputs.pr_number != ''
+        run: gh pr merge ${{ steps.resolve-pr.outputs.pr_number }} --repo fkc1e100/gcp-template-forge --merge --delete-branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.CODEBOT_PAT }}
+

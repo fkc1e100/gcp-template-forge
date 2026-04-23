@@ -1,0 +1,21 @@
+name: Detect Conflicts and Label
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: # Allow manual triggering for testing
+
+jobs:
+  detect-and-label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Detect Conflicting PRs and Label
+        run: |
+          gh pr list --repo fkc1e100/gcp-template-forge --state open --json number,mergeable | \
+          jq -r '.[] | select(.mergeable == "CONFLICTING") | .number' | \
+          while read pr_num; do
+            echo "Labeling PR #$pr_num as needs-rebase"
+            gh pr edit $pr_num --repo fkc1e100/gcp-template-forge --add-label "needs-rebase"
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.CODEBOT_PAT }} # Using CODEBOT_PAT for sufficient permissions
