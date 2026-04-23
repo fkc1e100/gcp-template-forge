@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# NOTE: This DaemonSet requires privileged: true, hostNetwork: true, and hostPID: true
+# to install NVIDIA drivers on the host nodes. This bypasses standard pod isolation
+# and should be restricted to the kube-system namespace and authorized administrators.
+
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
