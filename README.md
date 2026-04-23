@@ -163,11 +163,11 @@ templates/<name>/
 │       ├── Chart.yaml
 │       ├── values.yaml
 │       └── templates/
-├── config-connector/            ← Config Connector (KCC) deployment path
+├── config-connector/            ← Config Connector (KCC) infrastructure manifests
 │   ├── network.yaml             ← ComputeNetwork + ComputeSubnetwork
-│   ├── cluster.yaml             ← ContainerCluster (+ NodePool if standard)
-│   └── workload/                ← Kubernetes manifests for the workload (required)
-│       └── *.yaml               ← Deployment · Service · HPA · NetworkPolicy etc.
+│   └── cluster.yaml             ← ContainerCluster (+ NodePool if standard)
+├── config-connector-workload/   ← Kubernetes manifests for the workload (required for KCC path)
+│   └── *.yaml                   ← Deployment · Service · HPA · NetworkPolicy etc.
 ├── README.md                    ← auto-updated by CI with validation record
 ├── .validated                   ← CI marker: commit + status after successful deploy
 ├── .agent-metrics               ← written by agent sandbox (latest session)
