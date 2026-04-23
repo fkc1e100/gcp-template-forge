@@ -91,9 +91,17 @@ echo "Note: This triggers autoscaling for GPU nodes, which can take several minu
 kubectl get daemonset nvidia-driver-installer -n kube-system || echo "Warning: nvidia-driver-installer not found yet."
 
 set +e
-kubectl wait --for=jsonpath='{.status.state}'=ready raycluster/raycluster-team-a -n team-a --timeout=25m
+echo "Waiting for raycluster-team-a..."
+kubectl wait --for=jsonpath='{.status.state}'=ready raycluster/raycluster-team-a -n team-a --timeout=25m &
+PID_A=$!
+
+echo "Waiting for raycluster-team-b..."
+kubectl wait --for=jsonpath='{.status.state}'=ready raycluster/raycluster-team-b -n team-b --timeout=25m &
+PID_B=$!
+
+wait $PID_A
 RESULT_A=$?
-kubectl wait --for=jsonpath='{.status.state}'=ready raycluster/raycluster-team-b -n team-b --timeout=25m
+wait $PID_B
 RESULT_B=$?
 set -e
 
