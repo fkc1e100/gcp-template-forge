@@ -15,7 +15,7 @@
 apiVersion: compute.cnrm.cloud.google.com/v1beta1
 kind: ComputeNetwork
 metadata:
-  name: gke-inference-fuse-cache-vpc
+  name: gke-inf-fuse-cache-vpc
   namespace: forge-management
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025 # UPDATE: Replace with your GCP Project ID
@@ -28,7 +28,7 @@ spec:
 apiVersion: compute.cnrm.cloud.google.com/v1beta1
 kind: ComputeSubnetwork
 metadata:
-  name: gke-inference-fuse-cache-subnet
+  name: gke-inf-fuse-cache-subnet
   namespace: forge-management
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025 # UPDATE: Replace with your GCP Project ID
@@ -36,10 +36,11 @@ metadata:
     project: gcp-template-forge
     template: gke-inference-fuse-cache
 spec:
-  ipCidrRange: "10.10.0.0/20"
+  ipCidrRange: 10.10.0.0/20
   region: us-central1
   networkRef:
-    name: gke-inference-fuse-cache-vpc
+    name: gke-inf-fuse-cache-vpc
+
   privateIpGoogleAccess: true
   secondaryIpRange:
     - rangeName: pods
