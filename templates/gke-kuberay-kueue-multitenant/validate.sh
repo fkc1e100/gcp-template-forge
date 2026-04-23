@@ -50,10 +50,7 @@ echo "Connectivity passed."
 
 # 2. Operator Readiness
 echo "Test 2: Operator Readiness..."
-echo "Waiting for CRDs to be established..."
-# These CRDs should have been installed by Helm or manually applied from config-connector-workload
-kubectl wait --for=condition=Established crd/rayclusters.ray.io --timeout=5m || debug_failure "RayCluster CRD not established"
-kubectl wait --for=condition=Established crd/clusterqueues.kueue.x-k8s.io --timeout=5m || debug_failure "ClusterQueue CRD not established"
+echo "Waiting for Operators to be available..."
 
 echo "Checking KubeRay Operator..."
 kubectl wait --for=condition=available deployment/kuberay-operator -n default --timeout=15m || debug_failure "KubeRay Operator failed to become ready"
@@ -62,28 +59,13 @@ echo "Checking Kueue Operator..."
 kubectl wait --for=condition=available deployment/kueue-controller-manager -n kueue-system --timeout=15m || debug_failure "Kueue Operator failed to become ready"
 echo "Operators are ready."
 
-# 3. Apply Custom Resources
-echo "Test 3: Applying Custom Resources..."
-SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
-TEMPLATE_NAME=$(basename "$SCRIPT_DIR")
-
-# Apply UID_SUFFIX if present (for CI parity)
-apply_manifest() {
-  local file=$1
-  if [ -n "$UID_SUFFIX" ]; then
-    echo "Applying $file with UID_SUFFIX=$UID_SUFFIX..."
-    sed "s/${TEMPLATE_NAME}/${TEMPLATE_NAME}-${UID_SUFFIX}/g" "$file" | kubectl apply -f -
-  else
-    echo "Applying $file..."
-    kubectl apply -f "$file"
-  fi
-}
-
-# Apply Kueue resources first
-apply_manifest "$SCRIPT_DIR/config-connector-workload/02-kueue-config.yaml"
-
-# Apply RayCluster resources
-apply_manifest "$SCRIPT_DIR/config-connector-workload/03-ray-clusters.yaml"
+# 3. Custom Resource Verification
+echo "Test 3: Verifying Custom Resources..."
+echo "Waiting for CRDs to be established..."
+# These CRDs should have been installed by Helm
+kubectl wait --for=condition=Established crd/rayclusters.ray.io --timeout=5m || debug_failure "RayCluster CRD not established"
+kubectl wait --for=condition=Established crd/clusterqueues.kueue.x-k8s.io --timeout=5m || debug_failure "ClusterQueue CRD not established"
+echo "CRDs are established."
 
 # 4. Kueue Resource Readiness
 echo "Test 4: Kueue Resource Readiness..."

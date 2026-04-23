@@ -18,7 +18,7 @@ metadata:
   labels:
     app.kubernetes.io/name: kuberay
     project: gcp-template-forge
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kuberay-operator
   namespace: default
 ---
@@ -28,7 +28,7 @@ metadata:
   labels:
     app.kubernetes.io/name: kuberay
     project: gcp-template-forge
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kuberay-operator
 rules:
 - apiGroups:
@@ -88,7 +88,7 @@ metadata:
   labels:
     app.kubernetes.io/name: kuberay
     project: gcp-template-forge
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kuberay-operator
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -105,7 +105,7 @@ metadata:
   labels:
     app.kubernetes.io/name: kuberay
     project: gcp-template-forge
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kuberay-operator
   namespace: default
 spec:
@@ -118,7 +118,7 @@ spec:
       labels:
         app.kubernetes.io/name: kuberay
         project: gcp-template-forge
-        template: gke-kuberay-kueue-multitenant
+        template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
     spec:
       containers:
       - args:

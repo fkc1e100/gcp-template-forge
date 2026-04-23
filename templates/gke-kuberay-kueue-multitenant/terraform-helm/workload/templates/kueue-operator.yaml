@@ -17,7 +17,7 @@ kind: ServiceAccount
 metadata:
   labels:
     project: gcp-template-forge
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-controller-manager
   namespace: kueue-system
 ---
@@ -26,7 +26,7 @@ kind: Role
 metadata:
   labels:
     project: gcp-template-forge
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-leader-election-role
   namespace: kueue-system
 rules:
@@ -71,7 +71,7 @@ kind: ClusterRole
 metadata:
   labels:
     project: gcp-template-forge
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-batch-admin-role
 ---
 aggregationRule:
@@ -83,7 +83,7 @@ kind: ClusterRole
 metadata:
   labels:
     project: gcp-template-forge
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-batch-user-role
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -92,7 +92,7 @@ metadata:
   labels:
     project: gcp-template-forge
     rbac.kueue.x-k8s.io/batch-admin: 'true'
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-clusterqueue-editor-role
 rules:
 - apiGroups:
@@ -120,7 +120,7 @@ metadata:
   labels:
     project: gcp-template-forge
     rbac.kueue.x-k8s.io/batch-admin: 'true'
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-clusterqueue-viewer-role
 rules:
 - apiGroups:
@@ -145,7 +145,7 @@ metadata:
     project: gcp-template-forge
     rbac.kueue.x-k8s.io/batch-admin: 'true'
     rbac.kueue.x-k8s.io/batch-user: 'true'
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-job-editor-role
 rules:
 - apiGroups:
@@ -174,7 +174,7 @@ metadata:
     project: gcp-template-forge
     rbac.kueue.x-k8s.io/batch-admin: 'true'
     rbac.kueue.x-k8s.io/batch-user: 'true'
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-job-viewer-role
 rules:
 - apiGroups:
@@ -199,7 +199,7 @@ metadata:
     project: gcp-template-forge
     rbac.kueue.x-k8s.io/batch-admin: 'true'
     rbac.kueue.x-k8s.io/batch-user: 'true'
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-jobset-editor-role
 rules:
 - apiGroups:
@@ -228,7 +228,7 @@ metadata:
     project: gcp-template-forge
     rbac.kueue.x-k8s.io/batch-admin: 'true'
     rbac.kueue.x-k8s.io/batch-user: 'true'
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-jobset-viewer-role
 rules:
 - apiGroups:
@@ -252,7 +252,7 @@ metadata:
   labels:
     project: gcp-template-forge
     rbac.kueue.x-k8s.io/batch-admin: 'true'
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-localqueue-editor-role
 rules:
 - apiGroups:
@@ -281,7 +281,7 @@ metadata:
     project: gcp-template-forge
     rbac.kueue.x-k8s.io/batch-admin: 'true'
     rbac.kueue.x-k8s.io/batch-user: 'true'
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-localqueue-viewer-role
 rules:
 - apiGroups:
@@ -304,7 +304,7 @@ kind: ClusterRole
 metadata:
   labels:
     project: gcp-template-forge
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-manager-role
 rules:
 - apiGroups:
@@ -856,7 +856,7 @@ kind: ClusterRole
 metadata:
   labels:
     project: gcp-template-forge
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-metrics-reader
 rules:
 - nonResourceURLs:
@@ -871,7 +871,7 @@ metadata:
     project: gcp-template-forge
     rbac.kueue.x-k8s.io/batch-admin: 'true'
     rbac.kueue.x-k8s.io/batch-user: 'true'
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-mpijob-editor-role
 rules:
 - apiGroups:
@@ -900,7 +900,7 @@ metadata:
     project: gcp-template-forge
     rbac.kueue.x-k8s.io/batch-admin: 'true'
     rbac.kueue.x-k8s.io/batch-user: 'true'
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-mpijob-viewer-role
 rules:
 - apiGroups:
@@ -925,7 +925,7 @@ metadata:
     project: gcp-template-forge
     rbac.kueue.x-k8s.io/batch-admin: 'true'
     rbac.kueue.x-k8s.io/batch-user: 'true'
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-mxjob-editor-role
 rules:
 - apiGroups:
@@ -954,7 +954,7 @@ metadata:
     project: gcp-template-forge
     rbac.kueue.x-k8s.io/batch-admin: 'true'
     rbac.kueue.x-k8s.io/batch-user: 'true'
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-mxjob-viewer-role
 rules:
 - apiGroups:
@@ -979,7 +979,7 @@ metadata:
     project: gcp-template-forge
     rbac.kueue.x-k8s.io/batch-admin: 'true'
     rbac.kueue.x-k8s.io/batch-user: 'true'
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-paddlejob-editor-role
 rules:
 - apiGroups:
@@ -1008,7 +1008,7 @@ metadata:
     project: gcp-template-forge
     rbac.kueue.x-k8s.io/batch-admin: 'true'
     rbac.kueue.x-k8s.io/batch-user: 'true'
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-paddlejob-viewer-role
 rules:
 - apiGroups:
@@ -1032,7 +1032,7 @@ metadata:
   labels:
     project: gcp-template-forge
     rbac.kueue.x-k8s.io/batch-admin: 'true'
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-pending-workloads-cq-viewer-role
 rules:
 - apiGroups:
@@ -1051,7 +1051,7 @@ metadata:
     project: gcp-template-forge
     rbac.kueue.x-k8s.io/batch-admin: 'true'
     rbac.kueue.x-k8s.io/batch-user: 'true'
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-pending-workloads-lq-viewer-role
 rules:
 - apiGroups:
@@ -1068,7 +1068,7 @@ kind: ClusterRole
 metadata:
   labels:
     project: gcp-template-forge
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-proxy-role
 rules:
 - apiGroups:
@@ -1091,7 +1091,7 @@ metadata:
     project: gcp-template-forge
     rbac.kueue.x-k8s.io/batch-admin: 'true'
     rbac.kueue.x-k8s.io/batch-user: 'true'
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-pytorchjob-editor-role
 rules:
 - apiGroups:
@@ -1120,7 +1120,7 @@ metadata:
     project: gcp-template-forge
     rbac.kueue.x-k8s.io/batch-admin: 'true'
     rbac.kueue.x-k8s.io/batch-user: 'true'
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-pytorchjob-viewer-role
 rules:
 - apiGroups:
@@ -1145,7 +1145,7 @@ metadata:
     project: gcp-template-forge
     rbac.kueue.x-k8s.io/batch-admin: 'true'
     rbac.kueue.x-k8s.io/batch-user: 'true'
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-rayjob-editor-role
 rules:
 - apiGroups:
@@ -1174,7 +1174,7 @@ metadata:
     project: gcp-template-forge
     rbac.kueue.x-k8s.io/batch-admin: 'true'
     rbac.kueue.x-k8s.io/batch-user: 'true'
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-rayjob-viewer-role
 rules:
 - apiGroups:
@@ -1198,7 +1198,7 @@ metadata:
   labels:
     project: gcp-template-forge
     rbac.kueue.x-k8s.io/batch-admin: 'true'
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-resourceflavor-editor-role
 rules:
 - apiGroups:
@@ -1220,7 +1220,7 @@ metadata:
   labels:
     project: gcp-template-forge
     rbac.kueue.x-k8s.io/batch-admin: 'true'
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-resourceflavor-viewer-role
 rules:
 - apiGroups:
@@ -1239,7 +1239,7 @@ metadata:
     project: gcp-template-forge
     rbac.kueue.x-k8s.io/batch-admin: 'true'
     rbac.kueue.x-k8s.io/batch-user: 'true'
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-tfjob-editor-role
 rules:
 - apiGroups:
@@ -1268,7 +1268,7 @@ metadata:
     project: gcp-template-forge
     rbac.kueue.x-k8s.io/batch-admin: 'true'
     rbac.kueue.x-k8s.io/batch-user: 'true'
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-tfjob-viewer-role
 rules:
 - apiGroups:
@@ -1292,7 +1292,7 @@ metadata:
   labels:
     project: gcp-template-forge
     rbac.kueue.x-k8s.io/batch-admin: 'true'
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-workload-editor-role
 rules:
 - apiGroups:
@@ -1321,7 +1321,7 @@ metadata:
     project: gcp-template-forge
     rbac.kueue.x-k8s.io/batch-admin: 'true'
     rbac.kueue.x-k8s.io/batch-user: 'true'
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-workload-viewer-role
 rules:
 - apiGroups:
@@ -1346,7 +1346,7 @@ metadata:
     project: gcp-template-forge
     rbac.kueue.x-k8s.io/batch-admin: 'true'
     rbac.kueue.x-k8s.io/batch-user: 'true'
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-xgboostjob-editor-role
 rules:
 - apiGroups:
@@ -1375,7 +1375,7 @@ metadata:
     project: gcp-template-forge
     rbac.kueue.x-k8s.io/batch-admin: 'true'
     rbac.kueue.x-k8s.io/batch-user: 'true'
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-xgboostjob-viewer-role
 rules:
 - apiGroups:
@@ -1398,7 +1398,7 @@ kind: RoleBinding
 metadata:
   labels:
     project: gcp-template-forge
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-leader-election-rolebinding
   namespace: kueue-system
 roleRef:
@@ -1415,7 +1415,7 @@ kind: ClusterRoleBinding
 metadata:
   labels:
     project: gcp-template-forge
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-manager-rolebinding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -1431,7 +1431,7 @@ kind: ClusterRoleBinding
 metadata:
   labels:
     project: gcp-template-forge
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-proxy-rolebinding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -1487,7 +1487,7 @@ kind: ConfigMap
 metadata:
   labels:
     project: gcp-template-forge
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-manager-config
   namespace: kueue-system
 ---
@@ -1496,7 +1496,7 @@ kind: Secret
 metadata:
   labels:
     project: gcp-template-forge
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-webhook-server-cert
   namespace: kueue-system
 ---
@@ -1506,7 +1506,7 @@ metadata:
   labels:
     control-plane: controller-manager
     project: gcp-template-forge
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-controller-manager-metrics-service
   namespace: kueue-system
 spec:
@@ -1523,7 +1523,7 @@ kind: Service
 metadata:
   labels:
     project: gcp-template-forge
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-webhook-service
   namespace: kueue-system
 spec:
@@ -1540,7 +1540,7 @@ metadata:
   labels:
     control-plane: controller-manager
     project: gcp-template-forge
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-controller-manager
   namespace: kueue-system
 spec:
@@ -1555,7 +1555,7 @@ spec:
       labels:
         control-plane: controller-manager
         project: gcp-template-forge
-        template: gke-kuberay-kueue-multitenant
+        template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
     spec:
       containers:
       - args:
@@ -1630,7 +1630,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   labels:
     project: gcp-template-forge
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-mutating-webhook-configuration
 webhooks:
 - admissionReviewVersions:
@@ -1913,7 +1913,7 @@ kind: ValidatingWebhookConfiguration
 metadata:
   labels:
     project: gcp-template-forge
-    template: gke-kuberay-kueue-multitenant
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   name: kueue-validating-webhook-configuration
 webhooks:
 - admissionReviewVersions:

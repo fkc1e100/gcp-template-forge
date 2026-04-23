@@ -1,0 +1,137 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ResourceFlavor
+metadata:
+  labels:
+    project: gcp-template-forge
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
+  name: default-flavor
+spec:
+  nodeLabels:
+    cloud.google.com/gke-accelerator: nvidia-l4
+  tolerations:
+  - key: "nvidia.com/gpu"
+    operator: "Exists"
+    effect: "NoSchedule"
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ResourceFlavor
+metadata:
+  labels:
+    project: gcp-template-forge
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
+  name: base-flavor
+spec: {}
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ClusterQueue
+metadata:
+  labels:
+    project: gcp-template-forge
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
+  name: team-a-cq
+spec:
+  cohort: gpu-cohort
+  namespaceSelector:
+    matchExpressions:
+    - key: kubernetes.io/metadata.name
+      operator: In
+      values: ["team-a"]
+  resourceGroups:
+  - coveredResources: ["nvidia.com/gpu", "cpu", "memory"]
+    flavors:
+    - name: base-flavor
+      resources:
+      - name: nvidia.com/gpu
+        nominalQuota: 0
+      - name: cpu
+        nominalQuota: 8
+        borrowingLimit: 16
+      - name: memory
+        nominalQuota: 32Gi
+        borrowingLimit: 64Gi
+    - name: default-flavor
+      resources:
+      - name: nvidia.com/gpu
+        nominalQuota: 2
+        borrowingLimit: 4
+      - name: cpu
+        nominalQuota: 16
+        borrowingLimit: 32
+      - name: memory
+        nominalQuota: 64Gi
+        borrowingLimit: 128Gi
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ClusterQueue
+metadata:
+  labels:
+    project: gcp-template-forge
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
+  name: team-b-cq
+spec:
+  cohort: gpu-cohort
+  namespaceSelector:
+    matchExpressions:
+    - key: kubernetes.io/metadata.name
+      operator: In
+      values: ["team-b"]
+  resourceGroups:
+  - coveredResources: ["nvidia.com/gpu", "cpu", "memory"]
+    flavors:
+    - name: base-flavor
+      resources:
+      - name: nvidia.com/gpu
+        nominalQuota: 0
+      - name: cpu
+        nominalQuota: 8
+        borrowingLimit: 16
+      - name: memory
+        nominalQuota: 32Gi
+        borrowingLimit: 64Gi
+    - name: default-flavor
+      resources:
+      - name: nvidia.com/gpu
+        nominalQuota: 2
+        borrowingLimit: 4
+      - name: cpu
+        nominalQuota: 16
+        borrowingLimit: 32
+      - name: memory
+        nominalQuota: 64Gi
+        borrowingLimit: 128Gi
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: LocalQueue
+metadata:
+  labels:
+    project: gcp-template-forge
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
+  name: team-a-lq
+  namespace: team-a
+spec:
+  clusterQueue: team-a-cq
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: LocalQueue
+metadata:
+  labels:
+    project: gcp-template-forge
+    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
+  name: team-b-lq
+  namespace: team-b
+spec:
+  clusterQueue: team-b-cq
