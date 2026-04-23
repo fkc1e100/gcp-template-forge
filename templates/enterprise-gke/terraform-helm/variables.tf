@@ -42,6 +42,22 @@ variable "subnet_name" {
 }
 
 variable "service_account" {
-  description = "The service account email to use for the node pool"
+  description = "The service account to use for the GKE nodes if create_service_accounts is false (passed by CI)"
   type        = string
+  default     = ""
+}
+
+variable "create_service_accounts" {
+  description = "Whether to create dedicated service accounts. Set to false in environments with restricted IAM permissions (like CI)."
+  type        = bool
+  default     = true
+}
+
+variable "master_authorized_networks" {
+  description = "List of master authorized networks"
+  type = list(object({
+    cidr_block   = string
+    display_name = string
+  }))
+  default = []
 }
