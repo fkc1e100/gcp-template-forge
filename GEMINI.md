@@ -3,6 +3,16 @@
 ## Overview
 The project infrastructure is hosted on Google Cloud Platform (Project: `gca-gke-2025`) and consists of a management cluster and a workload cluster. The system uses Kubernetes-native patterns to manage both infrastructure (via Config Connector) and automated repository agents (via the Repo-Agent platform).
 
+## Repository Objectives & Guidelines
+As defined in `.gemini/user-instructions.json`, the primary goals and rules for this repository are:
+
+*   **Main Objective**: Generate, test, deploy, and validate IaC templates for full-stack application environments on GCP.
+*   **Supported Tech Stack**: Terraform, Helm, and Config Connector (KCC).
+*   **Dual-Path Generation**: For every infrastructure pattern, the agent MUST create two distinct deployment paths: one for **Config Connector manifests** (in a `kcc/` folder) and one for **Terraform/Helm files** (in a `Terraform_HELM/` folder) under the template directory.
+*   **Resource Naming**: All generated cloud resources (clusters, networks, buckets) MUST include the issue number in their name to ensure uniqueness.
+*   **Success Criteria**: A task is considered successful only when both the Terraform/Helm path and the Config Connector path have been successfully deployed and verified.
+
+
 ## Clusters
 
 ### 1. Management Cluster (KCC Host)
