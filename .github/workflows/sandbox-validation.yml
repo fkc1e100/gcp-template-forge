@@ -3,10 +3,7 @@ name: Sandbox Validation
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
   pull_request:
-    branches: [ main ]
-    types: [opened, synchronize, reopened, closed]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
