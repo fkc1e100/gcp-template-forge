@@ -75,7 +75,7 @@ If the dashboard is inaccessible from specific devices or networks:
     *   Cleanup instructions.
 *   **Strict Issue Scoping (Anti-Feature Creep):** The agent MUST strictly adhere to the scope of the assigned issue. Do NOT modify files or templates that are not directly related to the specific task. Avoid "feature creep" or attempting to fix similar issues in other files/templates unless explicitly instructed. Small, focused PRs are preferred over massive, all-encompassing changes to keep the CI pipeline healthy and prevent resource contention.
 
-#### `fkcurrie/gcp-template-forge` (dashboard namespace, drives what you see in the UI)
+#### `fkc1e100/gcp-template-forge` (namespace for gcp-template-forge)
 ```yaml
 spec:
   repoURL: https://github.com/fkc1e100/gcp-template-forge
@@ -112,7 +112,7 @@ spec:
 
 **Force immediate reconciliation** (without waiting for next poll):
 ```bash
-kubectl annotate repowatch -n fkcurrie gcp-template-forge \
+kubectl annotate repowatch -n fkc1e100 gcp-template-forge \
   reconcile-trigger="$(date +%s)" --overwrite
 ```
 
@@ -122,15 +122,15 @@ kubectl annotate repowatch -n fkcurrie gcp-template-forge \
 
 | Secret Name | Namespace(s) | Contents | Purpose |
 |---|---|---|---|
-| `codebot-sfle` | `repo-agent-system`, `fkc1e100`, `fkcurrie`, `overseer-gcp-template-forge` | `email`, `name`, `pat`, `userid` | GitHub bot identity and PAT for git operations |
-| `github-pat` | `fkc1e100`, `fkcurrie` | GitHub PAT | RepoWatch polls GitHub API with this |
-| `gemini-vscode-tokens` | `fkc1e100`, `fkcurrie` | Gemini API keys | LLM calls from sandbox agents |
+| `codebot-sfle` | `repo-agent-system`, `fkc1e100`, `overseer-gcp-template-forge` | `email`, `name`, `pat`, `userid` | GitHub bot identity and PAT for git operations |
+| `github-pat` | `fkc1e100` | GitHub PAT | RepoWatch polls GitHub API with this |
+| `gemini-vscode-tokens` | `fkc1e100` | Gemini API keys | LLM calls from sandbox agents |
 | `gemini-api-key` | `repo-agent-system` | Gemini API key | System-level LLM key |
 | `github-token` | `repo-agent-system` | GitHub token | pr-review-api OAuth |
 | `repo-agent-tls` | `repo-agent-system` | TLS cert | Envoy Gateway TLS |
 | `huggingface-token` | GCP Secret Manager (`gca-gke-2025`) | HuggingFace token | Model weight access; **never in git** |
 
-**Secret copy mechanism:** `repowatch-controller` reads `{robotAccount}` from `repo-agent-system` as the **source** and copies it into the user namespace (e.g., `fkcurrie/codebot-sfle`). The source secret **must exist in `repo-agent-system`** — if it only exists in `fkc1e100`, the copy will fail with "Failed to find robot secret codebot-sfle in repo-agent-system".
+**Secret copy mechanism:** `repowatch-controller` reads `{robotAccount}` from `repo-agent-system` as the **source** and copies it into the user namespace (e.g., `fkc1e100/codebot-sfle`). The source secret **must exist in `repo-agent-system`** — if it only exists in `fkc1e100`, the copy will fail with "Failed to find robot secret codebot-sfle in repo-agent-system".
 
 **Race condition pattern:** The controller uses `Create` (not `CreateOrUpdate`) for the copy. If two reconcile goroutines run simultaneously (triggered by rapid annotation updates), the second will fail with "already exists". This is harmless — on the next clean single-goroutine reconciliation, the secret is already there and everything proceeds normally.
 
@@ -140,13 +140,13 @@ kubectl annotate repowatch -n fkcurrie gcp-template-forge \
 
 When a RepoWatch controller matches a GitHub issue:
 
-1. **Sandbox created** in the user namespace (e.g., `fkcurrie/gcp-template-forge-issue-16`)
+1. **Sandbox created** in the user namespace (e.g., `fkc1e100/gcp-template-forge-issue-16`)
    - `spec.podTemplate` describes the pod
    - `initContainers[0]`: `inject-agent` — copies the `repo-sandbox` binary from `ghcr.io/gke-labs/gemini-for-kubernetes-development/repo-sandbox:latest` into the workspace
    - Main container: runs `repo-sandbox dev-daemon` — a gRPC server that listens for task commands
    - Image is built from `agent-infra/sandbox-image/Dockerfile` using `generic-golang` as the base (pre-installs `terraform`, `helm`, `kubectl`, `yq`)
 
-2. **SandboxTask created** (e.g., `fkcurrie/gcp-template-forge-issue-16-fix`)
+2. **SandboxTask created** (e.g., `fkc1e100/gcp-template-forge-issue-16-fix`)
    - Labels include `review.gemini.google.com/repowatch: gcp-template-forge` — this is what makes `repowatch-controller` process it
    - `spec.type: fix-issue` — tells the controller which task to dispatch
    - `spec.params` includes: `ISSUEID`, `AGENT_PROMPT`, `HANDLER_NAME`, `model`, `AGENT_LLM_PROVIDER`, `AGENT_LLM_API_KEY_SECRET`
@@ -181,11 +181,11 @@ Three ClusterPolicies are active:
 
 | Policy | Scope | Effect |
 |---|---|---|
-| `halve-sandbox-resources` | Pods in `fkcurrie` namespace with label `agents.x-k8s.io/sandbox-name-hash` | Forces CPU request/limit to 1000m/2000m and memory request/limit to 1Gi/2Gi — overrides whatever the sandbox spec requests. This halves resource allocation for dashboard sandboxes vs. the fkc1e100 originals. |
+| `halve-sandbox-resources` | Pods in `fkc1e100` namespace with label `agents.x-k8s.io/sandbox-name-hash` | Forces CPU request/limit to 1000m/2000m and memory request/limit to 1Gi/2Gi — overrides whatever the sandbox spec requests. |
 | `gfk-gke-compat` | Cluster-wide | GKE compatibility fixes for the operator stack |
 | `replace-ko-image-references` | Cluster-wide | Rewrites `ko://` image references to resolved GHCR digests |
 
-**Impact of `halve-sandbox-resources`:** Sandbox pods in `fkcurrie` always run with 1 CPU / 1Gi RAM regardless of what the template requests. This is intentional — the dashboard namespace is a secondary monitoring view, not a high-performance execution namespace. The `fkc1e100` namespace runs sandboxes at full resources.
+**Impact of `halve-sandbox-resources`:** Sandbox pods in `fkc1e100` run with constrained resources if the policy is active.
 
 ---
 
@@ -193,11 +193,11 @@ Three ClusterPolicies are active:
 
 - **URL:** `https://34.30.138.59/` (Envoy Gateway, not the legacy GCE ingress at `34.117.252.80`)
 - **Auth:** GitHub OAuth — browser session required for namespace selection
-- **Namespace selection:** Derived from the authenticated user's GitHub login: `f` + last name of the login. For `fkc1e100`, this is `fkcurrie`.
-- **Issues tab:** Shows `issueSandboxes` from the RepoWatch in the user's personal namespace (`fkcurrie`)
-- **PRs tab:** Shows `reviewSandboxes` from the same RepoWatch
-- **If Issues tab is empty:** Check `kubectl get repowatch -n fkcurrie gcp-template-forge -o jsonpath='{.spec.issue.assignedToSelf}'` — if `true`, only issues GitHub-assigned to the robot account will appear. Set to `false` to show all matching issues.
-- **Dashboard manages fkcurrie RepoWatch:** If you delete the `fkcurrie/gcp-template-forge` RepoWatch, the dashboard recreates it with its default settings (may reset `assignedToSelf` to `true` and clear your custom config). Prefer patching rather than deleting.
+- **Namespace selection:** Uses the `fkc1e100` namespace.
+- **Issues tab:** Shows `issueSandboxes` from the RepoWatch in the `fkc1e100` namespace.
+- **PRs tab:** Shows `reviewSandboxes` from the same RepoWatch.
+- **If Issues tab is empty:** Check `kubectl get repowatch -n fkc1e100 gcp-template-forge -o jsonpath='{.spec.issue.assignedToSelf}'` — if `true`, only issues GitHub-assigned to the robot account will appear. Set to `false` to show all matching issues.
+- **Dashboard management:** The dashboard manages RepoWatch resources in the user namespace.
 
 ---
 
@@ -263,7 +263,7 @@ Tools pre-installed at image build time (not at runtime):
 ```
 GitHub Issue (label: repo-agent, no hold) 
   → repowatch-controller (polling fkc1e100 repo, 60s interval)
-    → creates Sandbox in user namespace (fkc1e100 or fkcurrie)
+    → creates Sandbox in user namespace (fkc1e100)
     → creates SandboxTask (type: fix-issue, label: review.gemini.google.com/repowatch)
       → controller dispatches gRPC command to sandbox dev-daemon
         → repo-sandbox runs Gemini CLI agent
