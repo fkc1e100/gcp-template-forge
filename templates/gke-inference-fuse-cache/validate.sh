@@ -34,12 +34,12 @@ if [ -z "${CLUSTER_NAME}" ]; then
     echo "Detected Config Connector cluster: ${CLUSTER_NAME}"
   else
     # Try detecting via list with filter (to handle CI suffixes)
-    DETECTED_TF=$(gcloud container clusters list --project ${PROJECT_ID} --filter="name ~ gke-inference-fuse-cache.*-tf" --format="value(name)" --limit 1)
+    DETECTED_TF=$(gcloud container clusters list --project ${PROJECT_ID} --filter="name ~ gke-inference-fuse-cache.*-tf OR name ~ gke-inf-fuse-cache.*-tf" --format="value(name)" --limit 1)
     if [ -n "${DETECTED_TF}" ]; then
       CLUSTER_NAME="${DETECTED_TF}"
       echo "Detected Terraform cluster (suffixed): ${CLUSTER_NAME}"
     else
-      DETECTED_KCC=$(gcloud container clusters list --project ${PROJECT_ID} --filter="name ~ gke-inference-fuse-cache.*-kcc" --format="value(name)" --limit 1)
+      DETECTED_KCC=$(gcloud container clusters list --project ${PROJECT_ID} --filter="name ~ gke-inference-fuse-cache.*-kcc OR name ~ gke-inf-fuse-cache.*-kcc" --format="value(name)" --limit 1)
       if [ -n "${DETECTED_KCC}" ]; then
         CLUSTER_NAME="${DETECTED_KCC}"
         echo "Detected Config Connector cluster (suffixed): ${CLUSTER_NAME}"

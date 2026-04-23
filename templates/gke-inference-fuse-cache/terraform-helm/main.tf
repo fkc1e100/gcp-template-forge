@@ -29,8 +29,8 @@ resource "random_id" "bucket_suffix" {
 locals {
   uid                = var.uid_suffix != "" ? var.uid_suffix : random_id.bucket_suffix.hex
   workload_gsa_email = var.service_account
-  # Use abbreviated name for KSA and bucket if uid_suffix is provided (matches CI)
-  base_name      = var.uid_suffix != "" ? "gke-inf-fuse-cache" : "gke-inference-fuse-cache"
+  # Use abbreviated name for resource names to stay under GCP character limits (e.g. 30 for GSA)
+  base_name      = "gke-inf-fuse-cache"
   template_label = var.uid_suffix != "" ? "gke-inference-fuse-cache-${var.uid_suffix}" : "gke-inference-fuse-cache"
   ksa_name       = "${local.base_name}-${local.uid}-sa"
   bucket_name    = "${local.base_name}-tf-${local.uid}-bucket"
