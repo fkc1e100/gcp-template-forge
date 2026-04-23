@@ -15,17 +15,17 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
 metadata:
-  name: gke-inf-fuse-cache-gpu-pool
+  name: gke-inference-fuse-cache-gpu-pool
   namespace: forge-management
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025 # UPDATE: Replace with your GCP Project ID
   labels:
     project: gcp-template-forge
-    template: gke-inf-fuse-cache
+    template: gke-inference-fuse-cache
 spec:
   location: us-central1
   clusterRef:
-    name: gke-inf-fuse-cache-kcc
+    name: gke-inference-fuse-cache-kcc
   nodeCount: 1
   # Restrict to a single zone that supports L4 GPUs
   nodeLocations:
@@ -48,26 +48,26 @@ spec:
     workloadMetadataConfig:
       mode: GKE_METADATA
     serviceAccountRef:
-      name: gke-inf-fuse-cache-sa
+      name: gke-inference-fuse-cache-sa
     labels:
       project: gcp-template-forge
-      template: gke-inf-fuse-cache
+      template: gke-inference-fuse-cache
       gpu: l4
 ---
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
 metadata:
-  name: gke-inf-fuse-cache-system-pool
+  name: gke-inference-fuse-cache-system-pool
   namespace: forge-management
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025 # UPDATE: Replace with your GCP Project ID
   labels:
     project: gcp-template-forge
-    template: gke-inf-fuse-cache
+    template: gke-inference-fuse-cache
 spec:
   location: us-central1
   clusterRef:
-    name: gke-inf-fuse-cache-kcc
+    name: gke-inference-fuse-cache-kcc
   nodeCount: 1
   # Restrict to the same zone as the GPU pool
   nodeLocations:
@@ -77,11 +77,11 @@ spec:
     diskType: pd-balanced
     diskSizeGb: 50
     serviceAccountRef:
-      name: gke-inf-fuse-cache-sa
+      name: gke-inference-fuse-cache-sa
     oauthScopes:
       - "https://www.googleapis.com/auth/cloud-platform"
     workloadMetadataConfig:
       mode: GKE_METADATA
     labels:
       project: gcp-template-forge
-      template: gke-inf-fuse-cache
+      template: gke-inference-fuse-cache
