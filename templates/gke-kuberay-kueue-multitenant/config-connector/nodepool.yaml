@@ -68,6 +68,8 @@ spec:
     guestAccelerator:
       - type: nvidia-l4
         count: 1
+        gpuDriverInstallationConfig:
+          gpuDriverVersion: DEFAULT
     labels:
       project: gcp-template-forge
       template: gke-kuberay-kueue-multitenant

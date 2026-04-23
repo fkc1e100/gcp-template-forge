@@ -163,6 +163,10 @@ resource "google_container_node_pool" "gpu_nodes" {
       count = 1
     }
 
+    gpu_driver_installation_config {
+      gpu_driver_version = "DEFAULT"
+    }
+
     labels = {
       project                            = "gcp-template-forge"
       template                           = var.uid_suffix != "" ? "gke-kuberay-kueue-multitenant-${var.uid_suffix}" : "gke-kuberay-kueue-multitenant"
