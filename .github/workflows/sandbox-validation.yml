@@ -451,8 +451,8 @@ jobs:
           UID_SUFFIX="${RUN_ID: -6}"
           echo "KCC_START=$(date -u +%s)" >> $GITHUB_ENV
           # Replace template name and project ID with runtime values
-          find ${{ matrix.template }}/config-connector -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
-          find ${{ matrix.template }}/config-connector -type f -name "*.yaml" -exec sed -i "s/gca-gke-2025/${{ env.PROJECT_ID }}/g" {} +
+          find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
+          find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/gca-gke-2025/${{ env.PROJECT_ID }}/g" {} +
           kubectl apply -n $KCC_NAMESPACE \
             -f ${{ matrix.template }}/config-connector/
 
@@ -588,8 +588,8 @@ jobs:
         run: |
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
-          find ${{ matrix.template }}/config-connector -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
-          find ${{ matrix.template }}/config-connector -type f -name "*.yaml" -exec sed -i "s/gca-gke-2025/${{ env.PROJECT_ID }}/g" {} +
+          find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
+          find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/gca-gke-2025/${{ env.PROJECT_ID }}/g" {} +
           kubectl delete \
             -n $KCC_NAMESPACE \
             -f ${{ matrix.template }}/config-connector/ \
@@ -676,8 +676,8 @@ jobs:
         run: |
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
-          find ${{ matrix.template }}/config-connector -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
-          find ${{ matrix.template }}/config-connector -type f -name "*.yaml" -exec sed -i "s/gca-gke-2025/${{ env.PROJECT_ID }}/g" {} +
+          find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
+          find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/gca-gke-2025/${{ env.PROJECT_ID }}/g" {} +
           kubectl delete \
             -n ${{ env.KCC_NAMESPACE }} \
             -f ${{ matrix.template }}/config-connector/ \
@@ -1063,8 +1063,8 @@ jobs:
           UID_SUFFIX="${RUN_ID: -6}"
           echo "KCC_START=$(date -u +%s)" >> $GITHUB_ENV
           # Replace template name and project ID with runtime values
-          find ${{ matrix.template }}/config-connector -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
-          find ${{ matrix.template }}/config-connector -type f -name "*.yaml" -exec sed -i "s/gca-gke-2025/${{ env.PROJECT_ID }}/g" {} +
+          find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
+          find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/gca-gke-2025/${{ env.PROJECT_ID }}/g" {} +
           kubectl apply -n $KCC_NAMESPACE \
             -f ${{ matrix.template }}/config-connector/
 
@@ -1099,8 +1099,7 @@ jobs:
         run: echo "Drift test placeholder -- template-specific tests go here."
 
       - name: Get KCC Workload Cluster Info
-
-id: kcc-workload-info
+        id: kcc-workload-info
         if: steps.kcc-wait.outcome == 'success' || steps.kcc-cluster-ready.outcome == 'success'
         run: |
           RUN_ID="${{ github.run_id }}"
@@ -1177,7 +1176,7 @@ id: kcc-workload-info
           PROJECT="${{ env.PROJECT_ID }}"
           SCAN_WARNINGS=0
 
-echo "=== GKE Security Posture configuration ==="
+          echo "=== GKE Security Posture configuration ==="
           gcloud container clusters describe "$CLUSTER" --location="$LOCATION" \
             --project="$PROJECT" --format="yaml(securityPostureConfig)"
 
@@ -1251,8 +1250,8 @@ echo "=== GKE Security Posture configuration ==="
         run: |
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
-          find ${{ matrix.template }}/config-connector -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
-          find ${{ matrix.template }}/config-connector -type f -name "*.yaml" -exec sed -i "s/gca-gke-2025/${{ env.PROJECT_ID }}/g" {} +
+          find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
+          find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/gca-gke-2025/${{ env.PROJECT_ID }}/g" {} +
           kubectl delete \
             -n $KCC_NAMESPACE \
             -f ${{ matrix.template }}/config-connector/ \
@@ -1273,8 +1272,7 @@ echo "=== GKE Security Posture configuration ==="
       - name: Upload KCC results artifact
         if: always() && steps.skip-check.outputs.skip != 'true'
         uses: actions/upload-artifact@v4
-
-with:
+        with:
           name: kcc-results-${{ github.run_id }}-${{ strategy.job-index }}
           path: /tmp/kcc-results/result.json
           retention-days: 1
@@ -1377,7 +1375,7 @@ with:
 
           current = {}
 
-if os.path.exists(metrics_file):
+          if os.path.exists(metrics_file):
               try:    current = json.load(open(metrics_file))
               except: pass
 
@@ -1468,7 +1466,7 @@ if os.path.exists(metrics_file):
               ("**Commit**",         commit,    commit),
           ]
 
-header = sep.join(["", "", "Terraform + Helm", "Config Connector", ""]).strip()
+          header = sep.join(["", "", "Terraform + Helm", "Config Connector", ""]).strip()
           divider = sep.join(["", "---", "---", "---", ""]).strip()
           lines = ["\n\n## Validation Record\n", header, divider]
           for label, tf_val, kcc_val in rows:

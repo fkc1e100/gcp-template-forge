@@ -43,6 +43,8 @@ spec:
     # Set to a restricted range or empty for security. 
     # Placeholder for administrative access.
     cidrBlocks: []
+  secretManagerConfig:
+    enabled: true
   addonsConfig:
     networkPolicyConfig:
       disabled: false
