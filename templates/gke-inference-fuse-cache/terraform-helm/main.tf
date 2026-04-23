@@ -256,7 +256,7 @@ resource "google_storage_bucket_iam_member" "bucket_admin_gsa" {
 # Generate values.yaml for the Helm chart
 resource "local_file" "helm_values" {
   filename = "${path.module}/workload/values.yaml"
-  content  = <<-EOF
+  content = <<-EOF
 # Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -275,12 +275,12 @@ ${yamlencode({
   templateName           = "${local.base_name}-${local.uid}"
   bucketName             = google_storage_bucket.model_bucket.name
   gcpServiceAccountEmail = ""
-  serviceAccount         = {
+  serviceAccount = {
     name = local.ksa_name
   }
   # Default values for vllm-inference
   replicaCount = 1
-  image        = {
+  image = {
     repository = "google/cloud-sdk"
     tag        = "slim"
   }

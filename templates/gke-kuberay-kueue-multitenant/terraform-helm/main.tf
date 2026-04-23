@@ -164,9 +164,9 @@ resource "google_container_node_pool" "gpu_nodes" {
     }
 
     labels = {
-      project  = "gcp-template-forge"
-      template = var.uid_suffix != "" ? "gke-kuberay-kueue-multitenant-${var.uid_suffix}" : "gke-kuberay-kueue-multitenant"
-      pool     = "gpu"
+      project                            = "gcp-template-forge"
+      template                           = var.uid_suffix != "" ? "gke-kuberay-kueue-multitenant-${var.uid_suffix}" : "gke-kuberay-kueue-multitenant"
+      pool                               = "gpu"
       "cloud.google.com/gke-accelerator" = "nvidia-l4"
     }
 
@@ -195,7 +195,7 @@ resource "google_container_node_pool" "gpu_nodes" {
 # Generate values.yaml for Helm
 resource "local_file" "helm_values" {
   filename = "${path.module}/workload/values.yaml"
-  content  = <<-EOF
+  content = <<-EOF
 # Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
