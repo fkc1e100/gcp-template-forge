@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -28,7 +29,9 @@ spec:
   - Ingress
   ingress:
   - from:
-    - podSelector: {} # Allow all traffic from pods in the same namespace
+    - podSelector:
+        matchLabels:
+          template: gke-kuberay-kueue-multitenant
     - namespaceSelector:
         matchLabels:
           kubernetes.io/metadata.name: default
@@ -46,18 +49,22 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-all-within-namespace
+  name: allow-all-with-template-label
   namespace: team-a
   labels:
     project: gcp-template-forge
     template: gke-kuberay-kueue-multitenant
 spec:
-  podSelector: {}
+  podSelector:
+    matchLabels:
+      template: gke-kuberay-kueue-multitenant
   policyTypes:
   - Ingress
   ingress:
   - from:
-    - podSelector: {}
+    - podSelector:
+        matchLabels:
+          template: gke-kuberay-kueue-multitenant
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -75,7 +82,9 @@ spec:
   - Ingress
   ingress:
   - from:
-    - podSelector: {} # Allow all traffic from pods in the same namespace
+    - podSelector:
+        matchLabels:
+          template: gke-kuberay-kueue-multitenant
     - namespaceSelector:
         matchLabels:
           kubernetes.io/metadata.name: default
@@ -93,15 +102,19 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-all-within-namespace
+  name: allow-all-with-template-label
   namespace: team-b
   labels:
     project: gcp-template-forge
     template: gke-kuberay-kueue-multitenant
 spec:
-  podSelector: {}
+  podSelector:
+    matchLabels:
+      template: gke-kuberay-kueue-multitenant
   policyTypes:
   - Ingress
   ingress:
   - from:
-    - podSelector: {}
+    - podSelector:
+        matchLabels:
+          template: gke-kuberay-kueue-multitenant

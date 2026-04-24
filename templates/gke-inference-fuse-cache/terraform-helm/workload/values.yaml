@@ -29,8 +29,12 @@ serviceAccount:
 
 resources:
   limits:
+    cpu: 2
+    memory: 4Gi
     nvidia.com/gpu: 1
   requests:
+    cpu: 2
+    memory: 4Gi
     nvidia.com/gpu: 1
 
 nodeSelector:

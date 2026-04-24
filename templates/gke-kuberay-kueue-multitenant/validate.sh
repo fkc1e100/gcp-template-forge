@@ -152,8 +152,10 @@ fi
 # 6. Resource isolation verification
 echo "Test 6: Resource Isolation Verification..."
 kubectl get limitrange team-a-limits -n team-a || debug_failure "LimitRange for team-a not found"
-kubectl get networkpolicy ray-dashboard-restriction -n team-a || debug_failure "NetworkPolicy for team-a not found"
-kubectl get networkpolicy ray-dashboard-restriction -n team-b || debug_failure "NetworkPolicy for team-b not found"
+kubectl get networkpolicy ray-dashboard-restriction -n team-a || debug_failure "NetworkPolicy ray-dashboard-restriction for team-a not found"
+kubectl get networkpolicy allow-all-with-template-label -n team-a || debug_failure "NetworkPolicy allow-all-with-template-label for team-a not found"
+kubectl get networkpolicy ray-dashboard-restriction -n team-b || debug_failure "NetworkPolicy ray-dashboard-restriction for team-b not found"
+kubectl get networkpolicy allow-all-with-template-label -n team-b || debug_failure "NetworkPolicy allow-all-with-template-label for team-b not found"
 echo "Resource isolation is configured."
 
 echo "All Validation Tests passed successfully!"

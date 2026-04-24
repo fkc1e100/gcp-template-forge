@@ -30,7 +30,9 @@ spec:
   - Ingress
   ingress:
   - from:
-    - podSelector: {} # Allow all traffic from pods in the same namespace
+    - podSelector:
+        matchLabels:
+          template: {{ if $.Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ $.Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
     - namespaceSelector:
         matchLabels:
           kubernetes.io/metadata.name: default
@@ -48,16 +50,20 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-all-within-namespace
+  name: allow-all-with-template-label
   namespace: {{ $namespace }}
   labels:
     project: gcp-template-forge
     template: {{ if $.Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ $.Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
 spec:
-  podSelector: {}
+  podSelector:
+    matchLabels:
+      template: {{ if $.Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ $.Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
   policyTypes:
   - Ingress
   ingress:
   - from:
-    - podSelector: {}
+    - podSelector:
+        matchLabels:
+          template: {{ if $.Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ $.Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
 {{- end }}
