@@ -181,7 +181,28 @@ if [ -z "${JOB_NAME}" ]; then
 fi
 
 echo "Waiting for staging Job ${JOB_NAME}..."
-kubectl wait --for=condition=complete job/${JOB_NAME} -n ${NAMESPACE} --timeout=120m || debug_failure "Staging Job failed to complete within 120m"
+# Wait for the job to start its pod first
+RETRY=0
+while [ $RETRY -lt 10 ]; do
+  POD_PHASE=$(kubectl get pods -n ${NAMESPACE} -l component=staging -o jsonpath='{.items[0].status.phase}' 2>/dev/null || echo "NotFound")
+  echo "Staging pod phase: ${POD_PHASE}"
+  if [ "${POD_PHASE}" == "Running" ] || [ "${POD_PHASE}" == "Succeeded" ] || [ "${POD_PHASE}" == "Failed" ]; then
+    break
+  fi
+  if [ "${POD_PHASE}" == "Pending" ]; then
+    echo "Staging pod is Pending, checking for events..."
+    kubectl get events -n ${NAMESPACE} --field-selector involvedObject.kind=Pod | grep -i staging || true
+  fi
+  sleep 30
+  RETRY=$((RETRY+1))
+done
+
+# Now wait for completion with a long timeout
+kubectl wait --for=condition=complete job/${JOB_NAME} -n ${NAMESPACE} --timeout=120m || {
+  echo "Staging Job did not complete successfully. Checking status..."
+  kubectl get job ${JOB_NAME} -n ${NAMESPACE} -o yaml
+  debug_failure "Staging Job failed or timed out"
+}
 echo "Staging Job complete."
 
 echo "Waiting for deployment ${DEPLOY_NAME}..."
