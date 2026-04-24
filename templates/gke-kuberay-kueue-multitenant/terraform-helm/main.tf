@@ -103,7 +103,7 @@ resource "google_container_node_pool" "system_nodes" {
   location   = var.region
   cluster    = google_container_cluster.gke_kuberay_kueue_multitenant_cluster.name
   project    = var.project_id
-  node_count = 1
+  node_count = 2
 
   # Use a single zone for the system pool to conserve quota in CI
   node_locations = ["${var.region}-a"]

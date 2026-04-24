@@ -161,6 +161,10 @@ resource "google_container_node_pool" "gpu_pool" {
     service_account = var.service_account
     oauth_scopes    = ["https://www.googleapis.com/auth/cloud-platform"]
 
+    ephemeral_storage_local_ssd_config {
+      local_ssd_count = 1
+    }
+
     guest_accelerator {
       type  = "nvidia-l4"
       count = 1
