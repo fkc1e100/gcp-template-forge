@@ -32,6 +32,7 @@ spec:
           project: gcp-template-forge
           template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
       spec:
+        serviceAccountName: team-a-sa
         containers:
         - image: rayproject/ray:2.9.0
           name: ray-head
@@ -45,11 +46,11 @@ spec:
             name: client
           resources:
             limits:
-              cpu: 1
-              memory: 2Gi
+              cpu: 2
+              memory: 4Gi
             requests:
-              cpu: 1
-              memory: 2Gi
+              cpu: 2
+              memory: 4Gi
   rayVersion: 2.9.0
   workerGroupSpecs:
   - groupName: gpu-group
@@ -63,6 +64,7 @@ spec:
           project: gcp-template-forge
           template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
       spec:
+        serviceAccountName: team-a-sa
         containers:
         - image: rayproject/ray:2.9.0
           name: ray-worker
@@ -101,6 +103,7 @@ spec:
           project: gcp-template-forge
           template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
       spec:
+        serviceAccountName: team-b-sa
         containers:
         - image: rayproject/ray:2.9.0
           name: ray-head
@@ -114,11 +117,11 @@ spec:
             name: client
           resources:
             limits:
-              cpu: 1
-              memory: 2Gi
+              cpu: 2
+              memory: 4Gi
             requests:
-              cpu: 1
-              memory: 2Gi
+              cpu: 2
+              memory: 4Gi
   rayVersion: 2.9.0
   workerGroupSpecs:
   - groupName: gpu-group
@@ -132,6 +135,7 @@ spec:
           project: gcp-template-forge
           template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
       spec:
+        serviceAccountName: team-b-sa
         containers:
         - image: rayproject/ray:2.9.0
           name: ray-worker

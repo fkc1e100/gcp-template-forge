@@ -12,38 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: ray-dashboard-restriction
-  namespace: team-a
-  labels:
-    project: gcp-template-forge
-    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
-spec:
-  podSelector:
-    matchLabels:
-      ray.io/node-type: head
-  policyTypes:
-  - Ingress
-  ingress:
-  - from:
-    - podSelector: {} # Allow all traffic from pods in the same namespace
-    - namespaceSelector:
-        matchLabels:
-          kubernetes.io/metadata.name: default
-    # No ports specified means all ports are allowed from the same namespace.
-    # This ensures Ray internal traffic (GCS, etc.) is not blocked while
-    # still restricting dashboard (and other) access to the local namespace.
+{{- range $namespace := (list "team-a" "team-b") }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: ray-dashboard-restriction
-  namespace: team-b
+  namespace: {{ $namespace }}
   labels:
     project: gcp-template-forge
-    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
+    template: {{ if $.Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ $.Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
 spec:
   podSelector:
     matchLabels:
@@ -55,4 +33,28 @@ spec:
     - podSelector: {} # Allow all traffic from pods in the same namespace
     - namespaceSelector:
         matchLabels:
-          kubernetes.io/metadata.name: default
+          kubernetes.io/metadata.name: default # Allow KubeRay operator
+    ports:
+    - protocol: TCP
+      port: 6379 # Ray GCS
+    - protocol: TCP
+      port: 8265 # Ray Dashboard
+    - protocol: TCP
+      port: 10001 # Ray Client
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-all-within-namespace
+  namespace: {{ $namespace }}
+  labels:
+    project: gcp-template-forge
+    template: {{ if $.Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ $.Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector: {}
+{{- end }}

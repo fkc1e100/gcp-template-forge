@@ -1,13 +1,13 @@
 # Copyright 2026 Google LLC
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
+# Licensed under the Apache License, Version 2.0 (the \"License\");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #      http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
+# distributed under the License is distributed on an \"AS IS\" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
@@ -15,80 +15,64 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
 metadata:
-  name: gke-inf-fuse-cache-gpu-pool
-  namespace: forge-management
-  annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025 # UPDATE: Replace with your GCP Project ID
   labels:
     project: gcp-template-forge
     template: gke-inference-fuse-cache
+  name: gke-inf-fuse-cache-sys
+  namespace: forge-management # UPDATE: Replace with your KCC namespace
 spec:
-  location: us-central1 # UPDATE: Replace with your region
   clusterRef:
-    name: gke-inf-fuse-cache-kcc
-  autoscaling:
-    minNodeCount: 0
-    totalMaxNodeCount: 1
-    locationPolicy: BALANCED
-  # Restrict to zones that support L4 GPUs
-  nodeLocations:
-    - us-central1-a # UPDATE: Replace with your zone
-    - us-central1-b # UPDATE: Replace with your zone
-    - us-central1-c # UPDATE: Replace with your zone
+    name: gke-inference-fuse-cache
+  location: us-central1
+  nodeCount: 1
   nodeConfig:
-    spot: false
-    machineType: g2-standard-4
-    diskType: pd-balanced
+    machineType: e2-standard-4
     diskSizeGb: 50
-    guestAccelerator:
-      - type: nvidia-l4
-        count: 1
-        # Automatically install NVIDIA GPU drivers
-        gpuDriverInstallationConfig:
-          gpuDriverVersion: DEFAULT
-    ephemeralStorageLocalSsdConfig:
-      localSsdCount: 1
-    oauthScopes:
-      - "https://www.googleapis.com/auth/logging.write"
-      - "https://www.googleapis.com/auth/monitoring"
-    workloadMetadataConfig:
-      mode: GKE_METADATA
+    diskType: pd-balanced
     serviceAccountRef:
-      name: gke-inf-fuse-cache-sa
+      name: gke-inf-fuse-node
+    oauthScopes:
+    - https://www.googleapis.com/auth/cloud-platform
     labels:
       project: gcp-template-forge
       template: gke-inference-fuse-cache
-      gpu: l4
+      pool: system
 ---
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
 metadata:
-  name: gke-inf-fuse-cache-system-pool
-  namespace: forge-management
-  annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025 # UPDATE: Replace with your GCP Project ID
   labels:
     project: gcp-template-forge
     template: gke-inference-fuse-cache
+  name: gke-inf-fuse-cache-gpu
+  namespace: forge-management # UPDATE: Replace with your KCC namespace
 spec:
-  location: us-central1 # UPDATE: Replace with your region
   clusterRef:
-    name: gke-inf-fuse-cache-kcc
-  nodeCount: 1
-  # Restrict to the same zone as the GPU pool
-  nodeLocations:
-    - us-central1-a # UPDATE: Replace with your zone
+    name: gke-inference-fuse-cache
+  location: us-central1
+  autoscaling:
+    totalMinNodeCount: 0
+    totalMaxNodeCount: 1
+    locationPolicy: BALANCED
   nodeConfig:
-    machineType: e2-standard-2
+    machineType: g2-standard-4
+    diskSizeGb: 100
     diskType: pd-balanced
-    diskSizeGb: 50
+    guestAccelerator:
+    - type: nvidia-l4
+      count: 1
+      gpuDriverInstallationConfig:
+        gpuDriverVersion: DEFAULT
     serviceAccountRef:
-      name: gke-inf-fuse-cache-sa
+      name: gke-inf-fuse-node
     oauthScopes:
-      - "https://www.googleapis.com/auth/logging.write"
-      - "https://www.googleapis.com/auth/monitoring"
-    workloadMetadataConfig:
-      mode: GKE_METADATA
+    - https://www.googleapis.com/auth/cloud-platform
     labels:
       project: gcp-template-forge
       template: gke-inference-fuse-cache
+      pool: gpu
+      cloud.google.com/gke-accelerator: nvidia-l4
+    taint:
+    - key: nvidia.com/gpu
+      value: present
+      effect: NO_SCHEDULE

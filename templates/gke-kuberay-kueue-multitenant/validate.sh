@@ -36,20 +36,20 @@ debug_failure() {
   echo "=== Debug Info: RayClusters (all) ==="
   kubectl get raycluster -A -o yaml || echo "Could not fetch RayClusters"
   echo "=== Debug Info: Kueue Workloads (all) ==="
-  kubectl get workloads.kueue.x-k8s.io -A || echo "Could not fetch Kueue Workloads"
+  kubectl get workloads.kueue.x-k8s.io -A -o yaml || echo "Could not fetch Kueue Workloads"
+  echo "=== Debug Info: ClusterQueues ==="
+  kubectl get clusterqueue -o yaml
   echo "=== Debug Info: Events (all) ==="
   kubectl get events -A --sort-by='.lastTimestamp' | tail -n 100
   echo "=== Debug Info: Kueue Operator Logs ==="
-  kubectl logs -l control-plane=controller-manager -n kueue-system --all-containers --tail=100 || echo "Could not fetch Kueue logs"
+  kubectl logs -l control-plane=controller-manager -n kueue-system --all-containers --tail=200 || echo "Could not fetch Kueue logs"
   echo "=== Debug Info: KubeRay Operator Logs ==="
-  kubectl logs -l app.kubernetes.io/name=kuberay -n default --all-containers --tail=100 || echo "Could not fetch KubeRay logs"
+  kubectl logs -l app.kubernetes.io/name=kuberay -n default --all-containers --tail=200 || echo "Could not fetch KubeRay logs"
   exit 1
 }
 
 # 1. Cluster Connectivity
 echo "Test 1: Cluster Connectivity..."
-# NOTE: This script strictly performs validation and readiness checks.
-# Resource application is handled by the CI pipeline via Helm to avoid field ownership conflicts.
 gcloud container clusters get-credentials ${CLUSTER_NAME} --region ${REGION} --project ${PROJECT_ID}
 kubectl cluster-info || debug_failure "Failed to connect to cluster"
 echo "Connectivity passed."
@@ -68,7 +68,6 @@ echo "Operators are ready."
 # 3. Custom Resource Verification
 echo "Test 3: Verifying Custom Resources..."
 echo "Waiting for CRDs to be established..."
-# These CRDs should have been installed by Helm
 kubectl wait --for=condition=Established crd/rayclusters.ray.io --timeout=5m || debug_failure "RayCluster CRD not established"
 kubectl wait --for=condition=Established crd/clusterqueues.kueue.x-k8s.io --timeout=5m || debug_failure "ClusterQueue CRD not established"
 echo "CRDs are established."
@@ -87,12 +86,8 @@ echo "Kueue resources are ready."
 
 # 5. RayCluster Readiness
 echo "Test 5: RayCluster Readiness..."
-# These should have been installed by Helm or config-connector-workload
 echo "Waiting for RayClusters to become ready..."
 echo "Note: This triggers autoscaling for GPU nodes, which can take several minutes."
-
-# Verify GPU Driver installation is initiated via GKE annotation
-kubectl get nodes -l cloud.google.com/gke-accelerator=nvidia-l4 -o jsonpath='{.items[*].metadata.labels.cloud\.google\.com/gke-gpu-driver-version}' | grep -q "DEFAULT" || echo "Warning: GPU nodes found but GKE driver version label not yet present."
 
 wait_for_raycluster() {
   local name=$1
@@ -105,10 +100,28 @@ wait_for_raycluster() {
   while [ $(date +%s) -lt $end_time ]; do
     local state=$(kubectl get raycluster "$name" -n "$ns" -o jsonpath='{.status.state}' 2>/dev/null || echo "unknown")
     echo "Current state of $name: $state"
+    
     if [[ "$state" == "ready" ]] || [[ "$state" == "Ready" ]] || [[ "$state" == "running" ]] || [[ "$state" == "Running" ]]; then
       echo "RayCluster $name is ready!"
       return 0
     fi
+    
+    if [[ "$state" == "suspended" ]]; then
+      # Check if a workload exists and why it might not be admitted
+      local wl_name=$(kubectl get workloads.kueue.x-k8s.io -n "$ns" -l kueue.x-k8s.io/job-uid=$(kubectl get raycluster "$name" -n "$ns" -o jsonpath='{.metadata.uid}') -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || echo "")
+      if [ -n "$wl_name" ]; then
+        local admitted=$(kubectl get workload "$wl_name" -n "$ns" -o jsonpath='{.status.conditions[?(@.type=="Admitted")].status}')
+        echo "Workload $wl_name for $name: Admitted=$admitted"
+        if [[ "$admitted" == "False" ]]; then
+          local reason=$(kubectl get workload "$wl_name" -n "$ns" -o jsonpath='{.status.conditions[?(@.type=="Admitted")].reason}')
+          local message=$(kubectl get workload "$wl_name" -n "$ns" -o jsonpath='{.status.conditions[?(@.type=="Admitted")].message}')
+          echo "Workload not admitted: $reason - $message"
+        fi
+      else
+        echo "No Kueue workload found yet for $name (UID: $(kubectl get raycluster "$name" -n "$ns" -o jsonpath='{.metadata.uid}'))"
+      fi
+    fi
+
     if [[ "$state" == "failed" ]] || [[ "$state" == "Failed" ]]; then
       echo "Error: RayCluster $name failed!"
       return 1

@@ -31,10 +31,30 @@ spec:
     - podSelector: {} # Allow all traffic from pods in the same namespace
     - namespaceSelector:
         matchLabels:
-          kubernetes.io/metadata.name: default
-    # No ports specified means all ports are allowed from the same namespace.
-    # This ensures Ray internal traffic (GCS, etc.) is not blocked while
-    # still restricting dashboard (and other) access to the local namespace.
+          kubernetes.io/metadata.name: default # Allow KubeRay operator
+    ports:
+    - protocol: TCP
+      port: 6379 # Ray GCS
+    - protocol: TCP
+      port: 8265 # Ray Dashboard
+    - protocol: TCP
+      port: 10001 # Ray Client
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-all-within-namespace
+  namespace: team-a
+  labels:
+    project: gcp-template-forge
+    template: gke-kuberay-kueue-multitenant
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector: {}
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -55,4 +75,27 @@ spec:
     - podSelector: {} # Allow all traffic from pods in the same namespace
     - namespaceSelector:
         matchLabels:
-          kubernetes.io/metadata.name: default
+          kubernetes.io/metadata.name: default # Allow KubeRay operator
+    ports:
+    - protocol: TCP
+      port: 6379 # Ray GCS
+    - protocol: TCP
+      port: 8265 # Ray Dashboard
+    - protocol: TCP
+      port: 10001 # Ray Client
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-all-within-namespace
+  namespace: team-b
+  labels:
+    project: gcp-template-forge
+    template: gke-kuberay-kueue-multitenant
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector: {}

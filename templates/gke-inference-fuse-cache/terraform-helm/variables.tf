@@ -41,11 +41,6 @@ variable "subnet_name" {
   default     = "gke-inf-fuse-cache-sub"
 }
 
-variable "service_account" {
-  description = "The service account to use for the node pool"
-  type        = string
-}
-
 variable "uid_suffix" {
   description = "A unique suffix for resource identification in shared environments"
   type        = string

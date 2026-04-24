@@ -41,7 +41,7 @@ cd terraform-helm
 terraform init \
   -backend-config="bucket=<TF_STATE_BUCKET>" \
   -backend-config="prefix=templates/gke-kuberay-kueue-multitenant/terraform-helm"
-terraform apply -var="project_id=<PROJECT_ID>" -var="service_account=<SERVICE_ACCOUNT_EMAIL>"
+terraform apply -var="project_id=<PROJECT_ID>"
 ```
 
 > **Note**: GKE provisioning typically takes **up to 45 minutes**.

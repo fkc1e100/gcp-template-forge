@@ -1640,7 +1640,7 @@ webhooks:
       name: kueue-webhook-service
       namespace: kueue-system
       path: /mutate--v1-pod
-  failurePolicy: Ignore
+  failurePolicy: Fail
   name: mpod.kb.io
   namespaceSelector:
     matchExpressions:
@@ -1667,7 +1667,7 @@ webhooks:
       name: kueue-webhook-service
       namespace: kueue-system
       path: /mutate-batch-v1-job
-  failurePolicy: Ignore
+  failurePolicy: Fail
   name: mjob.kb.io
   rules:
   - apiGroups:
@@ -1686,7 +1686,7 @@ webhooks:
       name: kueue-webhook-service
       namespace: kueue-system
       path: /mutate-jobset-x-k8s-io-v1alpha2-jobset
-  failurePolicy: Ignore
+  failurePolicy: Fail
   name: mjobset.kb.io
   rules:
   - apiGroups:
@@ -1705,7 +1705,7 @@ webhooks:
       name: kueue-webhook-service
       namespace: kueue-system
       path: /mutate-kubeflow-org-v1-mxjob
-  failurePolicy: Ignore
+  failurePolicy: Fail
   name: mmxjob.kb.io
   rules:
   - apiGroups:
@@ -1724,7 +1724,7 @@ webhooks:
       name: kueue-webhook-service
       namespace: kueue-system
       path: /mutate-kubeflow-org-v1-paddlejob
-  failurePolicy: Ignore
+  failurePolicy: Fail
   name: mpaddlejob.kb.io
   rules:
   - apiGroups:
@@ -1743,7 +1743,7 @@ webhooks:
       name: kueue-webhook-service
       namespace: kueue-system
       path: /mutate-kubeflow-org-v1-pytorchjob
-  failurePolicy: Ignore
+  failurePolicy: Fail
   name: mpytorchjob.kb.io
   rules:
   - apiGroups:
@@ -1762,7 +1762,7 @@ webhooks:
       name: kueue-webhook-service
       namespace: kueue-system
       path: /mutate-kubeflow-org-v1-tfjob
-  failurePolicy: Ignore
+  failurePolicy: Fail
   name: mtfjob.kb.io
   rules:
   - apiGroups:
@@ -1781,7 +1781,7 @@ webhooks:
       name: kueue-webhook-service
       namespace: kueue-system
       path: /mutate-kubeflow-org-v1-xgboostjob
-  failurePolicy: Ignore
+  failurePolicy: Fail
   name: mxgboostjob.kb.io
   rules:
   - apiGroups:
@@ -1800,7 +1800,7 @@ webhooks:
       name: kueue-webhook-service
       namespace: kueue-system
       path: /mutate-kubeflow-org-v2beta1-mpijob
-  failurePolicy: Ignore
+  failurePolicy: Fail
   name: mmpijob.kb.io
   rules:
   - apiGroups:
@@ -1819,7 +1819,7 @@ webhooks:
       name: kueue-webhook-service
       namespace: kueue-system
       path: /mutate-ray-io-v1-raycluster
-  failurePolicy: Ignore
+  failurePolicy: Fail
   name: mraycluster.kb.io
   rules:
   - apiGroups:
@@ -1838,7 +1838,7 @@ webhooks:
       name: kueue-webhook-service
       namespace: kueue-system
       path: /mutate-ray-io-v1alpha1-rayjob
-  failurePolicy: Ignore
+  failurePolicy: Fail
   name: mrayjob.kb.io
   rules:
   - apiGroups:
@@ -1857,7 +1857,7 @@ webhooks:
       name: kueue-webhook-service
       namespace: kueue-system
       path: /mutate-kueue-x-k8s-io-v1beta1-clusterqueue
-  failurePolicy: Ignore
+  failurePolicy: Fail
   name: mclusterqueue.kb.io
   rules:
   - apiGroups:
@@ -1876,7 +1876,7 @@ webhooks:
       name: kueue-webhook-service
       namespace: kueue-system
       path: /mutate-kueue-x-k8s-io-v1beta1-resourceflavor
-  failurePolicy: Ignore
+  failurePolicy: Fail
   name: mresourceflavor.kb.io
   rules:
   - apiGroups:
@@ -1895,7 +1895,7 @@ webhooks:
       name: kueue-webhook-service
       namespace: kueue-system
       path: /mutate-kueue-x-k8s-io-v1beta1-workload
-  failurePolicy: Ignore
+  failurePolicy: Fail
   name: mworkload.kb.io
   rules:
   - apiGroups:
@@ -1923,7 +1923,7 @@ webhooks:
       name: kueue-webhook-service
       namespace: kueue-system
       path: /validate--v1-pod
-  failurePolicy: Ignore
+  failurePolicy: Fail
   name: vpod.kb.io
   namespaceSelector:
     matchExpressions:
@@ -1951,7 +1951,7 @@ webhooks:
       name: kueue-webhook-service
       namespace: kueue-system
       path: /validate-batch-v1-job
-  failurePolicy: Ignore
+  failurePolicy: Fail
   name: vjob.kb.io
   rules:
   - apiGroups:
@@ -1971,7 +1971,7 @@ webhooks:
       name: kueue-webhook-service
       namespace: kueue-system
       path: /validate-jobset-x-k8s-io-v1alpha2-jobset
-  failurePolicy: Ignore
+  failurePolicy: Fail
   name: vjobset.kb.io
   rules:
   - apiGroups:
@@ -1991,7 +1991,7 @@ webhooks:
       name: kueue-webhook-service
       namespace: kueue-system
       path: /validate-kubeflow-org-v1-mxjob
-  failurePolicy: Ignore
+  failurePolicy: Fail
   name: vmxjob.kb.io
   rules:
   - apiGroups:
@@ -2011,7 +2011,7 @@ webhooks:
       name: kueue-webhook-service
       namespace: kueue-system
       path: /validate-kubeflow-org-v1-paddlejob
-  failurePolicy: Ignore
+  failurePolicy: Fail
   name: vpaddlejob.kb.io
   rules:
   - apiGroups:
@@ -2031,7 +2031,7 @@ webhooks:
       name: kueue-webhook-service
       namespace: kueue-system
       path: /validate-kubeflow-org-v1-pytorchjob
-  failurePolicy: Ignore
+  failurePolicy: Fail
   name: vpytorchjob.kb.io
   rules:
   - apiGroups:
@@ -2051,7 +2051,7 @@ webhooks:
       name: kueue-webhook-service
       namespace: kueue-system
       path: /validate-kubeflow-org-v1-tfjob
-  failurePolicy: Ignore
+  failurePolicy: Fail
   name: vtfjob.kb.io
   rules:
   - apiGroups:
@@ -2071,7 +2071,7 @@ webhooks:
       name: kueue-webhook-service
       namespace: kueue-system
       path: /validate-kubeflow-org-v1-xgboostjob
-  failurePolicy: Ignore
+  failurePolicy: Fail
   name: vxgboostjob.kb.io
   rules:
   - apiGroups:
@@ -2091,7 +2091,7 @@ webhooks:
       name: kueue-webhook-service
       namespace: kueue-system
       path: /validate-kubeflow-org-v2beta1-mpijob
-  failurePolicy: Ignore
+  failurePolicy: Fail
   name: vmpijob.kb.io
   rules:
   - apiGroups:
@@ -2111,7 +2111,7 @@ webhooks:
       name: kueue-webhook-service
       namespace: kueue-system
       path: /validate-ray-io-v1-raycluster
-  failurePolicy: Ignore
+  failurePolicy: Fail
   name: vraycluster.kb.io
   rules:
   - apiGroups:
@@ -2131,7 +2131,7 @@ webhooks:
       name: kueue-webhook-service
       namespace: kueue-system
       path: /validate-ray-io-v1alpha1-rayjob
-  failurePolicy: Ignore
+  failurePolicy: Fail
   name: vrayjob.kb.io
   rules:
   - apiGroups:
@@ -2151,7 +2151,7 @@ webhooks:
       name: kueue-webhook-service
       namespace: kueue-system
       path: /validate-kueue-x-k8s-io-v1beta1-admissioncheck
-  failurePolicy: Ignore
+  failurePolicy: Fail
   name: vadmissioncheck.kb.io
   rules:
   - apiGroups:
@@ -2171,7 +2171,7 @@ webhooks:
       name: kueue-webhook-service
       namespace: kueue-system
       path: /validate-kueue-x-k8s-io-v1beta1-clusterqueue
-  failurePolicy: Ignore
+  failurePolicy: Fail
   name: vclusterqueue.kb.io
   rules:
   - apiGroups:
@@ -2191,7 +2191,7 @@ webhooks:
       name: kueue-webhook-service
       namespace: kueue-system
       path: /validate-kueue-x-k8s-io-v1beta1-localqueue
-  failurePolicy: Ignore
+  failurePolicy: Fail
   name: vlocalqueue.kb.io
   rules:
   - apiGroups:
@@ -2211,7 +2211,7 @@ webhooks:
       name: kueue-webhook-service
       namespace: kueue-system
       path: /validate-kueue-x-k8s-io-v1beta1-resourceflavor
-  failurePolicy: Ignore
+  failurePolicy: Fail
   name: vresourceflavor.kb.io
   rules:
   - apiGroups:
@@ -2231,7 +2231,7 @@ webhooks:
       name: kueue-webhook-service
       namespace: kueue-system
       path: /validate-kueue-x-k8s-io-v1beta1-workload
-  failurePolicy: Ignore
+  failurePolicy: Fail
   name: vworkload.kb.io
   rules:
   - apiGroups:

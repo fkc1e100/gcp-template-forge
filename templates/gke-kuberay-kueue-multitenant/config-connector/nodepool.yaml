@@ -15,27 +15,24 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
 metadata:
-  name: gke-kuberay-kueue-multitenant-s
-  namespace: forge-management
   labels:
     project: gcp-template-forge
     template: gke-kuberay-kueue-multitenant
-  annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025 # UPDATE: Replace with your GCP Project ID
+  name: gke-kuberay-kueue-multitenant-sys
+  namespace: forge-management # UPDATE: Replace with your KCC namespace
 spec:
   clusterRef:
     name: gke-kuberay-kueue-multitenant
-  location: us-central1 # UPDATE: Replace with your region
-  nodeLocations:
-    - us-central1-a # UPDATE: Replace with your zone
+  location: us-central1
   nodeCount: 1
   nodeConfig:
-    spot: false
     machineType: e2-standard-4
     diskSizeGb: 50
+    diskType: pd-balanced
+    serviceAccountRef:
+      name: gke-ray-multitenant-node
     oauthScopes:
-      - "https://www.googleapis.com/auth/logging.write"
-      - "https://www.googleapis.com/auth/monitoring"
+    - https://www.googleapis.com/auth/cloud-platform
     labels:
       project: gcp-template-forge
       template: gke-kuberay-kueue-multitenant
@@ -44,43 +41,38 @@ spec:
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
 metadata:
-  name: gke-kuberay-kueue-multitenant-g
-  namespace: forge-management
   labels:
     project: gcp-template-forge
     template: gke-kuberay-kueue-multitenant
-  annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025 # UPDATE: Replace with your GCP Project ID
+  name: gke-kuberay-kueue-multitenant-gpu
+  namespace: forge-management # UPDATE: Replace with your KCC namespace
 spec:
   clusterRef:
     name: gke-kuberay-kueue-multitenant
-  location: us-central1 # UPDATE: Replace with your region
-  nodeLocations:
-    - us-central1-a # UPDATE: Replace with your zone
-    - us-central1-b # UPDATE: Replace with your zone
-    - us-central1-c # UPDATE: Replace with your zone
+  location: us-central1
   autoscaling:
-    minNodeCount: 0
+    totalMinNodeCount: 0
     totalMaxNodeCount: 5
     locationPolicy: BALANCED
   nodeConfig:
-    spot: false
     machineType: g2-standard-4
     diskSizeGb: 100
-    oauthScopes:
-      - "https://www.googleapis.com/auth/logging.write"
-      - "https://www.googleapis.com/auth/monitoring"
+    diskType: pd-balanced
     guestAccelerator:
-      - type: nvidia-l4
-        count: 1
-        gpuDriverInstallationConfig:
-          gpuDriverVersion: DEFAULT
+    - type: nvidia-l4
+      count: 1
+      gpuDriverInstallationConfig:
+        gpuDriverVersion: DEFAULT
+    serviceAccountRef:
+      name: gke-ray-multitenant-node
+    oauthScopes:
+    - https://www.googleapis.com/auth/cloud-platform
     labels:
       project: gcp-template-forge
       template: gke-kuberay-kueue-multitenant
       pool: gpu
-      "cloud.google.com/gke-accelerator": nvidia-l4
+      cloud.google.com/gke-accelerator: nvidia-l4
     taint:
-      - key: nvidia.com/gpu
-        value: present
-        effect: NO_SCHEDULE
+    - key: nvidia.com/gpu
+      value: present
+      effect: NO_SCHEDULE

@@ -15,10 +15,19 @@
 apiVersion: v1
 kind: Namespace
 metadata:
+  name: team-a
   labels:
     project: gcp-template-forge
     template: gke-kuberay-kueue-multitenant
-  name: team-a
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: team-a-sa
+  namespace: team-a
+  labels:
+    project: gcp-template-forge
+    template: gke-kuberay-kueue-multitenant
 ---
 apiVersion: v1
 kind: LimitRange
@@ -31,20 +40,29 @@ metadata:
 spec:
   limits:
   - default:
+      cpu: 2
+      memory: 4Gi
+    defaultRequest:
       cpu: 500m
       memory: 1Gi
-    defaultRequest:
-      cpu: 100m
-      memory: 512Mi
     type: Container
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
+  name: team-b
   labels:
     project: gcp-template-forge
     template: gke-kuberay-kueue-multitenant
-  name: team-b
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: team-b-sa
+  namespace: team-b
+  labels:
+    project: gcp-template-forge
+    template: gke-kuberay-kueue-multitenant
 ---
 apiVersion: v1
 kind: LimitRange
@@ -57,18 +75,9 @@ metadata:
 spec:
   limits:
   - default:
+      cpu: 2
+      memory: 4Gi
+    defaultRequest:
       cpu: 500m
       memory: 1Gi
-    defaultRequest:
-      cpu: 100m
-      memory: 512Mi
     type: Container
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  labels:
-    control-plane: controller-manager
-    project: gcp-template-forge
-    template: gke-kuberay-kueue-multitenant
-  name: kueue-system

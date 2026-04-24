@@ -12,63 +12,40 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+{{- range $namespace := (list "team-a" "team-b") }}
+---
 apiVersion: v1
 kind: Namespace
 metadata:
+  name: {{ $namespace }}
   labels:
     project: gcp-template-forge
-    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
-  name: team-a
+    template: {{ if $.Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ $.Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ $namespace }}-sa
+  namespace: {{ $namespace }}
+  labels:
+    project: gcp-template-forge
+    template: {{ if $.Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ $.Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
 ---
 apiVersion: v1
 kind: LimitRange
 metadata:
-  name: team-a-limits
-  namespace: team-a
+  name: {{ $namespace }}-limits
+  namespace: {{ $namespace }}
   labels:
     project: gcp-template-forge
-    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
+    template: {{ if $.Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ $.Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
 spec:
   limits:
   - default:
+      cpu: 2
+      memory: 4Gi
+    defaultRequest:
       cpu: 500m
       memory: 1Gi
-    defaultRequest:
-      cpu: 100m
-      memory: 512Mi
     type: Container
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  labels:
-    project: gcp-template-forge
-    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
-  name: team-b
----
-apiVersion: v1
-kind: LimitRange
-metadata:
-  name: team-b-limits
-  namespace: team-b
-  labels:
-    project: gcp-template-forge
-    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
-spec:
-  limits:
-  - default:
-      cpu: 500m
-      memory: 1Gi
-    defaultRequest:
-      cpu: 100m
-      memory: 512Mi
-    type: Container
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  labels:
-    control-plane: controller-manager
-    project: gcp-template-forge
-    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
-  name: kueue-system
+{{- end }}
