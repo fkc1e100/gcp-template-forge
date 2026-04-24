@@ -260,7 +260,9 @@ spec:
   - Ingress
   ingress:
   - from:
-    - podSelector: {} # Allow traffic from any pod in the same namespace
+    - podSelector:
+        matchLabels:
+          template: gke-inference-fuse-cache
     ports:
     - protocol: TCP
       port: 8000

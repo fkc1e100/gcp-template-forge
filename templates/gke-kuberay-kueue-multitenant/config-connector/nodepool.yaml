@@ -30,7 +30,9 @@ spec:
     diskSizeGb: 50
     diskType: pd-balanced
     oauthScopes:
-    - https://www.googleapis.com/auth/cloud-platform
+    - https://www.googleapis.com/auth/logging.write
+    - https://www.googleapis.com/auth/monitoring
+    - https://www.googleapis.com/auth/devstorage.read_only
     labels:
       project: gcp-template-forge
       template: gke-kuberay-kueue-multitenant
@@ -62,7 +64,9 @@ spec:
       gpuDriverInstallationConfig:
         gpuDriverVersion: DEFAULT
     oauthScopes:
-    - https://www.googleapis.com/auth/cloud-platform
+    - https://www.googleapis.com/auth/logging.write
+    - https://www.googleapis.com/auth/monitoring
+    - https://www.googleapis.com/auth/devstorage.read_only
     labels:
       project: gcp-template-forge
       template: gke-kuberay-kueue-multitenant

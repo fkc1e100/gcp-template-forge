@@ -26,7 +26,9 @@ spec:
   - Ingress
   ingress:
   - from:
-    - podSelector: {} # Allow traffic from any pod in the same namespace
+    - podSelector:
+        matchLabels:
+          {{- include "workload.selectorLabels" . | nindent 10 }}
     ports:
     - protocol: TCP
       port: 8000

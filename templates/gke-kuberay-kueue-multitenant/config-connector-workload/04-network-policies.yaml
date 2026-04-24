@@ -31,7 +31,10 @@ spec:
     - podSelector: {} # Allow all traffic from pods in the same namespace
     - namespaceSelector:
         matchLabels:
-          kubernetes.io/metadata.name: default # Allow KubeRay operator
+          kubernetes.io/metadata.name: default
+      podSelector:
+        matchLabels:
+          app.kubernetes.io/name: kuberay
     ports:
     - protocol: TCP
       port: 6379 # Ray GCS
@@ -75,7 +78,10 @@ spec:
     - podSelector: {} # Allow all traffic from pods in the same namespace
     - namespaceSelector:
         matchLabels:
-          kubernetes.io/metadata.name: default # Allow KubeRay operator
+          kubernetes.io/metadata.name: default
+      podSelector:
+        matchLabels:
+          app.kubernetes.io/name: kuberay
     ports:
     - protocol: TCP
       port: 6379 # Ray GCS
