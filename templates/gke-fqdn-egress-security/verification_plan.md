@@ -16,9 +16,9 @@ This plan outlines the steps to verify the implementation of GKE FQDN Network Po
     -   Apply the `NetworkPolicy` that denies all egress for pods labeled `app: egress-test`.
     -   Verify that without any other policies, all external `curl` commands fail.
 2.  **FQDN Allow-list:**
-    -   Apply the `FQDNNetworkPolicy` allowing `api.anthropic.com` and `huggingface.co`.
-    -   Verify `curl https://api.anthropic.com` returns a successful response (likely a 401 or similar from the API, but not a connection timeout).
-    -   Verify `curl https://huggingface.co` succeeds.
+    -   Apply the `FQDNNetworkPolicy` allowing `anthropic.com`, `api.anthropic.com`, `huggingface.co`, and `hf.co`.
+    -   Verify `curl https://anthropic.com` and `curl https://api.anthropic.com` return successful responses (not a connection timeout).
+    -   Verify `curl https://huggingface.co` and `curl https://hf.co` succeed.
     -   Verify `curl https://google.com` is actively blocked by the CNI.
 
 ## Automated Validation
