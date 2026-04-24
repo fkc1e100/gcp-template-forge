@@ -268,8 +268,8 @@ resource "local_file" "helm_values" {
 # limitations under the License.
 
 ${yamlencode({
-  templateName           = local.template_label
-  bucketName             = google_storage_bucket.model_bucket.name
+  templateName = local.template_label
+  bucketName   = google_storage_bucket.model_bucket.name
   # We leave gcpServiceAccountEmail empty to disable KSA annotation, 
   # allowing GCS FUSE to fallback to the node SA credentials.
   gcpServiceAccountEmail = ""
