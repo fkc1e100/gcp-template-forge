@@ -83,8 +83,8 @@ resource "google_container_cluster" "primary" {
   location = var.region
   project  = var.project_id
 
-  # Restrict to a single zone that supports L4 GPUs to save quota and improve reliability
-  node_locations = ["us-central1-a", "us-central1-b", "us-central1-c", "us-central1-f"]
+  # Restrict to zones that support L4 GPUs
+  node_locations = ["us-central1-a", "us-central1-b", "us-central1-c"]
 
   deletion_protection = false
 
@@ -128,15 +128,20 @@ resource "google_container_cluster" "primary" {
 
 # GPU Node Pool with Local SSD
 resource "google_container_node_pool" "gpu_pool" {
-  provider   = google-beta
-  name       = "l4-gpu-pool"
-  location   = var.region
-  cluster    = google_container_cluster.primary.name
-  project    = var.project_id
-  node_count = 1
+  provider = google-beta
+  name     = "l4-gpu-pool"
+  location = var.region
+  cluster  = google_container_cluster.primary.name
+  project  = var.project_id
 
-  # Restrict to a single zone that supports L4 GPUs
-  node_locations = ["us-central1-a", "us-central1-b", "us-central1-c", "us-central1-f"]
+  # Use autoscaling to allow GKE to pick a zone with availability while keeping total node count low
+  autoscaling {
+    min_node_count = 0
+    max_node_count = 1
+  }
+
+  # Restrict to zones that support L4 GPUs
+  node_locations = ["us-central1-a", "us-central1-b", "us-central1-c"]
 
   node_config {
     # Use on-demand instances for better availability (spot can be harder to find in some zones)
@@ -199,8 +204,8 @@ resource "google_container_node_pool" "system_pool" {
   project    = var.project_id
   node_count = 1
 
-  # Restrict to the same zone as the GPU pool
-  node_locations = ["us-central1-a", "us-central1-b", "us-central1-c", "us-central1-f"]
+  # Use a single zone for the system pool to conserve quota in CI
+  node_locations = ["us-central1-a"]
 
   node_config {
     machine_type = "e2-standard-2"
@@ -235,14 +240,9 @@ resource "google_container_node_pool" "system_pool" {
   }
 }
 
-# IAM for Workload Identity: Bind KSA to the node Service Account
-resource "google_service_account_iam_member" "workload_identity_binding" {
-  service_account_id = "projects/${var.project_id}/serviceAccounts/${var.service_account}"
-  role               = "roles/iam.workloadIdentityUser"
-  member             = "serviceAccount:${var.project_id}.svc.id.goog[default/${local.ksa_name}]"
-}
-
 # Grant bucket permissions to the node's Service Account
+# We use the node SA directly for GCS FUSE authentication to avoid IAM permission issues 
+# when trying to modify the shared CI service account's Workload Identity bindings.
 resource "google_storage_bucket_iam_member" "bucket_admin_node_gsa" {
   bucket = google_storage_bucket.model_bucket.name
   role   = "roles/storage.objectAdmin"
@@ -270,7 +270,9 @@ resource "local_file" "helm_values" {
 ${yamlencode({
   templateName           = local.template_label
   bucketName             = google_storage_bucket.model_bucket.name
-  gcpServiceAccountEmail = var.service_account
+  # We leave gcpServiceAccountEmail empty to disable KSA annotation, 
+  # allowing GCS FUSE to fallback to the node SA credentials.
+  gcpServiceAccountEmail = ""
   serviceAccount = {
     name = local.ksa_name
   }
