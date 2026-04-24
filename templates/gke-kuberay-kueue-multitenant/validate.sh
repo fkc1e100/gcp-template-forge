@@ -46,6 +46,8 @@ debug_failure() {
 
 # 1. Cluster Connectivity
 echo "Test 1: Cluster Connectivity..."
+# NOTE: This script strictly performs validation and readiness checks.
+# Resource application is handled by the CI pipeline via Helm to avoid field ownership conflicts.
 gcloud container clusters get-credentials ${CLUSTER_NAME} --region ${REGION} --project ${PROJECT_ID}
 kubectl cluster-info || debug_failure "Failed to connect to cluster"
 echo "Connectivity passed."
