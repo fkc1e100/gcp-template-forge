@@ -138,7 +138,7 @@ resource "google_container_node_pool" "gpu_pool" {
   autoscaling {
     total_min_node_count = 0
     total_max_node_count = 1
-    location_policy      = "ANY"
+    location_policy      = "BALANCED"
   }
 
   # Restrict to zones that support L4 GPUs
@@ -260,8 +260,8 @@ resource "local_file" "helm_values" {
 # limitations under the License.
 
 ${yamlencode({
-  templateName           = local.template_label
-  bucketName             = google_storage_bucket.model_bucket.name
+  templateName = local.template_label
+  bucketName   = google_storage_bucket.model_bucket.name
   serviceAccount = {
     name = local.ksa_name
   }
