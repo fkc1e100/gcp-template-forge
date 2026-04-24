@@ -79,8 +79,8 @@ jobs:
             fi
           done
           KCC_TEMPLATES=$(echo "$KCC_DIRS" | tr ' ' '\n' | sort -u | jq -Rnc '[inputs | select(length>0)]')
-          echo "kcc_templates=$KCC_TEMPLATES" >> $GITHUB_OUTPUT
-          echo "has_kcc_templates=$([ "$KCC_TEMPLATES" = "[]" ] && echo false || echo true)" >> $GITHUB_OUTPUT
+          echo "kcc_templates=$KCC_TEMPLATES" >> "$GITHUB_OUTPUT"
+          echo "has_kcc_templates=$([ "$KCC_TEMPLATES" = "[]" ] && echo false || echo true)" >> "$GITHUB_OUTPUT"
           echo "KCC supported templates: $KCC_TEMPLATES"
 
       - name: Remove repo-agent Label on Start
@@ -168,11 +168,11 @@ jobs:
         run: |
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
-          find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
-          kubectl apply -n $KCC_NAMESPACE -f ${{ matrix.template }}/config-connector/
+          find "${{ matrix.template }}"/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename "${{ matrix.template }}")/$(basename "${{ matrix.template }}")-${UID_SUFFIX}/g" {} +
+          kubectl apply -n "$KCC_NAMESPACE" -f "${{ matrix.template }}/config-connector/"
       - name: Wait for KCC resources Ready
         run: |
-          kubectl wait -n $KCC_NAMESPACE --for=condition=Ready --all --timeout=3600s -f ${{ matrix.template }}/config-connector/
+          kubectl wait -n "$KCC_NAMESPACE" --for=condition=Ready --all --timeout=3600s -f "${{ matrix.template }}/config-connector/"
 
   kcc-test:
     name: "Test KCC (${{ matrix.template }})"
@@ -242,7 +242,7 @@ jobs:
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
           find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
-          kubectl delete -n $KCC_NAMESPACE -f ${{ matrix.template }}/config-connector/ --wait=true --timeout=900s || true
+          kubectl delete -n "$KCC_NAMESPACE" -f "${{ matrix.template }}/config-connector/" --wait=true --timeout=900s || true
 
   cleanup-pr-infra:
     name: "Cleanup KCC (${{ matrix.template }})"
@@ -314,19 +314,19 @@ jobs:
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
           echo "KCC_START=$(date -u +%s)" >> $GITHUB_ENV
-          find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
-          kubectl apply -n $KCC_NAMESPACE -f ${{ matrix.template }}/config-connector/
+          find "${{ matrix.template }}"/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename "${{ matrix.template }}")/$(basename "${{ matrix.template }}")-${UID_SUFFIX}/g" {} +
+          kubectl apply -n "$KCC_NAMESPACE" -f "${{ matrix.template }}/config-connector/"
       - name: Wait Ready
         id: kcc-wait
         if: steps.kcc-apply.outcome == 'success'
         run: |
-          kubectl wait -n $KCC_NAMESPACE --for=condition=Ready --all --timeout=1800s -f ${{ matrix.template }}/config-connector/
-          KCC_DURATION=$(( $(date -u +%s) - ${KCC_START} ))
+          kubectl wait -n "$KCC_NAMESPACE" --for=condition=Ready --all --timeout=1800s -f "${{ matrix.template }}/config-connector/"
+          KCC_DURATION=$(( $(date -u +%s) - KCC_START ))
           echo "kcc_duration=${KCC_DURATION}" >> $GITHUB_OUTPUT
       - name: Teardown
         if: always() && steps.kcc-apply.outcome == 'success'
         run: |
-          kubectl delete -n $KCC_NAMESPACE -f ${{ matrix.template }}/config-connector/ --wait=true --timeout=900s || true
+          kubectl delete -n "$KCC_NAMESPACE" -f "${{ matrix.template }}/config-connector/" --wait=true --timeout=900s || true
       - name: Save results
         if: always() && steps.skip-check.outputs.skip != 'true'
         run: |
@@ -453,7 +453,7 @@ jobs:
                     cumulative['total_cost_usd']       = round(cumulative['total_cost_usd'] + cost, 4)
                     cumulative.setdefault('sessions', []).append({'session_start': session_start, 'input_tokens': int(in_tok), 'output_tokens': int(out_tok or 0), 'estimated_cost_usd': str(cost), 'model': current.get('model', ''), 'counted_at': datetime.datetime.now(datetime.timezone.utc).isoformat()})
                     json.dump(cumulative, open(cumulative_file, 'w'), indent=2)
-            ACCUMPY
+ACCUMPY
 
             # Read cumulative totals
             eval "$(python3 - "$TEMPLATE" << 'READPY'
@@ -466,7 +466,7 @@ jobs:
                 print(f'INPUT_TOKENS="{in_t:,}"'); print(f'OUTPUT_TOKENS="{out_t:,}"'); print(f'AGENT_COST="{cost}"'); print(f'SESSION_SUFFIX=" ({n} session{"s" if n != 1 else ""})"')
             else:
                 print('INPUT_TOKENS=""'); print('OUTPUT_TOKENS=""'); print('AGENT_COST=""'); print('SESSION_SUFFIX=""')
-            READPY
+READPY
             )"
             TOKEN_STR="${INPUT_TOKENS:+${INPUT_TOKENS} in / ${OUTPUT_TOKENS} out${SESSION_SUFFIX}}"
             COST_STR="${AGENT_COST:+\$${AGENT_COST}}"
@@ -496,7 +496,7 @@ jobs:
             lines.append("")
             with open(readme, "a") as f:
                 f.write("\n".join(lines) + "\n")
-            PYEOF
+PYEOF
 
             printf "validated_at: %s\ncommit: %s\ntf_helm: %s\nkcc: %s\n" \
               "$TIMESTAMP" "$COMMIT" "$TF_STATUS" "$KCC_STATUS" \
