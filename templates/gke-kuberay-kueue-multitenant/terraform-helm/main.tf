@@ -22,6 +22,10 @@ provider "google-beta" {
   region  = var.region
 }
 
+locals {
+  template_label = var.uid_suffix != "" ? "gke-kuberay-kueue-multitenant-${var.uid_suffix}" : "gke-kuberay-kueue-multitenant"
+}
+
 # VPC Network
 resource "google_compute_network" "gke_kuberay_kueue_multitenant_vpc" {
   name                    = var.network_name
@@ -59,7 +63,7 @@ resource "google_container_cluster" "gke_kuberay_kueue_multitenant_cluster" {
 
   resource_labels = {
     project  = "gcp-template-forge"
-    template = var.uid_suffix != "" ? "gke-kuberay-kueue-multitenant-${var.uid_suffix}" : "gke-kuberay-kueue-multitenant"
+    template = local.template_label
   }
 
   remove_default_node_pool = true
@@ -112,13 +116,13 @@ resource "google_container_node_pool" "system_nodes" {
 
     labels = {
       project  = "gcp-template-forge"
-      template = var.uid_suffix != "" ? "gke-kuberay-kueue-multitenant-${var.uid_suffix}" : "gke-kuberay-kueue-multitenant"
+      template = local.template_label
       pool     = "system"
     }
 
     resource_labels = {
       project  = "gcp-template-forge"
-      template = var.uid_suffix != "" ? "gke-kuberay-kueue-multitenant-${var.uid_suffix}" : "gke-kuberay-kueue-multitenant"
+      template = local.template_label
     }
   }
 
@@ -168,14 +172,14 @@ resource "google_container_node_pool" "gpu_nodes" {
 
     labels = {
       project                            = "gcp-template-forge"
-      template                           = var.uid_suffix != "" ? "gke-kuberay-kueue-multitenant-${var.uid_suffix}" : "gke-kuberay-kueue-multitenant"
+      template                           = local.template_label
       pool                               = "gpu"
       "cloud.google.com/gke-accelerator" = "nvidia-l4"
     }
 
     resource_labels = {
       project  = "gcp-template-forge"
-      template = var.uid_suffix != "" ? "gke-kuberay-kueue-multitenant-${var.uid_suffix}" : "gke-kuberay-kueue-multitenant"
+      template = local.template_label
     }
 
     taint {
