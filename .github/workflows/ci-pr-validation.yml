@@ -48,7 +48,7 @@ jobs:
       - id: detect
         uses: ./.github/actions/detect-changes
       - name: Remove repo-agent Label on Start
-        run: gh pr edit ${{ github.event.number }} --remove-label "repo-agent" || true
+        run: gh pr edit "${{ github.event.number }}" --remove-label "repo-agent" || true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -176,18 +176,19 @@ jobs:
           if [[ "$TEMPLATE" == *"gke-inference-fuse-cache"* ]]; then BASE_NAME="gke-inf-fuse-cache"; fi
           # Try regions to find where it was deployed
           for REGION in us-central1 us-east1 us-west1; do
-            if gcloud container clusters get-credentials "${BASE_NAME}-${UID_SUFFIX}-tf" --region "$REGION" --project ${{ env.PROJECT_ID }} 2>/dev/null; then
+            if gcloud container clusters get-credentials "${BASE_NAME}-${UID_SUFFIX}-tf" --region "$REGION" --project "${{ env.PROJECT_ID }}" 2>/dev/null; then
               echo "REGION=$REGION" >> "$GITHUB_ENV"
               break
             fi
           done
       - name: Helm deploy and verify
         run: |
-          CHARTS=$(find ${{ matrix.template }}/terraform-helm -name Chart.yaml -exec dirname {} \; 2>/dev/null)
+          CHARTS=$(find "${{ matrix.template }}/terraform-helm" -name Chart.yaml -exec dirname {} \; 2>/dev/null)
           [ -z "$CHARTS" ] && exit 0
           TIMEOUT="60m"
           [ -f "${{ matrix.template }}/.timeout" ] && TIMEOUT=$(cat "${{ matrix.template }}/.timeout")
-          for chart in $CHARTS; do
+          echo "$CHARTS" | while read -r chart; do
+            [ -z "$chart" ] && continue
             helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT"
           done
           if [ -f "${{ matrix.template }}/validate.sh" ]; then
@@ -268,13 +269,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          COMMENTS=$(gh pr view ${{ github.event.number }} --json comments -q '.comments[].body')
+          COMMENTS=$(gh pr view "${{ github.event.number }}" --json comments -q '.comments[].body')
           FAIL_COUNT=$(echo "$COMMENTS" | grep -c "Infrastructure failure detected" || echo "0")
           if [ "$FAIL_COUNT" -ge 3 ]; then
-            gh pr comment ${{ github.event.number }} --body "🚨 **Circuit Breaker Tripped**: This PR has failed infrastructure validation 3+ times. Stopping automated retries."
+            gh pr comment "${{ github.event.number }}" --body "🚨 **Circuit Breaker Tripped**: This PR has failed infrastructure validation 3+ times. Stopping automated retries."
           else
-            gh pr comment ${{ github.event.number }} --body "⚠️ Infrastructure failure detected (Attempt $((FAIL_COUNT + 1))). Re-adding repo-agent label."
-            gh pr edit ${{ github.event.number }} --add-label "repo-agent"
+            gh pr comment "${{ github.event.number }}" --body "⚠️ Infrastructure failure detected (Attempt $((FAIL_COUNT + 1))). Re-adding repo-agent label."
+            gh pr edit "${{ github.event.number }}" --add-label "repo-agent"
           fi
 
   cleanup-orphans:

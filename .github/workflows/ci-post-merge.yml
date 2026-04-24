@@ -239,11 +239,12 @@ jobs:
       - name: Update READMEs and .validated files
         run: |
           TEMPLATES='${{ needs.detect-changes.outputs.templates }}'
-          for TEMPLATE in $(echo "$TEMPLATES" | jq -r '.[]'); do
+          echo "$TEMPLATES" | jq -r '.[]' | while read -r TEMPLATE; do
+            [ -z "$TEMPLATE" ] && continue
             echo "Updating $TEMPLATE..."
             TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
             DATE=$(date -u +"%Y-%m-%d")
-            COMMIT=${{ github.sha }}
+            COMMIT="${{ github.sha }}"
             
             # Fetch results from artifacts if they exist
             SLUG=$(echo "$TEMPLATE" | tr '/' '-')
