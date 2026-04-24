@@ -21,7 +21,7 @@ metadata:
     component: staging
 spec:
   activeDeadlineSeconds: 5400
-  backoffLimit: 1
+  backoffLimit: 3
   template:
     metadata:
       annotations:
@@ -33,12 +33,14 @@ spec:
       serviceAccountName: {{ .Values.serviceAccount.name }}
       containers:
       - name: stager
-        image: google/cloud-sdk:slim
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         command: ["sh", "-c"]
         args:
         - |
           # In a real scenario, this would be a large download.
           # For demonstration, we just ensure a config.json exists to unblock the Deployment.
+          echo "Checking mount point /models..."
+          until [ -d /models ]; do echo "Waiting for mount..."; sleep 2; done
           mkdir -p /models/facebook/opt-125m
           echo '{"model_type": "opt"}' > /models/facebook/opt-125m/config.json
           echo "Model staged successfully."
@@ -53,3 +55,11 @@ spec:
             bucketName: "{{ .Values.bucketName }}"
             mountOptions: "implicit-dirs"
       restartPolicy: OnFailure
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
