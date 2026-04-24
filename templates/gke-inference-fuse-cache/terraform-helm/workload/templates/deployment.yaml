@@ -48,6 +48,7 @@ spec:
       containers:
       - name: vllm-openai
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
         command: ["/usr/bin/python3", "-c"]
         args:
         - |

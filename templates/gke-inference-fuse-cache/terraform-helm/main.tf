@@ -241,11 +241,6 @@ resource "google_container_node_pool" "system_pool" {
   }
 }
 
-# Grant bucket permissions to the node's Service Account
-# We use the node SA directly for GCS FUSE authentication to avoid IAM permission issues 
-# when trying to modify the shared CI service account's Workload Identity bindings.
-}
-
 # Generate values.yaml for the Helm chart
 resource "local_file" "helm_values" {
   filename = "${path.module}/workload/values.yaml"
@@ -265,8 +260,8 @@ resource "local_file" "helm_values" {
 # limitations under the License.
 
 ${yamlencode({
-  templateName = local.template_label
-  bucketName   = google_storage_bucket.model_bucket.name
+  templateName           = local.template_label
+  bucketName             = google_storage_bucket.model_bucket.name
   gcpServiceAccountEmail = google_service_account.workload_sa.email
   serviceAccount = {
     name = local.ksa_name

@@ -23,13 +23,13 @@ metadata:
     project: gcp-template-forge
     template: gke-inference-fuse-cache
 spec:
-  location: us-central1
+  location: us-central1 # UPDATE: Replace with your region
   clusterRef:
     name: gke-inf-fuse-cache-kcc
   nodeCount: 1
   # Restrict to a single zone that supports L4 GPUs
   nodeLocations:
-    - us-central1-a
+    - us-central1-a # UPDATE: Replace with your zone
   nodeConfig:
     spot: false
     machineType: g2-standard-4
@@ -66,13 +66,13 @@ metadata:
     project: gcp-template-forge
     template: gke-inference-fuse-cache
 spec:
-  location: us-central1
+  location: us-central1 # UPDATE: Replace with your region
   clusterRef:
     name: gke-inf-fuse-cache-kcc
   nodeCount: 1
   # Restrict to the same zone as the GPU pool
   nodeLocations:
-    - us-central1-a
+    - us-central1-a # UPDATE: Replace with your zone
   nodeConfig:
     machineType: e2-standard-2
     diskType: pd-balanced
