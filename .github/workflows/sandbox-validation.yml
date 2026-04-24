@@ -1647,9 +1647,10 @@ jobs:
     needs: [detect-changes, lint, pre-cleanup, tf-provision, tf-test, tf-teardown, kcc-apply, kcc-test, kcc-teardown]
     if: >-
       always() && github.event_name == 'pull_request' &&
-      (needs.tf-test.result == 'failure' || needs.kcc-test.result == 'failure' || needs.lint.result == 'failure' || needs.detect-changes.result == 'failure')
+      (contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled'))
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: Add repo-agent label
         run: gh pr edit ${{ github.event.number }} --add-label "repo-agent"
         env:
