@@ -31,6 +31,7 @@ spec:
     - pattern: "*.anthropic.com"
     - name: huggingface.co
     - name: api.huggingface.co
+    - name: www.huggingface.co
     - pattern: "*.huggingface.co"
     - name: hf.co
     - name: www.hf.co
