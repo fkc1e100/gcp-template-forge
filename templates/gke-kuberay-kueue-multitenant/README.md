@@ -29,7 +29,7 @@ Kueue's preemption is configured to ensure that borrowing workloads are preempte
 - When a higher-priority or "rightful owner" workload enters the queue, Kueue will trigger preemption of lower-priority borrowing workloads to reclaim the `nominalQuota`.
 
 ### Explicit Timeouts
-This template uses an explicit **30-minute timeout** for GKE node pool operations in Terraform. This is necessary because GPU node provisioning and autoscaling can occasionally take longer than default timeouts due to resource availability or quota checks.
+This template uses an explicit **45-minute timeout** for GKE node pool operations in Terraform. This is necessary because GPU node provisioning and autoscaling can occasionally take longer than default timeouts due to resource availability or quota checks.
 
 ## Deployment Paths
 
@@ -45,7 +45,7 @@ terraform init \
 terraform apply -var="project_id=<PROJECT_ID>" -var="service_account=<SERVICE_ACCOUNT_EMAIL>"
 ```
 
-> **Note**: GKE provisioning typically takes **up to 30 minutes**.
+> **Note**: GKE provisioning typically takes **up to 45 minutes**.
 
 The Helm chart in `workload/` installs everything needed: operators, namespaces, Kueue resources, and sample RayClusters.
 
@@ -60,7 +60,7 @@ This path uses Google Cloud Config Connector (KCC) to manage GCP resources as Ku
 # Apply infrastructure resources to the management cluster
 kubectl apply -n forge-management -f config-connector/
 
-# Wait for infrastructure to be ready (up to 30 minutes)
+# Wait for infrastructure to be ready (up to 45 minutes)
 # You can check the status using:
 kubectl get -n forge-management -f config-connector/
 

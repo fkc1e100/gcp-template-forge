@@ -22,7 +22,7 @@ Verify that GKE successfully mounts a GCS bucket via FUSE, configures Local SSD 
 ## Infrastructure Verification
 1.  **Cluster Config**: Verify `gcsFuseCsiDriverConfig` is enabled.
 2.  **Node Config**: Verify nodes have 1x Local SSD attached and it is used for ephemeral storage.
-3.  **Timeouts**: Verify that explicit `timeouts` (30m) are set on all node pools in Terraform.
+3.  **Timeouts**: Verify that explicit `timeouts` (45m) are set on all node pools in Terraform.
 4.  **GPU Config**: Verify NVIDIA L4 GPUs are present and drivers are installed (via `nvidia-smi`).
 
 ## Workload Verification

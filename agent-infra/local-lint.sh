@@ -73,9 +73,9 @@ find "$TARGET_DIR" -name "*.tf" -not -path "*/.*" -exec dirname {} \; | sort -u 
         exit 1
       fi
       
-      # Mandate: 30m timeouts
-      if ! grep -q "create\s*=\s*\"30m\"" *.tf; then
-        echo "ERROR: GKE cluster in $dir missing '30m' create timeout"
+      # Mandate: 30m (or more) timeouts
+      if ! grep -qE "create\s*=\s*\"(30|45|60|120|150)m\"" *.tf; then
+        echo "ERROR: GKE cluster in $dir missing appropriate create timeout (min 30m)"
         exit 1
       fi
     fi

@@ -25,6 +25,9 @@ metadata:
     cnrm.cloud.google.com/remove-default-node-pool: "true"
 spec:
   location: us-central1
+  # Restrict to a single zone for the initial node count to save quota in CI
+  nodeLocations:
+    - us-central1-a
   initialNodeCount: 1
   networkRef:
     name: gke-kuberay-kueue-multitenant-vpc
