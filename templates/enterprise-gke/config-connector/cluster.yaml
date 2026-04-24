@@ -38,7 +38,8 @@ spec:
     enablePrivateEndpoint: false
     masterIpv4CidrBlock: "172.16.1.0/28"
   workloadIdentityConfig:
-    workloadPool: "gca-gke-2025.svc.id.goog"
+    # UPDATE: Replace <PROJECT_ID> with your GCP Project ID
+    workloadPool: "<PROJECT_ID>.svc.id.goog"
   # masterAuthorizedNetworksConfig:
   #   # Set to a restricted range for security. 
   #   # Placeholder for administrative access.

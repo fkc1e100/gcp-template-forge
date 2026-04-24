@@ -3,6 +3,10 @@
 ## Overview
 This template provides an enterprise-grade Google Kubernetes Engine (GKE) architecture. It demonstrates two deployment paths: Terraform + Helm for traditional infrastructure-as-code and Config Connector (KCC) for a Kubernetes-native approach to managing GCP resources.
 
+
+> **Warning: Binary Authorization**
+> This template enables Binary Authorization in `PROJECT_SINGLETON_POLICY_ENFORCE` mode. Ensure your GCP project has a Binary Authorization policy configured, otherwise pod deployments may be blocked.
+
 ## Architecture
 - **VPC Network** — Private VPC with dedicated secondary ranges for pods and services.
 - **GKE Standard Cluster** — VPC-native, private cluster with security hardening (Binary Authorization, Security Posture).
@@ -36,7 +40,7 @@ terraform apply -var="project_id=<PROJECT_ID>" -var="service_account=<NODE_SA_EM
 
 # 2. Deploy the application workload using Helm
 gcloud container clusters get-credentials enterprise-gke-tf --region us-central1
-helm upgrade --install release ./workload --namespace gke-workload --create-namespace
+helm upgrade --install release ./workload -f ./workload/values.generated.yaml --namespace gke-workload --create-namespace
 ```
 
 *Note: `create_service_accounts` defaults to `false` to ensure compatibility with restricted environments like CI. For production deployments, set it to `true` to create dedicated, least-privileged service accounts for nodes and workloads.*

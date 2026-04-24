@@ -32,7 +32,14 @@ echo "Using namespace: ${NAMESPACE_WORKLOAD}"
 
 # Isolate KUBECONFIG
 export KUBECONFIG=$(mktemp)
-trap 'rm -f "$KUBECONFIG"' EXIT
+cleanup() {
+  rm -f "$KUBECONFIG"
+  if [ ! -z "$JOB_NAME" ] && [ ! -z "$NAMESPACE_WORKLOAD" ]; then
+    kubectl delete job ${JOB_NAME} -n ${NAMESPACE_WORKLOAD} --ignore-not-found=true || true
+  fi
+}
+trap cleanup EXIT
+
 
 # 1. Cluster Connectivity
 echo "Test 1: Cluster Connectivity..."
@@ -80,6 +87,10 @@ spec:
 EOF
 
 JOB_NAME=$(kubectl get jobs -n ${NAMESPACE_WORKLOAD} --sort-by=.metadata.creationTimestamp -o jsonpath='{.items[-1].metadata.name}')
+if [ -z "$JOB_NAME" ]; then
+  echo "Failed to create or find test Job!"
+  exit 1
+fi
 if kubectl wait --for=condition=complete job/${JOB_NAME} --timeout=5m -n ${NAMESPACE_WORKLOAD}; then
   kubectl logs job/${JOB_NAME} -n ${NAMESPACE_WORKLOAD}
   echo "Workload Identity validated."
@@ -88,7 +99,7 @@ else
   kubectl logs job/${JOB_NAME} -n ${NAMESPACE_WORKLOAD} || echo "Could not retrieve job logs."
   exit 1
 fi
-kubectl delete job ${JOB_NAME} -n ${NAMESPACE_WORKLOAD}
+
 
 # 4. Endpoint Interaction
 echo "Test 4: Endpoint Interaction..."

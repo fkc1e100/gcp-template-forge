@@ -9,7 +9,7 @@ Run the following script to verify quota and availability:
 ```bash
 #!/bin/bash
 # pre_check.sh
-PROJECT_ID="gca-gke-2025"
+PROJECT_ID="<PROJECT_ID>"
 REGION="us-central1"
 
 echo "Checking quota for ${PROJECT_ID} in ${REGION}..."
@@ -39,7 +39,7 @@ terraform apply -auto-approve
 
 # Deploy the application workload via Helm
 gcloud container clusters get-credentials enterprise-gke-tf --region us-central1
-helm upgrade --install release ./workload --namespace gke-workload --create-namespace
+helm upgrade --install release ./workload -f ./workload/values.generated.yaml --namespace gke-workload --create-namespace
 ```
 
 ### Verification

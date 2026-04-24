@@ -121,13 +121,6 @@ resource "google_container_cluster" "enterprise_cluster" {
     network_policy_config {
       disabled = false
     }
-    gcp_filestore_csi_driver_config {
-      enabled = true
-    }
-  }
-
-  secret_manager_config {
-    enabled = true
   }
 
   network_policy {
@@ -219,7 +212,7 @@ resource "google_container_node_pool" "primary_nodes" {
 # GCP Service Account for Workload Identity
 resource "google_service_account" "workload_sa" {
   count        = var.create_service_accounts ? 1 : 0
-  account_id   = replace(substr("wkld-${var.cluster_name}", 0, 30), "/-$/", "")
+  account_id   = "enterprise-gke-w-sa"
   display_name = "Enterprise Workload Service Account"
 }
 
@@ -233,7 +226,7 @@ resource "google_service_account_iam_member" "workload_identity_binding" {
 # GCP Service Account for Nodes
 resource "google_service_account" "node_sa" {
   count        = var.create_service_accounts ? 1 : 0
-  account_id   = replace(substr("node-${var.cluster_name}", 0, 30), "/-$/", "")
+  account_id   = "enterprise-gke-n-sa"
   display_name = "Enterprise GKE Node Service Account"
 }
 
@@ -276,68 +269,10 @@ resource "local_file" "helm_values" {
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-replicaCount: 3
-
-image:
-  repository: nginxinc/nginx-unprivileged
-  pullPolicy: IfNotPresent
-  tag: "1.25.3"
-
 serviceAccount:
-  create: true
-  name: "gke-workload-sa"
-  gcpServiceAccount: "${var.create_service_accounts ? google_service_account.workload_sa[0].email : var.service_account}"
-
-podSecurityContext:
-  runAsUser: 1000
-  runAsGroup: 3000
-  fsGroup: 2000
-  runAsNonRoot: true
-  seccompProfile:
-    type: RuntimeDefault
-
-securityContext:
-  capabilities:
-    drop:
-      - ALL
-  readOnlyRootFilesystem: true
-  allowPrivilegeEscalation: false
-
-service:
-  type: LoadBalancer
-  port: 80
-  targetPort: 8080
-
-resources:
-  limits:
-    cpu: 500m
-    memory: 512Mi
-  requests:
-    cpu: 100m
-    memory: 128Mi
-
-autoscaling:
-  enabled: true
-  minReplicas: 3
-  maxReplicas: 10
-  targetCPUUtilizationPercentage: 80
-
-pdb:
-  enabled: true
-  minAvailable: 2
-
-networkPolicy:
-  enabled: true
-
-config:
-  LOG_LEVEL: "info"
-  ENVIRONMENT: "production"
+  gcpServiceAccount: "${var.create_service_accounts ? google_service_account.workload_sa[0].email : (var.workload_service_account != "" ? var.workload_service_account : var.service_account)}"
 
 secrets:
-  enabled: false
-  providerClass: "enterprise-gke-secrets"
   gcpProjectId: "${var.project_id}"
-  secretName: "enterprise-gke-secret"
-  secretVersion: "latest"
 EOF
 }

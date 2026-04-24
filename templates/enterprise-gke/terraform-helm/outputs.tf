@@ -34,5 +34,5 @@ output "vpc_name" {
 
 output "workload_service_account_email" {
   description = "The email of the GCP Service Account for Workload Identity"
-  value       = var.create_service_accounts ? google_service_account.workload_sa[0].email : var.service_account
+  value       = var.create_service_accounts ? google_service_account.workload_sa[0].email : (var.workload_service_account != "" ? var.workload_service_account : var.service_account)
 }

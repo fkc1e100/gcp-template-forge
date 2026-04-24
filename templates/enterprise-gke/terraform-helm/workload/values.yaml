@@ -73,6 +73,6 @@ config:
 secrets:
   enabled: false
   providerClass: "enterprise-gke-secrets"
-  gcpProjectId: "gca-gke-2025"
+  gcpProjectId: "<PROJECT_ID>"
   secretName: "enterprise-gke-secret"
   secretVersion: "latest"
