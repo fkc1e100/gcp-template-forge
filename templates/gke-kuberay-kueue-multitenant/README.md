@@ -16,7 +16,6 @@ This template demonstrates how to set up a multi-tenant Ray environment on GKE u
     - `ClusterQueues`: `team-a-cq` and `team-b-cq` sharing a common `gpu-cohort`.
     - `LocalQueues`: `team-a-lq` and `team-b-lq` in their respective namespaces.
   - **Quotas**: Each team has a nominal quota of 2 GPUs but can borrow up to the total capacity (4 GPUs) if the other team is not using it. `base-flavor` has 0 GPU quota to steer head pods to non-GPU nodes.
-  - **ResourceQuota & LimitRange**: Applied to `team-a` and `team-b` to manage non-batch workload resources.
 
 ## Kueue Resource Management
 

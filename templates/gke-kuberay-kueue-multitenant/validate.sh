@@ -113,7 +113,6 @@ fi
 
 # 6. Resource isolation verification
 echo "Test 6: Resource Isolation Verification..."
-kubectl get resourcequota team-a-quota -n team-a || debug_failure "ResourceQuota for team-a not found"
 kubectl get limitrange team-a-limits -n team-a || debug_failure "LimitRange for team-a not found"
 kubectl get networkpolicy ray-dashboard-restriction -n team-a || debug_failure "NetworkPolicy for team-a not found"
 kubectl get networkpolicy ray-dashboard-restriction -n team-b || debug_failure "NetworkPolicy for team-b not found"

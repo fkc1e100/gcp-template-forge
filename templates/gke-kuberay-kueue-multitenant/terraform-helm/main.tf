@@ -115,7 +115,7 @@ resource "google_container_node_pool" "system_nodes" {
     disk_type    = "pd-standard"
 
     service_account = var.service_account
-    oauth_scopes    = ["https://www.googleapis.com/auth/cloud-platform"]
+    oauth_scopes    = ["https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/monitoring"]
 
     labels = {
       project  = "gcp-template-forge"
@@ -151,8 +151,9 @@ resource "google_container_node_pool" "gpu_nodes" {
   ]
 
   autoscaling {
-    min_node_count = 0
-    max_node_count = 5
+    total_min_node_count = 0
+    total_max_node_count = 5
+    location_policy      = "ANY"
   }
 
   node_config {
@@ -162,7 +163,7 @@ resource "google_container_node_pool" "gpu_nodes" {
     disk_type    = "pd-standard"
 
     service_account = var.service_account
-    oauth_scopes    = ["https://www.googleapis.com/auth/cloud-platform"]
+    oauth_scopes    = ["https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/monitoring"]
 
     guest_accelerator {
       type  = "nvidia-l4"

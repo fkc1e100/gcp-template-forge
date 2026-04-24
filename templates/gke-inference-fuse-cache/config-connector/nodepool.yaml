@@ -44,7 +44,8 @@ spec:
     ephemeralStorageLocalSsdConfig:
       localSsdCount: 1
     oauthScopes:
-      - "https://www.googleapis.com/auth/cloud-platform"
+      - "https://www.googleapis.com/auth/logging.write"
+      - "https://www.googleapis.com/auth/monitoring"
     workloadMetadataConfig:
       mode: GKE_METADATA
     serviceAccountRef:
@@ -79,7 +80,8 @@ spec:
     serviceAccountRef:
       name: gke-inf-fuse-cache-sa
     oauthScopes:
-      - "https://www.googleapis.com/auth/cloud-platform"
+      - "https://www.googleapis.com/auth/logging.write"
+      - "https://www.googleapis.com/auth/monitoring"
     workloadMetadataConfig:
       mode: GKE_METADATA
     labels:

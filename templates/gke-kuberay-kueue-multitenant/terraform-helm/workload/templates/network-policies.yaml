@@ -29,6 +29,9 @@ spec:
   ingress:
   - from:
     - podSelector: {} # Allow all traffic from pods in the same namespace
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: default
     # No ports specified means all ports are allowed from the same namespace.
     # This ensures Ray internal traffic (GCS, etc.) is not blocked while
     # still restricting dashboard (and other) access to the local namespace.
@@ -50,3 +53,6 @@ spec:
   ingress:
   - from:
     - podSelector: {} # Allow all traffic from pods in the same namespace
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: default
