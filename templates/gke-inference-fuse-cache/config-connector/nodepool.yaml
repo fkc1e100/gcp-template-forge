@@ -51,7 +51,7 @@ spec:
   autoscaling:
     totalMinNodeCount: 0
     totalMaxNodeCount: 1
-    locationPolicy: BALANCED
+    locationPolicy: ANY
   nodeConfig:
     machineType: g2-standard-4
     diskSizeGb: 100

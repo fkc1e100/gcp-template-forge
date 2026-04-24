@@ -149,7 +149,7 @@ resource "google_container_node_pool" "gpu_pool" {
   autoscaling {
     total_min_node_count = 0
     total_max_node_count = 1 # Keep small for CI
-    location_policy      = "BALANCED"
+    location_policy      = "ANY"
   }
 
   node_config {
