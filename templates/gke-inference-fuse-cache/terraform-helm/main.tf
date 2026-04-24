@@ -31,7 +31,6 @@ locals {
   base_name      = "gke-inf-fuse-cache"
   template_label = var.uid_suffix != "" ? "gke-inference-fuse-cache-${var.uid_suffix}" : "gke-inference-fuse-cache"
   ksa_name       = "${local.base_name}-${local.uid}-sa"
-  gsa_name       = "${local.base_name}-${local.uid}-sa"
   bucket_name    = "${local.base_name}-tf-${local.uid}-bucket"
 }
 
@@ -236,28 +235,14 @@ resource "google_container_node_pool" "system_pool" {
   }
 }
 
-# Google Service Account for Workload Identity
-resource "google_service_account" "workload_gsa" {
-  account_id   = local.gsa_name
-  display_name = "GSA for GKE Inference FUSE Cache Template"
-  project      = var.project_id
-}
-
-# IAM for Workload Identity: Bind KSA to GSA
+# IAM for Workload Identity: Bind KSA to the node Service Account
 resource "google_service_account_iam_member" "workload_identity_binding" {
-  service_account_id = google_service_account.workload_gsa.name
+  service_account_id = "projects/${var.project_id}/serviceAccounts/${var.service_account}"
   role               = "roles/iam.workloadIdentityUser"
   member             = "serviceAccount:${var.project_id}.svc.id.goog[default/${local.ksa_name}]"
 }
 
-# IAM for GSA: Grant bucket permissions
-resource "google_storage_bucket_iam_member" "bucket_admin_gsa" {
-  bucket = google_storage_bucket.model_bucket.name
-  role   = "roles/storage.objectAdmin"
-  member = "serviceAccount:${google_service_account.workload_gsa.email}"
-}
-
-# Also grant permissions to the node's GSA as a fallback
+# Grant bucket permissions to the node's Service Account
 resource "google_storage_bucket_iam_member" "bucket_admin_node_gsa" {
   bucket = google_storage_bucket.model_bucket.name
   role   = "roles/storage.objectAdmin"
@@ -285,7 +270,7 @@ resource "local_file" "helm_values" {
 ${yamlencode({
   templateName           = local.template_label
   bucketName             = google_storage_bucket.model_bucket.name
-  gcpServiceAccountEmail = google_service_account.workload_gsa.email
+  gcpServiceAccountEmail = var.service_account
   serviceAccount = {
     name = local.ksa_name
   }
