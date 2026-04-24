@@ -368,10 +368,10 @@ jobs:
             BUCKET_NAME="gke-inf-fuse-cache-tf-${UID_SUFFIX}-bucket"
             KSA_NAME="gke-inf-fuse-cache-${UID_SUFFIX}-sa"
             EXTRA_ARGS="${EXTRA_ARGS} --set templateName=gke-inference-fuse-cache-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME}"
-          fi          if [[ "${{ matrix.template }}" == *"gke-kuberay-kueue-multitenant"* ]]; then
+          fi
+          if [[ "${{ matrix.template }}" == *"gke-kuberay-kueue-multitenant"* ]]; then
             EXTRA_ARGS="${EXTRA_ARGS} --set projectID=${{ env.PROJECT_ID }} --set region=us-central1 --set clusterName=${{ env.CLUSTER_NAME }}"
           fi
-
           for chart in $CHARTS; do
             echo "=== Helm deploy: $chart ==="
             # Removed --wait to let validate.sh handle resource readiness with better debug info
