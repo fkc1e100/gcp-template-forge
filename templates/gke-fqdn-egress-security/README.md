@@ -102,7 +102,11 @@ The included `validate.sh` script automates the entire verification process, inc
     ```bash
     kubectl exec egress-verifier -- curl -sL -4 --connect-timeout 10 https://huggingface.co
     ```
-3.  **Test Blocked Egress (Google):**
+3.  **Test Allowed Egress (hf.co):**
+    ```bash
+    kubectl exec egress-verifier -- curl -sL -4 --connect-timeout 10 https://hf.co
+    ```
+4.  **Test Blocked Egress (Google):**
     ```bash
     kubectl exec egress-verifier -- curl -sL -4 --connect-timeout 10 https://google.com
     # This should time out or return an error.
