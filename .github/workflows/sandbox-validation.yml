@@ -109,7 +109,7 @@ jobs:
 
       - name: Remove repo-agent Label on Start
         if: github.event_name == 'pull_request'
-        run: gh pr edit ${{ github.event.number }} --remove-label "repo-agent" || true
+        run: gh pr edit ${{ github.event.number }} --remove-label "repo-agent" --repo ${{ github.repository }} || true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -495,7 +495,7 @@ jobs:
         if: failure()
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh pr edit ${{ github.event.number }} --add-label "repo-agent" && gh run cancel ${{ github.run_id }}
+        run: gh pr edit ${{ github.event.number }} --add-label "repo-agent" --repo ${{ github.repository }} && gh run cancel ${{ github.run_id }}
 
   # ── 4b. PR: KCC deploy → wait → delete (parallel with deploy-test-tf) ─────
   kcc-apply:
@@ -1651,7 +1651,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Add repo-agent label
-        run: gh pr edit ${{ github.event.number }} --add-label "repo-agent"
+        run: gh pr edit ${{ github.event.number }} --add-label "repo-agent" --repo ${{ github.repository }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
