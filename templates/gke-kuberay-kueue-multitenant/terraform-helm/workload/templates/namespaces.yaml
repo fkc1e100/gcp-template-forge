@@ -21,25 +21,6 @@ metadata:
   name: team-a
 ---
 apiVersion: v1
-kind: ResourceQuota
-metadata:
-  name: team-a-quota
-  namespace: team-a
-  labels:
-    project: gcp-template-forge
-    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
-spec:
-  hard:
-    pods: "20"
-    requests.cpu: "16"
-    requests.memory: "64Gi"
-    limits.cpu: "32"
-    limits.memory: "128Gi"
-    requests.nvidia.com/gpu: "4"
-    limits.nvidia.com/gpu: "4"
----
-apiVersion: v1
-kind: LimitRange
 metadata:
   name: team-a-limits
   namespace: team-a
@@ -65,25 +46,6 @@ metadata:
   name: team-b
 ---
 apiVersion: v1
-kind: ResourceQuota
-metadata:
-  name: team-b-quota
-  namespace: team-b
-  labels:
-    project: gcp-template-forge
-    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
-spec:
-  hard:
-    pods: "20"
-    requests.cpu: "16"
-    requests.memory: "64Gi"
-    limits.cpu: "32"
-    limits.memory: "128Gi"
-    requests.nvidia.com/gpu: "4"
-    limits.nvidia.com/gpu: "4"
----
-apiVersion: v1
-kind: LimitRange
 metadata:
   name: team-b-limits
   namespace: team-b

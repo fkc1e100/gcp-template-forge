@@ -1564,7 +1564,7 @@ spec:
         command:
         - /manager
         image: registry.k8s.io/kueue/kueue:v0.6.2 # UPDATE: Replace with desired Kueue version
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
             path: /healthz
