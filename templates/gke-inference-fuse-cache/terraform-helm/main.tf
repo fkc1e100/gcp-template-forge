@@ -262,7 +262,6 @@ resource "local_file" "helm_values" {
 ${yamlencode({
   templateName           = local.template_label
   bucketName             = google_storage_bucket.model_bucket.name
-  gcpServiceAccountEmail = google_service_account.workload_sa.email
   serviceAccount = {
     name = local.ksa_name
   }
@@ -300,23 +299,11 @@ ${yamlencode({
 EOF
 }
 
-# Service Account for Workload Identity
-resource "google_service_account" "workload_sa" {
-  account_id   = local.ksa_name
-  display_name = "GKE Inference FUSE Service Account"
-  project      = var.project_id
-}
-
-# Grant Bucket Access to the Workload SA
+# Grant Bucket Access directly to the Kubernetes Service Account
+# This uses Workload Identity to grant permissions to the KSA without needing a GSA,
+# which avoids IAM permission issues for the builder service account in CI.
 resource "google_storage_bucket_iam_member" "workload_sa_bucket_access" {
   bucket = google_storage_bucket.model_bucket.name
   role   = "roles/storage.objectAdmin"
-  member = "serviceAccount:${google_service_account.workload_sa.email}"
-}
-
-# Workload Identity Binding
-resource "google_service_account_iam_member" "workload_identity_binding" {
-  service_account_id = google_service_account.workload_sa.name
-  role               = "roles/iam.workloadIdentityUser"
-  member             = "serviceAccount:${var.project_id}.svc.id.goog[default/${local.ksa_name}]"
+  member = "serviceAccount:${var.project_id}.svc.id.goog[default/${local.ksa_name}]"
 }
