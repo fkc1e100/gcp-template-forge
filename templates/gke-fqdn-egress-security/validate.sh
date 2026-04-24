@@ -94,6 +94,24 @@ echo "Verifier pod is ready."
 # 5. Egress Tests
 echo "Test 5: Running Egress Tests..."
 
+echo "Testing allowed domain: anthropic.com..."
+MAX_RETRIES=12
+SUCCESS=false
+for i in $(seq 1 $MAX_RETRIES); do
+  if kubectl exec egress-verifier -n "${NAMESPACE}" -- curl -sL -4 --connect-timeout 10 https://anthropic.com > /dev/null; then
+    echo "SUCCESS: anthropic.com is reachable (attempt $i)."
+    SUCCESS=true
+    break
+  fi
+  echo "Attempt $i: anthropic.com not reachable yet, retrying in 5s..."
+  sleep 5
+done
+
+if [[ "$SUCCESS" == "false" ]]; then
+  echo "FAILURE: anthropic.com is NOT reachable after $MAX_RETRIES attempts."
+  exit 1
+fi
+
 echo "Testing allowed domain: api.anthropic.com..."
 # Dataplane V2 FQDN policies sometimes need a few seconds to learn the IP from the first DNS response.
 # We use a retry loop to account for this.
