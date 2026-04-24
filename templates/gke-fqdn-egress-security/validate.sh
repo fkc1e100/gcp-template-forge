@@ -29,8 +29,17 @@ trap 'rm -f "$KUBECONFIG"' EXIT
 # 1. Cluster Connectivity
 # Ensure we can reach the GKE control plane
 echo "Test 1: Cluster Connectivity..."
-gcloud container clusters get-credentials "${CLUSTER_NAME}" --region "${REGION}" --project "${PROJECT_ID}"
-kubectl cluster-info
+if ! gcloud container clusters get-credentials "${CLUSTER_NAME}" --region "${REGION}" --project "${PROJECT_ID}"; then
+  echo "FAILURE: Failed to get cluster credentials."
+  exit 1
+fi
+
+if ! kubectl cluster-info; then
+  echo "FAILURE: Cannot reach cluster API server."
+  echo "--- DEBUG INFO ---"
+  gcloud container clusters describe "${CLUSTER_NAME}" --region "${REGION}" --project "${PROJECT_ID}" --format="value(status,statusMessage)" || true
+  exit 1
+fi
 echo "Connectivity passed."
 
 # 2. Dataplane V2 and FQDN Policy Enablement
@@ -40,11 +49,17 @@ DATAPATH=$(echo "${CLUSTER_DESC}" | jq -r '.networkConfig.datapathProvider')
 FQDN_ENABLED=$(echo "${CLUSTER_DESC}" | jq -r '.networkConfig.enableFqdnNetworkPolicy')
 
 if [[ "$DATAPATH" != "ADVANCED_DATAPATH" ]]; then
-  echo "Dataplane V2 check failed! Provider: $DATAPATH"
+  echo "FAILURE: Dataplane V2 check failed! Provider: $DATAPATH"
+  echo "--- DEBUG INFO ---"
+  echo "Dataplane V2 (ADVANCED_DATAPATH) is required for FQDN Network Policies."
+  echo "Full Network Config:"
+  echo "${CLUSTER_DESC}" | jq '.networkConfig'
   exit 1
 fi
 if [[ "$FQDN_ENABLED" != "true" ]]; then
-  echo "FQDN Network Policy check failed! Enabled: $FQDN_ENABLED"
+  echo "FAILURE: FQDN Network Policy check failed! Enabled: $FQDN_ENABLED"
+  echo "--- DEBUG INFO ---"
+  echo "The enableFqdnNetworkPolicy flag must be set to true."
   exit 1
 fi
 echo "Dataplane V2 and FQDN Policy enablement validated."
@@ -56,18 +71,33 @@ echo "Test 3: Verifying FQDNNetworkPolicy Resource..."
 # This template uses v1alpha1 as the primary API version.
 # Wait for the CRD to be available (it can take time for GKE to install it after feature enablement)
 echo "Waiting for FQDNNetworkPolicy CRD to be available..."
+CRD_FOUND=false
 for i in {1..30}; do
   if kubectl get crd fqdnnetworkpolicies.networking.gke.io > /dev/null 2>&1; then
     echo "CRD found!"
+    CRD_FOUND=true
     break
   fi
   echo "Still waiting for CRD (attempt $i/30)..."
   sleep 10
 done
 
+if [[ "$CRD_FOUND" == "false" ]]; then
+  echo "FAILURE: FQDNNetworkPolicy CRD not found after 5 minutes."
+  echo "--- DEBUG INFO ---"
+  kubectl get crd | grep networking.gke.io || true
+  echo "Check if GKE Enterprise is enabled and the cluster is registered to a fleet."
+  exit 1
+fi
+
 # The policy should have been installed by the primary deployment phase (Helm or KCC).
 # We verify its existence here.
-kubectl get fqdnnetworkpolicies.networking.gke.io allow-ai-egress -n "${NAMESPACE}"
+if ! kubectl get fqdnnetworkpolicies.networking.gke.io allow-ai-egress -n "${NAMESPACE}"; then
+  echo "FAILURE: FQDNNetworkPolicy 'allow-ai-egress' not found in namespace ${NAMESPACE}."
+  echo "--- DEBUG INFO ---"
+  kubectl get fqdnnetworkpolicies.networking.gke.io -A || true
+  exit 1
+fi
 echo "FQDNNetworkPolicy resource found and verified."
 
 # 4. Wait for Verifier Pod
@@ -85,10 +115,19 @@ done
 
 if [[ "$POD_FOUND" == "false" ]]; then
   echo "FAILURE: egress-verifier pod was never created!"
+  echo "--- DEBUG INFO ---"
+  kubectl get pods -n "${NAMESPACE}" || true
+  kubectl get events -n "${NAMESPACE}" --sort-by='.lastTimestamp' | tail -n 20 || true
   exit 1
 fi
 
-kubectl wait --for=condition=Ready pod/egress-verifier -n "${NAMESPACE}" --timeout=5m
+if ! kubectl wait --for=condition=Ready pod/egress-verifier -n "${NAMESPACE}" --timeout=5m; then
+  echo "FAILURE: egress-verifier pod failed to become ready."
+  echo "--- DEBUG INFO ---"
+  kubectl describe pod egress-verifier -n "${NAMESPACE}" || true
+  kubectl logs egress-verifier -n "${NAMESPACE}" || true
+  exit 1
+fi
 echo "Verifier pod is ready."
 
 # 5. Egress Tests
@@ -197,6 +236,13 @@ fi
 echo "Testing blocked domain: google.com..."
 if kubectl exec egress-verifier -n "${NAMESPACE}" -- curl -sL -4 --connect-timeout 10 https://google.com > /dev/null 2>&1; then
   echo "FAILURE: google.com is reachable, but should be blocked!"
+  echo "--- DEBUG INFO ---"
+  echo "The Default Deny NetworkPolicy or FQDNNetworkPolicy is not working as expected."
+  echo "Current NetworkPolicies:"
+  kubectl get networkpolicies -n "${NAMESPACE}" || true
+  kubectl get fqdnnetworkpolicies.networking.gke.io -n "${NAMESPACE}" || true
+  echo "Testing connectivity to google.com with verbose output:"
+  kubectl exec egress-verifier -n "${NAMESPACE}" -- curl -v -4 --connect-timeout 10 https://google.com || true
   exit 1
 else
   echo "SUCCESS: google.com is blocked as expected."
