@@ -257,7 +257,7 @@ jobs:
 
   circuit-breaker:
     name: Circuit Breaker
-    needs: [tf-teardown, kcc-validation]
+    needs: [tf-provision, tf-test, tf-teardown, kcc-validation]
     if: always() && (needs.tf-provision.result == 'failure' || needs.tf-test.result == 'failure' || needs.kcc-validation.result == 'failure')
     runs-on: ubuntu-latest
     steps:

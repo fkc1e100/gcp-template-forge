@@ -141,11 +141,15 @@ jobs:
           }
           EOF
 
+      - name: Set Slug
+        id: slug
+        run: echo "template_slug=$(echo ${{ matrix.template }} | tr '/' '-')" >> $GITHUB_OUTPUT
+
       - name: Upload TF results artifact
         if: always() && steps.skip-check.outputs.skip != 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: tf-results-${{ matrix.template }}
+          name: tf-results-${{ steps.slug.outputs.template_slug }}
           path: /tmp/tf-results/result.json
           retention-days: 1
 
@@ -198,11 +202,15 @@ jobs:
           }
           EOF
 
+      - name: Set Slug
+        id: slug
+        run: echo "template_slug=$(echo ${{ matrix.template }} | tr '/' '-')" >> $GITHUB_OUTPUT
+
       - name: Upload KCC results artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: kcc-results-${{ matrix.template }}
+          name: kcc-results-${{ steps.slug.outputs.template_slug }}
           path: /tmp/kcc-results/result.json
           retention-days: 1
 
@@ -233,8 +241,9 @@ jobs:
             COMMIT=${{ github.sha }}
             
             # Fetch results from artifacts if they exist
-            TF_RES="/tmp/artifacts/tf-results-${TEMPLATE}/result.json"
-            KCC_RES="/tmp/artifacts/kcc-results-${TEMPLATE}/result.json"
+            SLUG=$(echo "$TEMPLATE" | tr '/' '-')
+            TF_RES="/tmp/artifacts/tf-results-${SLUG}/result.json"
+            KCC_RES="/tmp/artifacts/kcc-results-${SLUG}/result.json"
             
             TF_STATUS="skipped"; TF_DUR="n/a"
             if [ -f "$TF_RES" ]; then

@@ -15,4 +15,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run actionlint
-        uses: rhysd/actionlint-action@v1
+        uses: reviewdog/action-actionlint@v1
