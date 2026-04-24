@@ -495,7 +495,7 @@ jobs:
         if: failure()
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh pr edit ${{ github.event.number }} --add-label "repo-agent" --repo ${{ github.repository }} && gh run cancel ${{ github.run_id }}
+        run: gh pr edit ${{ github.event.number }} --add-label "repo-agent" --repo ${{ github.repository }} && gh run cancel ${{ github.run_id }} --repo ${{ github.repository }}
 
   # ── 4b. PR: KCC deploy → wait → delete (parallel with deploy-test-tf) ─────
   kcc-apply:
@@ -1431,7 +1431,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.CODEBOT_PAT }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download TF results artifact
         uses: actions/download-artifact@v4
@@ -1679,5 +1679,5 @@ jobs:
         if: steps.resolve-pr.outputs.pr_number != ''
         run: gh pr merge ${{ steps.resolve-pr.outputs.pr_number }} --repo fkc1e100/gcp-template-forge --merge --delete-branch
         env:
-          GITHUB_TOKEN: ${{ secrets.CODEBOT_PAT }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

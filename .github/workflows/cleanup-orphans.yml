@@ -75,16 +75,16 @@ jobs:
 
           echo "Checking for active GitHub Actions runs..."
           # Get list of active/queued runs to avoid deleting their resources
-          ACTIVE_RUNS=$(gh run list --status in_progress --json databaseId -q '.[].databaseId' || true)
-          QUEUED_RUNS=$(gh run list --status queued --json databaseId -q '.[].databaseId' || true)
+          ACTIVE_RUNS=$(gh run list --status in_progress --json databaseId --repo ${{ github.repository }} -q '.[].databaseId' || true)
+          QUEUED_RUNS=$(gh run list --status queued --json databaseId --repo ${{ github.repository }} -q '.[].databaseId' || true)
           
           # Also get commit SHAs for active runs (Terraform uses SHA prefix)
-          ACTIVE_SHAS=$(gh run list --status in_progress --json headSha -q '.[].headSha' | cut -c1-5 || true)
-          QUEUED_SHAS=$(gh run list --status queued --json headSha -q '.[].headSha' | cut -c1-5 || true)
+          ACTIVE_SHAS=$(gh run list --status in_progress --json headSha --repo ${{ github.repository }} -q '.[].headSha' | cut -c1-5 || true)
+          QUEUED_SHAS=$(gh run list --status queued --json headSha --repo ${{ github.repository }} -q '.[].headSha' | cut -c1-5 || true)
           
           # Get last 6 digits of run IDs (resources use this as suffix)
-          ACTIVE_SUFFIXES=$(gh run list --status in_progress --json databaseId -q '.[].databaseId' | awk '{if (length($0) >= 6) print substr($0, length($0)-5); else print $0}' || true)
-          QUEUED_SUFFIXES=$(gh run list --status queued --json databaseId -q '.[].databaseId' | awk '{if (length($0) >= 6) print substr($0, length($0)-5); else print $0}' || true)
+          ACTIVE_SUFFIXES=$(gh run list --status in_progress --json databaseId --repo ${{ github.repository }} -q '.[].databaseId' | awk '{if (length($0) >= 6) print substr($0, length($0)-5); else print $0}' || true)
+          QUEUED_SUFFIXES=$(gh run list --status queued --json databaseId --repo ${{ github.repository }} -q '.[].databaseId' | awk '{if (length($0) >= 6) print substr($0, length($0)-5); else print $0}' || true)
           
           ALL_ACTIVE="$ACTIVE_RUNS $QUEUED_RUNS $ACTIVE_SHAS $QUEUED_SHAS $ACTIVE_SUFFIXES $QUEUED_SUFFIXES"
 
