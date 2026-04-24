@@ -90,7 +90,7 @@ gcloud container clusters get-credentials "$KCC_CLUSTER" --region "$REGION" --pr
 if kubectl cluster-info &>/dev/null; then
   echo "Deleting all KCC-managed resources for orphaned environments..."
   KCC_TYPES="containercluster,computenetwork,computevpc,computesubnetwork,computerouter,computerouternat,computefirewall,storagebucket"
-  KCC_RESOURCES=$(kubectl get "$KCC_TYPES" -n "$KCC_NAMESPACE" -o name | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-kuberay-kueue-multitenant-|gke-inf-fuse-cache-|gke-inference-fuse-|gke-ai-inference-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
+  KCC_RESOURCES=$(kubectl get "$KCC_TYPES" -n "$KCC_NAMESPACE" -o name | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-kuberay-kueue-multitenant-|gke-ray-mt-|gke-inf-fuse-cache-|gke-inference-fuse-|gke-ai-inference-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
   
   echo "$KCC_RESOURCES" | while read -r RES; do
     [ -z "$RES" ] && continue
@@ -168,7 +168,7 @@ fi
 echo "Cleaning up orphaned Networking resources..."
 
 # Firewalls
-FIREWALLS=$(gcloud compute firewall-rules list --project="$PROJECT" --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-kuberay-kueue-multitenant-|gke-inf-fuse-cache-|gke-inference-fuse-|gke-ai-inference-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
+FIREWALLS=$(gcloud compute firewall-rules list --project="$PROJECT" --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-kuberay-kueue-multitenant-|gke-ray-mt-|gke-inf-fuse-cache-|gke-inference-fuse-|gke-ai-inference-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
 echo "$FIREWALLS" | while read -r F; do
   [ -z "$F" ] && continue
   echo "Deleting firewall: $F"
@@ -178,7 +178,7 @@ done
 # 4. Clean up GCS Buckets (non-KCC)
 echo "Searching for orphaned GCS buckets..."
 # Match common patterns used by templates for both TF and KCC paths
-BUCKETS=$(gcloud storage buckets list --project="$PROJECT" --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-kuberay-kueue-multitenant-|gke-inf-fuse-cache-|gke-inference-fuse-|gke-ai-inference-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-|gke-inference-tf-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete|gke-gca-2025-forge-tf-state" || true)
+BUCKETS=$(gcloud storage buckets list --project="$PROJECT" --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-kuberay-kueue-multitenant-|gke-ray-mt-|gke-inf-fuse-cache-|gke-inference-fuse-|gke-ai-inference-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-|gke-inference-tf-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete|gke-gca-2025-forge-tf-state" || true)
 
 echo "$BUCKETS" | while read -r B; do
   [ -z "$B" ] && continue
@@ -203,7 +203,7 @@ done
 REGIONS=$(gcloud compute regions list --project="$PROJECT" --format="value(name)")
 echo "$REGIONS" | while read -r RGN; do
   [ -z "$RGN" ] && continue
-  ROUTERS=$(gcloud compute routers list --project="$PROJECT" --regions="$RGN" --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-kuberay-kueue-multitenant-|gke-inf-fuse-cache-|gke-inference-fuse-|gke-ai-inference-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
+  ROUTERS=$(gcloud compute routers list --project="$PROJECT" --regions="$RGN" --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-kuberay-kueue-multitenant-|gke-ray-mt-|gke-inf-fuse-cache-|gke-inference-fuse-|gke-ai-inference-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
   echo "$ROUTERS" | while read -r R; do
     [ -z "$R" ] && continue
     echo "Checking NATs for router $R in $RGN"
@@ -223,7 +223,7 @@ done
 echo "Waiting for routers to be fully deleted..."
 i=1
 while [ "$i" -le 10 ]; do
-  STILL_THERE=$(gcloud compute routers list --project="$PROJECT" --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-kuberay-kueue-multitenant-|gke-inf-fuse-cache-|gke-inference-fuse-|gke-ai-inference-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" | wc -l)
+  STILL_THERE=$(gcloud compute routers list --project="$PROJECT" --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-kuberay-kueue-multitenant-|gke-ray-mt-|gke-inf-fuse-cache-|gke-inference-fuse-|gke-ai-inference-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" | wc -l)
   if [ "$STILL_THERE" -le 0 ]; then
     echo "All targeted routers deleted."
     break
@@ -236,14 +236,14 @@ done
 # VPN Resources
 echo "$REGIONS" | while read -r RGN; do
   [ -z "$RGN" ] && continue
-  TUNNELS=$(gcloud compute vpn-tunnels list --project="$PROJECT" --regions="$RGN" --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-kuberay-kueue-multitenant-|gke-inf-fuse-cache-|gke-inference-fuse-|gke-ai-inference-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
+  TUNNELS=$(gcloud compute vpn-tunnels list --project="$PROJECT" --regions="$RGN" --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-kuberay-kueue-multitenant-|gke-ray-mt-|gke-inf-fuse-cache-|gke-inference-fuse-|gke-ai-inference-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
   echo "$TUNNELS" | while read -r T; do
     [ -z "$T" ] && continue
     echo "Deleting VPN tunnel: $T in $RGN"
     gcloud compute vpn-tunnels delete "$T" --region="$RGN" --project="$PROJECT" --quiet || true
   done
   
-  VPNS=$(gcloud compute vpn-gateways list --project="$PROJECT" --regions="$RGN" --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-kuberay-kueue-multitenant-|gke-inf-fuse-cache-|gke-inference-fuse-|gke-ai-inference-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
+  VPNS=$(gcloud compute vpn-gateways list --project="$PROJECT" --regions="$RGN" --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-kuberay-kueue-multitenant-|gke-ray-mt-|gke-inf-fuse-cache-|gke-inference-fuse-|gke-ai-inference-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
   echo "$VPNS" | while read -r V; do
     [ -z "$V" ] && continue
     echo "Deleting VPN gateway: $V in $RGN"
@@ -252,7 +252,7 @@ echo "$REGIONS" | while read -r RGN; do
 done
 
 # L7 Resources
-FRULES=$(gcloud compute forwarding-rules list --project="$PROJECT" --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-kuberay-kueue-multitenant-|gke-inf-fuse-cache-|gke-inference-fuse-|gke-ai-inference-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
+FRULES=$(gcloud compute forwarding-rules list --project="$PROJECT" --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-kuberay-kueue-multitenant-|gke-ray-mt-|gke-inf-fuse-cache-|gke-inference-fuse-|gke-ai-inference-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
 echo "$FRULES" | while read -r FR; do
   [ -z "$FR" ] && continue
   echo "Deleting forwarding rule: $FR"
@@ -263,7 +263,7 @@ done
 # Subnets
 echo "$REGIONS" | while read -r RGN; do
   [ -z "$RGN" ] && continue
-  SUBNETS=$(gcloud compute networks subnets list --project="$PROJECT" --regions="$RGN" --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-kuberay-kueue-multitenant-|gke-inf-fuse-cache-|gke-inference-fuse-|gke-ai-inference-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
+  SUBNETS=$(gcloud compute networks subnets list --project="$PROJECT" --regions="$RGN" --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-kuberay-kueue-multitenant-|gke-ray-mt-|gke-inf-fuse-cache-|gke-inference-fuse-|gke-ai-inference-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
   echo "$SUBNETS" | while read -r S; do
     [ -z "$S" ] && continue
     echo "Deleting subnet $S in $RGN"
@@ -272,7 +272,7 @@ echo "$REGIONS" | while read -r RGN; do
 done
 
 # Networks (VPCs)
-NETWORKS=$(gcloud compute networks list --project="$PROJECT" --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-kuberay-kueue-multitenant-|gke-inf-fuse-cache-|gke-inference-fuse-|gke-ai-inference-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
+NETWORKS=$(gcloud compute networks list --project="$PROJECT" --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-kuberay-kueue-multitenant-|gke-ray-mt-|gke-inf-fuse-cache-|gke-inference-fuse-|gke-ai-inference-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
 echo "$NETWORKS" | while read -r N; do
   [ -z "$N" ] && continue
   echo "Initiating deletion of network $N..."
@@ -282,7 +282,7 @@ done
 echo "Waiting for networks to be fully deleted..."
 i=1
 while [ "$i" -le 15 ]; do
-  STILL_THERE=$(gcloud compute networks list --project="$PROJECT" --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-kuberay-kueue-multitenant-|gke-inf-fuse-cache-|gke-inference-fuse-|gke-ai-inference-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" | wc -l)
+  STILL_THERE=$(gcloud compute networks list --project="$PROJECT" --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-kuberay-kueue-multitenant-|gke-ray-mt-|gke-inf-fuse-cache-|gke-inference-fuse-|gke-ai-inference-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" | wc -l)
   if [ "$STILL_THERE" -le 0 ]; then
     echo "All targeted networks deleted."
     break

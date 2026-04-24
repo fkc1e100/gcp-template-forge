@@ -41,6 +41,11 @@ resource "google_compute_network" "vpc" {
   name                    = var.network_name
   auto_create_subnetworks = false
   project                 = var.project_id
+
+  labels = {
+    project  = "gcp-template-forge"
+    template = local.template_label
+  }
 }
 
 # Subnet
@@ -51,6 +56,11 @@ resource "google_compute_subnetwork" "subnet" {
   network                  = google_compute_network.vpc.id
   private_ip_google_access = true
   project                  = var.project_id
+
+  labels = {
+    project  = "gcp-template-forge"
+    template = local.template_label
+  }
 
   secondary_ip_range {
     range_name    = "pods"

@@ -27,6 +27,11 @@ resource "google_compute_network" "gke_kuberay_kueue_multitenant_vpc" {
   name                    = var.network_name
   auto_create_subnetworks = false
   project                 = var.project_id
+
+  labels = {
+    project  = "gcp-template-forge"
+    template = var.uid_suffix != "" ? "gke-kuberay-kueue-multitenant-${var.uid_suffix}" : "gke-kuberay-kueue-multitenant"
+  }
 }
 
 # Subnet
@@ -37,6 +42,11 @@ resource "google_compute_subnetwork" "gke_kuberay_kueue_multitenant_subnet" {
   network                  = google_compute_network.gke_kuberay_kueue_multitenant_vpc.id
   private_ip_google_access = true
   project                  = var.project_id
+
+  labels = {
+    project  = "gcp-template-forge"
+    template = var.uid_suffix != "" ? "gke-kuberay-kueue-multitenant-${var.uid_suffix}" : "gke-kuberay-kueue-multitenant"
+  }
 
   secondary_ip_range {
     range_name    = "pods"
