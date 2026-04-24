@@ -29,6 +29,8 @@ spec:
     machineType: e2-standard-4
     diskSizeGb: 50
     diskType: pd-balanced
+    serviceAccountRef:
+      name: gke-ray-mt-node
     oauthScopes:
     - https://www.googleapis.com/auth/logging.write
     - https://www.googleapis.com/auth/monitoring
@@ -63,6 +65,8 @@ spec:
       count: 1
       gpuDriverInstallationConfig:
         gpuDriverVersion: DEFAULT
+    serviceAccountRef:
+      name: gke-ray-mt-node
     oauthScopes:
     - https://www.googleapis.com/auth/logging.write
     - https://www.googleapis.com/auth/monitoring

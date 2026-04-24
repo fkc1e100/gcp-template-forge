@@ -17,22 +17,22 @@ kind: IAMServiceAccount
 metadata:
   labels:
     project: gcp-template-forge
-    template: gke-inference-fuse-cache
-  name: gke-inf-fuse-node
+    template: gke-kuberay-kueue-multitenant
+  name: gke-ray-mt-node
   namespace: forge-management # UPDATE: Replace with your KCC namespace
 spec:
-  displayName: GKE Node Service Account for Inference FUSE Cache
+  displayName: GKE Node Service Account for Multi-Tenant Ray
 ---
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPolicyMember
 metadata:
   labels:
     project: gcp-template-forge
-    template: gke-inference-fuse-cache
-  name: gke-inf-fuse-node-log-writer
+    template: gke-kuberay-kueue-multitenant
+  name: gke-ray-mt-node-log-writer
   namespace: forge-management # UPDATE: Replace with your KCC namespace
 spec:
-  member: serviceAccount:gke-inf-fuse-node@gca-gke-2025.iam.gserviceaccount.com # UPDATE: Replace with your project ID
+  member: serviceAccount:gke-ray-mt-node@gca-gke-2025.iam.gserviceaccount.com # UPDATE: Replace with your project ID
   role: roles/logging.logWriter
   resourceRef:
     apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
@@ -44,11 +44,11 @@ kind: IAMPolicyMember
 metadata:
   labels:
     project: gcp-template-forge
-    template: gke-inference-fuse-cache
-  name: gke-inf-fuse-node-metric-writer
+    template: gke-kuberay-kueue-multitenant
+  name: gke-ray-mt-node-metric-writer
   namespace: forge-management # UPDATE: Replace with your KCC namespace
 spec:
-  member: serviceAccount:gke-inf-fuse-node@gca-gke-2025.iam.gserviceaccount.com # UPDATE: Replace with your project ID
+  member: serviceAccount:gke-ray-mt-node@gca-gke-2025.iam.gserviceaccount.com # UPDATE: Replace with your project ID
   role: roles/monitoring.metricWriter
   resourceRef:
     apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
@@ -60,11 +60,11 @@ kind: IAMPolicyMember
 metadata:
   labels:
     project: gcp-template-forge
-    template: gke-inference-fuse-cache
-  name: gke-inf-fuse-node-registry-reader
+    template: gke-kuberay-kueue-multitenant
+  name: gke-ray-mt-node-registry-reader
   namespace: forge-management # UPDATE: Replace with your KCC namespace
 spec:
-  member: serviceAccount:gke-inf-fuse-node@gca-gke-2025.iam.gserviceaccount.com # UPDATE: Replace with your project ID
+  member: serviceAccount:gke-ray-mt-node@gca-gke-2025.iam.gserviceaccount.com # UPDATE: Replace with your project ID
   role: roles/artifactregistry.reader
   resourceRef:
     apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1

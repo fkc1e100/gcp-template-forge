@@ -97,6 +97,31 @@ resource "google_container_cluster" "gke_kuberay_kueue_multitenant_cluster" {
   }
 }
 
+# Dedicated Node Service Account for Least Privilege
+resource "google_service_account" "node_sa" {
+  account_id   = "gke-ray-mt-node-${var.uid_suffix}"
+  display_name = "GKE Node Service Account for Multi-Tenant Ray"
+  project      = var.project_id
+}
+
+resource "google_project_iam_member" "node_sa_logging" {
+  project = var.project_id
+  role    = "roles/logging.logWriter"
+  member  = "serviceAccount:${google_service_account.node_sa.email}"
+}
+
+resource "google_project_iam_member" "node_sa_monitoring" {
+  project = var.project_id
+  role    = "roles/monitoring.metricWriter"
+  member  = "serviceAccount:${google_service_account.node_sa.email}"
+}
+
+resource "google_project_iam_member" "node_sa_registry" {
+  project = var.project_id
+  role    = "roles/artifactregistry.reader"
+  member  = "serviceAccount:${google_service_account.node_sa.email}"
+}
+
 # System Node Pool
 resource "google_container_node_pool" "system_nodes" {
   name       = "gke-kuberay-kueue-multitenant-sys"
@@ -114,7 +139,7 @@ resource "google_container_node_pool" "system_nodes" {
     disk_size_gb = 50
     disk_type    = "pd-balanced" # Optimized performance per reviewer request
 
-    service_account = var.service_account
+    service_account = google_service_account.node_sa.email
     oauth_scopes = [
       "https://www.googleapis.com/auth/logging.write",
       "https://www.googleapis.com/auth/monitoring",
@@ -166,7 +191,7 @@ resource "google_container_node_pool" "gpu_nodes" {
     disk_size_gb = 100
     disk_type    = "pd-balanced" # Optimized performance for model caching
 
-    service_account = var.service_account
+    service_account = google_service_account.node_sa.email
     oauth_scopes = [
       "https://www.googleapis.com/auth/logging.write",
       "https://www.googleapis.com/auth/monitoring",
