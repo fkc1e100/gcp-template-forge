@@ -28,11 +28,11 @@ resource "random_id" "bucket_suffix" {
 
 locals {
   uid                = var.uid_suffix != "" ? var.uid_suffix : random_id.bucket_suffix.hex
-  workload_gsa_email = var.service_account
   # Use abbreviated name for resource names to stay under GCP character limits (e.g. 30 for GSA)
   base_name      = "gke-inf-fuse-cache"
   template_label = var.uid_suffix != "" ? "gke-inference-fuse-cache-${var.uid_suffix}" : "gke-inference-fuse-cache"
   ksa_name       = "${local.base_name}-${local.uid}-sa"
+  gsa_name       = "${local.base_name}-${local.uid}-sa"
   bucket_name    = "${local.base_name}-tf-${local.uid}-bucket"
 }
 
@@ -247,18 +247,29 @@ resource "google_container_node_pool" "system_pool" {
   }
 }
 
-# IAM for Workload Identity
-# Grant the Kubernetes Service Account direct permissions on the bucket.
-# This avoids the need for the KSA to impersonate a GSA, which can be
-# problematic in some CI environments. This is a resource-level binding.
-resource "google_storage_bucket_iam_member" "bucket_admin_ksa" {
-  bucket = google_storage_bucket.model_bucket.name
-  role   = "roles/storage.objectAdmin"
-  member = "serviceAccount:${var.project_id}.svc.id.goog[default/${local.ksa_name}]"
+# Google Service Account for Workload Identity
+resource "google_service_account" "workload_gsa" {
+  account_id   = local.gsa_name
+  display_name = "GSA for GKE Inference FUSE Cache Template"
+  project      = var.project_id
 }
 
-# Also grant permissions to the node's GSA as a fallback (optional but helps robustness)
+# IAM for Workload Identity: Bind KSA to GSA
+resource "google_service_account_iam_member" "workload_identity_binding" {
+  service_account_id = google_service_account.workload_gsa.name
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "serviceAccount:${var.project_id}.svc.id.goog[default/${local.ksa_name}]"
+}
+
+# IAM for GSA: Grant bucket permissions
 resource "google_storage_bucket_iam_member" "bucket_admin_gsa" {
+  bucket = google_storage_bucket.model_bucket.name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${google_service_account.workload_gsa.email}"
+}
+
+# Also grant permissions to the node's GSA as a fallback
+resource "google_storage_bucket_iam_member" "bucket_admin_node_gsa" {
   bucket = google_storage_bucket.model_bucket.name
   role   = "roles/storage.objectAdmin"
   member = "serviceAccount:${var.service_account}"
@@ -285,7 +296,7 @@ resource "local_file" "helm_values" {
 ${yamlencode({
   templateName           = local.template_label
   bucketName             = google_storage_bucket.model_bucket.name
-  gcpServiceAccountEmail = ""
+  gcpServiceAccountEmail = google_service_account.workload_gsa.email
   serviceAccount = {
     name = local.ksa_name
   }

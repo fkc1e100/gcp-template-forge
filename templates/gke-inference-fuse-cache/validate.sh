@@ -22,6 +22,42 @@ REGION=${REGION:-"us-central1"}
 NAMESPACE=${NAMESPACE:-"default"}
 BUCKET_NAME_BASE="gke-inference-fuse-cache"
 
+# Isolate KUBECONFIG
+export KUBECONFIG=$(mktemp)
+trap 'rm -f "$KUBECONFIG"' EXIT
+
+# Helper for debugging failures
+debug_failure() {
+  local msg=$1
+  echo "Error: $msg"
+  echo "=== Debug Info: Nodes ==="
+  kubectl get nodes
+  echo "=== Debug Info: Pods (all) ==="
+  kubectl get pods -A
+  echo "=== Debug Info: Events (all) ==="
+  kubectl get events -A --sort-by='.lastTimestamp' | tail -n 50
+  
+  # Try to find the staging job pod
+  local STAGING_POD=$(kubectl get pods -n ${NAMESPACE} -l component=staging -o name 2>/dev/null | head -n 1)
+  if [ -n "${STAGING_POD}" ]; then
+    echo "=== Debug Info: Staging Pod Describe (${STAGING_POD}) ==="
+    kubectl describe ${STAGING_POD} -n ${NAMESPACE}
+    echo "=== Debug Info: Staging Pod Logs (${STAGING_POD}) ==="
+    kubectl logs ${STAGING_POD} -n ${NAMESPACE} || echo "Could not fetch logs"
+  fi
+
+  # Try to find the vllm pod
+  local VLLM_POD=$(kubectl get pods -n ${NAMESPACE} -l app=vllm -o name 2>/dev/null | head -n 1)
+  if [ -n "${VLLM_POD}" ]; then
+    echo "=== Debug Info: vLLM Pod Describe (${VLLM_POD}) ==="
+    kubectl describe ${VLLM_POD} -n ${NAMESPACE}
+    echo "=== Debug Info: vLLM Pod Logs (${VLLM_POD}) ==="
+    kubectl logs ${VLLM_POD} -n ${NAMESPACE} -c vllm-openai --tail=100 || echo "Could not fetch logs"
+  fi
+  
+  exit 1
+}
+
 # 0. Cluster Detection
 if [ -z "${CLUSTER_NAME}" ]; then
   echo "CLUSTER_NAME not set, attempting to detect cluster..."
@@ -56,52 +92,49 @@ fi
 # 0a. Template Label Detection
 # Detect the unique template label used for this run (to handle CI suffixes)
 TEMPLATE_LABEL="gke-inference-fuse-cache"
+SUFFIX=""
 
 if [[ "${CLUSTER_NAME}" == *"-"* ]]; then
   # Try to extract suffix from cluster name (e.g. gke-inf-fuse-cache-123456-tf)
   SUFFIX=$(echo ${CLUSTER_NAME} | grep -oE "[0-9]{6}" || true)
   if [ -n "${SUFFIX}" ]; then
-    # Try finding pods with this suffix in their template label
-    # First try the standard name, then fallback to any label containing the suffix if needed
-    PODS_EXIST=$(kubectl get pods --all-namespaces -l template=${TEMPLATE_LABEL}-${SUFFIX} -o name 2>/dev/null)
-    if [ -n "${PODS_EXIST}" ]; then
-      TEMPLATE_LABEL="${TEMPLATE_LABEL}-${SUFFIX}"
-      echo "Detected unique template label: ${TEMPLATE_LABEL}"
-    fi
+    TEMPLATE_LABEL="${TEMPLATE_LABEL}-${SUFFIX}"
+    echo "Detected unique template label: ${TEMPLATE_LABEL}"
   fi
 fi
 
 # Detect Bucket Name
 if [ -z "${BUCKET_NAME}" ]; then
   echo "Attempting to detect bucket..."
-  # Try specific names based on cluster type
-  if [[ "${CLUSTER_NAME}" == *"-tf" ]]; then
-    DETECTED_BUCKET=$(gcloud storage buckets list --project ${PROJECT_ID} --filter="name ~ gke-inference-fuse-cache-tf.*-bucket OR name ~ gke-inf-fuse-cache-tf.*-bucket" --format="value(name)" --limit 1)
-  elif [[ "${CLUSTER_NAME}" == *"-kcc" ]]; then
-    DETECTED_BUCKET=$(gcloud storage buckets list --project ${PROJECT_ID} --filter="name ~ gke-inference-fuse-cache.*-kcc-bucket OR name ~ gke-inf-fuse-cache.*-kcc-bucket" --format="value(name)" --limit 1)
+  # Prefer bucket matching the unique suffix if available
+  if [ -n "${SUFFIX}" ]; then
+    BUCKET_NAME=$(gcloud storage buckets list --project ${PROJECT_ID} --filter="name ~ .*${SUFFIX}.*" --format="value(name)" --limit 1)
   fi
   
-  # Fallback to general detection
-  if [ -z "${DETECTED_BUCKET}" ]; then
-    DETECTED_BUCKET=$(gcloud storage buckets list --project ${PROJECT_ID} --filter="name ~ ${BUCKET_NAME_BASE}.*-bucket OR name ~ gke-inf-fuse-cache.*-bucket" --format="value(name)" --limit 1)
+  if [ -z "${BUCKET_NAME}" ]; then
+    # Fallback to general detection
+    if [[ "${CLUSTER_NAME}" == *"-tf" ]]; then
+      BUCKET_NAME=$(gcloud storage buckets list --project ${PROJECT_ID} --filter="name ~ gke-inference-fuse-cache-tf.*-bucket OR name ~ gke-inf-fuse-cache-tf.*-bucket" --format="value(name)" --limit 1)
+    elif [[ "${CLUSTER_NAME}" == *"-kcc" ]]; then
+      BUCKET_NAME=$(gcloud storage buckets list --project ${PROJECT_ID} --filter="name ~ gke-inference-fuse-cache.*-kcc-bucket OR name ~ gke-inf-fuse-cache.*-kcc-bucket" --format="value(name)" --limit 1)
+    fi
+  fi
+  
+  if [ -z "${BUCKET_NAME}" ]; then
+    BUCKET_NAME=$(gcloud storage buckets list --project ${PROJECT_ID} --filter="name ~ ${BUCKET_NAME_BASE}.*-bucket OR name ~ gke-inf-fuse-cache.*-bucket" --format="value(name)" --limit 1)
   fi
 
-  if [ -n "${DETECTED_BUCKET}" ]; then
-    BUCKET_NAME="${DETECTED_BUCKET}"
+  if [ -n "${BUCKET_NAME}" ]; then
     echo "Detected bucket: ${BUCKET_NAME}"
   else
     echo "WARNING: Could not detect bucket with base name ${BUCKET_NAME_BASE}"
   fi
 fi
 
-# Isolate KUBECONFIG
-export KUBECONFIG=$(mktemp)
-trap 'rm -f "$KUBECONFIG"' EXIT
-
 # 1. Cluster Connectivity
 echo "Test 1: Cluster Connectivity..."
 gcloud container clusters get-credentials ${CLUSTER_NAME} --region ${REGION} --project ${PROJECT_ID}
-kubectl cluster-info
+kubectl cluster-info || debug_failure "Failed to connect to cluster"
 echo "Connectivity passed."
 
 # 2. GCS FUSE CSI Driver Check
@@ -139,8 +172,6 @@ if [ -z "${JOB_NAME}" ]; then
     JOB_NAME="release-vllm-inference-stage"
   elif kubectl get job vllm-inference-stage -n ${NAMESPACE} >/dev/null 2>&1; then
     JOB_NAME="vllm-inference-stage"
-  elif kubectl get job stage-model -n ${NAMESPACE} >/dev/null 2>&1; then
-    JOB_NAME="stage-model"
   fi
 fi
 
@@ -150,11 +181,11 @@ if [ -z "${JOB_NAME}" ]; then
 fi
 
 echo "Waiting for staging Job ${JOB_NAME}..."
-kubectl wait --for=condition=complete job/${JOB_NAME} -n ${NAMESPACE} --timeout=90m
+kubectl wait --for=condition=complete job/${JOB_NAME} -n ${NAMESPACE} --timeout=45m || debug_failure "Staging Job failed to complete within 45m"
 echo "Staging Job complete."
 
 echo "Waiting for deployment ${DEPLOY_NAME}..."
-kubectl wait --for=condition=available deployment/${DEPLOY_NAME} -n ${NAMESPACE} --timeout=30m
+kubectl wait --for=condition=available deployment/${DEPLOY_NAME} -n ${NAMESPACE} --timeout=15m || debug_failure "Deployment failed to become available"
 echo "Workload is available."
 
 # 5. Sidecar and Mount Verification
@@ -163,84 +194,39 @@ echo "Test 5: Sidecar and Mount Verification..."
 POD_NAME=$(kubectl get pods -n ${NAMESPACE} -l app=vllm,template=${TEMPLATE_LABEL} -o jsonpath='{.items[?(@.status.phase=="Running")].metadata.name}' | awk '{print $1}')
 
 if [ -z "$POD_NAME" ]; then
-  echo "ERROR: Could not find a running vLLM pod. Checking all pods with app=vllm:"
-  kubectl get pods -n ${NAMESPACE} -l app=vllm
-  exit 1
+  debug_failure "Could not find a running vLLM pod"
 fi
 
 echo "Using pod: ${POD_NAME}"
-
-# Check for gcs-fuse sidecar
-# Note: In GKE 1.29+, sidecar containers are a native feature.
-# The driver might also inject it as a regular container.
-SIDECAR_EXISTS=$(kubectl get pod ${POD_NAME} -n ${NAMESPACE} -o jsonpath='{.spec.containers[*].name}' | grep "gke-gcsfuse-sidecar" || true)
-if [ -z "$SIDECAR_EXISTS" ]; then
-  # In recent GKE, the sidecar is injected. Let's check initContainers too or just look for the mount
-  echo "GCS FUSE Sidecar not found in pod containers. Checking mount point..."
-fi
 
 # Check mount point
 echo "Checking mount point /models..."
 MOUNT_CHECK=$(kubectl exec ${POD_NAME} -n ${NAMESPACE} -c vllm-openai -- df -T /models | grep "fuse" || true)
 
 if [ -z "$MOUNT_CHECK" ]; then
-  echo "GCS FUSE mount point /models not found or incorrect type!"
-  echo "Debugging information:"
-  echo "--- Mounts in pod ---"
-  kubectl exec ${POD_NAME} -n ${NAMESPACE} -c vllm-openai -- mount | grep "/models" || echo "/models not found in mount output"
-  echo "--- Filesystem types ---"
-  kubectl exec ${POD_NAME} -n ${NAMESPACE} -c vllm-openai -- df -T
-  exit 1
+  debug_failure "GCS FUSE mount point /models not found or incorrect type"
 fi
 echo "GCS FUSE mount point /models verified."
 
 # 6. Resource Isolation and Security Verification
 echo "Test 6: Resource Isolation and Security Verification..."
-# Detect names if they have prefixes from Helm
-if kubectl get resourcequota -n ${NAMESPACE} -l template=${TEMPLATE_LABEL} >/dev/null 2>&1; then
-  echo "ResourceQuota verified."
-else
-  echo "ERROR: ResourceQuota with template label ${TEMPLATE_LABEL} not found!"
-  exit 1
-fi
-
-if kubectl get limitrange -n ${NAMESPACE} -l template=${TEMPLATE_LABEL} >/dev/null 2>&1; then
-  echo "LimitRange verified."
-else
-  echo "ERROR: LimitRange with template label ${TEMPLATE_LABEL} not found!"
-  exit 1
-fi
-
-if kubectl get networkpolicy -n ${NAMESPACE} -l template=${TEMPLATE_LABEL} >/dev/null 2>&1; then
-  echo "NetworkPolicy verified."
-else
-  echo "ERROR: NetworkPolicy with template label ${TEMPLATE_LABEL} not found!"
-  exit 1
-fi
+kubectl get resourcequota -n ${NAMESPACE} -l template=${TEMPLATE_LABEL} >/dev/null 2>&1 || debug_failure "ResourceQuota missing"
+kubectl get limitrange -n ${NAMESPACE} -l template=${TEMPLATE_LABEL} >/dev/null 2>&1 || debug_failure "LimitRange missing"
+kubectl get networkpolicy -n ${NAMESPACE} -l template=${TEMPLATE_LABEL} >/dev/null 2>&1 || debug_failure "NetworkPolicy missing"
 echo "Resource isolation and security verified."
 
 # 7. GPU Check
 echo "Test 7: GPU Check..."
-# Try nvidia-smi first, fallback to checking device file for dummy images (which don't have nvidia-smi in PATH)
-# We use sh -c to avoid kubectl exec failing if the binary is missing, and 2>&1 to capture all output.
 GPU_CHECK=$(kubectl exec ${POD_NAME} -n ${NAMESPACE} -- sh -c "nvidia-smi -L 2>/dev/null || ls /dev/nvidia0 2>/dev/null" || true)
 if [ -z "$GPU_CHECK" ]; then
-  echo "NVIDIA GPU not detected in pod!"
-  # List /dev to see what is there
-  echo "--- Contents of /dev in pod ---"
-  kubectl exec ${POD_NAME} -n ${NAMESPACE} -- ls /dev || true
-  exit 1
+  debug_failure "NVIDIA GPU not detected in pod"
 fi
 echo "GPU verified: $GPU_CHECK"
 
 # 8. vLLM API Health Check
 echo "Test 8: vLLM API Health Check..."
-
-# Wait a bit for vLLM to initialize (it might be slow even after pod is available)
-MAX_RETRIES=12
+MAX_RETRIES=20
 RETRY_COUNT=0
-# Use python3 as a robust health check in the dummy image.
-# If python3 is missing, fallback to /health check via any available tool.
 CHECK_CMD="python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\" 2>/dev/null || wget -qO- http://localhost:8000/health 2>/dev/null || curl -s http://localhost:8000/health"
 until kubectl exec ${POD_NAME} -n ${NAMESPACE} -- sh -c "$CHECK_CMD" >/dev/null 2>&1 || [ $RETRY_COUNT -eq $MAX_RETRIES ]; do
   echo "Waiting for vLLM API... ($RETRY_COUNT/$MAX_RETRIES)"
@@ -249,12 +235,8 @@ until kubectl exec ${POD_NAME} -n ${NAMESPACE} -- sh -c "$CHECK_CMD" >/dev/null 
 done
 
 if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
-  echo "vLLM API health check failed after $MAX_RETRIES retries!"
-  # Print some logs to help debugging
-  kubectl logs ${POD_NAME} -n ${NAMESPACE} --tail=20
-  exit 1
+  debug_failure "vLLM API health check failed after $MAX_RETRIES retries"
 fi
 echo "vLLM API is healthy."
 
 echo "All GKE Inference FUSE Cache Validation Tests passed successfully!"
-
