@@ -270,8 +270,8 @@ resource "local_file" "helm_values" {
 # limitations under the License.
 
 ${yamlencode({
-  templateName   = local.template_label
-  bucketName     = google_storage_bucket.model_bucket.name
+  templateName = local.template_label
+  bucketName   = google_storage_bucket.model_bucket.name
   serviceAccount = {
     name = local.ksa_name
   }
