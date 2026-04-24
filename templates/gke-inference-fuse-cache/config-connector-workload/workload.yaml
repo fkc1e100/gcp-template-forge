@@ -113,8 +113,12 @@ spec:
           readOnly: true
         resources:
           limits:
+            cpu: "2"
+            memory: "4Gi"
             nvidia.com/gpu: 1
           requests:
+            cpu: "2"
+            memory: "4Gi"
             nvidia.com/gpu: 1
       volumes:
       - name: gcs-fuse-csi-ephemeral
