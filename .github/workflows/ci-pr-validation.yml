@@ -131,7 +131,7 @@ jobs:
           export TF_VAR_uid_suffix="${UID_SUFFIX}"
           
           terraform init \
-            -backend-config="bucket=$TF_STATE_BUCKET" \
+            -backend-config="bucket=${TF_STATE_BUCKET}" \
             -backend-config="prefix=${TEMPLATE}-${{ github.run_id }}/terraform-helm"
           
           REGIONS=("us-central1" "us-east1" "us-west1")

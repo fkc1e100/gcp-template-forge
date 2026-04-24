@@ -96,7 +96,7 @@ jobs:
           export TF_VAR_network_name="${BASE_NAME}-${UID_SUFFIX}-tf-vpc"
           export TF_VAR_subnet_name="${BASE_NAME}-${UID_SUFFIX}-tf-subnet"
           export TF_VAR_uid_suffix="${UID_SUFFIX}"
-          terraform init -backend-config="bucket=$TF_STATE_BUCKET" -backend-config="prefix=${TEMPLATE}-post-merge/terraform-helm"
+          terraform init -backend-config="bucket=${TF_STATE_BUCKET}" -backend-config="prefix=${TEMPLATE}-post-merge/terraform-helm"
           
           REGIONS=("us-central1" "us-east1" "us-west1")
           SUCCESS=false

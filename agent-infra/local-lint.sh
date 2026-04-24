@@ -48,7 +48,8 @@ echo "$TEMPLATES" | while read -r template; do
   fi
 
   # Check for non-standard directories
-  for bad in Terraform_HELM terraform_helm terraform-HELM helm Helm terraform manifests; do
+  echo "Terraform_HELM terraform_helm terraform-HELM helm Helm terraform manifests" | tr ' ' '\n' | while read -r bad; do
+    [ -z "$bad" ] && continue
     if [ -d "${template}/${bad}" ]; then
       echo "ERROR: Found non-standard directory '${template_name}/${bad}/' -- use 'terraform-helm/' and 'config-connector/'"
       exit 1
@@ -103,10 +104,10 @@ done
 
 # 3. YAML syntax check (KCC and other plain YAML)
 echo "Checking YAML syntax (excluding Helm templates)..."
-python3 -c "
-import yaml, sys, pathlib
+TARGET_DIR="$TARGET_DIR" python3 -c "
+import yaml, sys, pathlib, os
 errors = []
-target = '$TARGET_DIR'
+target = os.environ.get('TARGET_DIR', '.')
 for p in pathlib.Path(target).rglob('*.yaml'):
     if '.terraform' in str(p): continue
     # Skip Helm templates as they contain Go template directives

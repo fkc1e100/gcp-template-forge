@@ -25,7 +25,7 @@ gcloud version
 
 # 0. Quota Check (Before)
 echo "Capturing Quota Status before cleanup..."
-gcloud compute project-info describe --project=$PROJECT --format="json" > /tmp/quota_before.json || true
+gcloud compute project-info describe --project="$PROJECT" --format="json" > /tmp/quota_before.json || true
 
 echo "Current Quota Status (Before Cleanup):"
 python3 -c "import sys, json; data = json.load(open('/tmp/quota_before.json')); print(f\"{'Metric':<40} {'Usage':<10} {'Limit':<10}\"); print('-'*60); [print(f\"{q.get('metric','N/A'):<40} {q.get('usage',0):<10.1f} {q.get('limit',0):<10.1f}\") for q in data.get('quotas', []) if q.get('usage', 0) > 0]" || true
@@ -85,7 +85,7 @@ fi
 
 # 1. Clean up KCC Clusters and other resources FIRST
 echo "Connecting to Management Cluster..."
-gcloud container clusters get-credentials $KCC_CLUSTER --region $REGION --project $PROJECT 2>/dev/null || echo "Failed to get KCC credentials, skipping KCC cleanup"
+gcloud container clusters get-credentials "$KCC_CLUSTER" --region "$REGION" --project "$PROJECT" 2>/dev/null || echo "Failed to get KCC credentials, skipping KCC cleanup"
 
 if kubectl cluster-info &>/dev/null; then
   echo "Deleting all KCC-managed resources for orphaned environments..."
@@ -116,7 +116,7 @@ fi
 # 2. Clean up GKE Clusters (Terraform)
 echo "Searching for orphaned Terraform clusters..."
 TF_CLUSTERS=$(gcloud container clusters list \
-  --project=$PROJECT \
+  --project="$PROJECT" \
   --filter="(resourceLabels.project=gcp-template-forge OR name ~ latest-gke-features- OR name ~ enterprise-gke- OR name ~ basic-gke- OR name ~ gke- OR name ~ gke-topology-aware-routing-) AND name != $KCC_CLUSTER" \
   --format="value(name, zone.scope(), resourceLabels.template)")
 
@@ -151,14 +151,16 @@ done <<< "$TF_CLUSTERS"
 
 if [ "$DELETED_CLUSTERS" = true ]; then
   echo "Waiting for clusters to be deleted (up to 10 minutes)..."
-  for i in {1..20}; do
-    STILL_THERE=$(gcloud container clusters list --project=$PROJECT --filter="(resourceLabels.project=gcp-template-forge OR name ~ latest-gke-features- OR name ~ enterprise-gke- OR name ~ basic-gke- OR name ~ gke- OR name ~ gke-topology-aware-routing-) AND name != $KCC_CLUSTER" --format="value(name)" 2>/dev/null | wc -l || echo "0")
+  i=1
+  while [ "$i" -le 20 ]; do
+    STILL_THERE=$(gcloud container clusters list --project="$PROJECT" --filter="(resourceLabels.project=gcp-template-forge OR name ~ latest-gke-features- OR name ~ enterprise-gke- OR name ~ basic-gke- OR name ~ gke- OR name ~ gke-topology-aware-routing-) AND name != $KCC_CLUSTER" --format="value(name)" 2>/dev/null | wc -l || echo "0")
     if [ "$STILL_THERE" -le 0 ]; then
       echo "All clusters deleted."
       break
     fi
     echo "Waiting... ($STILL_THERE clusters remaining)"
     sleep 30
+    i=$((i + 1))
   done
 fi
 
@@ -219,14 +221,16 @@ echo "$REGIONS" | while read -r RGN; do
 done
 
 echo "Waiting for routers to be fully deleted..."
-for i in {1..10}; do
-  STILL_THERE=$(gcloud compute routers list --project=$PROJECT --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-inf-fuse-cache-|gke-inference-fuse-|gke-ai-inference-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" | wc -l)
+i=1
+while [ "$i" -le 10 ]; do
+  STILL_THERE=$(gcloud compute routers list --project="$PROJECT" --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-inf-fuse-cache-|gke-inference-fuse-|gke-ai-inference-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" | wc -l)
   if [ "$STILL_THERE" -le 0 ]; then
     echo "All targeted routers deleted."
     break
   fi
   echo "Waiting for routers... ($STILL_THERE remaining)"
   sleep 15
+  i=$((i + 1))
 done
 
 # VPN Resources
@@ -253,7 +257,7 @@ echo "$FRULES" | while read -r FR; do
   [ -z "$FR" ] && continue
   echo "Deleting forwarding rule: $FR"
   gcloud compute forwarding-rules delete "$FR" --project="$PROJECT" --global --quiet 2>/dev/null || \
-  gcloud compute forwarding-rules delete "$FR" --project="$PROJECT" --region="$RGN" --quiet || true
+  gcloud compute forwarding-rules delete "$FR" --project="$PROJECT" --region="$REGION" --quiet || true
 done
 
 # Subnets
@@ -276,19 +280,21 @@ echo "$NETWORKS" | while read -r N; do
 done
 
 echo "Waiting for networks to be fully deleted..."
-for i in {1..15}; do
-  STILL_THERE=$(gcloud compute networks list --project=$PROJECT --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-inf-fuse-cache-|gke-inference-fuse-|gke-ai-inference-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" | wc -l)
+i=1
+while [ "$i" -le 15 ]; do
+  STILL_THERE=$(gcloud compute networks list --project="$PROJECT" --format="value(name)" | grep -E "latest-gke-features-|enterprise-gke-|basic-gke-|gke-inf-fuse-cache-|gke-inference-fuse-|gke-ai-inference-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" | wc -l)
   if [ "$STILL_THERE" -le 0 ]; then
     echo "All targeted networks deleted."
     break
   fi
   echo "Waiting for $STILL_THERE networks to delete... ($i/15)"
   sleep 20
+  i=$((i + 1))
 done
 
 # 4. Quota Check (After) and Comparison
 echo "Capturing Quota Status after cleanup..."
-gcloud compute project-info describe --project=$PROJECT --format="json" > /tmp/quota_after.json || true
+gcloud compute project-info describe --project="$PROJECT" --format="json" > /tmp/quota_after.json || true
 
 echo "Quota Comparison (Before vs After):"
 python3 << 'EOF' || true
@@ -324,7 +330,7 @@ for metric in sorted(all_metrics):
     diff = a_usage - b_usage
     
     if b_usage > 0 or a_usage > 0 or diff != 0:
-        print(f"{metric:<40} {b_usage:<10.1f} {a_usage:<10.1f} {diff:<10.1f} {limit:<10.1f}")
+        print(f\"{metric:<40} {b_usage:<10.1f} {a_usage:<10.1f} {diff:<10.1f} {limit:<10.1f}\")
 EOF
 
 echo "=== Cleanup Complete ==="
