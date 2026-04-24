@@ -150,7 +150,7 @@ if [ -z "${JOB_NAME}" ]; then
 fi
 
 echo "Waiting for staging Job ${JOB_NAME}..."
-kubectl wait --for=condition=complete job/${JOB_NAME} -n ${NAMESPACE} --timeout=60m
+kubectl wait --for=condition=complete job/${JOB_NAME} -n ${NAMESPACE} --timeout=90m
 echo "Staging Job complete."
 
 echo "Waiting for deployment ${DEPLOY_NAME}..."
