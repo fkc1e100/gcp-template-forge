@@ -26,31 +26,6 @@ locals {
   template_label = var.uid_suffix != "" ? "gke-kuberay-kueue-multitenant-${var.uid_suffix}" : "gke-kuberay-kueue-multitenant"
 }
 
-# Dedicated Node Service Account for Least Privilege
-resource "google_service_account" "node_sa" {
-  account_id   = "gke-ray-multitenant-node-${var.uid_suffix}"
-  display_name = "Node Service Account for GKE Multi-Tenant Ray"
-  project      = var.project_id
-}
-
-resource "google_project_iam_member" "node_sa_logging" {
-  project = var.project_id
-  role    = "roles/logging.logWriter"
-  member  = "serviceAccount:${google_service_account.node_sa.email}"
-}
-
-resource "google_project_iam_member" "node_sa_monitoring" {
-  project = var.project_id
-  role    = "roles/monitoring.metricWriter"
-  member  = "serviceAccount:${google_service_account.node_sa.email}"
-}
-
-resource "google_project_iam_member" "node_sa_registry" {
-  project = var.project_id
-  role    = "roles/artifactregistry.reader"
-  member  = "serviceAccount:${google_service_account.node_sa.email}"
-}
-
 # VPC Network
 resource "google_compute_network" "gke_kuberay_kueue_multitenant_vpc" {
   name                    = var.network_name
@@ -139,7 +114,7 @@ resource "google_container_node_pool" "system_nodes" {
     disk_size_gb = 50
     disk_type    = "pd-balanced" # Optimized performance per reviewer request
 
-    service_account = google_service_account.node_sa.email
+    service_account = var.service_account
     oauth_scopes    = ["https://www.googleapis.com/auth/cloud-platform"]
 
     labels = {
@@ -187,7 +162,7 @@ resource "google_container_node_pool" "gpu_nodes" {
     disk_size_gb = 100
     disk_type    = "pd-balanced" # Optimized performance for model caching
 
-    service_account = google_service_account.node_sa.email
+    service_account = var.service_account
     oauth_scopes    = ["https://www.googleapis.com/auth/cloud-platform"]
 
     guest_accelerator {

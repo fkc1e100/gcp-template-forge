@@ -1,67 +1,17 @@
 # Copyright 2026 Google LLC
 #
-# Licensed under the Apache License, Version 2.0 (the \"License\");
+# Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #      http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an \"AS IS\" BASIS,
+# distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: iam.cnrm.cloud.google.com/v1beta1
-kind: IAMServiceAccount
-metadata:
-  labels:
-    project: gcp-template-forge
-    template: gke-inference-fuse-cache
-  name: gke-inf-fuse-node
-  namespace: forge-management # UPDATE: Replace with your KCC namespace
-spec:
-  displayName: Node Service Account for GKE Inference FUSE Cache
----
-apiVersion: iam.cnrm.cloud.google.com/v1beta1
-kind: IAMPolicyMember
-metadata:
-  name: gke-inf-fuse-node-logging
-  namespace: forge-management # UPDATE: Replace with your KCC namespace
-spec:
-  member: serviceAccount:gke-inf-fuse-node@gca-gke-2025.iam.gserviceaccount.com # UPDATE: Replace with your project ID
-  role: roles/logging.logWriter
-  resourceRef:
-    apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
-    kind: Project
-    external: gca-gke-2025 # UPDATE: Replace with your project ID
----
-apiVersion: iam.cnrm.cloud.google.com/v1beta1
-kind: IAMPolicyMember
-metadata:
-  name: gke-inf-fuse-node-monitoring
-  namespace: forge-management # UPDATE: Replace with your KCC namespace
-spec:
-  member: serviceAccount:gke-inf-fuse-node@gca-gke-2025.iam.gserviceaccount.com # UPDATE: Replace with your project ID
-  role: roles/monitoring.metricWriter
-  resourceRef:
-    apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
-    kind: Project
-    external: gca-gke-2025 # UPDATE: Replace with your project ID
----
-apiVersion: iam.cnrm.cloud.google.com/v1beta1
-kind: IAMPolicyMember
-metadata:
-  name: gke-inf-fuse-node-registry
-  namespace: forge-management # UPDATE: Replace with your KCC namespace
-spec:
-  member: serviceAccount:gke-inf-fuse-node@gca-gke-2025.iam.gserviceaccount.com # UPDATE: Replace with your project ID
-  role: roles/artifactregistry.reader
-  resourceRef:
-    apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
-    kind: Project
-    external: gca-gke-2025 # UPDATE: Replace with your project ID
----
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPolicyMember
 metadata:
