@@ -109,6 +109,13 @@ done
 
 if [[ "$SUCCESS" == "false" ]]; then
   echo "FAILURE: anthropic.com is NOT reachable after $MAX_RETRIES attempts."
+  # Debug: dump policy status and DNS resolution
+  echo "--- DEBUG INFO ---"
+  kubectl get fqdnnetworkpolicies.networking.gke.io allow-ai-egress -n "${NAMESPACE}" -o yaml || true
+  echo "Checking pod status and labels..."
+  kubectl get pod egress-verifier -n "${NAMESPACE}" --show-labels || true
+  echo "Attempting a direct curl with verbose output..."
+  kubectl exec egress-verifier -n "${NAMESPACE}" -- curl -v -4 --connect-timeout 10 https://anthropic.com || echo "kubectl exec failed"
   exit 1
 fi
 
@@ -153,6 +160,13 @@ done
 
 if [[ "$SUCCESS" == "false" ]]; then
   echo "FAILURE: huggingface.co is NOT reachable after $MAX_RETRIES attempts."
+  # Debug: dump policy status and DNS resolution
+  echo "--- DEBUG INFO ---"
+  kubectl get fqdnnetworkpolicies.networking.gke.io allow-ai-egress -n "${NAMESPACE}" -o yaml || true
+  echo "Checking pod status and labels..."
+  kubectl get pod egress-verifier -n "${NAMESPACE}" --show-labels || true
+  echo "Attempting a direct curl with verbose output..."
+  kubectl exec egress-verifier -n "${NAMESPACE}" -- curl -v -4 --connect-timeout 10 https://huggingface.co || echo "kubectl exec failed"
   exit 1
 fi
 
@@ -170,6 +184,13 @@ done
 
 if [[ "$SUCCESS" == "false" ]]; then
   echo "FAILURE: hf.co is NOT reachable after $MAX_RETRIES attempts."
+  # Debug: dump policy status and DNS resolution
+  echo "--- DEBUG INFO ---"
+  kubectl get fqdnnetworkpolicies.networking.gke.io allow-ai-egress -n "${NAMESPACE}" -o yaml || true
+  echo "Checking pod status and labels..."
+  kubectl get pod egress-verifier -n "${NAMESPACE}" --show-labels || true
+  echo "Attempting a direct curl with verbose output..."
+  kubectl exec egress-verifier -n "${NAMESPACE}" -- curl -v -4 --connect-timeout 10 https://hf.co || echo "kubectl exec failed"
   exit 1
 fi
 
