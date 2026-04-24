@@ -38,11 +38,6 @@ resource "google_compute_subnetwork" "gke_kuberay_kueue_multitenant_subnet" {
   private_ip_google_access = true
   project                  = var.project_id
 
-  labels = {
-    project  = "gcp-template-forge"
-    template = var.uid_suffix != "" ? "gke-kuberay-kueue-multitenant-${var.uid_suffix}" : "gke-kuberay-kueue-multitenant"
-  }
-
   secondary_ip_range {
     range_name    = "pods"
     ip_cidr_range = "10.4.0.0/14"

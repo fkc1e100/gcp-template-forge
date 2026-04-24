@@ -51,11 +51,6 @@ resource "google_compute_subnetwork" "subnet" {
   private_ip_google_access = true
   project                  = var.project_id
 
-  labels = {
-    project  = "gcp-template-forge"
-    template = local.template_label
-  }
-
   secondary_ip_range {
     range_name    = "pods"
     ip_cidr_range = "10.11.0.0/16"
