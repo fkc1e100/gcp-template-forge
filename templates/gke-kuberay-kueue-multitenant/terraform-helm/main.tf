@@ -91,9 +91,9 @@ resource "google_container_cluster" "gke_kuberay_kueue_multitenant_cluster" {
   }
 
   timeouts {
-    create = "30m"
-    update = "30m"
-    delete = "30m"
+    create = "45m"
+    update = "45m"
+    delete = "45m"
   }
 }
 
@@ -103,7 +103,10 @@ resource "google_container_node_pool" "system_nodes" {
   location   = var.region
   cluster    = google_container_cluster.gke_kuberay_kueue_multitenant_cluster.name
   project    = var.project_id
-  node_count = 2
+  node_count = 1
+
+  # Use a single zone for the system pool to conserve quota in CI
+  node_locations = ["${var.region}-a"]
 
   node_config {
     spot         = false
@@ -127,9 +130,9 @@ resource "google_container_node_pool" "system_nodes" {
   }
 
   timeouts {
-    create = "30m"
-    update = "30m"
-    delete = "30m"
+    create = "45m"
+    update = "45m"
+    delete = "45m"
   }
 }
 
@@ -190,9 +193,9 @@ resource "google_container_node_pool" "gpu_nodes" {
   }
 
   timeouts {
-    create = "30m"
-    update = "30m"
-    delete = "30m"
+    create = "45m"
+    update = "45m"
+    delete = "45m"
   }
 
   depends_on = [google_container_cluster.gke_kuberay_kueue_multitenant_cluster]

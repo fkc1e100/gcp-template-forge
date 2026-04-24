@@ -120,9 +120,9 @@ resource "google_container_cluster" "primary" {
   }
 
   timeouts {
-    create = "30m"
-    update = "30m"
-    delete = "30m"
+    create = "45m"
+    update = "45m"
+    delete = "45m"
   }
 }
 
@@ -190,9 +190,9 @@ resource "google_container_node_pool" "gpu_pool" {
   }
 
   timeouts {
-    create = "30m"
-    update = "30m"
-    delete = "30m"
+    create = "45m"
+    update = "45m"
+    delete = "45m"
   }
 }
 
@@ -234,9 +234,9 @@ resource "google_container_node_pool" "system_pool" {
   }
 
   timeouts {
-    create = "30m"
-    update = "30m"
-    delete = "30m"
+    create = "45m"
+    update = "45m"
+    delete = "45m"
   }
 }
 

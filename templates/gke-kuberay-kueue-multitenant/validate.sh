@@ -94,11 +94,11 @@ kubectl get nodes -l cloud.google.com/gke-accelerator=nvidia-l4 -o jsonpath='{.i
 
 set +e
 echo "Waiting for raycluster-team-a..."
-kubectl wait --for=jsonpath='{.status.state}'=ready raycluster/raycluster-team-a -n team-a --timeout=25m &
+kubectl wait --for=jsonpath='{.status.state}'=ready raycluster/raycluster-team-a -n team-a --timeout=45m &
 PID_A=$!
 
 echo "Waiting for raycluster-team-b..."
-kubectl wait --for=jsonpath='{.status.state}'=ready raycluster/raycluster-team-b -n team-b --timeout=25m &
+kubectl wait --for=jsonpath='{.status.state}'=ready raycluster/raycluster-team-b -n team-b --timeout=45m &
 PID_B=$!
 
 wait $PID_A

@@ -23,7 +23,7 @@ This document outlines the plan for verifying the `gke-kuberay-kueue-multitenant
 
 ## 1. Infrastructure Verification (Terraform)
 - [ ] Run `terraform plan` to ensure VPC, Subnet, Cluster, and Node Pools are correctly defined.
-- [ ] Verify that explicit `timeouts` (30m) are set on all node pools.
+- [ ] Verify that explicit `timeouts` (45m) are set on all node pools.
 - [ ] Verify that the GPU node pool has the correct taints (`nvidia.com/gpu: NoSchedule`) and labels.
 - [ ] Verify that GKE managed driver installation is enabled.
 - [ ] Run `terraform apply` and wait for cluster readiness.
