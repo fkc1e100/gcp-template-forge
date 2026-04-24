@@ -75,8 +75,9 @@ fi
 ALL_ACTIVE=""
 if [ -n "$GITHUB_TOKEN" ]; then
   echo "Checking for active GitHub Actions runs..."
-  ACTIVE_RUNS=$(gh run list --status in_progress --json databaseId --repo fkc1e100/gcp-template-forge -q '.[].databaseId' 2>/dev/null || echo "")
-  QUEUED_RUNS=$(gh run list --status queued --json databaseId --repo fkc1e100/gcp-template-forge -q '.[].databaseId' 2>/dev/null || echo "")
+  REPO="${GITHUB_REPOSITORY:-fkc1e100/gcp-template-forge}"
+  ACTIVE_RUNS=$(gh run list --status in_progress --json databaseId --repo "$REPO" -q '.[].databaseId' 2>/dev/null || echo "")
+  QUEUED_RUNS=$(gh run list --status queued --json databaseId --repo "$REPO" -q '.[].databaseId' 2>/dev/null || echo "")
   ALL_ACTIVE="$ACTIVE_RUNS $QUEUED_RUNS"
   if [ -n "$ALL_ACTIVE" ]; then
     echo "Found active/queued runs: $ALL_ACTIVE. Resources matching these IDs will be skipped."

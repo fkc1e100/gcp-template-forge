@@ -1670,14 +1670,14 @@ jobs:
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             echo "pr_number=${{ github.event.number }}" >> $GITHUB_OUTPUT
           else
-            PR_NUM=$(gh pr list --repo fkc1e100/gcp-template-forge --head ${{ github.ref_name }} --json number --jq '.[0].number')
+            PR_NUM=$(gh pr list --repo ${{ github.repository }} --head ${{ github.ref_name }} --json number --jq '.[0].number')
             echo "pr_number=$PR_NUM" >> $GITHUB_OUTPUT
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Merge PR
         if: steps.resolve-pr.outputs.pr_number != ''
-        run: gh pr merge ${{ steps.resolve-pr.outputs.pr_number }} --repo fkc1e100/gcp-template-forge --merge --delete-branch
+        run: gh pr merge ${{ steps.resolve-pr.outputs.pr_number }} --repo ${{ github.repository }} --merge --delete-branch
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
