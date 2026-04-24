@@ -61,7 +61,8 @@ spec:
     - us-central1-c # UPDATE: Replace with your zone
   autoscaling:
     minNodeCount: 0
-    maxNodeCount: 5
+    totalMaxNodeCount: 5
+    locationPolicy: BALANCED
   nodeConfig:
     spot: false
     machineType: g2-standard-4

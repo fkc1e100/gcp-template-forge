@@ -26,10 +26,15 @@ spec:
   location: us-central1 # UPDATE: Replace with your region
   clusterRef:
     name: gke-inf-fuse-cache-kcc
-  nodeCount: 1
-  # Restrict to a single zone that supports L4 GPUs
+  autoscaling:
+    minNodeCount: 0
+    totalMaxNodeCount: 1
+    locationPolicy: BALANCED
+  # Restrict to zones that support L4 GPUs
   nodeLocations:
     - us-central1-a # UPDATE: Replace with your zone
+    - us-central1-b # UPDATE: Replace with your zone
+    - us-central1-c # UPDATE: Replace with your zone
   nodeConfig:
     spot: false
     machineType: g2-standard-4

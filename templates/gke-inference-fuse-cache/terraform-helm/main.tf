@@ -270,6 +270,7 @@ ${yamlencode({
   image = {
     repository = "google/cloud-sdk"
     tag        = "slim"
+    pullPolicy = "IfNotPresent"
   }
   resources = {
     limits = {
