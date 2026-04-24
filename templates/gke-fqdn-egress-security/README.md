@@ -38,8 +38,19 @@ This path uses Terraform to provision the infrastructure and Helm to deploy the 
     terraform init
     terraform apply
     ```
-2.  **Verify Workload Deployment:**
-    Terraform generates a `values.yaml` for Helm. The CI pipeline or a manual `helm install` will deploy the manifests in the `workload/` directory.
+
+2.  **Deploy Workload:**
+    Terraform generates a `values.yaml` for Helm. After the infrastructure is ready, get credentials and install the chart:
+    ```bash
+    # Get credentials for the new cluster
+    gcloud container clusters get-credentials gke-fqdn-egress-security-cluster --region us-central1
+
+    # Install the workload via Helm
+    helm install fqdn-egress ./workload
+
+    # Wait for the verifier pod to be ready
+    kubectl wait --for=condition=Ready pod/egress-verifier --timeout=5m
+    ```
 
 ### Option 2: Config Connector
 This path uses Kubernetes manifests to manage both the GCP infrastructure and the GKE workloads.
