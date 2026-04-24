@@ -40,20 +40,21 @@ env:
 jobs:
   # ── 1. Detect which templates changed ────────────────────────────────────
   detect-changes:
-    name: Detect Changed Templates
+    name: Detect Changes
     runs-on: ubuntu-latest
-    timeout-minutes: 120
     outputs:
       templates: ${{ steps.find.outputs.templates }}
       tf_templates: ${{ steps.find.outputs.tf_templates }}
       kcc_templates: ${{ steps.find.outputs.kcc_templates }}
       has_templates: ${{ steps.find.outputs.has_templates }}
+      agent_infra_changed: ${{ steps.find.outputs.agent_infra_changed }}
+      workflows_changed: ${{ steps.find.outputs.workflows_changed }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Find changed template directories
+      - name: Find changed files
         id: find
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
@@ -62,7 +63,6 @@ jobs:
             BASE=$(git merge-base "origin/${{ github.base_ref }}" "$PR_HEAD")
             DIFF_HEAD="$PR_HEAD"
           else
-            # For push, use the 'before' SHA, or HEAD^1 if missing (first push)
             BASE="${{ github.event.before }}"
             if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then
               BASE=$(git rev-parse HEAD~1 2>/dev/null || git rev-list --max-parents=0 HEAD)
@@ -70,8 +70,10 @@ jobs:
             DIFF_HEAD=${{ github.sha }}
           fi
           
-          # Find all changed template directories
           CHANGED_FILES=$(git diff --name-only "$BASE" "$DIFF_HEAD")
+          echo "Files changed: $CHANGED_FILES"
+
+          # 1. Templates
           DIRS=$(echo "$CHANGED_FILES" \
             | grep '^templates/' \
             | grep -v '\.md$' \
@@ -81,9 +83,8 @@ jobs:
           TEMPLATES=$(echo "$DIRS" | jq -Rnc '[inputs | select(length>0)]')
           echo "templates=$TEMPLATES" >> $GITHUB_OUTPUT
           echo "has_templates=$([ "$TEMPLATES" = "[]" ] && echo false || echo true)" >> $GITHUB_OUTPUT
-          echo "Changed templates: $TEMPLATES"
 
-          # Filter for TF supported templates (must have main.tf)
+          # Filter for TF
           TF_DIRS=""
           for dir in $DIRS; do
             if [ -f "$dir/terraform-helm/main.tf" ]; then
@@ -92,9 +93,8 @@ jobs:
           done
           TF_TEMPLATES=$(echo "$TF_DIRS" | tr ' ' '\n' | sort -u | jq -Rnc '[inputs | select(length>0)]')
           echo "tf_templates=$TF_TEMPLATES" >> $GITHUB_OUTPUT
-          echo "TF supported templates: $TF_TEMPLATES"
 
-          # Filter for KCC supported templates
+          # Filter for KCC
           KCC_DIRS=""
           for dir in $DIRS; do
             if ls "$dir/config-connector/"*.yaml >/dev/null 2>&1; then
@@ -105,7 +105,20 @@ jobs:
           done
           KCC_TEMPLATES=$(echo "$KCC_DIRS" | tr ' ' '\n' | sort -u | jq -Rnc '[inputs | select(length>0)]')
           echo "kcc_templates=$KCC_TEMPLATES" >> $GITHUB_OUTPUT
-          echo "KCC supported templates: $KCC_TEMPLATES"
+
+          # 2. Agent Infra
+          if echo "$CHANGED_FILES" | grep -q '^agent-infra/'; then
+            echo "agent_infra_changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "agent_infra_changed=false" >> $GITHUB_OUTPUT
+          fi
+
+          # 3. Workflows
+          if echo "$CHANGED_FILES" | grep -q '^\.github/workflows/'; then
+            echo "workflows_changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "workflows_changed=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Remove repo-agent Label on Start
         if: github.event_name == 'pull_request'
@@ -113,10 +126,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # ── 2. Lint / static analysis (PR + push) ────────────────────────────────
+  # ── 2. Specialized Lint Jobs ─────────────────────────────────────────────
+
   lint-agent-infra:
     name: "Lint Agent Infra"
+    needs: detect-changes
+    if: needs.detect-changes.outputs.agent_infra_changed == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - name: Setup Terraform
@@ -126,95 +143,131 @@ jobs:
           chmod +x agent-infra/local-lint.sh
           ./agent-infra/local-lint.sh agent-infra
 
-  lint:
-    name: "Lint (${{ matrix.template }})"
+  lint-workflows:
+    name: "Lint Workflows"
     needs: detect-changes
+    if: needs.detect-changes.outputs.workflows_changed == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Actionlint
+        run: |
+          if [ -f "./actionlint" ]; then
+            ./actionlint
+          else
+            # Download actionlint if not present (though it should be in the repo root per GEMINI.md)
+            bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+            ./actionlint
+          fi
+
+  lint-template-static:
+    name: "Static (${{ matrix.template }})"
+    needs: detect-changes
+    if: needs.detect-changes.outputs.has_templates == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       fail-fast: true
       matrix:
         template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
-
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-
-      - name: Set up Helm
+      - name: Structure and Mandate Check
         run: |
-          curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+          # 1. Structure
+          template="${{ matrix.template }}"
+          template_name=$(basename "$template")
+          echo "--- Checking structure of $template_name ---"
+          MISSING=""
+          [ ! -d "${template}/terraform-helm" ] && MISSING="${MISSING} terraform-helm/"
+          if [ ! -f "${template}/.kcc-unsupported" ]; then
+            [ ! -d "${template}/config-connector" ] && MISSING="${MISSING} config-connector/"
+          fi
+          if [ -n "$MISSING" ]; then
+            echo "ERROR: Template '${template_name}' is missing required directories:${MISSING}"
+            exit 1
+          fi
 
-      - name: Run Thorough Linting
-        run: |
-          chmod +x agent-infra/local-lint.sh
-          ./agent-infra/local-lint.sh ${{ matrix.template }}
-
-      - name: Helm template (render + validate YAML)
-        if: "hashFiles(format('{0}/terraform-helm/**', matrix.template)) != ''"
-        run: |
-          CHARTS=$(find ${{ matrix.template }}/terraform-helm -name Chart.yaml -exec dirname {} \; 2>/dev/null)
-          if [ -z "$CHARTS" ]; then exit 0; fi
-          for chart in $CHARTS; do
-            echo "=== helm template: $chart ==="
-            helm template release "$chart" > /tmp/helm-rendered.yaml
-            # Validate the rendered YAML parses cleanly
-            python3 -c "
-          import yaml, sys
-          docs = list(yaml.safe_load_all(open('/tmp/helm-rendered.yaml')))
-          docs = [d for d in docs if d]
-          print(f'Rendered {len(docs)} Kubernetes objects from chart')
-          kinds = sorted(set(d.get(\"kind\",\"Unknown\") for d in docs))
-          print('Kinds:', ', '.join(kinds))
-            "
-          done
-
-      - name: KCC manifest syntax check
-        if: "hashFiles(format('{0}/config-connector/**', matrix.template)) != '' && hashFiles(format('{0}/.kcc-unsupported', matrix.template)) == ''"
-        run: |
-          # Basic YAML syntax validation
+          # 2. YAML check (plain)
           python3 -c "
-          import yaml, sys, pathlib, os
+          import yaml, sys, pathlib
           errors = []
-          for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml'):
+          target = '${template}'
+          for p in pathlib.Path(target).rglob('*.yaml'):
+              if '.terraform' in str(p): continue
+              if 'templates' in str(p) and 'workload' in str(p): continue # skip helm
               try:
-                  yaml.safe_load_all(p.read_text())
-              except yaml.YAMLError as e:
-                  errors.append(str(p) + ': ' + str(e))
+                  with open(p, 'r') as f: list(yaml.safe_load_all(f))
+              except Exception as e: errors.append(f'{p}: {e}')
           if errors:
-              print('YAML errors found:')
-              for e in errors: print(' ', e)
+              for e in errors: print(e)
               sys.exit(1)
-          print('All KCC manifests parse OK')
           "
 
-
-      - name: Check deletion_protection = false
-        if: "hashFiles(format('{0}/terraform-helm/main.tf', matrix.template)) != ''"
-        run: |
-          if grep -r 'google_container_cluster' ${{ matrix.template }}/terraform-helm/ >/dev/null 2>&1; then
-            if ! grep -r 'deletion_protection.*=.*false' ${{ matrix.template }}/terraform-helm/ >/dev/null 2>&1; then
-              echo "ERROR: google_container_cluster found without deletion_protection = false"
+          # 3. Deletion Protection / Abandon / Lifecycle Mandates
+          if [ -d "${template}/terraform-helm" ]; then
+            if grep -r 'google_container_cluster' ${template}/terraform-helm/ >/dev/null 2>&1; then
+              if ! grep -r 'deletion_protection.*=.*false' ${template}/terraform-helm/ >/dev/null 2>&1; then
+                echo "ERROR: google_container_cluster missing deletion_protection = false"
+                exit 1
+              fi
+            fi
+            if grep -r 'prevent_destroy\s*=\s*true' ${template}/terraform-helm/ >/dev/null 2>&1; then
+              echo "ERROR: lifecycle prevent_destroy = true found"
+              exit 1
+            fi
+          fi
+          if [ -d "${template}/config-connector" ]; then
+            if grep -r 'deletion-policy.*abandon' ${template}/config-connector/ >/dev/null 2>&1; then
+              echo "ERROR: cnrm.cloud.google.com/deletion-policy: abandon found"
               exit 1
             fi
           fi
 
-      - name: Check no KCC abandon annotations
-        if: "hashFiles(format('{0}/config-connector/**', matrix.template)) != '' && hashFiles(format('{0}/.kcc-unsupported', matrix.template)) == ''"
+  lint-template-terraform:
+    name: "TF Lint (${{ matrix.template }})"
+    needs: detect-changes
+    if: needs.detect-changes.outputs.has_templates == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: true
+      matrix:
+        template: ${{ fromJson(needs.detect-changes.outputs.tf_templates) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+      - name: TF Fmt & Validate
+        working-directory: ${{ matrix.template }}/terraform-helm
         run: |
-          if grep -r 'deletion-policy.*abandon' ${{ matrix.template }}/config-connector/ >/dev/null 2>&1; then
-            echo "ERROR: cnrm.cloud.google.com/deletion-policy: abandon found -- this orphans GCP resources"
-            exit 1
-          fi
+          terraform init -backend=false
+          terraform fmt -check
+          terraform validate
 
-      - name: Check no lifecycle prevent_destroy
-        if: "hashFiles(format('{0}/terraform-helm/main.tf', matrix.template)) != ''"
+  lint-template-helm:
+    name: "Helm Lint (${{ matrix.template }})"
+    needs: detect-changes
+    if: needs.detect-changes.outputs.has_templates == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: true
+      matrix:
+        template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Helm Lint and Template
         run: |
-          if grep -r 'prevent_destroy\s*=\s*true' ${{ matrix.template }}/terraform-helm/ >/dev/null 2>&1; then
-            echo "ERROR: lifecycle prevent_destroy = true found — this blocks automated teardown"
-            exit 1
-          fi
+          CHARTS=$(find ${{ matrix.template }}/terraform-helm -name Chart.yaml -exec dirname {} \; 2>/dev/null)
+          for chart in $CHARTS; do
+            echo "--- Linting $chart ---"
+            helm lint "$chart"
+            helm template release "$chart" > /tmp/rendered.yaml
+            # Basic YAML parse of rendered output
+            python3 -c "import yaml; list(yaml.safe_load_all(open('/tmp/rendered.yaml')))"
+          done
 
   # ── 3. Pre-deploy Quota Cleanup ──────────────────────────────────────────
   pre-cleanup:
@@ -222,6 +275,7 @@ jobs:
     needs: [ detect-changes ]
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - name: Authenticate to GCP
@@ -238,7 +292,7 @@ jobs:
 
   tf-provision:
     name: "Provision TF (${{ matrix.template }})"
-    needs: [ detect-changes, lint, pre-cleanup ]
+    needs: [ detect-changes, lint-template-static, lint-template-terraform, lint-template-helm, lint-agent-infra, lint-workflows, pre-cleanup ]
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -500,7 +554,7 @@ jobs:
   # ── 4b. PR: KCC deploy → wait → delete (parallel with deploy-test-tf) ─────
   kcc-apply:
     name: "KCC Apply (${{ matrix.template }})"
-    needs: [ detect-changes, lint, pre-cleanup ]
+    needs: [ detect-changes, lint-template-static, lint-template-terraform, lint-template-helm, lint-agent-infra, lint-workflows, pre-cleanup ]
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -1644,10 +1698,13 @@ jobs:
 
   label-failure:
     name: "Label Failure"
-    needs: [detect-changes, lint, pre-cleanup, tf-provision, tf-test, tf-teardown, kcc-apply, kcc-test, kcc-teardown]
+    needs: [detect-changes, lint-template-static, lint-template-terraform, lint-template-helm, lint-agent-infra, pre-cleanup, tf-provision, tf-test, tf-teardown, kcc-apply, kcc-test, kcc-teardown]
     if: >-
       always() && github.event_name == 'pull_request' &&
-      (needs.tf-test.result == 'failure' || needs.kcc-test.result == 'failure' || needs.lint.result == 'failure' || needs.detect-changes.result == 'failure')
+      (needs.tf-test.result == 'failure' || needs.kcc-test.result == 'failure' || 
+       needs.lint-template-static.result == 'failure' || needs.lint-template-terraform.result == 'failure' || 
+       needs.lint-template-helm.result == 'failure' || needs.lint-agent-infra.result == 'failure' ||
+       needs.detect-changes.result == 'failure')
     runs-on: ubuntu-latest
     steps:
       - name: Add repo-agent label
