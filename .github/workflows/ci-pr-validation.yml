@@ -70,7 +70,7 @@ jobs:
       - name: Run Thorough Linting
         run: |
           chmod +x agent-infra/local-lint.sh
-          ./agent-infra/local-lint.sh ${{ matrix.template }}
+          ./agent-infra/local-lint.sh "${{ matrix.template }}"
       - name: Actionlint
         run: |
           if [ -f "./actionlint" ]; then
@@ -177,7 +177,7 @@ jobs:
           # Try regions to find where it was deployed
           for REGION in us-central1 us-east1 us-west1; do
             if gcloud container clusters get-credentials "${BASE_NAME}-${UID_SUFFIX}-tf" --region "$REGION" --project ${{ env.PROJECT_ID }} 2>/dev/null; then
-              echo "REGION=$REGION" >> $GITHUB_ENV
+              echo "REGION=$REGION" >> "$GITHUB_ENV"
               break
             fi
           done
@@ -186,13 +186,13 @@ jobs:
           CHARTS=$(find ${{ matrix.template }}/terraform-helm -name Chart.yaml -exec dirname {} \; 2>/dev/null)
           [ -z "$CHARTS" ] && exit 0
           TIMEOUT="60m"
-          [ -f "${{ matrix.template }}/.timeout" ] && TIMEOUT=$(cat ${{ matrix.template }}/.timeout)
+          [ -f "${{ matrix.template }}/.timeout" ] && TIMEOUT=$(cat "${{ matrix.template }}/.timeout")
           for chart in $CHARTS; do
             helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT"
           done
           if [ -f "${{ matrix.template }}/validate.sh" ]; then
-            chmod +x ${{ matrix.template }}/validate.sh
-            ./${{ matrix.template }}/validate.sh
+            chmod +x "${{ matrix.template }}/validate.sh"
+            "./${{ matrix.template }}/validate.sh"
           fi
 
   tf-teardown:

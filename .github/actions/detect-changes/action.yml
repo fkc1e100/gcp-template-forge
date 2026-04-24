@@ -44,8 +44,8 @@ runs:
           | sort -u || true)
         
         TEMPLATES=$(echo "$DIRS" | jq -Rnc '[inputs | select(length>0)]')
-        echo "templates=$TEMPLATES" >> $GITHUB_OUTPUT
-        echo "has_templates=$([ "$TEMPLATES" = "[]" ] && echo false || echo true)" >> $GITHUB_OUTPUT
+        echo "templates=$TEMPLATES" >> "$GITHUB_OUTPUT"
+        echo "has_templates=$([ "$TEMPLATES" = "[]" ] && echo false || echo true)" >> "$GITHUB_OUTPUT"
         echo "Changed templates: $TEMPLATES"
 
         # Filter for TF supported templates (must have main.tf)
@@ -56,7 +56,7 @@ runs:
           fi
         done
         TF_TEMPLATES=$(echo "$TF_DIRS" | tr ' ' '\n' | sort -u | jq -Rnc '[inputs | select(length>0)]')
-        echo "tf_templates=$TF_TEMPLATES" >> $GITHUB_OUTPUT
+        echo "tf_templates=$TF_TEMPLATES" >> "$GITHUB_OUTPUT"
         echo "TF supported templates: $TF_TEMPLATES"
 
         # Filter for KCC supported templates
@@ -69,5 +69,5 @@ runs:
           fi
         done
         KCC_TEMPLATES=$(echo "$KCC_DIRS" | tr ' ' '\n' | sort -u | jq -Rnc '[inputs | select(length>0)]')
-        echo "kcc_templates=$KCC_TEMPLATES" >> $GITHUB_OUTPUT
+        echo "kcc_templates=$KCC_TEMPLATES" >> "$GITHUB_OUTPUT"
         echo "KCC supported templates: $KCC_TEMPLATES"

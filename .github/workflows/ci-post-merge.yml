@@ -63,9 +63,9 @@ jobs:
         run: |
           TEMPLATE="${{ matrix.template }}"
           GITHUB_SHA="${{ github.sha }}"
-          if [ ! -f "${TEMPLATE}/.validated" ]; then echo "skip=false" >> $GITHUB_OUTPUT; exit 0; fi
+          if [ ! -f "${TEMPLATE}/.validated" ]; then echo "skip=false" >> "$GITHUB_OUTPUT"; exit 0; fi
           VALIDATED_COMMIT=$(grep '^commit:' "${TEMPLATE}/.validated" | awk '{print $2}')
-          if [ "$VALIDATED_COMMIT" = "$GITHUB_SHA" ]; then echo "skip=true" >> $GITHUB_OUTPUT; else echo "skip=false" >> $GITHUB_OUTPUT; fi
+          if [ "$VALIDATED_COMMIT" = "$GITHUB_SHA" ]; then echo "skip=true" >> "$GITHUB_OUTPUT"; else echo "skip=false" >> "$GITHUB_OUTPUT"; fi
       
       - name: Auth and Setup GKE
         if: steps.skip-check.outputs.skip != 'true'
@@ -83,7 +83,7 @@ jobs:
         if: steps.skip-check.outputs.skip != 'true'
         working-directory: ${{ matrix.template }}/terraform-helm
         run: |
-          echo "TF_START=$(date -u +%s)" >> $GITHUB_ENV
+          echo "TF_START=$(date -u +%s)" >> "$GITHUB_ENV"
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
           TEMPLATE="${{ matrix.template }}"
@@ -119,11 +119,11 @@ jobs:
         working-directory: ${{ matrix.template }}/terraform-helm
         run: |
           TF_DURATION=$(( $(date -u +%s) - TF_START ))
-          echo "tf_duration=${TF_DURATION}" >> $GITHUB_OUTPUT
+          echo "tf_duration=${TF_DURATION}" >> "$GITHUB_OUTPUT"
           CLUSTER=$(terraform output -raw cluster_name 2>/dev/null || echo "")
           LOCATION=$(terraform output -raw cluster_location 2>/dev/null || echo "")
-          echo "tf_cluster=${CLUSTER}" >> $GITHUB_OUTPUT
-          echo "tf_location=${LOCATION}" >> $GITHUB_OUTPUT
+          echo "tf_cluster=${CLUSTER}" >> "$GITHUB_OUTPUT"
+          echo "tf_location=${LOCATION}" >> "$GITHUB_OUTPUT"
 
       - name: Terraform Destroy
         if: always() && steps.tf-apply.outcome == 'success'
@@ -145,7 +145,7 @@ jobs:
 
       - name: Set Slug
         id: slug
-        run: echo "template_slug=$(echo "${{ matrix.template }}" | tr '/' '-')" >> $GITHUB_OUTPUT
+        run: echo "template_slug=$(echo "${{ matrix.template }}" | tr '/' '-')" >> "$GITHUB_OUTPUT"
 
       - name: Upload TF results artifact
         if: always() && steps.skip-check.outputs.skip != 'true'
@@ -189,7 +189,7 @@ jobs:
           kubectl apply -n "$KCC_NAMESPACE" -f "${TEMPLATE}/config-connector/"
           kubectl wait -n "$KCC_NAMESPACE" --for=condition=Ready --all --timeout=3600s -f "${TEMPLATE}/config-connector/"
           KCC_DURATION=$(( $(date -u +%s) - KCC_START ))
-          echo "kcc_duration=${KCC_DURATION}" >> $GITHUB_OUTPUT
+          echo "kcc_duration=${KCC_DURATION}" >> "$GITHUB_OUTPUT"
       - name: KCC Teardown
         if: always()
         run: |
@@ -209,7 +209,7 @@ jobs:
 
       - name: Set Slug
         id: slug
-        run: echo "template_slug=$(echo "${{ matrix.template }}" | tr '/' '-')" >> $GITHUB_OUTPUT
+        run: echo "template_slug=$(echo "${{ matrix.template }}" | tr '/' '-')" >> "$GITHUB_OUTPUT"
 
       - name: Upload KCC results artifact
         if: always()

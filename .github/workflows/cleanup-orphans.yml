@@ -49,7 +49,7 @@ jobs:
           gcloud version
 
           echo "Capturing Quota Status before cleanup..."
-          gcloud compute project-info describe --project=$PROJECT --format="json" > /tmp/quota_before.json || true
+          gcloud compute project-info describe --project="$PROJECT" --format="json" > /tmp/quota_before.json || true
           echo "Quota Status Before Cleanup:"
           python3 -c "import sys, json; data = json.load(open('/tmp/quota_before.json')); print(f\"{'Metric':<40} {'Usage':<10} {'Limit':<10}\"); print('-'*60); [print(f\"{q.get('metric','N/A'):<40} {q.get('usage',0):<10.1f} {q.get('limit',0):<10.1f}\") for q in data.get('quotas', []) if q.get('usage', 0) > 0]" || true
 
@@ -94,11 +94,11 @@ jobs:
 
           # 1. Clean up KCC Clusters and other resources FIRST
           echo "Connecting to Management Cluster..."
-          gcloud container clusters get-credentials krmapihost-kcc-instance --region $REGION --project $PROJECT
+          gcloud container clusters get-credentials krmapihost-kcc-instance --region "$REGION" --project "$PROJECT"
           
           echo "Deleting all KCC-managed resources with project=gcp-template-forge label..."
           KCC_TYPES="containercluster,computenetwork,computesubnetwork,computerouter,computerouternat,computefirewall"
-          KCC_RESOURCES=$(kubectl get $KCC_TYPES -n forge-management -l project=gcp-template-forge -o name | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
+          KCC_RESOURCES=$(kubectl get "$KCC_TYPES" -n forge-management -l project=gcp-template-forge -o name | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
           
           for RES in $KCC_RESOURCES; do
             SKIP=false
@@ -111,14 +111,14 @@ jobs:
             done
             if [ "$SKIP" = false ]; then
               echo "Deleting orphaned KCC resource: $RES"
-              kubectl delete $RES -n forge-management --wait=false
+              kubectl delete "$RES" -n forge-management --wait=false
             fi
           done
 
           # 2. Clean up GKE Clusters (Terraform)
           echo "Searching for orphaned Terraform clusters..."
           TF_CLUSTERS=$(gcloud container clusters list \
-            --project=$PROJECT \
+            --project="$PROJECT" \
             --filter="name != repo-agent-standard AND name != krmapihost-kcc-instance AND name != kcc-dash-dont-delete" \
             --format="value(name, zone.scope())")
 
