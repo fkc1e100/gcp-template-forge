@@ -20,7 +20,7 @@ metadata:
     {{- include "workload.labels" . | nindent 4 }}
     component: staging
 spec:
-  activeDeadlineSeconds: 3600
+  activeDeadlineSeconds: 5400
   backoffLimit: 1
   template:
     metadata:
