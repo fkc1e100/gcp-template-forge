@@ -115,7 +115,7 @@ resource "google_container_node_pool" "system_nodes" {
     disk_type    = "pd-balanced" # Optimized performance per reviewer request
 
     service_account = var.service_account
-    oauth_scopes    = [
+    oauth_scopes = [
       "https://www.googleapis.com/auth/logging.write",
       "https://www.googleapis.com/auth/monitoring",
       "https://www.googleapis.com/auth/devstorage.read_only"
@@ -167,7 +167,7 @@ resource "google_container_node_pool" "gpu_nodes" {
     disk_type    = "pd-balanced" # Optimized performance for model caching
 
     service_account = var.service_account
-    oauth_scopes    = [
+    oauth_scopes = [
       "https://www.googleapis.com/auth/logging.write",
       "https://www.googleapis.com/auth/monitoring",
       "https://www.googleapis.com/auth/devstorage.read_only"

@@ -115,7 +115,7 @@ resource "google_container_node_pool" "system_pool" {
     disk_type    = "pd-balanced"
 
     service_account = var.service_account
-    oauth_scopes    = [
+    oauth_scopes = [
       "https://www.googleapis.com/auth/logging.write",
       "https://www.googleapis.com/auth/monitoring",
       "https://www.googleapis.com/auth/devstorage.read_only"
@@ -163,7 +163,7 @@ resource "google_container_node_pool" "gpu_pool" {
     disk_type    = "pd-balanced"
 
     service_account = var.service_account
-    oauth_scopes    = [
+    oauth_scopes = [
       "https://www.googleapis.com/auth/logging.write",
       "https://www.googleapis.com/auth/monitoring",
       "https://www.googleapis.com/auth/devstorage.read_only"
