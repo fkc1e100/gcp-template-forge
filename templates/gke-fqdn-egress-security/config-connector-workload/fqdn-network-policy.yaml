@@ -27,10 +27,13 @@ spec:
   - matches:
     - name: anthropic.com
     - name: api.anthropic.com
+    - name: www.anthropic.com
     - pattern: "*.anthropic.com"
     - name: huggingface.co
+    - name: www.huggingface.co
     - pattern: "*.huggingface.co"
     - name: hf.co
+    - name: www.hf.co
     - pattern: "*.hf.co"
     ports:
     - protocol: TCP

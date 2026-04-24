@@ -15,9 +15,9 @@ Securing egress traffic is a critical component of a Zero-Trust architecture. In
 - **GKE Cluster:** A private cluster with Dataplane V2 and FQDN Network Policy enabled.
 - **NetworkPolicy (`default-deny-egress`):** Denies all egress except for DNS (UDP/TCP 53) to allow FQDN resolution. *Note: This blocks communication with the Kubernetes API server by default, which is acceptable for this validation pod but may require an exception for production workloads.*
 - **FQDNNetworkPolicy (`allow-ai-egress`):** Allows HTTPS (TCP 443) traffic to:
-    - `anthropic.com`, `api.anthropic.com`, `*.anthropic.com`
-    - `huggingface.co`, `*.huggingface.co`
-    - `hf.co`, `*.hf.co`
+    - `anthropic.com`, `api.anthropic.com`, `www.anthropic.com`, `*.anthropic.com`
+    - `huggingface.co`, `www.huggingface.co`, `*.huggingface.co`
+    - `hf.co`, `www.hf.co`, `*.hf.co`
     *Note: The GKE FQDN controller intercepts DNS queries from the pods to learn the IP addresses associated with these domains. The first few requests after a policy is applied may experience slight latency as the eBPF maps are populated.*
 - **Validation Pod:** A `curl`-based pod used to verify connectivity.
 
@@ -38,8 +38,19 @@ This path uses Terraform to provision the infrastructure and Helm to deploy the 
     terraform init
     terraform apply
     ```
-2.  **Verify Workload Deployment:**
-    Terraform generates a `values.yaml` for Helm. The CI pipeline or a manual `helm install` will deploy the manifests in the `workload/` directory.
+
+2.  **Deploy Workload:**
+    Terraform generates a `values.yaml` for Helm. After the infrastructure is ready, get credentials and install the chart:
+    ```bash
+    # Get credentials for the new cluster
+    gcloud container clusters get-credentials gke-fqdn-egress-security-cluster --region us-central1
+
+    # Install the workload via Helm
+    helm install fqdn-egress ./workload
+
+    # Wait for the verifier pod to be ready
+    kubectl wait --for=condition=Ready pod/egress-verifier --timeout=5m
+    ```
 
 ### Option 2: Config Connector
 This path uses Kubernetes manifests to manage both the GCP infrastructure and the GKE workloads.
@@ -57,11 +68,18 @@ This path uses Kubernetes manifests to manage both the GCP infrastructure and th
     *Note: After the cluster is ready, it may take an additional 2-3 minutes for GKE Enterprise features (like FQDN Network Policies) to propagate across the fleet.*
 
 3.  **Deploy Workload:**
-    Once the cluster is ready, get credentials and apply the workload manifests:
+    Once the cluster is ready, get credentials and apply the workload manifests (including the `egress-verifier` pod and the FQDN security policies):
     ```bash
+    # Get credentials for the new cluster
     gcloud container clusters get-credentials gke-fqdn-egress-security-cluster --region us-central1
+
+    # Apply the FQDN policies and the verifier pod
     kubectl apply -f config-connector-workload/
+
+    # Wait for the verifier pod to be ready
+    kubectl wait --for=condition=Ready pod/egress-verifier --timeout=5m
     ```
+    *Note: If you receive an error about `FQDNNetworkPolicy` not being found, wait 2-3 minutes for the GKE FQDN controller to initialize the CRDs and try applying again.*
 
 ## Verification
 
@@ -74,17 +92,27 @@ The included `validate.sh` script automates the entire verification process, inc
 ### Manual Verification
 *Note: If you deployed using the default settings, the namespace will be `default`.*
 
+**Important:** Dataplane V2 FQDN policies intercept DNS queries to learn IP addresses. The first few requests after a policy is applied or a DNS record TTL expires may experience slight latency or a "Connection Refused" while the eBPF maps are populated. Always retry the verification commands a few times if they fail initially.
+
 1.  **Test Allowed Egress (Anthropic):**
     ```bash
-    kubectl exec egress-verifier -n <namespace> -- curl -sL -4 --connect-timeout 10 https://api.anthropic.com
+    kubectl exec egress-verifier -- curl -sL -4 --connect-timeout 10 https://anthropic.com
+    kubectl exec egress-verifier -- curl -sL -4 --connect-timeout 10 https://www.anthropic.com
+    kubectl exec egress-verifier -- curl -sL -4 --connect-timeout 10 https://api.anthropic.com
     ```
 2.  **Test Allowed Egress (HuggingFace):**
     ```bash
-    kubectl exec egress-verifier -n <namespace> -- curl -sL -4 --connect-timeout 10 https://huggingface.co
+    kubectl exec egress-verifier -- curl -sL -4 --connect-timeout 10 https://huggingface.co
+    kubectl exec egress-verifier -- curl -sL -4 --connect-timeout 10 https://www.huggingface.co
     ```
-3.  **Test Blocked Egress (Google):**
+3.  **Test Allowed Egress (hf.co):**
     ```bash
-    kubectl exec egress-verifier -n <namespace> -- curl -sL -4 --connect-timeout 10 https://google.com
+    kubectl exec egress-verifier -- curl -sL -4 --connect-timeout 10 https://hf.co
+    kubectl exec egress-verifier -- curl -sL -4 --connect-timeout 10 https://www.hf.co
+    ```
+4.  **Test Blocked Egress (Google):**
+    ```bash
+    kubectl exec egress-verifier -- curl -sL -4 --connect-timeout 10 https://google.com
     # This should time out or return an error.
     ```
 
