@@ -23,13 +23,9 @@ terraform {
       source  = "hashicorp/google-beta"
       version = "~> 6.0"
     }
-    null = {
-      source  = "hashicorp/null"
-      version = "~> 3.0"
-    }
-    helm = {
-      source  = "hashicorp/helm"
-      version = "~> 2.10"
+    local = {
+      source  = "hashicorp/local"
+      version = "~> 2.1"
     }
   }
   required_version = ">= 1.7"

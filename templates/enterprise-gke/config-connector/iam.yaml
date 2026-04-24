@@ -15,30 +15,114 @@
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMServiceAccount
 metadata:
-  name: enterprise-gke-kcc-sa
+  name: enterprise-gke-w-sa
   namespace: forge-management
   labels:
     project: gcp-template-forge
     template: enterprise-gke
-  annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   displayName: "Enterprise Workload Service Account"
 ---
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPolicyMember
 metadata:
-  name: enterprise-gke-kcc-wi-binding-v2
+  name: enterprise-gke-workload-wi-binding-workload
   namespace: forge-management
   labels:
     project: gcp-template-forge
     template: enterprise-gke
-  annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
-  member: "serviceAccount:gca-gke-2025.svc.id.goog[enterprise-gke/enterprise-gke-sa]"
+  # Note: workload identity pool name still requires project ID but we avoid external refs where possible.
+  # Config Connector handles project substitution in some fields but not always in member strings.
+    # UPDATE: Replace <PROJECT_ID> with your GCP Project ID
+  member: "serviceAccount:<PROJECT_ID>.svc.id.goog[gke-workload/gke-workload-sa]"
   role: roles/iam.workloadIdentityUser
   resourceRef:
     apiVersion: iam.cnrm.cloud.google.com/v1beta1
     kind: IAMServiceAccount
-    name: enterprise-gke-kcc-sa
+    name: enterprise-gke-w-sa
+---
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMPolicyMember
+metadata:
+  name: enterprise-gke-workload-wi-binding-default
+  namespace: forge-management
+  labels:
+    project: gcp-template-forge
+    template: enterprise-gke
+spec:
+    # UPDATE: Replace <PROJECT_ID> with your GCP Project ID
+  member: "serviceAccount:<PROJECT_ID>.svc.id.goog[default/gke-workload-sa]"
+  role: roles/iam.workloadIdentityUser
+  resourceRef:
+    apiVersion: iam.cnrm.cloud.google.com/v1beta1
+    kind: IAMServiceAccount
+    name: enterprise-gke-w-sa
+---
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMServiceAccount
+metadata:
+  name: enterprise-gke-n-sa
+  namespace: forge-management
+  labels:
+    project: gcp-template-forge
+    template: enterprise-gke
+spec:
+  displayName: "Enterprise GKE Node Service Account"
+---
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMPolicyMember
+metadata:
+  name: enterprise-gke-node-log-writer
+  namespace: forge-management
+  labels:
+    project: gcp-template-forge
+    template: enterprise-gke
+spec:
+  memberFrom:
+    serviceAccountRef:
+      name: enterprise-gke-n-sa
+  role: roles/logging.logWriter
+  resourceRef:
+    apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
+    kind: Project
+      # UPDATE: Replace <PROJECT_ID> with your GCP Project ID
+    external: <PROJECT_ID>
+---
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMPolicyMember
+metadata:
+  name: enterprise-gke-node-metric-writer
+  namespace: forge-management
+  labels:
+    project: gcp-template-forge
+    template: enterprise-gke
+spec:
+  memberFrom:
+    serviceAccountRef:
+      name: enterprise-gke-n-sa
+  role: roles/monitoring.metricWriter
+  resourceRef:
+    apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
+    kind: Project
+      # UPDATE: Replace <PROJECT_ID> with your GCP Project ID
+    external: <PROJECT_ID>
+---
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMPolicyMember
+metadata:
+  name: enterprise-gke-node-metadata-writer
+  namespace: forge-management
+  labels:
+    project: gcp-template-forge
+    template: enterprise-gke
+spec:
+  memberFrom:
+    serviceAccountRef:
+      name: enterprise-gke-n-sa
+  role: roles/stackdriver.resourceMetadata.writer
+  resourceRef:
+    apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
+    kind: Project
+      # UPDATE: Replace <PROJECT_ID> with your GCP Project ID
+    external: <PROJECT_ID>

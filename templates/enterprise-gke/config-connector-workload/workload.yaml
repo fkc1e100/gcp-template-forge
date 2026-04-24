@@ -31,8 +31,8 @@ metadata:
     project: gcp-template-forge
     template: enterprise-gke
   annotations:
-    # UPDATE: Replace 'gca-gke-2025' with your actual GCP Project ID
-    iam.gke.io/gcp-service-account: enterprise-gke-kcc-sa@gca-gke-2025.iam.gserviceaccount.com
+    # UPDATE: Replace '<PROJECT_ID>' with your actual GCP Project ID
+    iam.gke.io/gcp-service-account: enterprise-gke-w-sa@<PROJECT_ID>.iam.gserviceaccount.com
 ---
 apiVersion: v1
 kind: ConfigMap

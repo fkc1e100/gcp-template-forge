@@ -6,3 +6,4 @@ actionlint
 *.dll
 *.so
 *.dylib
+values.generated.yaml
