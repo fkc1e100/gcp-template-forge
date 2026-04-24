@@ -18,7 +18,7 @@ This plan outlines the steps to verify the implementation of GKE FQDN Network Po
 2.  **FQDN Allow-list:**
     -   Apply the `FQDNNetworkPolicy` allowing `anthropic.com`, `api.anthropic.com`, `huggingface.co`, and `hf.co`.
     -   Verify `curl https://anthropic.com` and `curl https://api.anthropic.com` return successful responses (not a connection timeout).
-    -   Verify `curl https://huggingface.co` and `curl https://hf.co` succeed.
+    -   Verify `curl https://huggingface.co`, `curl https://api.huggingface.co`, and `curl https://hf.co` succeed.
     -   Verify `curl https://google.com` is actively blocked by the CNI.
 
 ## Automated Validation

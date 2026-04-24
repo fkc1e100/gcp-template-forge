@@ -102,6 +102,7 @@ The included `validate.sh` script automates the entire verification process, inc
 2.  **Test Allowed Egress (HuggingFace):**
     ```bash
     kubectl exec egress-verifier -- curl -sL -4 --connect-timeout 10 https://huggingface.co
+    kubectl exec egress-verifier -- curl -sL -4 --connect-timeout 10 https://api.huggingface.co
     ```
 3.  **Test Allowed Egress (hf.co):**
     ```bash
