@@ -1681,6 +1681,7 @@ jobs:
       (needs.tf-test.result == 'failure' || needs.kcc-test.result == 'failure' || needs.lint.result == 'failure' || needs.detect-changes.result == 'failure')
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: Add repo-agent label
         run: gh pr edit ${{ github.event.number }} --add-label "repo-agent"
         env:

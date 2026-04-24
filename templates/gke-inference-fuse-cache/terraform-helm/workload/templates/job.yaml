@@ -20,40 +20,5 @@ metadata:
     {{- include "workload.labels" . | nindent 4 }}
     component: staging
 spec:
-  template:
-    metadata:
-      annotations:
-        gke-gcsfuse/volumes: "true"
-      labels:
-        {{- include "workload.labels" . | nindent 8 }}
-        component: staging
-    spec:
-      serviceAccountName: {{ .Values.serviceAccount.name }}
-      containers:
-      - name: stager
-        image: google/cloud-sdk:slim
-        command: ["sh", "-c"]
-        args:
-        - |
-          # In a real scenario, this would be a large download.
-          # For demonstration, we just ensure a config.json exists to unblock the Deployment.
-          mkdir -p /models/facebook/opt-125m
-          echo '{"model_type": "opt"}' > /models/facebook/opt-125m/config.json
-          echo "Model staged successfully."
-        volumeMounts:
-        - name: gcs-fuse-csi-ephemeral
-          mountPath: /models
-      volumes:
-      - name: gcs-fuse-csi-ephemeral
-        csi:
-          driver: gcsfuse.csi.storage.gke.io
-          volumeAttributes:
-            bucketName: "{{ .Values.bucketName }}"
-            mountOptions: "implicit-dirs"
-            fileCacheCapacity: "{{ .Values.cache.capacity }}"
-            fileCacheForRangeRead: "true"
-            metadataCacheTTLSeconds: "{{ .Values.cache.metadataCacheTTLSeconds }}"
-            metadataStatCacheCapacity: "{{ .Values.cache.statCacheCapacity }}"
-            metadataTypeCacheCapacity: "{{ .Values.cache.typeCacheCapacity }}"
-      restartPolicy: OnFailure
-  backoffLimit: 3
+  activeDeadlineSeconds: 3600
+  backoffLimit: 1
