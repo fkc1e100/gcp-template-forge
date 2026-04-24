@@ -174,11 +174,6 @@ spec:
             # NOTE: Replace <BUCKET_NAME> with your actual bucket name
             bucketName: <BUCKET_NAME>
             mountOptions: "implicit-dirs"
-            fileCacheCapacity: "50Gi"
-            fileCacheForRangeRead: "true"
-            metadataCacheTTLSeconds: "3600"
-            metadataStatCacheCapacity: "512Mi"
-            metadataTypeCacheCapacity: "64Mi"
       restartPolicy: OnFailure
   backoffLimit: 3
 ---
