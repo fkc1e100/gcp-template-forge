@@ -118,8 +118,9 @@ jobs:
         run: |
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
-          BASE_NAME=$(basename ${{ matrix.template }})
-          if [[ "${{ matrix.template }}" == *"gke-inference-fuse-cache"* ]]; then BASE_NAME="gke-inf-fuse-cache"; fi
+          TEMPLATE="${{ matrix.template }}"
+          BASE_NAME=$(basename "$TEMPLATE")
+          if [[ "$TEMPLATE" == *"gke-inference-fuse-cache"* ]]; then BASE_NAME="gke-inf-fuse-cache"; fi
           
           export TF_VAR_cluster_name="${BASE_NAME}-${UID_SUFFIX}-tf"
           export TF_VAR_network_name="${BASE_NAME}-${UID_SUFFIX}-tf-vpc"
@@ -128,7 +129,7 @@ jobs:
           
           terraform init \
             -backend-config="bucket=$TF_STATE_BUCKET" \
-            -backend-config="prefix=${{ matrix.template }}-${{ github.run_id }}/terraform-helm"
+            -backend-config="prefix=${TEMPLATE}-${{ github.run_id }}/terraform-helm"
           
           REGIONS=("us-central1" "us-east1" "us-west1")
           SUCCESS=false
@@ -170,8 +171,9 @@ jobs:
         run: |
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
-          BASE_NAME=$(basename ${{ matrix.template }})
-          if [[ "${{ matrix.template }}" == *"gke-inference-fuse-cache"* ]]; then BASE_NAME="gke-inf-fuse-cache"; fi
+          TEMPLATE="${{ matrix.template }}"
+          BASE_NAME=$(basename "$TEMPLATE")
+          if [[ "$TEMPLATE" == *"gke-inference-fuse-cache"* ]]; then BASE_NAME="gke-inf-fuse-cache"; fi
           # Try regions to find where it was deployed
           for REGION in us-central1 us-east1 us-west1; do
             if gcloud container clusters get-credentials "${BASE_NAME}-${UID_SUFFIX}-tf" --region "$REGION" --project ${{ env.PROJECT_ID }} 2>/dev/null; then
@@ -214,8 +216,6 @@ jobs:
       - name: TF Destroy
         working-directory: ${{ matrix.template }}/terraform-helm
         run: |
-          RUN_ID="${{ github.run_id }}"
-          UID_SUFFIX="${RUN_ID: -6}"
           terraform init \
             -backend-config="bucket=$TF_STATE_BUCKET" \
             -backend-config="prefix=${{ matrix.template }}-${{ github.run_id }}/terraform-helm"
@@ -247,13 +247,16 @@ jobs:
         run: |
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
-          find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
-          kubectl apply -n $KCC_NAMESPACE -f ${{ matrix.template }}/config-connector/
-          kubectl wait -n $KCC_NAMESPACE --for=condition=Ready --all --timeout=3600s -f ${{ matrix.template }}/config-connector/
+          TEMPLATE="${{ matrix.template }}"
+          BASE_NAME=$(basename "$TEMPLATE")
+          find "${TEMPLATE}"/config-connector* -type f -name "*.yaml" -exec sed -i "s/${BASE_NAME}/${BASE_NAME}-${UID_SUFFIX}/g" {} +
+          kubectl apply -n "$KCC_NAMESPACE" -f "${TEMPLATE}/config-connector/"
+          kubectl wait -n "$KCC_NAMESPACE" --for=condition=Ready --all --timeout=3600s -f "${TEMPLATE}/config-connector/"
       - name: Teardown KCC
         if: always()
         run: |
-          kubectl delete -n $KCC_NAMESPACE -f ${{ matrix.template }}/config-connector/ --wait=true --timeout=900s || true
+          TEMPLATE="${{ matrix.template }}"
+          kubectl delete -n "$KCC_NAMESPACE" -f "${TEMPLATE}/config-connector/" --wait=true --timeout=900s || true
 
   circuit-breaker:
     name: Circuit Breaker

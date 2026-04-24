@@ -62,9 +62,10 @@ jobs:
         id: skip-check
         run: |
           TEMPLATE="${{ matrix.template }}"
+          GITHUB_SHA="${{ github.sha }}"
           if [ ! -f "${TEMPLATE}/.validated" ]; then echo "skip=false" >> $GITHUB_OUTPUT; exit 0; fi
           VALIDATED_COMMIT=$(grep '^commit:' "${TEMPLATE}/.validated" | awk '{print $2}')
-          if [ "$VALIDATED_COMMIT" = "${{ github.sha }}" ]; then echo "skip=true" >> $GITHUB_OUTPUT; else echo "skip=false" >> $GITHUB_OUTPUT; fi
+          if [ "$VALIDATED_COMMIT" = "$GITHUB_SHA" ]; then echo "skip=true" >> $GITHUB_OUTPUT; else echo "skip=false" >> $GITHUB_OUTPUT; fi
       
       - name: Auth and Setup GKE
         if: steps.skip-check.outputs.skip != 'true'
@@ -85,13 +86,14 @@ jobs:
           echo "TF_START=$(date -u +%s)" >> $GITHUB_ENV
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
-          BASE_NAME=$(basename ${{ matrix.template }})
-          if [[ "${{ matrix.template }}" == *"gke-inference-fuse-cache"* ]]; then BASE_NAME="gke-inf-fuse-cache"; fi
+          TEMPLATE="${{ matrix.template }}"
+          BASE_NAME=$(basename "$TEMPLATE")
+          if [[ "$TEMPLATE" == *"gke-inference-fuse-cache"* ]]; then BASE_NAME="gke-inf-fuse-cache"; fi
           export TF_VAR_cluster_name="${BASE_NAME}-${UID_SUFFIX}-tf"
           export TF_VAR_network_name="${BASE_NAME}-${UID_SUFFIX}-tf-vpc"
           export TF_VAR_subnet_name="${BASE_NAME}-${UID_SUFFIX}-tf-subnet"
           export TF_VAR_uid_suffix="${UID_SUFFIX}"
-          terraform init -backend-config="bucket=$TF_STATE_BUCKET" -backend-config="prefix=${{ matrix.template }}-post-merge/terraform-helm"
+          terraform init -backend-config="bucket=$TF_STATE_BUCKET" -backend-config="prefix=${TEMPLATE}-post-merge/terraform-helm"
           
           REGIONS=("us-central1" "us-east1" "us-west1")
           SUCCESS=false
@@ -116,7 +118,7 @@ jobs:
         if: always() && steps.tf-apply.outcome == 'success'
         working-directory: ${{ matrix.template }}/terraform-helm
         run: |
-          TF_DURATION=$(( $(date -u +%s) - ${TF_START} ))
+          TF_DURATION=$(( $(date -u +%s) - TF_START ))
           echo "tf_duration=${TF_DURATION}" >> $GITHUB_OUTPUT
           CLUSTER=$(terraform output -raw cluster_name 2>/dev/null || echo "")
           LOCATION=$(terraform output -raw cluster_location 2>/dev/null || echo "")
@@ -143,7 +145,7 @@ jobs:
 
       - name: Set Slug
         id: slug
-        run: echo "template_slug=$(echo ${{ matrix.template }} | tr '/' '-')" >> $GITHUB_OUTPUT
+        run: echo "template_slug=$(echo "${{ matrix.template }}" | tr '/' '-')" >> $GITHUB_OUTPUT
 
       - name: Upload TF results artifact
         if: always() && steps.skip-check.outputs.skip != 'true'
@@ -181,15 +183,18 @@ jobs:
           KCC_START=$(date -u +%s)
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
-          find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
-          kubectl apply -n $KCC_NAMESPACE -f ${{ matrix.template }}/config-connector/
-          kubectl wait -n $KCC_NAMESPACE --for=condition=Ready --all --timeout=3600s -f ${{ matrix.template }}/config-connector/
-          KCC_DURATION=$(( $(date -u +%s) - ${KCC_START} ))
+          TEMPLATE="${{ matrix.template }}"
+          BASE_NAME=$(basename "$TEMPLATE")
+          find "${TEMPLATE}"/config-connector* -type f -name "*.yaml" -exec sed -i "s/${BASE_NAME}/${BASE_NAME}-${UID_SUFFIX}/g" {} +
+          kubectl apply -n "$KCC_NAMESPACE" -f "${TEMPLATE}/config-connector/"
+          kubectl wait -n "$KCC_NAMESPACE" --for=condition=Ready --all --timeout=3600s -f "${TEMPLATE}/config-connector/"
+          KCC_DURATION=$(( $(date -u +%s) - KCC_START ))
           echo "kcc_duration=${KCC_DURATION}" >> $GITHUB_OUTPUT
       - name: KCC Teardown
         if: always()
         run: |
-          kubectl delete -n $KCC_NAMESPACE -f ${{ matrix.template }}/config-connector/ --wait=true --timeout=900s || true
+          TEMPLATE="${{ matrix.template }}"
+          kubectl delete -n "$KCC_NAMESPACE" -f "${TEMPLATE}/config-connector/" --wait=true --timeout=900s || true
 
       - name: Save KCC results
         if: always()
@@ -204,7 +209,7 @@ jobs:
 
       - name: Set Slug
         id: slug
-        run: echo "template_slug=$(echo ${{ matrix.template }} | tr '/' '-')" >> $GITHUB_OUTPUT
+        run: echo "template_slug=$(echo "${{ matrix.template }}" | tr '/' '-')" >> $GITHUB_OUTPUT
 
       - name: Upload KCC results artifact
         if: always()
@@ -234,7 +239,7 @@ jobs:
       - name: Update READMEs and .validated files
         run: |
           TEMPLATES='${{ needs.detect-changes.outputs.templates }}'
-          for TEMPLATE in $(echo $TEMPLATES | jq -r '.[]'); do
+          for TEMPLATE in $(echo "$TEMPLATES" | jq -r '.[]'); do
             echo "Updating $TEMPLATE..."
             TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
             DATE=$(date -u +"%Y-%m-%d")
