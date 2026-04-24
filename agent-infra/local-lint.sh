@@ -31,7 +31,8 @@ else
   fi
 fi
 
-for template in $TEMPLATES; do
+echo "$TEMPLATES" | while read -r template; do
+  [ -z "$template" ] && continue
   template_name=$(basename "$template")
   [ "$template_name" == "README.md" ] && continue
   

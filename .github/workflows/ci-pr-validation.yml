@@ -7,6 +7,9 @@ on:
     paths:
       - 'templates/**'
       - 'agent-infra/**'
+      - '.github/workflows/ci-pr-validation.yml'
+      - '.github/workflows/ci-post-merge.yml'
+      - '.github/actions/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
