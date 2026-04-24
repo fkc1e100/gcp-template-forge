@@ -1,0 +1,89 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: 'Detect Changed Templates'
+description: 'Identifies which templates have changed in a PR or push'
+outputs:
+  templates:
+    description: 'JSON array of all changed template directories'
+    value: ${{ steps.find.outputs.templates }}
+  tf_templates:
+    description: 'JSON array of changed templates supporting Terraform'
+    value: ${{ steps.find.outputs.tf_templates }}
+  kcc_templates:
+    description: 'JSON array of changed templates supporting Config Connector'
+    value: ${{ steps.find.outputs.kcc_templates }}
+  has_templates:
+    description: 'Boolean indicating if any templates changed'
+    value: ${{ steps.find.outputs.has_templates }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Find changed template directories
+      id: find
+      shell: bash
+      run: |
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          git fetch origin ${{ github.base_ref }}
+          PR_HEAD="${{ github.event.pull_request.head.sha }}"
+          BASE=$(git merge-base "origin/${{ github.base_ref }}" "$PR_HEAD")
+          DIFF_HEAD="$PR_HEAD"
+        else
+          # For push, use the 'before' SHA, or HEAD^1 if missing (first push)
+          BASE="${{ github.event.before }}"
+          if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then
+            BASE=$(git rev-parse HEAD~1 2>/dev/null || git rev-list --max-parents=0 HEAD)
+          fi
+          DIFF_HEAD="${{ github.sha }}"
+        fi
+        
+        # Find all changed template directories
+        CHANGED_FILES=$(git diff --name-only "$BASE" "$DIFF_HEAD")
+        DIRS=$(echo "$CHANGED_FILES" \
+          | grep '^templates/' \
+          | grep -v '\.md$' \
+          | awk -F/ '{print $1"/"$2}' \
+          | sort -u || true)
+        
+        TEMPLATES=$(echo "$DIRS" | jq -Rnc '[inputs | select(length>0)]')
+        echo "templates=$TEMPLATES" >> "$GITHUB_OUTPUT"
+        echo "has_templates=$([ "$TEMPLATES" = "[]" ] && echo false || echo true)" >> "$GITHUB_OUTPUT"
+        echo "Changed templates: $TEMPLATES"
+
+        # Filter for TF supported templates (must have main.tf)
+        TF_DIRS=""
+        while read -r dir; do
+          [ -z "$dir" ] && continue
+          if [ -f "$dir/terraform-helm/main.tf" ]; then
+            TF_DIRS="$TF_DIRS $dir"
+          fi
+        done <<< "$DIRS"
+        TF_TEMPLATES=$(echo "$TF_DIRS" | tr ' ' '\n' | sort -u | jq -Rnc '[inputs | select(length>0)]')
+        echo "tf_templates=$TF_TEMPLATES" >> "$GITHUB_OUTPUT"
+        echo "TF supported templates: $TF_TEMPLATES"
+
+        # Filter for KCC supported templates
+        KCC_DIRS=""
+        while read -r dir; do
+          [ -z "$dir" ] && continue
+          if ls "$dir/config-connector/"*.yaml >/dev/null 2>&1; then
+            if [ ! -f "$dir/.kcc-unsupported" ]; then
+              KCC_DIRS="$KCC_DIRS $dir"
+            fi
+          fi
+        done <<< "$DIRS"
+        KCC_TEMPLATES=$(echo "$KCC_DIRS" | tr ' ' '\n' | sort -u | jq -Rnc '[inputs | select(length>0)]')
+        echo "kcc_templates=$KCC_TEMPLATES" >> "$GITHUB_OUTPUT"
+        echo "KCC supported templates: $KCC_TEMPLATES"
