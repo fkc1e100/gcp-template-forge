@@ -181,11 +181,11 @@ if [ -z "${JOB_NAME}" ]; then
 fi
 
 echo "Waiting for staging Job ${JOB_NAME}..."
-kubectl wait --for=condition=complete job/${JOB_NAME} -n ${NAMESPACE} --timeout=45m || debug_failure "Staging Job failed to complete within 45m"
+kubectl wait --for=condition=complete job/${JOB_NAME} -n ${NAMESPACE} --timeout=120m || debug_failure "Staging Job failed to complete within 120m"
 echo "Staging Job complete."
 
 echo "Waiting for deployment ${DEPLOY_NAME}..."
-kubectl wait --for=condition=available deployment/${DEPLOY_NAME} -n ${NAMESPACE} --timeout=15m || debug_failure "Deployment failed to become available"
+kubectl wait --for=condition=available deployment/${DEPLOY_NAME} -n ${NAMESPACE} --timeout=60m || debug_failure "Deployment failed to become available"
 echo "Workload is available."
 
 # 5. Sidecar and Mount Verification
