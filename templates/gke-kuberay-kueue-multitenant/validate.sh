@@ -105,7 +105,7 @@ wait_for_raycluster() {
   while [ $(date +%s) -lt $end_time ]; do
     local state=$(kubectl get raycluster "$name" -n "$ns" -o jsonpath='{.status.state}' 2>/dev/null || echo "unknown")
     echo "Current state of $name: $state"
-    if [[ "$state" == "ready" ]] || [[ "$state" == "Ready" ]]; then
+    if [[ "$state" == "ready" ]] || [[ "$state" == "Ready" ]] || [[ "$state" == "running" ]] || [[ "$state" == "Running" ]]; then
       echo "RayCluster $name is ready!"
       return 0
     fi
