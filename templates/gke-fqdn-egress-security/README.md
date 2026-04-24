@@ -15,9 +15,9 @@ Securing egress traffic is a critical component of a Zero-Trust architecture. In
 - **GKE Cluster:** A private cluster with Dataplane V2 and FQDN Network Policy enabled.
 - **NetworkPolicy (`default-deny-egress`):** Denies all egress except for DNS (UDP/TCP 53) to allow FQDN resolution. *Note: This blocks communication with the Kubernetes API server by default, which is acceptable for this validation pod but may require an exception for production workloads.*
 - **FQDNNetworkPolicy (`allow-ai-egress`):** Allows HTTPS (TCP 443) traffic to:
-    - `anthropic.com`, `api.anthropic.com`, `*.anthropic.com`
-    - `huggingface.co`, `*.huggingface.co`
-    - `hf.co`, `*.hf.co`
+    - `anthropic.com`, `api.anthropic.com`, `www.anthropic.com`, `*.anthropic.com`
+    - `huggingface.co`, `api.huggingface.co`, `*.huggingface.co`
+    - `hf.co`, `www.hf.co`, `*.hf.co`
     *Note: The GKE FQDN controller intercepts DNS queries from the pods to learn the IP addresses associated with these domains. The first few requests after a policy is applied may experience slight latency as the eBPF maps are populated.*
 - **Validation Pod:** A `curl`-based pod used to verify connectivity.
 
