@@ -149,8 +149,10 @@ spec:
   backoffLimit: 3
   template:
     metadata:
-      annotations:
-        gke-gcsfuse/volumes: "true"
+      labels:
+        project: gcp-template-forge
+        template: gke-inference-fuse-cache
+        component: staging
     spec:
       serviceAccountName: gke-inf-fuse-cache-sa
       containers:
@@ -159,24 +161,18 @@ spec:
         command: ["sh", "-c"]
         args:
         - |
-          # In a real scenario, this would be a large download.
-          # For demonstration, we just ensure a config.json exists to unblock the Deployment.
-          echo "Checking mount point /models..."
-          until [ -d /models ]; do echo "Waiting for mount..."; sleep 2; done
-          mkdir -p /models/facebook/opt-125m
-          echo '{"model_type": "opt"}' > /models/facebook/opt-125m/config.json
-          echo "Model staged successfully."
-        volumeMounts:
-        - name: gcs-fuse-csi-ephemeral
-          mountPath: /models
-      volumes:
-      - name: gcs-fuse-csi-ephemeral
-        csi:
-          driver: gcsfuse.csi.storage.gke.io
-          volumeAttributes:
-            # NOTE: Replace <BUCKET_NAME> with your actual bucket name
-            bucketName: <BUCKET_NAME>
-            mountOptions: "implicit-dirs"
+          BUCKET_NAME="<BUCKET_NAME>" # IMPORTANT: Replace <BUCKET_NAME> with your GCS bucket name
+          if [ "$BUCKET_NAME" = "<BUCKET_NAME>" ]; then
+              echo "ERROR: You must replace <BUCKET_NAME> in the Job manifest before applying."
+              exit 1
+          fi
+          set -e
+          echo "Staging dummy model files..."
+          mkdir -p /tmp/models/facebook/opt-125m
+          echo '{"model_type": "opt"}' > /tmp/models/facebook/opt-125m/config.json
+          echo "Uploading dummy model to gs://${BUCKET_NAME}/facebook/opt-125m/..."
+          gcloud storage cp -r /tmp/models/facebook/opt-125m "gs://${BUCKET_NAME}/facebook/"
+          echo "Upload complete."
       restartPolicy: OnFailure
 ---
 apiVersion: v1
