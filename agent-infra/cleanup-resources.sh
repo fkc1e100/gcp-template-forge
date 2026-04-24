@@ -330,7 +330,7 @@ for metric in sorted(all_metrics):
     diff = a_usage - b_usage
     
     if b_usage > 0 or a_usage > 0 or diff != 0:
-        print(f\"{metric:<40} {b_usage:<10.1f} {a_usage:<10.1f} {diff:<10.1f} {limit:<10.1f}\")
+        print(f"{metric:<40} {b_usage:<10.1f} {a_usage:<10.1f} {diff:<10.1f} {limit:<10.1f}")
 EOF
 
 echo "=== Cleanup Complete ==="
