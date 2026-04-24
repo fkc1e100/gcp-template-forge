@@ -107,11 +107,7 @@ jobs:
           echo "kcc_templates=$KCC_TEMPLATES" >> $GITHUB_OUTPUT
           echo "KCC supported templates: $KCC_TEMPLATES"
 
-      - name: Remove repo-agent Label on Start
-        if: github.event_name == 'pull_request'
-        run: gh pr edit ${{ github.event.number }} --remove-label "repo-agent" || true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
   # ── 2. Lint / static analysis (PR + push) ────────────────────────────────
   lint-agent-infra:
@@ -491,11 +487,7 @@ jobs:
               body: `### Deploy & Test TF+Helm: \`${template}\` complete.`,
             });
 
-      - name: Cancel workflow on failure
-        if: failure()
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh pr edit ${{ github.event.number }} --add-label "repo-agent" && gh run cancel ${{ github.run_id }}
+
 
   # ── 4b. PR: KCC deploy → wait → delete (parallel with deploy-test-tf) ─────
   kcc-apply:
@@ -1642,19 +1634,7 @@ jobs:
           git commit -m "ci: validate ${TEMPLATE} [skip ci]" || true
           git push
 
-  label-failure:
-    name: "Label Failure"
-    needs: [detect-changes, lint, pre-cleanup, tf-provision, tf-test, tf-teardown, kcc-apply, kcc-test, kcc-teardown]
-    if: >-
-      always() && github.event_name == 'pull_request' &&
-      (contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled'))
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Add repo-agent label
-        run: gh pr edit ${{ github.event.number }} --add-label "repo-agent"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
   auto-merge:
     name: "Auto-merge"
