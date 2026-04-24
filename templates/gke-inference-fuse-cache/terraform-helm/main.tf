@@ -346,6 +346,7 @@ ${yamlencode({
     }
   ]
   bucketName = google_storage_bucket.model_bucket.name
+  uidSuffix  = var.uid_suffix
   cache = {
     capacity                = "50Gi"
     metadataCacheTTLSeconds = "3600"

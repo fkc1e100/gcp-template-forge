@@ -28,19 +28,19 @@ SHARED_SA="forge-builder@${PROJECT_ID}.iam.gserviceaccount.com"
 echo "Suffixing manifests for $FULL_NAME with $UID_SUFFIX"
 
 # 1. Suffix based on full template name (Standard)
-find "${TEMPLATE_PATH}/config-connector" -type f -name "*.yaml" -exec sed -i "s/${FULL_NAME}/${FULL_NAME}-${UID_SUFFIX}/g" {} +
+find "${TEMPLATE_PATH}/config-connector" "${TEMPLATE_PATH}/config-connector-workload" -type f -name "*.yaml" -exec sed -i "s/${FULL_NAME}/${FULL_NAME}-${UID_SUFFIX}/g" {} + 2>/dev/null || true
 
 # 2. Special cases for shortened resource names to avoid GCP limits (30 chars for GSAs)
 if [[ "$FULL_NAME" == "gke-inference-fuse-cache" ]]; then
   echo "Applying special suffixing for gke-inference-fuse-cache"
-  find "${TEMPLATE_PATH}/config-connector" -type f -name "*.yaml" -exec sed -i "s/gke-inf-fuse-node/gke-inf-fuse-node-${UID_SUFFIX}/g" {} +
-  find "${TEMPLATE_PATH}/config-connector" -type f -name "*.yaml" -exec sed -i "s/gke-inf-fuse-cache/gke-inf-fuse-cache-${UID_SUFFIX}/g" {} +
-  find "${TEMPLATE_PATH}/config-connector" -type f -name "*.yaml" -exec sed -i "s/gke-inf-fuse-workload/gke-inf-fuse-workload-${UID_SUFFIX}/g" {} +
+  find "${TEMPLATE_PATH}/config-connector" "${TEMPLATE_PATH}/config-connector-workload" -type f -name "*.yaml" -exec sed -i "s/gke-inf-fuse-node/gke-inf-fuse-node-${UID_SUFFIX}/g" {} + 2>/dev/null || true
+  find "${TEMPLATE_PATH}/config-connector" "${TEMPLATE_PATH}/config-connector-workload" -type f -name "*.yaml" -exec sed -i "s/gke-inf-fuse-cache/gke-inf-fuse-cache-${UID_SUFFIX}/g" {} + 2>/dev/null || true
+  find "${TEMPLATE_PATH}/config-connector" "${TEMPLATE_PATH}/config-connector-workload" -type f -name "*.yaml" -exec sed -i "s/gke-inf-fuse-workload/gke-inf-fuse-workload-${UID_SUFFIX}/g" {} + 2>/dev/null || true
 fi
 
 if [[ "$FULL_NAME" == "gke-kuberay-kueue-multitenant" ]]; then
   echo "Applying special suffixing for gke-kuberay-kueue-multitenant"
-  find "${TEMPLATE_PATH}/config-connector" -type f -name "*.yaml" -exec sed -i "s/gke-ray-mt-node/gke-ray-mt-node-${UID_SUFFIX}/g" {} +
+  find "${TEMPLATE_PATH}/config-connector" "${TEMPLATE_PATH}/config-connector-workload" -type f -name "*.yaml" -exec sed -i "s/gke-ray-mt-node/gke-ray-mt-node-${UID_SUFFIX}/g" {} + 2>/dev/null || true
 fi
 
 # 3. CI-specific Patching for projects with restricted IAM permissions
@@ -86,19 +86,22 @@ def patch_doc(doc):
             
     return doc
 
-for p in pathlib.Path("${TEMPLATE_PATH}/config-connector").rglob("*.yaml"):
-    with open(p, "r") as f:
-        try:
-            docs = list(yaml.safe_load_all(f))
-        except yaml.YAMLError:
-            continue
-    
-    new_docs = [patch_doc(d) for d in docs]
-    new_docs = [d for d in new_docs if d is not None]
-    
-    if len(new_docs) != len(docs) or any(True for d in new_docs if d != None): # Always dump to be safe
-        print(f"Patching {p} for CI workarounds")
-        with open(p, "w") as f:
-            yaml.safe_dump_all(new_docs, f, sort_keys=False)
+# Patch BOTH config-connector and config-connector-workload
+for dir_name in ["config-connector", "config-connector-workload"]:
+    for p in pathlib.Path(f"${TEMPLATE_PATH}/{dir_name}").rglob("*.yaml"):
+        if not p.is_file(): continue
+        with open(p, "r") as f:
+            try:
+                docs = list(yaml.safe_load_all(f))
+            except yaml.YAMLError:
+                continue
+        
+        new_docs = [patch_doc(d) for d in docs]
+        new_docs = [d for d in new_docs if d is not None]
+        
+        if len(new_docs) > 0:
+            print(f"Patching {p} for CI workarounds")
+            with open(p, "w") as f:
+                yaml.safe_dump_all(new_docs, f, sort_keys=False)
 EOF
 fi

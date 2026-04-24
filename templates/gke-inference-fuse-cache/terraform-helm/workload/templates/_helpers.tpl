@@ -55,7 +55,7 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 project: gcp-template-forge
-template: {{ .Values.templateName | default "gke-inference-fuse-cache" }}
+template: {{ if .Values.uidSuffix }}gke-inference-fuse-cache-{{ .Values.uidSuffix }}{{ else }}gke-inference-fuse-cache{{ end }}
 {{- end }}
 
 {{/*
@@ -65,7 +65,7 @@ Selector labels
 app.kubernetes.io/name: {{ include "workload.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 project: gcp-template-forge
-template: {{ .Values.templateName | default "gke-inference-fuse-cache" }}
+template: {{ if .Values.uidSuffix }}gke-inference-fuse-cache-{{ .Values.uidSuffix }}{{ else }}gke-inference-fuse-cache{{ end }}
 app: vllm
 gpu: l4
 {{- end }}

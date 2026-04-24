@@ -46,6 +46,7 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
   TF_VAR_project_id: gca-gke-2025
   TF_VAR_service_account: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+  TF_VAR_create_gsas: false
 
 jobs:
   detect-changes:
@@ -194,6 +195,7 @@ jobs:
           for REGION in us-central1 us-east1 us-west1; do
             if gcloud container clusters get-credentials "${BASE_NAME}-${UID_SUFFIX}-tf" --region "$REGION" --project "${{ env.PROJECT_ID }}" 2>/dev/null; then
               echo "REGION=$REGION" >> "$GITHUB_ENV"
+              echo "CLUSTER_NAME=${BASE_NAME}-${UID_SUFFIX}-tf" >> "$GITHUB_ENV"
               break
             fi
           done
@@ -265,10 +267,47 @@ jobs:
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
           TEMPLATE="${{ matrix.template }}"
-          BASE_NAME=$(basename "$TEMPLATE")
-          find "${TEMPLATE}"/config-connector* -type f -name "*.yaml" -exec sed -i "s/${BASE_NAME}/${BASE_NAME}-${UID_SUFFIX}/g" {} +
+          
+          chmod +x agent-infra/prepare-manifests.sh
+          ./agent-infra/prepare-manifests.sh "$TEMPLATE" "$UID_SUFFIX"
+          
           kubectl apply -n "$KCC_NAMESPACE" -f "${TEMPLATE}/config-connector/"
-          kubectl wait -n "$KCC_NAMESPACE" --for=condition=Ready --all --timeout=5400s -f "${TEMPLATE}/config-connector/"
+          echo "Waiting for KCC resources to be Ready (up to 90 minutes)..."
+          for i in {1..90}; do
+            echo "=== Minute $i ==="
+            kubectl get containercluster,computenetwork,computesubnetwork,computerouter -n "$KCC_NAMESPACE" || true
+            if kubectl wait -n "$KCC_NAMESPACE" --for=condition=Ready --all --timeout=60s -f "${TEMPLATE}/config-connector/" &>/dev/null; then
+              echo "All resources are Ready!"
+              exit 0
+            fi
+            sleep 60
+          done
+          echo "ERROR: Timeout waiting for KCC resources"
+          exit 1
+      - name: Workload Cluster Credentials and Deploy
+        run: |
+          RUN_ID="${{ github.run_id }}"
+          UID_SUFFIX="${RUN_ID: -6}"
+          TEMPLATE="${{ matrix.template }}"
+          BASE_NAME=$(basename "$TEMPLATE")
+          if [[ "$TEMPLATE" == *"gke-inference-fuse-cache"* ]]; then BASE_NAME="gke-inf-fuse-cache"; fi
+          CLUSTER_NAME="${BASE_NAME}-${UID_SUFFIX}"
+          
+          echo "Connecting to workload cluster: $CLUSTER_NAME"
+          gcloud container clusters get-credentials "$CLUSTER_NAME" --region "$KCC_REGION" --project "${{ env.PROJECT_ID }}"
+          
+          if [ -d "${TEMPLATE}/config-connector-workload" ]; then
+            echo "Applying workload manifests from config-connector-workload/"
+            kubectl apply -f "${TEMPLATE}/config-connector-workload/"
+          fi
+          
+          if [ -f "${TEMPLATE}/validate.sh" ]; then
+            echo "Running template-specific validation (KCC)"
+            export CLUSTER_NAME="$CLUSTER_NAME"
+            export REGION="$KCC_REGION"
+            chmod +x "${TEMPLATE}/validate.sh"
+            "${TEMPLATE}/validate.sh"
+          fi
       - name: Teardown KCC
         if: always()
         run: |
