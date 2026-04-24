@@ -39,10 +39,10 @@ spec:
     masterIpv4CidrBlock: "172.16.1.0/28"
   workloadIdentityConfig:
     workloadPool: "gca-gke-2025.svc.id.goog"
-  masterAuthorizedNetworksConfig:
-    # Set to a restricted range or empty for security. 
-    # Placeholder for administrative access.
-    cidrBlocks: []
+  # masterAuthorizedNetworksConfig:
+  #   # Set to a restricted range for security. 
+  #   # Placeholder for administrative access.
+  #   cidrBlocks: []
   addonsConfig:
     networkPolicyConfig:
       disabled: false

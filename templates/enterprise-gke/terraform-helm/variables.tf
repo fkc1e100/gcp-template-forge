@@ -50,7 +50,7 @@ variable "service_account" {
 variable "create_service_accounts" {
   description = "Whether to create dedicated service accounts. Set to false in environments with restricted IAM permissions (like CI)."
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "master_authorized_networks" {
