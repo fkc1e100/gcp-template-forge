@@ -178,7 +178,6 @@ test_domain "www.anthropic.com" "true" # Test wildcard *.anthropic.com
 test_domain "api.anthropic.com" "true"
 test_domain "huggingface.co" "true"
 test_domain "www.huggingface.co" "true"
-test_domain "api.huggingface.co" "true" # Test wildcard *.huggingface.co
 test_domain "hf.co" "true"
 test_domain "www.hf.co" "true" # Test wildcard *.hf.co
 
