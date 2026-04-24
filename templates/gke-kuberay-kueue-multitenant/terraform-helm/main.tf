@@ -27,11 +27,6 @@ resource "google_compute_network" "gke_kuberay_kueue_multitenant_vpc" {
   name                    = var.network_name
   auto_create_subnetworks = false
   project                 = var.project_id
-
-  labels = {
-    project  = "gcp-template-forge"
-    template = var.uid_suffix != "" ? "gke-kuberay-kueue-multitenant-${var.uid_suffix}" : "gke-kuberay-kueue-multitenant"
-  }
 }
 
 # Subnet

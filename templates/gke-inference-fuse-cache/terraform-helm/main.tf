@@ -27,8 +27,7 @@ resource "random_id" "bucket_suffix" {
 }
 
 locals {
-  uid                = var.uid_suffix != "" ? var.uid_suffix : random_id.bucket_suffix.hex
-  # Use abbreviated name for resource names to stay under GCP character limits (e.g. 30 for GSA)
+  uid            = var.uid_suffix != "" ? var.uid_suffix : random_id.bucket_suffix.hex
   base_name      = "gke-inf-fuse-cache"
   template_label = var.uid_suffix != "" ? "gke-inference-fuse-cache-${var.uid_suffix}" : "gke-inference-fuse-cache"
   ksa_name       = "${local.base_name}-${local.uid}-sa"
@@ -41,11 +40,6 @@ resource "google_compute_network" "vpc" {
   name                    = var.network_name
   auto_create_subnetworks = false
   project                 = var.project_id
-
-  labels = {
-    project  = "gcp-template-forge"
-    template = local.template_label
-  }
 }
 
 # Subnet
