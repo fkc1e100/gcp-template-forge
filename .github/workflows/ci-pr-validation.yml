@@ -168,7 +168,8 @@ jobs:
           wif_service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
       - name: Get Credentials
         run: |
-          UID_SUFFIX="${{ github.run_id: -6 }}"
+          RUN_ID="${{ github.run_id }}"
+          UID_SUFFIX="${RUN_ID: -6}"
           BASE_NAME=$(basename ${{ matrix.template }})
           if [[ "${{ matrix.template }}" == *"gke-inference-fuse-cache"* ]]; then BASE_NAME="gke-inf-fuse-cache"; fi
           # Try regions to find where it was deployed
@@ -244,7 +245,8 @@ jobs:
           project_id: ${{ env.PROJECT_ID }}
       - name: Apply and Wait
         run: |
-          UID_SUFFIX="${{ github.run_id: -6 }}"
+          RUN_ID="${{ github.run_id }}"
+          UID_SUFFIX="${RUN_ID: -6}"
           find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
           kubectl apply -n $KCC_NAMESPACE -f ${{ matrix.template }}/config-connector/
           kubectl wait -n $KCC_NAMESPACE --for=condition=Ready --all --timeout=3600s -f ${{ matrix.template }}/config-connector/

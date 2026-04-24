@@ -175,7 +175,8 @@ jobs:
         id: kcc-wait
         run: |
           KCC_START=$(date -u +%s)
-          UID_SUFFIX="${{ github.run_id: -6 }}"
+          RUN_ID="${{ github.run_id }}"
+          UID_SUFFIX="${RUN_ID: -6}"
           find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
           kubectl apply -n $KCC_NAMESPACE -f ${{ matrix.template }}/config-connector/
           kubectl wait -n $KCC_NAMESPACE --for=condition=Ready --all --timeout=3600s -f ${{ matrix.template }}/config-connector/
