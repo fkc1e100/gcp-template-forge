@@ -97,6 +97,7 @@ The included `validate.sh` script automates the entire verification process, inc
 1.  **Test Allowed Egress (Anthropic):**
     ```bash
     kubectl exec egress-verifier -- curl -sL -4 --connect-timeout 10 https://anthropic.com
+    kubectl exec egress-verifier -- curl -sL -4 --connect-timeout 10 https://www.anthropic.com
     kubectl exec egress-verifier -- curl -sL -4 --connect-timeout 10 https://api.anthropic.com
     ```
 2.  **Test Allowed Egress (HuggingFace):**

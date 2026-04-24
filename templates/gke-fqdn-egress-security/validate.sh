@@ -174,6 +174,7 @@ test_domain() {
 
 # Test Allowed Domains
 test_domain "anthropic.com" "true"
+test_domain "www.anthropic.com" "true" # Test wildcard *.anthropic.com
 test_domain "api.anthropic.com" "true"
 test_domain "huggingface.co" "true"
 test_domain "api.huggingface.co" "true" # Test wildcard *.huggingface.co
