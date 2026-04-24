@@ -24,10 +24,10 @@ metadata:
     project: gcp-template-forge
     template: gke-inference-fuse-cache
 spec:
-  location: us-central1
+  location: us-central1 # UPDATE: Replace with your region
   # Restrict to a single zone that supports L4 GPUs to save quota and improve reliability
   nodeLocations:
-    - us-central1-a
+    - us-central1-a # UPDATE: Replace with your zone
   networkRef:
     name: gke-inf-fuse-cache-vpc
   subnetworkRef:

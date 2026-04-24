@@ -25,9 +25,9 @@ metadata:
 spec:
   clusterRef:
     name: gke-kuberay-kueue-multitenant
-  location: us-central1
+  location: us-central1 # UPDATE: Replace with your region
   nodeLocations:
-    - us-central1-a
+    - us-central1-a # UPDATE: Replace with your zone
   nodeCount: 1
   nodeConfig:
     spot: false
@@ -54,11 +54,11 @@ metadata:
 spec:
   clusterRef:
     name: gke-kuberay-kueue-multitenant
-  location: us-central1
+  location: us-central1 # UPDATE: Replace with your region
   nodeLocations:
-    - us-central1-a
-    - us-central1-b
-    - us-central1-c
+    - us-central1-a # UPDATE: Replace with your zone
+    - us-central1-b # UPDATE: Replace with your zone
+    - us-central1-c # UPDATE: Replace with your zone
   autoscaling:
     minNodeCount: 0
     maxNodeCount: 5

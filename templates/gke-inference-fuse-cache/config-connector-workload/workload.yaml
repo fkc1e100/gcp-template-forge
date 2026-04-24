@@ -64,6 +64,7 @@ spec:
       containers:
       - name: vllm-openai
         image: "google/cloud-sdk:slim"
+        imagePullPolicy: IfNotPresent
         command: ["/usr/bin/python3", "-c"]
         args:
         - |
@@ -158,6 +159,7 @@ spec:
       containers:
       - name: stager
         image: google/cloud-sdk:slim
+        imagePullPolicy: IfNotPresent
         command: ["sh", "-c"]
         args:
         - |
