@@ -16,9 +16,9 @@ jobs:
         run: |
           gh pr list --repo fkc1e100/gcp-template-forge --state open --json number,mergeable | \
           jq -r '.[] | select(.mergeable == "CONFLICTING") | .number' | \
-          while read pr_num; do
+          while read -r pr_num; do
             echo "Labeling PR #$pr_num as needs-rebase"
-            gh pr edit $pr_num --repo fkc1e100/gcp-template-forge --add-label "needs-rebase"
+            gh pr edit "$pr_num" --repo fkc1e100/gcp-template-forge --add-label "needs-rebase"
           done
         env:
           GH_TOKEN: ${{ github.token }}
