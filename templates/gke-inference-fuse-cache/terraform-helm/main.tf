@@ -270,13 +270,13 @@ ${yamlencode({
   }
   resources = {
     limits = {
-      cpu               = "2"
-      memory            = "4Gi"
+      cpu              = "2"
+      memory           = "4Gi"
       "nvidia.com/gpu" = 1
     }
     requests = {
-      cpu               = "2"
-      memory            = "4Gi"
+      cpu              = "2"
+      memory           = "4Gi"
       "nvidia.com/gpu" = 1
     }
   }
@@ -292,10 +292,10 @@ ${yamlencode({
   ]
   bucketName = google_storage_bucket.model_bucket.name
   cache = {
-    capacity                  = "50Gi"
-    metadataCacheTTLSeconds   = "3600"
-    statCacheCapacity         = "10000"
-    typeCacheCapacity         = "10000"
+    capacity                = "50Gi"
+    metadataCacheTTLSeconds = "3600"
+    statCacheCapacity       = "10000"
+    typeCacheCapacity       = "10000"
   }
   serviceAccount = {
     create = true

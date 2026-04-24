@@ -14,17 +14,17 @@
 
 output "cluster_name" {
   description = "The name of the GKE cluster"
-  value       = google_container_cluster.primary.name
+  value       = google_container_cluster.gke_inference_fuse_cache_cluster.name
 }
 
 output "cluster_endpoint" {
   description = "The IP address of the GKE cluster master"
-  value       = google_container_cluster.primary.endpoint
+  value       = google_container_cluster.gke_inference_fuse_cache_cluster.endpoint
 }
 
 output "cluster_location" {
   description = "The location of the GKE cluster"
-  value       = google_container_cluster.primary.location
+  value       = google_container_cluster.gke_inference_fuse_cache_cluster.location
 }
 
 output "region" {
