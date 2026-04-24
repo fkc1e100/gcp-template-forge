@@ -41,7 +41,7 @@ runs:
           | grep '^templates/' \
           | grep -v '\.md$' \
           | awk -F/ '{print $1"/"$2}' \
-          | sort -u)
+          | sort -u || true)
         
         TEMPLATES=$(echo "$DIRS" | jq -Rnc '[inputs | select(length>0)]')
         echo "templates=$TEMPLATES" >> $GITHUB_OUTPUT
