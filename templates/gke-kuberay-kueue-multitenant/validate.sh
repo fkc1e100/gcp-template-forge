@@ -31,12 +31,14 @@ debug_failure() {
   echo "Error: $msg"
   echo "=== Debug Info: Nodes ==="
   kubectl get nodes
-  echo "=== Debug Info: Pods (kueue-system) ==="
-  kubectl get pods -n kueue-system
-  echo "=== Debug Info: Pods (default) ==="
-  kubectl get pods -n default
+  echo "=== Debug Info: Pods (all) ==="
+  kubectl get pods -A
+  echo "=== Debug Info: RayClusters (all) ==="
+  kubectl get raycluster -A -o yaml || echo "Could not fetch RayClusters"
+  echo "=== Debug Info: Kueue Workloads (all) ==="
+  kubectl get workloads.kueue.x-k8s.io -A || echo "Could not fetch Kueue Workloads"
   echo "=== Debug Info: Events (all) ==="
-  kubectl get events -A --sort-by='.lastTimestamp' | tail -n 50
+  kubectl get events -A --sort-by='.lastTimestamp' | tail -n 100
   echo "=== Debug Info: Kueue Operator Logs ==="
   kubectl logs -l control-plane=controller-manager -n kueue-system --all-containers --tail=100 || echo "Could not fetch Kueue logs"
   echo "=== Debug Info: KubeRay Operator Logs ==="
@@ -92,13 +94,36 @@ echo "Note: This triggers autoscaling for GPU nodes, which can take several minu
 # Verify GPU Driver installation is initiated via GKE annotation
 kubectl get nodes -l cloud.google.com/gke-accelerator=nvidia-l4 -o jsonpath='{.items[*].metadata.labels.cloud\.google\.com/gke-gpu-driver-version}' | grep -q "DEFAULT" || echo "Warning: GPU nodes found but GKE driver version label not yet present."
 
+wait_for_raycluster() {
+  local name=$1
+  local ns=$2
+  local timeout=$3
+  local start_time=$(date +%s)
+  local end_time=$((start_time + timeout))
+
+  echo "Monitoring RayCluster $name in namespace $ns..."
+  while [ $(date +%s) -lt $end_time ]; do
+    local state=$(kubectl get raycluster "$name" -n "$ns" -o jsonpath='{.status.state}' 2>/dev/null || echo "unknown")
+    echo "Current state of $name: $state"
+    if [[ "$state" == "ready" ]] || [[ "$state" == "Ready" ]]; then
+      echo "RayCluster $name is ready!"
+      return 0
+    fi
+    if [[ "$state" == "failed" ]] || [[ "$state" == "Failed" ]]; then
+      echo "Error: RayCluster $name failed!"
+      return 1
+    fi
+    sleep 30
+  done
+  echo "Timeout waiting for RayCluster $name"
+  return 1
+}
+
 set +e
-echo "Waiting for raycluster-team-a..."
-kubectl wait --for=jsonpath='{.status.state}'=ready raycluster/raycluster-team-a -n team-a --timeout=45m &
+wait_for_raycluster "raycluster-team-a" "team-a" 2700 &
 PID_A=$!
 
-echo "Waiting for raycluster-team-b..."
-kubectl wait --for=jsonpath='{.status.state}'=ready raycluster/raycluster-team-b -n team-b --timeout=45m &
+wait_for_raycluster "raycluster-team-b" "team-b" 2700 &
 PID_B=$!
 
 wait $PID_A
