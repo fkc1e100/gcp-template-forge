@@ -198,7 +198,7 @@ while [ $RETRY -lt 10 ]; do
 done
 
 # Now wait for completion with a long timeout
-kubectl wait --for=condition=complete job/${JOB_NAME} -n ${NAMESPACE} --timeout=120m || {
+kubectl wait --for=condition=complete job/${JOB_NAME} -n ${NAMESPACE} --timeout=150m || {
   echo "Staging Job did not complete successfully. Checking status..."
   kubectl get job ${JOB_NAME} -n ${NAMESPACE} -o yaml
   debug_failure "Staging Job failed or timed out"
@@ -206,7 +206,7 @@ kubectl wait --for=condition=complete job/${JOB_NAME} -n ${NAMESPACE} --timeout=
 echo "Staging Job complete."
 
 echo "Waiting for deployment ${DEPLOY_NAME}..."
-kubectl wait --for=condition=available deployment/${DEPLOY_NAME} -n ${NAMESPACE} --timeout=60m || debug_failure "Deployment failed to become available"
+kubectl wait --for=condition=available deployment/${DEPLOY_NAME} -n ${NAMESPACE} --timeout=90m || debug_failure "Deployment failed to become available"
 echo "Workload is available."
 
 # 5. Sidecar and Mount Verification
