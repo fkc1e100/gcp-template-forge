@@ -70,3 +70,57 @@ spec:
     apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
     kind: Project
     external: gca-gke-2025 # UPDATE: Replace with your project ID
+---
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMServiceAccount
+metadata:
+  labels:
+    project: gcp-template-forge
+    template: gke-kuberay-kueue-multitenant
+  name: ray-team-a
+  namespace: forge-management # UPDATE: Replace with your KCC namespace
+spec:
+  displayName: GSA for Ray Team A
+---
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMServiceAccount
+metadata:
+  labels:
+    project: gcp-template-forge
+    template: gke-kuberay-kueue-multitenant
+  name: ray-team-b
+  namespace: forge-management # UPDATE: Replace with your KCC namespace
+spec:
+  displayName: GSA for Ray Team B
+---
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMPolicyMember
+metadata:
+  labels:
+    project: gcp-template-forge
+    template: gke-kuberay-kueue-multitenant
+  name: ray-team-a-wi
+  namespace: forge-management # UPDATE: Replace with your KCC namespace
+spec:
+  member: serviceAccount:gca-gke-2025.svc.id.goog[team-a/team-a-sa] # UPDATE: Replace with your project ID
+  role: roles/iam.workloadIdentityUser
+  resourceRef:
+    apiVersion: iam.cnrm.cloud.google.com/v1beta1
+    kind: IAMServiceAccount
+    name: ray-team-a
+---
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMPolicyMember
+metadata:
+  labels:
+    project: gcp-template-forge
+    template: gke-kuberay-kueue-multitenant
+  name: ray-team-b-wi
+  namespace: forge-management # UPDATE: Replace with your KCC namespace
+spec:
+  member: serviceAccount:gca-gke-2025.svc.id.goog[team-b/team-b-sa] # UPDATE: Replace with your project ID
+  role: roles/iam.workloadIdentityUser
+  resourceRef:
+    apiVersion: iam.cnrm.cloud.google.com/v1beta1
+    kind: IAMServiceAccount
+    name: ray-team-b

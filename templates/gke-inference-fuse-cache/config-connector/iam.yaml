@@ -70,3 +70,19 @@ spec:
     apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
     kind: Project
     external: gca-gke-2025 # UPDATE: Replace with your project ID
+---
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMPolicyMember
+metadata:
+  labels:
+    project: gcp-template-forge
+    template: gke-inference-fuse-cache
+  name: gke-inf-fuse-workload-bucket-access
+  namespace: forge-management # UPDATE: Replace with your KCC namespace
+spec:
+  member: serviceAccount:gca-gke-2025.svc.id.goog[default/gke-inf-fuse-cache-sa] # UPDATE: Replace with your project ID and namespace/KSA
+  role: roles/storage.objectAdmin
+  resourceRef:
+    apiVersion: storage.cnrm.cloud.google.com/v1beta1
+    kind: StorageBucket
+    name: gke-inf-fuse-cache-kcc-bucket

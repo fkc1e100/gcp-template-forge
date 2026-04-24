@@ -122,6 +122,32 @@ resource "google_project_iam_member" "node_sa_registry" {
   member  = "serviceAccount:${google_service_account.node_sa.email}"
 }
 
+# Team GSAs for Workload Identity
+resource "google_service_account" "team_a_sa" {
+  account_id   = "ray-team-a-${var.uid_suffix}"
+  display_name = "GSA for Ray Team A"
+  project      = var.project_id
+}
+
+resource "google_service_account" "team_b_sa" {
+  account_id   = "ray-team-b-${var.uid_suffix}"
+  display_name = "GSA for Ray Team B"
+  project      = var.project_id
+}
+
+# Workload Identity Bindings for Teams
+resource "google_service_account_iam_member" "team_a_wi" {
+  service_account_id = google_service_account.team_a_sa.name
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "serviceAccount:${var.project_id}.svc.id.goog[team-a/team-a-sa]"
+}
+
+resource "google_service_account_iam_member" "team_b_wi" {
+  service_account_id = google_service_account.team_b_sa.name
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "serviceAccount:${var.project_id}.svc.id.goog[team-b/team-b-sa]"
+}
+
 # System Node Pool
 resource "google_container_node_pool" "system_nodes" {
   name       = "gke-kuberay-kueue-multitenant-sys"
@@ -258,6 +284,8 @@ ${yamlencode({
   projectID   = var.project_id
   region      = var.region
   uidSuffix   = var.uid_suffix
+  teamASAEmail = google_service_account.team_a_sa.email
+  teamBSAEmail = google_service_account.team_b_sa.email
 })}
 EOF
 }
