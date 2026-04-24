@@ -101,6 +101,7 @@ locals {
     "roles/gkehub.admin",
     "roles/resourcemanager.projectIamAdmin",
     "roles/secretmanager.secretAccessor",
+    "roles/iam.serviceAccountAdmin",
   ]
 }
 
