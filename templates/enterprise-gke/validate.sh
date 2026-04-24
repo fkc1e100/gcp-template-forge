@@ -66,9 +66,13 @@ fi
 SA_NAME=$(kubectl get pod ${POD_NAME} -n ${NAMESPACE_WORKLOAD} -o jsonpath='{.spec.serviceAccountName}')
 echo "Workload is using ServiceAccount: ${SA_NAME}"
 
-# Run a quick test job to verify WI connectivity (Cloud SDK check)
-echo "Running Workload Identity test Job..."
-cat <<EOF | kubectl apply -f -
+SA_ANNOTATION=$(kubectl get sa ${SA_NAME} -n ${NAMESPACE_WORKLOAD} -o jsonpath='{.metadata.annotations.iam\.gke\.io/gcp-service-account}' || true)
+if [ -z "$SA_ANNOTATION" ] || [ "$SA_ANNOTATION" = "<WORKLOAD_SA_EMAIL>" ]; then
+  echo "No valid Workload Identity annotation found on ServiceAccount ${SA_NAME}. Skipping Workload Identity validation (likely running in CI with create_service_accounts=false)."
+else
+  # Run a quick test job to verify WI connectivity (Cloud SDK check)
+  echo "Running Workload Identity test Job..."
+  cat <<EOF | kubectl apply -f -
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -86,18 +90,19 @@ spec:
   backoffLimit: 1
 EOF
 
-JOB_NAME=$(kubectl get jobs -n ${NAMESPACE_WORKLOAD} --sort-by=.metadata.creationTimestamp -o jsonpath='{.items[-1].metadata.name}')
-if [ -z "$JOB_NAME" ]; then
-  echo "Failed to create or find test Job!"
-  exit 1
-fi
-if kubectl wait --for=condition=complete job/${JOB_NAME} --timeout=5m -n ${NAMESPACE_WORKLOAD}; then
-  kubectl logs job/${JOB_NAME} -n ${NAMESPACE_WORKLOAD}
-  echo "Workload Identity validated."
-else
-  echo "ERROR: Workload Identity validation failed or timed out."
-  kubectl logs job/${JOB_NAME} -n ${NAMESPACE_WORKLOAD} || echo "Could not retrieve job logs."
-  exit 1
+  JOB_NAME=$(kubectl get jobs -n ${NAMESPACE_WORKLOAD} --sort-by=.metadata.creationTimestamp -o jsonpath='{.items[-1].metadata.name}')
+  if [ -z "$JOB_NAME" ]; then
+    echo "Failed to create or find test Job!"
+    exit 1
+  fi
+  if kubectl wait --for=condition=complete job/${JOB_NAME} --timeout=5m -n ${NAMESPACE_WORKLOAD}; then
+    kubectl logs job/${JOB_NAME} -n ${NAMESPACE_WORKLOAD}
+    echo "Workload Identity validated."
+  else
+    echo "ERROR: Workload Identity validation failed or timed out."
+    kubectl logs job/${JOB_NAME} -n ${NAMESPACE_WORKLOAD} || echo "Could not retrieve job logs."
+    exit 1
+  fi
 fi
 
 

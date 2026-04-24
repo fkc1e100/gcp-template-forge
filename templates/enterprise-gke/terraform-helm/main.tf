@@ -270,7 +270,7 @@ resource "local_file" "helm_values" {
 # limitations under the License.
 
 serviceAccount:
-  gcpServiceAccount: "${var.create_service_accounts ? google_service_account.workload_sa[0].email : (var.workload_service_account != "" ? var.workload_service_account : var.service_account)}"
+  gcpServiceAccount: "${var.create_service_accounts ? google_service_account.workload_sa[0].email : var.workload_service_account}"
 
 secrets:
   gcpProjectId: "${var.project_id}"
