@@ -2,8 +2,7 @@ FROM ghcr.io/gke-labs/gemini-for-kubernetes-development/generic-golang:latest
 
 # Install HashiCorp Terraform (binary download — no lsb_release/apt repo needed)
 RUN apt-get update -qq && apt-get install -y -qq unzip && \
-    TF_VER=$(curl -fsSL https://api.releases.hashicorp.com/v1/releases/terraform/latest \
-      | python3 -c "import json,sys; print(json.load(sys.stdin)['version'])") && \
+    TF_VER="1.7.0" && \
     curl -fsSL "https://releases.hashicorp.com/terraform/${TF_VER}/terraform_${TF_VER}_linux_amd64.zip" \
       -o /tmp/terraform.zip && \
     unzip -q /tmp/terraform.zip -d /usr/local/bin/ && \

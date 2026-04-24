@@ -121,6 +121,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.0"
       - name: Run Thorough Linting
         run: |
           chmod +x agent-infra/local-lint.sh
@@ -141,6 +143,8 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.0"
 
       - name: Set up Helm
         run: |
@@ -262,6 +266,8 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.0"
 
       - name: Break stale TF state lock (if any)
         if: "hashFiles(format('{0}/terraform-helm/**', matrix.template)) != ''"
@@ -281,6 +287,11 @@ jobs:
           BASE_NAME=$(basename ${{ matrix.template }})
           if [[ "${{ matrix.template }}" == *"gke-inference-fuse-cache"* ]]; then
             BASE_NAME="gke-inf-fuse-cache"
+            # Randomly pick a zone for L4 GPUs in us-central1 to avoid stockouts
+            ZONES=("us-central1-a" "us-central1-b" "us-central1-c" "us-central1-f")
+            RANDOM_ZONE=${ZONES[$RANDOM % ${#ZONES[@]}]}
+            export TF_VAR_zone="$RANDOM_ZONE"
+            echo "Using random zone: $RANDOM_ZONE"
           fi
           echo "TF_START=$(date -u +%s)" >> $GITHUB_ENV
           export TF_VAR_cluster_name="${BASE_NAME}-${UID_SUFFIX}-tf"
@@ -409,6 +420,8 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.0"
 
       - name: Get TF cluster credentials
         if: always()
@@ -741,6 +754,7 @@ jobs:
         if: "hashFiles(format('{0}/terraform-helm/main.tf', matrix.template)) != ''"
         uses: hashicorp/setup-terraform@v3
         with:
+          terraform_version: "1.7.0"
           terraform_wrapper: false
 
       - name: Terraform cleanup (destroy if any state exists)
@@ -859,6 +873,8 @@ jobs:
       - name: Setup Terraform
         if: steps.skip-check.outputs.skip != 'true'
         uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.0"
 
       - name: Break stale TF state lock (if any)
         if: >-
