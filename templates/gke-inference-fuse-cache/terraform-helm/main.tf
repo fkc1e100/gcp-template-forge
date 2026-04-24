@@ -84,7 +84,11 @@ resource "google_container_cluster" "primary" {
   project  = var.project_id
 
   # Restrict to zones that support L4 GPUs
-  node_locations = ["${var.region}-a", "${var.region}-b", "${var.region}-c"]
+  node_locations = [
+    "${var.region}-a",
+    "${var.region}-b",
+    "${var.region}-c",
+  ]
 
   deletion_protection = false
 
@@ -142,7 +146,11 @@ resource "google_container_node_pool" "gpu_pool" {
   }
 
   # Restrict to zones that support L4 GPUs
-  node_locations = ["${var.region}-a", "${var.region}-b", "${var.region}-c"]
+  node_locations = [
+    "${var.region}-a",
+    "${var.region}-b",
+    "${var.region}-c",
+  ]
 
   node_config {
     # Use on-demand instances for better availability (spot can be harder to find in some zones)
@@ -169,7 +177,8 @@ resource "google_container_node_pool" "gpu_pool" {
     }
 
     oauth_scopes = [
-      "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/monitoring",
+      "https://www.googleapis.com/auth/logging.write",
+      "https://www.googleapis.com/auth/monitoring",
     ]
 
     workload_metadata_config {
@@ -216,7 +225,8 @@ resource "google_container_node_pool" "system_pool" {
     service_account = var.service_account
 
     oauth_scopes = [
-      "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/monitoring",
+      "https://www.googleapis.com/auth/logging.write",
+      "https://www.googleapis.com/auth/monitoring",
     ]
 
     workload_metadata_config {
@@ -260,8 +270,8 @@ resource "local_file" "helm_values" {
 # limitations under the License.
 
 ${yamlencode({
-  templateName = local.template_label
-  bucketName   = google_storage_bucket.model_bucket.name
+  templateName   = local.template_label
+  bucketName     = google_storage_bucket.model_bucket.name
   serviceAccount = {
     name = local.ksa_name
   }
