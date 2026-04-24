@@ -280,10 +280,10 @@ resource "local_file" "helm_values" {
 # limitations under the License.
 
 ${yamlencode({
-  clusterName = var.cluster_name
-  projectID   = var.project_id
-  region      = var.region
-  uidSuffix   = var.uid_suffix
+  clusterName  = var.cluster_name
+  projectID    = var.project_id
+  region       = var.region
+  uidSuffix    = var.uid_suffix
   teamASAEmail = google_service_account.team_a_sa.email
   teamBSAEmail = google_service_account.team_b_sa.email
 })}

@@ -50,22 +50,4 @@ spec:
       cpu: 500m
       memory: 1Gi
     type: Container
----
-apiVersion: v1
-kind: ResourceQuota
-metadata:
-  name: {{ $namespace }}-quota
-  namespace: {{ $namespace }}
-  labels:
-    project: gcp-template-forge
-    template: {{ if $.Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ $.Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
-spec:
-  hard:
-    pods: "20"
-    requests.cpu: "10"
-    requests.memory: "40Gi"
-    limits.cpu: "20"
-    limits.memory: "80Gi"
-    requests.nvidia.com/gpu: "5"
-    limits.nvidia.com/gpu: "5"
 {{- end }}
