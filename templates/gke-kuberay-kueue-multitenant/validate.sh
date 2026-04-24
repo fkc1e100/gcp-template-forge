@@ -73,21 +73,15 @@ echo "CRDs are established."
 
 # 4. Kueue Resource Readiness
 echo "Test 4: Kueue Resource Readiness..."
-# ... (rest of the script)
-for i in {1..30}; do
-  if kubectl get clusterqueue team-a-cq && \
-     kubectl get clusterqueue team-b-cq && \
-     kubectl get localqueue team-a-lq -n team-a && \
-     kubectl get localqueue team-b-lq -n team-b; then
-    echo "Kueue resources are present."
-    break
-  fi
-  echo "Waiting for Kueue resources (attempt $i/30)..."
-  sleep 10
-  if [ $i -eq 30 ]; then
-    debug_failure "Kueue resources failed to become present"
-  fi
-done
+echo "Waiting for ClusterQueues to be active..."
+kubectl wait --for=condition=Active clusterqueue/team-a-cq --timeout=5m || debug_failure "ClusterQueue team-a-cq failed to become active"
+kubectl wait --for=condition=Active clusterqueue/team-b-cq --timeout=5m || debug_failure "ClusterQueue team-b-cq failed to become active"
+
+echo "Checking for LocalQueues..."
+kubectl get localqueue team-a-lq -n team-a || debug_failure "LocalQueue team-a-lq not found"
+kubectl get localqueue team-b-lq -n team-b || debug_failure "LocalQueue team-b-lq not found"
+
+echo "Kueue resources are ready."
 
 # 5. RayCluster Readiness
 echo "Test 5: RayCluster Readiness..."
