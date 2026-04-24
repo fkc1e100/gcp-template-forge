@@ -57,11 +57,18 @@ This path uses Kubernetes manifests to manage both the GCP infrastructure and th
     *Note: After the cluster is ready, it may take an additional 2-3 minutes for GKE Enterprise features (like FQDN Network Policies) to propagate across the fleet.*
 
 3.  **Deploy Workload:**
-    Once the cluster is ready, get credentials and apply the workload manifests:
+    Once the cluster is ready, get credentials and apply the workload manifests (including the `egress-verifier` pod and the FQDN security policies):
     ```bash
+    # Get credentials for the new cluster
     gcloud container clusters get-credentials gke-fqdn-egress-security-cluster --region us-central1
+
+    # Apply the FQDN policies and the verifier pod
     kubectl apply -f config-connector-workload/
+
+    # Wait for the verifier pod to be ready
+    kubectl wait --for=condition=Ready pod/egress-verifier --timeout=5m
     ```
+    *Note: If you receive an error about `FQDNNetworkPolicy` not being found, wait 2-3 minutes for the GKE FQDN controller to initialize the CRDs and try applying again.*
 
 ## Verification
 
@@ -74,17 +81,19 @@ The included `validate.sh` script automates the entire verification process, inc
 ### Manual Verification
 *Note: If you deployed using the default settings, the namespace will be `default`.*
 
+**Important:** Dataplane V2 FQDN policies intercept DNS queries to learn IP addresses. The first few requests after a policy is applied or a DNS record TTL expires may experience slight latency or a "Connection Refused" while the eBPF maps are populated. Always retry the verification commands a few times if they fail initially.
+
 1.  **Test Allowed Egress (Anthropic):**
     ```bash
-    kubectl exec egress-verifier -n <namespace> -- curl -sL -4 --connect-timeout 10 https://api.anthropic.com
+    kubectl exec egress-verifier -- curl -sL -4 --connect-timeout 10 https://api.anthropic.com
     ```
 2.  **Test Allowed Egress (HuggingFace):**
     ```bash
-    kubectl exec egress-verifier -n <namespace> -- curl -sL -4 --connect-timeout 10 https://huggingface.co
+    kubectl exec egress-verifier -- curl -sL -4 --connect-timeout 10 https://huggingface.co
     ```
 3.  **Test Blocked Egress (Google):**
     ```bash
-    kubectl exec egress-verifier -n <namespace> -- curl -sL -4 --connect-timeout 10 https://google.com
+    kubectl exec egress-verifier -- curl -sL -4 --connect-timeout 10 https://google.com
     # This should time out or return an error.
     ```
 
