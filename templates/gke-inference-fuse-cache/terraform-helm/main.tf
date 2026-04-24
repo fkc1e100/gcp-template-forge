@@ -99,28 +99,46 @@ resource "google_container_cluster" "gke_inference_fuse_cache_cluster" {
 }
 
 # Dedicated Node Service Account for Least Privilege
+# In restricted CI environments, we use the provided var.service_account instead.
 resource "google_service_account" "node_sa" {
+  count        = var.create_gsas ? 1 : 0
   account_id   = "gke-inf-fuse-node-${var.uid_suffix}"
   display_name = "GKE Node Service Account for Inference FUSE Cache"
   project      = var.project_id
 }
 
 resource "google_project_iam_member" "node_sa_logging" {
+  count   = var.create_gsas ? 1 : 0
   project = var.project_id
   role    = "roles/logging.logWriter"
-  member  = "serviceAccount:${google_service_account.node_sa.email}"
+  member  = "serviceAccount:${google_service_account.node_sa[0].email}"
 }
 
 resource "google_project_iam_member" "node_sa_monitoring" {
+  count   = var.create_gsas ? 1 : 0
   project = var.project_id
   role    = "roles/monitoring.metricWriter"
-  member  = "serviceAccount:${google_service_account.node_sa.email}"
+  member  = "serviceAccount:${google_service_account.node_sa[0].email}"
 }
 
 resource "google_project_iam_member" "node_sa_registry" {
+  count   = var.create_gsas ? 1 : 0
   project = var.project_id
   role    = "roles/artifactregistry.reader"
-  member  = "serviceAccount:${google_service_account.node_sa.email}"
+  member  = "serviceAccount:${google_service_account.node_sa[0].email}"
+}
+
+locals {
+  node_sa_email = var.create_gsas ? google_service_account.node_sa[0].email : var.service_account
+  gsa_email     = var.create_gsas ? google_service_account.workload_sa[0].email : var.service_account
+}
+
+# Dedicated Workload GSA for Workload Identity
+resource "google_service_account" "workload_sa" {
+  count        = var.create_gsas ? 1 : 0
+  account_id   = "gke-inf-fuse-cache-${var.uid_suffix}"
+  display_name = "Workload GSA for Inference FUSE Cache"
+  project      = var.project_id
 }
 
 # System Node Pool
@@ -139,7 +157,7 @@ resource "google_container_node_pool" "system_pool" {
     disk_size_gb = 50
     disk_type    = "pd-balanced"
 
-    service_account = google_service_account.node_sa.email
+    service_account = local.node_sa_email
     oauth_scopes = [
       "https://www.googleapis.com/auth/logging.write",
       "https://www.googleapis.com/auth/monitoring",
@@ -187,7 +205,7 @@ resource "google_container_node_pool" "gpu_pool" {
     disk_size_gb = 100
     disk_type    = "pd-balanced"
 
-    service_account = google_service_account.node_sa.email
+    service_account = local.node_sa_email
     oauth_scopes = [
       "https://www.googleapis.com/auth/logging.write",
       "https://www.googleapis.com/auth/monitoring",
@@ -255,6 +273,31 @@ resource "google_storage_bucket_iam_member" "workload_sa_bucket_access" {
   member = "serviceAccount:${var.project_id}.svc.id.goog[default/${local.ksa_name}]"
 }
 
+# Workload Identity Binding
+resource "google_service_account_iam_member" "workload_wi_binding" {
+  count              = var.create_gsas ? 1 : 0
+  service_account_id = google_service_account.workload_sa[0].name
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "serviceAccount:${var.project_id}.svc.id.goog[default/${local.ksa_name}]"
+}
+
+# If we are NOT creating GSAs, we still need the WI binding on the shared SA
+resource "google_service_account_iam_member" "shared_sa_wi_binding" {
+  count              = var.create_gsas ? 0 : 1
+  service_account_id = "projects/${var.project_id}/serviceAccounts/${var.service_account}"
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "serviceAccount:${var.project_id}.svc.id.goog[default/${local.ksa_name}]"
+}
+
+# If we are NOT creating GSAs, we still need to give the node SA permission to access the bucket
+# so that the workload (using the node SA's credentials via WI binding to node SA) can access it.
+resource "google_storage_bucket_iam_member" "node_sa_bucket_access" {
+  count  = var.create_gsas ? 0 : 1
+  bucket = google_storage_bucket.model_bucket.name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${var.service_account}"
+}
+
 # Generate values.yaml for Helm
 resource "local_file" "helm_values" {
   filename = "${path.module}/workload/values.yaml"
@@ -312,6 +355,9 @@ ${yamlencode({
   serviceAccount = {
     create = true
     name   = local.ksa_name
+    annotations = {
+      "iam.gke.io/gcp-service-account" = local.gsa_email
+    }
   }
 })}
 EOF

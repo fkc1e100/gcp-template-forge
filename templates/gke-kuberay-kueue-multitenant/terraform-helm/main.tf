@@ -98,38 +98,51 @@ resource "google_container_cluster" "gke_kuberay_kueue_multitenant_cluster" {
 }
 
 # Dedicated Node Service Account for Least Privilege
+# In restricted CI environments, we use the provided var.service_account instead.
 resource "google_service_account" "node_sa" {
+  count        = var.create_gsas ? 1 : 0
   account_id   = "gke-ray-mt-node-${var.uid_suffix}"
   display_name = "GKE Node Service Account for Multi-Tenant Ray"
   project      = var.project_id
 }
 
 resource "google_project_iam_member" "node_sa_logging" {
+  count   = var.create_gsas ? 1 : 0
   project = var.project_id
   role    = "roles/logging.logWriter"
-  member  = "serviceAccount:${google_service_account.node_sa.email}"
+  member  = "serviceAccount:${google_service_account.node_sa[0].email}"
 }
 
 resource "google_project_iam_member" "node_sa_monitoring" {
+  count   = var.create_gsas ? 1 : 0
   project = var.project_id
   role    = "roles/monitoring.metricWriter"
-  member  = "serviceAccount:${google_service_account.node_sa.email}"
+  member  = "serviceAccount:${google_service_account.node_sa[0].email}"
 }
 
 resource "google_project_iam_member" "node_sa_registry" {
+  count   = var.create_gsas ? 1 : 0
   project = var.project_id
   role    = "roles/artifactregistry.reader"
-  member  = "serviceAccount:${google_service_account.node_sa.email}"
+  member  = "serviceAccount:${google_service_account.node_sa[0].email}"
+}
+
+locals {
+  node_sa_email   = var.create_gsas ? google_service_account.node_sa[0].email : var.service_account
+  team_a_sa_email = var.create_gsas ? google_service_account.team_a_sa[0].email : var.service_account
+  team_b_sa_email = var.create_gsas ? google_service_account.team_b_sa[0].email : var.service_account
 }
 
 # Team GSAs for Workload Identity
 resource "google_service_account" "team_a_sa" {
+  count        = var.create_gsas ? 1 : 0
   account_id   = "ray-team-a-${var.uid_suffix}"
   display_name = "GSA for Ray Team A"
   project      = var.project_id
 }
 
 resource "google_service_account" "team_b_sa" {
+  count        = var.create_gsas ? 1 : 0
   account_id   = "ray-team-b-${var.uid_suffix}"
   display_name = "GSA for Ray Team B"
   project      = var.project_id
@@ -137,13 +150,30 @@ resource "google_service_account" "team_b_sa" {
 
 # Workload Identity Bindings for Teams
 resource "google_service_account_iam_member" "team_a_wi" {
-  service_account_id = google_service_account.team_a_sa.name
+  count              = var.create_gsas ? 1 : 0
+  service_account_id = google_service_account.team_a_sa[0].name
   role               = "roles/iam.workloadIdentityUser"
   member             = "serviceAccount:${var.project_id}.svc.id.goog[team-a/team-a-sa]"
 }
 
 resource "google_service_account_iam_member" "team_b_wi" {
-  service_account_id = google_service_account.team_b_sa.name
+  count              = var.create_gsas ? 1 : 0
+  service_account_id = google_service_account.team_b_sa[0].name
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "serviceAccount:${var.project_id}.svc.id.goog[team-b/team-b-sa]"
+}
+
+# If we are NOT creating GSAs, we still need the WI bindings on the shared SA
+resource "google_service_account_iam_member" "shared_sa_wi_team_a" {
+  count              = var.create_gsas ? 0 : 1
+  service_account_id = "projects/${var.project_id}/serviceAccounts/${var.service_account}"
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "serviceAccount:${var.project_id}.svc.id.goog[team-a/team-a-sa]"
+}
+
+resource "google_service_account_iam_member" "shared_sa_wi_team_b" {
+  count              = var.create_gsas ? 0 : 1
+  service_account_id = "projects/${var.project_id}/serviceAccounts/${var.service_account}"
   role               = "roles/iam.workloadIdentityUser"
   member             = "serviceAccount:${var.project_id}.svc.id.goog[team-b/team-b-sa]"
 }
@@ -165,7 +195,7 @@ resource "google_container_node_pool" "system_nodes" {
     disk_size_gb = 50
     disk_type    = "pd-balanced" # Optimized performance per reviewer request
 
-    service_account = google_service_account.node_sa.email
+    service_account = local.node_sa_email
     oauth_scopes = [
       "https://www.googleapis.com/auth/logging.write",
       "https://www.googleapis.com/auth/monitoring",
@@ -217,7 +247,7 @@ resource "google_container_node_pool" "gpu_nodes" {
     disk_size_gb = 100
     disk_type    = "pd-balanced" # Optimized performance for model caching
 
-    service_account = google_service_account.node_sa.email
+    service_account = local.node_sa_email
     oauth_scopes = [
       "https://www.googleapis.com/auth/logging.write",
       "https://www.googleapis.com/auth/monitoring",
@@ -284,8 +314,8 @@ ${yamlencode({
   projectID    = var.project_id
   region       = var.region
   uidSuffix    = var.uid_suffix
-  teamASAEmail = google_service_account.team_a_sa.email
-  teamBSAEmail = google_service_account.team_b_sa.email
+  teamASAEmail = local.team_a_sa_email
+  teamBSAEmail = local.team_b_sa_email
 })}
 EOF
 }

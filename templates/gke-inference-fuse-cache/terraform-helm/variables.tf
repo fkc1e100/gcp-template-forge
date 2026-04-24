@@ -46,3 +46,14 @@ variable "uid_suffix" {
   type        = string
   default     = ""
 }
+
+variable "service_account" {
+  description = "The service account to use for GKE nodes"
+  type        = string
+}
+
+variable "create_gsas" {
+  description = "Whether to create dedicated GSAs (may be disabled in restricted CI environments)"
+  type        = bool
+  default     = true
+}
