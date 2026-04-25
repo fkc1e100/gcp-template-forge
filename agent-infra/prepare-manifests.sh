@@ -28,19 +28,19 @@ SHARED_SA="forge-builder@${PROJECT_ID}.iam.gserviceaccount.com"
 echo "Suffixing manifests for $FULL_NAME with $UID_SUFFIX"
 
 # 1. Suffix based on full template name (Standard)
-find "${TEMPLATE_PATH}/config-connector" "${TEMPLATE_PATH}/config-connector-workload" -type f -name "*.yaml" -exec sed -i "s/${FULL_NAME}/${FULL_NAME}-${UID_SUFFIX}/g" {} + 2>/dev/null || true
+find "${TEMPLATE_PATH}/config-connector" "${TEMPLATE_PATH}/config-connector-workload" -type f -name "*.yaml" -exec sed -i "s/${FULL_NAME}\(-${UID_SUFFIX}\)\?/${FULL_NAME}-${UID_SUFFIX}/g" {} + 2>/dev/null || true
 
 # 2. Special cases for shortened resource names to avoid GCP limits (30 chars for GSAs)
 if [[ "$FULL_NAME" == "gke-inference-fuse-cache" ]]; then
   echo "Applying special suffixing for gke-inference-fuse-cache"
-  find "${TEMPLATE_PATH}/config-connector" "${TEMPLATE_PATH}/config-connector-workload" -type f -name "*.yaml" -exec sed -i "s/gke-inf-fuse-node/gke-inf-fuse-node-${UID_SUFFIX}/g" {} + 2>/dev/null || true
-  find "${TEMPLATE_PATH}/config-connector" "${TEMPLATE_PATH}/config-connector-workload" -type f -name "*.yaml" -exec sed -i "s/gke-inf-fuse-cache/gke-inf-fuse-cache-${UID_SUFFIX}/g" {} + 2>/dev/null || true
-  find "${TEMPLATE_PATH}/config-connector" "${TEMPLATE_PATH}/config-connector-workload" -type f -name "*.yaml" -exec sed -i "s/gke-inf-fuse-workload/gke-inf-fuse-workload-${UID_SUFFIX}/g" {} + 2>/dev/null || true
+  find "${TEMPLATE_PATH}/config-connector" "${TEMPLATE_PATH}/config-connector-workload" -type f -name "*.yaml" -exec sed -i "s/gke-inf-fuse-node\(-${UID_SUFFIX}\)\?/gke-inf-fuse-node-${UID_SUFFIX}/g" {} + 2>/dev/null || true
+  find "${TEMPLATE_PATH}/config-connector" "${TEMPLATE_PATH}/config-connector-workload" -type f -name "*.yaml" -exec sed -i "s/gke-inf-fuse-cache\(-${UID_SUFFIX}\)\?/gke-inf-fuse-cache-${UID_SUFFIX}/g" {} + 2>/dev/null || true
+  find "${TEMPLATE_PATH}/config-connector" "${TEMPLATE_PATH}/config-connector-workload" -type f -name "*.yaml" -exec sed -i "s/gke-inf-fuse-workload\(-${UID_SUFFIX}\)\?/gke-inf-fuse-workload-${UID_SUFFIX}/g" {} + 2>/dev/null || true
 fi
 
 if [[ "$FULL_NAME" == "gke-kuberay-kueue-multitenant" ]]; then
   echo "Applying special suffixing for gke-kuberay-kueue-multitenant"
-  find "${TEMPLATE_PATH}/config-connector" "${TEMPLATE_PATH}/config-connector-workload" -type f -name "*.yaml" -exec sed -i "s/gke-ray-mt-node/gke-ray-mt-node-${UID_SUFFIX}/g" {} + 2>/dev/null || true
+  find "${TEMPLATE_PATH}/config-connector" "${TEMPLATE_PATH}/config-connector-workload" -type f -name "*.yaml" -exec sed -i "s/gke-ray-mt-node\(-${UID_SUFFIX}\)\?/gke-ray-mt-node-${UID_SUFFIX}/g" {} + 2>/dev/null || true
 fi
 
 # 3. CI-specific Patching for projects with restricted IAM permissions
@@ -58,7 +58,7 @@ if [[ "$PROJECT_ID" == "gca-gke-2025" ]]; then
   BUCKET_NAME="gke-inf-fuse-cache-tf-${UID_SUFFIX}-bucket"
   
   # Try to detect if it already exists (might be different if not using standard naming)
-  EXISTING_BUCKET=$(gcloud storage buckets list --project ${PROJECT_ID} --filter="name ~ .*${UID_SUFFIX}.*" --format="value(name)" --limit 1 2>/dev/null || echo "")
+  EXISTING_BUCKET=$(gcloud storage buckets list --project ${PROJECT_ID} --filter="name ~ gke-inf-fuse.*${UID_SUFFIX}.*" --format="value(name)" --limit 1 2>/dev/null || echo "")
   if [ -n "$EXISTING_BUCKET" ]; then
     BUCKET_NAME="$EXISTING_BUCKET"
   fi
@@ -78,6 +78,7 @@ if [[ "$PROJECT_ID" == "gca-gke-2025" ]]; then
   fi
 
   # Use Python for robust YAML patching of KCC manifests
+  python3 -m pip install --quiet pyyaml
   python3 - <<EOF
 import yaml
 import sys
@@ -147,5 +148,8 @@ for dir_name in ["config-connector", "config-connector-workload"]:
             print(f"Patching {p} for CI workarounds")
             with open(p, "w") as f:
                 yaml.safe_dump_all(new_docs, f, sort_keys=False)
+        else:
+            print(f"All documents filtered out, removing {p}")
+            p.unlink()
 EOF
 fi

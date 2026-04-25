@@ -217,7 +217,7 @@ jobs:
           [ -f "${{ matrix.template }}/.timeout" ] && TIMEOUT=$(cat "${{ matrix.template }}/.timeout")
           echo "$CHARTS" | while read -r chart; do
             [ -z "$chart" ] && continue
-            helm upgrade --install release "$chart" --timeout="$TIMEOUT"
+            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT"
           done
           if [ -f "${{ matrix.template }}/validate.sh" ]; then
             chmod +x "${{ matrix.template }}/validate.sh"
@@ -286,11 +286,10 @@ jobs:
           for i in {1..90}; do
             echo "=== Minute $i ==="
             kubectl get containercluster,computenetwork,computesubnetwork,computerouter -n "$KCC_NAMESPACE" || true
-            if kubectl wait -n "$KCC_NAMESPACE" --for=condition=Ready --all --timeout=60s -f "${TEMPLATE}/config-connector/" &>/dev/null; then
+            if kubectl wait -n "$KCC_NAMESPACE" --for=condition=Ready --all --timeout=60s -f "${TEMPLATE}/config-connector/"; then
               echo "All resources are Ready!"
               exit 0
             fi
-            sleep 60
           done
           echo "ERROR: Timeout waiting for KCC resources"
           exit 1
