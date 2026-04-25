@@ -15,6 +15,9 @@
 apiVersion: ray.io/v1
 kind: RayCluster
 metadata:
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-weight: "10"
   labels:
     kueue.x-k8s.io/queue-name: team-a-lq
     project: gcp-template-forge
@@ -86,6 +89,9 @@ spec:
 apiVersion: ray.io/v1
 kind: RayCluster
 metadata:
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-weight: "10"
   labels:
     kueue.x-k8s.io/queue-name: team-b-lq
     project: gcp-template-forge
