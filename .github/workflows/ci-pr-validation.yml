@@ -217,7 +217,7 @@ jobs:
           [ -f "${{ matrix.template }}/.timeout" ] && TIMEOUT=$(cat "${{ matrix.template }}/.timeout")
           echo "$CHARTS" | while read -r chart; do
             [ -z "$chart" ] && continue
-            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT"
+            helm upgrade --install release "$chart" --timeout="$TIMEOUT"
           done
           if [ -f "${{ matrix.template }}/validate.sh" ]; then
             chmod +x "${{ matrix.template }}/validate.sh"
