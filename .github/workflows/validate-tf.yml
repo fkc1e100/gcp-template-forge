@@ -12,17 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: PR Validation
+name: TF PR Validation
 
 on:
   pull_request:
     branches: [ main ]
     types: [opened, synchronize, reopened, closed]
     paths:
-      - 'templates/**'
-      - 'agent-infra/**'
-      - '.github/workflows/**'
+      - 'templates/**/terraform-helm/**'
+      - '.github/workflows/validate-tf.yml'
       - '.github/actions/**'
+      - 'agent-infra/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -73,7 +73,7 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.has_templates == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     strategy:
       fail-fast: true
       matrix:
@@ -181,6 +181,7 @@ jobs:
     name: Quota Cleanup
     needs: detect-changes
     runs-on: ubuntu-latest
+    if: needs.detect-changes.outputs.has_templates == 'true'
     steps:
       - uses: actions/checkout@v4
       - name: Authenticate to GCP
@@ -199,6 +200,7 @@ jobs:
     name: TF Provision (${{ matrix.template }})
     needs: [detect-changes, lint-template-static, lint-template-terraform, lint-template-helm, pre-cleanup]
     runs-on: ubuntu-latest
+    if: needs.detect-changes.outputs.tf_templates != '[]' && needs.detect-changes.outputs.tf_templates != ''
     timeout-minutes: 60
     strategy:
       fail-fast: false
@@ -261,6 +263,7 @@ jobs:
     name: TF Test (${{ matrix.template }})
     needs: [detect-changes, tf-provision]
     runs-on: ubuntu-latest
+    if: needs.detect-changes.outputs.tf_templates != '[]' && needs.detect-changes.outputs.tf_templates != ''
     timeout-minutes: 60
     strategy:
       fail-fast: false
@@ -305,7 +308,7 @@ jobs:
   tf-teardown:
     name: TF Teardown (${{ matrix.template }})
     needs: [detect-changes, tf-provision, tf-test]
-    if: always()
+    if: always() && needs.detect-changes.outputs.tf_templates != '[]' && needs.detect-changes.outputs.tf_templates != ''
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -328,47 +331,12 @@ jobs:
             -backend-config="prefix=${{ matrix.template }}-${{ github.run_id }}/terraform-helm"
           terraform destroy -auto-approve -input=false || true
 
-  kcc-validation:
-    name: KCC (${{ matrix.template }})
-    needs: [detect-changes, lint-template-static, lint-template-terraform, lint-template-helm, pre-cleanup]
-    runs-on: ubuntu-latest
-    timeout-minutes: 100
-    strategy:
-      fail-fast: false
-      matrix:
-        template: ${{ fromJson(needs.detect-changes.outputs.kcc_templates) }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Auth and Setup GKE
-        uses: ./.github/actions/gcp-gke-auth
-        with:
-          wif_provider: ${{ env.WIF_PROVIDER }}
-          wif_service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
-      - name: Get KCC cluster credentials
-        uses: google-github-actions/get-gke-credentials@v2
-        with:
-          cluster_name: ${{ env.KCC_CLUSTER }}
-          location: ${{ env.KCC_REGION }}
-          project_id: ${{ env.PROJECT_ID }}
-      - name: Apply and Wait
-        run: |
-          RUN_ID="${{ github.run_id }}"
-          UID_SUFFIX="${RUN_ID: -6}"
-          TEMPLATE="${{ matrix.template }}"
-          BASE_NAME=$(basename "$TEMPLATE")
-          find "${TEMPLATE}"/config-connector* -type f -name "*.yaml" -exec sed -i "s/${BASE_NAME}/${BASE_NAME}-${UID_SUFFIX}/g" {} +
-          kubectl apply -n "$KCC_NAMESPACE" -f "${TEMPLATE}/config-connector/"
-          kubectl wait -n "$KCC_NAMESPACE" --for=condition=Ready --all --timeout=5400s -f "${TEMPLATE}/config-connector/"
-      - name: Teardown KCC
-        if: always()
-        run: |
-          TEMPLATE="${{ matrix.template }}"
-          kubectl delete -n "$KCC_NAMESPACE" -f "${TEMPLATE}/config-connector/" --wait=true --timeout=900s || true
+
 
   circuit-breaker:
     name: Circuit Breaker
-    needs: [tf-provision, tf-test, tf-teardown, kcc-validation]
-    if: always() && (needs.tf-provision.result == 'failure' || needs.tf-test.result == 'failure' || needs.kcc-validation.result == 'failure')
+    needs: [tf-provision, tf-test, tf-teardown]
+    if: always() && (needs.tf-provision.result == 'failure' || needs.tf-test.result == 'failure')
     runs-on: ubuntu-latest
     steps:
       - name: Check Retry Count and Label
