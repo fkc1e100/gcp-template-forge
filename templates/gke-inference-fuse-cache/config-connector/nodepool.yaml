@@ -9,14 +9,16 @@ metadata:
 spec:
   clusterRef:
     name: gke-inf-fuse-cache
-  location: us-central1
+  location: <REGION>
+  nodeLocations:
+  - <REGION>-a
   nodeCount: 1
   nodeConfig:
     machineType: e2-standard-4
     diskSizeGb: 50
     diskType: pd-balanced
     serviceAccountRef:
-      external: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+      name: gke-inf-fuse-node
     oauthScopes:
     - https://www.googleapis.com/auth/logging.write
     - https://www.googleapis.com/auth/monitoring
@@ -37,7 +39,11 @@ metadata:
 spec:
   clusterRef:
     name: gke-inf-fuse-cache
-  location: us-central1
+  location: <REGION>
+  nodeLocations:
+  - <REGION>-a
+  - <REGION>-b
+  - <REGION>-c
   autoscaling:
     totalMinNodeCount: 0
     totalMaxNodeCount: 1
@@ -54,7 +60,7 @@ spec:
       gpuDriverInstallationConfig:
         gpuDriverVersion: DEFAULT
     serviceAccountRef:
-      external: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+      name: gke-inf-fuse-node
     oauthScopes:
     - https://www.googleapis.com/auth/logging.write
     - https://www.googleapis.com/auth/monitoring

@@ -1,3 +1,28 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMServiceAccount
+metadata:
+  labels:
+    project: gcp-template-forge
+    template: gke-inference-fuse-cache
+  name: gke-inf-fuse-node
+  namespace: forge-management # UPDATE: Replace with your KCC namespace
+spec:
+  displayName: GKE Node Service Account for Inference FUSE Cache
+---
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPolicyMember
 metadata:
@@ -5,14 +30,14 @@ metadata:
     project: gcp-template-forge
     template: gke-inference-fuse-cache
   name: gke-inf-fuse-node-log-writer
-  namespace: forge-management
+  namespace: forge-management # UPDATE: Replace with your KCC namespace
 spec:
-  member: serviceAccount:forge-builder@gca-gke-2025.iam.gserviceaccount.com
+  member: serviceAccount:gke-inf-fuse-node@<PROJECT_ID>.iam.gserviceaccount.com # UPDATE: Replace with your project ID
   role: roles/logging.logWriter
   resourceRef:
     apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
     kind: Project
-    external: gca-gke-2025
+    external: <PROJECT_ID> # UPDATE: Replace with your project ID
 ---
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPolicyMember
@@ -21,14 +46,14 @@ metadata:
     project: gcp-template-forge
     template: gke-inference-fuse-cache
   name: gke-inf-fuse-node-metric-writer
-  namespace: forge-management
+  namespace: forge-management # UPDATE: Replace with your KCC namespace
 spec:
-  member: serviceAccount:forge-builder@gca-gke-2025.iam.gserviceaccount.com
+  member: serviceAccount:gke-inf-fuse-node@<PROJECT_ID>.iam.gserviceaccount.com # UPDATE: Replace with your project ID
   role: roles/monitoring.metricWriter
   resourceRef:
     apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
     kind: Project
-    external: gca-gke-2025
+    external: <PROJECT_ID> # UPDATE: Replace with your project ID
 ---
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPolicyMember
@@ -37,14 +62,41 @@ metadata:
     project: gcp-template-forge
     template: gke-inference-fuse-cache
   name: gke-inf-fuse-node-registry-reader
-  namespace: forge-management
+  namespace: forge-management # UPDATE: Replace with your KCC namespace
 spec:
-  member: serviceAccount:forge-builder@gca-gke-2025.iam.gserviceaccount.com
+  member: serviceAccount:gke-inf-fuse-node@<PROJECT_ID>.iam.gserviceaccount.com # UPDATE: Replace with your project ID
   role: roles/artifactregistry.reader
   resourceRef:
     apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
     kind: Project
-    external: gca-gke-2025
+    external: <PROJECT_ID> # UPDATE: Replace with your project ID
+---
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMServiceAccount
+metadata:
+  labels:
+    project: gcp-template-forge
+    template: gke-inference-fuse-cache
+  name: gke-inf-fuse-workload
+  namespace: forge-management # UPDATE: Replace with your KCC namespace
+spec:
+  displayName: Workload GSA for Inference FUSE Cache
+---
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMPolicyMember
+metadata:
+  labels:
+    project: gcp-template-forge
+    template: gke-inference-fuse-cache
+  name: gke-inf-fuse-workload-wi
+  namespace: forge-management # UPDATE: Replace with your KCC namespace
+spec:
+  member: serviceAccount:<PROJECT_ID>.svc.id.goog[default/gke-inf-fuse-cache-sa] # UPDATE: Replace with your project ID
+  role: roles/iam.workloadIdentityUser
+  resourceRef:
+    apiVersion: iam.cnrm.cloud.google.com/v1beta1
+    kind: IAMServiceAccount
+    name: gke-inf-fuse-workload
 ---
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPolicyMember
@@ -53,9 +105,9 @@ metadata:
     project: gcp-template-forge
     template: gke-inference-fuse-cache
   name: gke-inf-fuse-workload-bucket-access
-  namespace: forge-management
+  namespace: forge-management # UPDATE: Replace with your KCC namespace
 spec:
-  member: serviceAccount:forge-builder@gca-gke-2025.iam.gserviceaccount.com
+  member: serviceAccount:gke-inf-fuse-workload@<PROJECT_ID>.iam.gserviceaccount.com # UPDATE: Replace with your project ID
   role: roles/storage.objectAdmin
   resourceRef:
     apiVersion: storage.cnrm.cloud.google.com/v1beta1

@@ -6,7 +6,7 @@ This template demonstrates how to set up a multi-tenant Ray environment on GKE u
 
 - **GKE Standard Cluster** — A cluster with two node pools:
   - **System Pool**: `e2-standard-4` instances for running operators (KubeRay, Kueue).
-  - **GPU Pool**: `g2-standard-4` (NVIDIA L4) instances for Ray worker nodes, with autoscaling (0-5 nodes). Restricted to zones `us-central1-a`, `us-central1-b`, and `us-central1-c` to ensure NVIDIA L4 availability.
+  - **GPU Pool**: `g2-standard-4` (NVIDIA L4) instances for Ray worker nodes, with autoscaling. Restricted to specific zones to ensure NVIDIA L4 availability.
 - **KubeRay Operator** — Manages RayCluster life cycles.
 - **Kueue Operator** — Provides job queuing and resource management.
 - **Multi-Tenancy Configuration**:
@@ -38,9 +38,7 @@ This path uses Terraform to provision the infrastructure and generates a `values
 
 ```bash
 cd terraform-helm
-terraform init \
-  -backend-config="bucket=<TF_STATE_BUCKET>" \
-  -backend-config="prefix=templates/gke-kuberay-kueue-multitenant/terraform-helm"
+terraform init
 terraform apply -var="project_id=<PROJECT_ID>"
 ```
 
@@ -53,18 +51,16 @@ The Helm chart in `workload/` installs everything needed: operators, namespaces,
 This path uses Google Cloud Config Connector (KCC) to manage GCP resources as Kubernetes objects.
 
 ```bash
-# Update project-id in config-connector/cluster.yaml if necessary
-# (Default is <PROJECT_ID>)
+# Update <PROJECT_ID> and <REGION> placeholders in config-connector/*.yaml
 
 # Apply infrastructure resources to the management cluster
 kubectl apply -n forge-management -f config-connector/
 
 # Wait for infrastructure to be ready (up to 45 minutes)
-# You can check the status using:
-kubectl get -n forge-management -f config-connector/
+kubectl wait --for=condition=Ready containercluster gke-kuberay-kueue-multitenant -n forge-management --timeout=45m
 
-# Once all resources show READY: True, apply the workload to the workload cluster:
-gcloud container clusters get-credentials gke-kuberay-kueue-multitenant --region us-central1
+# Once all resources are READY, apply the workload to the workload cluster:
+gcloud container clusters get-credentials gke-kuberay-kueue-multitenant --region <REGION>
 kubectl apply --server-side -f config-connector-workload/
 ```
 
@@ -77,13 +73,16 @@ This template uses the **GKE-native GPU driver installation** (`gpu_driver_insta
 - **Faster Provisioning**: Drivers are installed as part of the node boot process.
 
 ### Ray Dashboard
-The Ray dashboard is exposed on `0.0.0.0:8265` within the head pod. This template includes a `NetworkPolicy` (`ray-dashboard-restriction`) in both `team-a` and `team-b` namespaces that restricts ingress to the head pod from only within the same namespace. For production, you may want to further restrict this to specific monitoring namespaces or use an Ingress with authentication.
+The Ray dashboard is exposed on `0.0.0.0:8265` within the head pod. This template includes a `NetworkPolicy` (`ray-dashboard-restriction`) in both `team-a` and `team-b` namespaces that restricts ingress to the head pod from only within the same namespace (template labeled pods). For production, you may want to further restrict this to specific monitoring namespaces or use an Ingress with authentication.
 
 ## Verification
 
 The `validate.sh` script performs comprehensive checks on operator readiness, Kueue configurations, and RayCluster status. It strictly performs validation and readiness checks, as all deployment actions are delegated to the CI pipeline and Helm.
 
 ```bash
+# Replace <CLUSTER_NAME> and <REGION> if not already in environment
+export CLUSTER_NAME=<CLUSTER_NAME>
+export REGION=<REGION>
 ./validate.sh
 ```
 
@@ -104,23 +103,9 @@ kubectl get localqueue -A
 
 ```bash
 # Terraform path
-cd terraform-helm && terraform destroy
+cd terraform-helm && terraform destroy -var="project_id=<PROJECT_ID>"
 
 # KCC path
 kubectl delete -f config-connector-workload/
 kubectl delete -n forge-management -f config-connector/
 ```
-
-## Validation Record
-
-|  | Terraform + Helm | Config Connector |
-| --- | --- | --- |
-| **Status** | success | success |
-| **Date** | 2026-04-21 | 2026-04-21 |
-| **Duration** | n/a | n/a |
-| **Region** | us-central1 | us-central1 (KCC cluster) |
-| **Zones** | us-central1-a,b,c | us-central1-a,b,c |
-| **Cluster** | gke-kuberay-kueue-multitenant | gke-kuberay-kueue-multitenant |
-| **Agent tokens** | not recorded | (shared session) |
-| **Estimated cost** | - | -- |
-| **Commit** | 38c85cc | 38c85cc |

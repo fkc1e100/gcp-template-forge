@@ -4,15 +4,15 @@ metadata:
   name: gke-inf-fuse-cache
   namespace: forge-management
   annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025
+    cnrm.cloud.google.com/project-id: <PROJECT_ID> # UPDATE: Replace with your GCP Project ID
     cnrm.cloud.google.com/remove-default-node-pool: 'true'
   labels:
     project: gcp-template-forge
     template: gke-inference-fuse-cache
 spec:
-  location: us-central1
+  location: <REGION> # UPDATE: Replace with your region
   nodeLocations:
-  - us-central1-a
+  - <REGION>-a # UPDATE: Replace with your zone
   networkRef:
     name: gke-inf-fuse-cache-vpc
   subnetworkRef:
@@ -22,7 +22,7 @@ spec:
     clusterSecondaryRangeName: pods
     servicesSecondaryRangeName: services
   workloadIdentityConfig:
-    workloadPool: gca-gke-2025.svc.id.goog
+    workloadPool: <PROJECT_ID>.svc.id.goog # UPDATE: Replace '<PROJECT_ID>' with your GCP Project ID
   releaseChannel:
     channel: REGULAR
   addonsConfig:

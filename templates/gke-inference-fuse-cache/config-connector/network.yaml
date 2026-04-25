@@ -4,7 +4,7 @@ metadata:
   name: gke-inf-fuse-cache-vpc
   namespace: forge-management
   annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025
+    cnrm.cloud.google.com/project-id: <PROJECT_ID> # UPDATE: Replace with your GCP Project ID
   labels:
     project: gcp-template-forge
     template: gke-inference-fuse-cache
@@ -17,18 +17,18 @@ metadata:
   name: gke-inf-fuse-cache-subnet
   namespace: forge-management
   annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025
+    cnrm.cloud.google.com/project-id: <PROJECT_ID> # UPDATE: Replace with your GCP Project ID
   labels:
     project: gcp-template-forge
     template: gke-inference-fuse-cache
 spec:
   ipCidrRange: 10.10.0.0/20
-  region: us-central1
+  region: <REGION> # UPDATE: Replace with your region
   networkRef:
     name: gke-inf-fuse-cache-vpc
   privateIpGoogleAccess: true
   secondaryIpRange:
   - rangeName: pods
-    ipCidrRange: 10.11.0.0/16
+    ipCidrRange: 10.14.0.0/14
   - rangeName: services
-    ipCidrRange: 10.12.0.0/20
+    ipCidrRange: 10.18.0.0/20

@@ -28,7 +28,7 @@ This template demonstrates how to achieve high-performance model loading on GKE 
 
 ## Infrastructure Architecture
 - **GKE Standard Cluster**: With GCS FUSE CSI driver enabled.
-- **GPU Node Pool**: `g2-standard-4` machines in a single zone to ensure Local SSD availability.
+- **GPU Node Pool**: `g2-standard-4` machines restricted to specific zones to ensure NVIDIA L4 and Local SSD availability.
 - **GCS Bucket**: Stores the model weights.
 - **Local SSD**: Attached as ephemeral storage and used by the GCS FUSE CSI driver as a dedicated cache layer.
 
@@ -46,7 +46,7 @@ This template demonstrates how to achieve high-performance model loading on GKE 
 
 ### Prerequisites
 - A GCP Project with Billing enabled.
-- GPU Quota for `NVIDIA_L4_GPUS` in `us-central1`.
+- GPU Quota for `NVIDIA_L4_GPUS` in your chosen region (e.g., `us-central1`).
 - `terraform`, `helm`, `kubectl`, and `gcloud` installed.
 
 ### Terraform + Helm Path
@@ -63,7 +63,8 @@ This template demonstrates how to achieve high-performance model loading on GKE 
 
 2.  **Deploy Workload**:
     ```bash
-    gcloud container clusters get-credentials gke-inference-fuse-cache --region us-central1
+    # Replace <CLUSTER_NAME> with the output from terraform
+    gcloud container clusters get-credentials <CLUSTER_NAME> --region <REGION>
     helm upgrade --install release ./workload
     ```
 
@@ -77,20 +78,19 @@ This template demonstrates how to achieve high-performance model loading on GKE 
 
 1.  **Apply Infrastructure**:
     ```bash
-    # Update project-id in config-connector/cluster.yaml if necessary
-    # (Default is <PROJECT_ID>)
+    # Update <PROJECT_ID> and <REGION> placeholders in config-connector/*.yaml
     kubectl apply -f config-connector/
     ```
 
 2.  **Wait for Readiness**:
     ```bash
-    kubectl wait --for=condition=Ready containercluster gke-inf-fuse-cache-kcc -n forge-management --timeout=45m
+    kubectl wait --for=condition=Ready containercluster gke-inf-fuse-cache -n forge-management --timeout=45m
     ```
 
 3.  **Deploy Workload**:
     *Edit `config-connector-workload/workload.yaml` and replace `<PROJECT_ID>` and `<BUCKET_NAME>` with your actual values.*
     ```bash
-    gcloud container clusters get-credentials gke-inf-fuse-cache-kcc --region us-central1
+    gcloud container clusters get-credentials gke-inf-fuse-cache --region <REGION>
     kubectl apply -f config-connector-workload/workload.yaml
     ```
 
@@ -103,7 +103,7 @@ This template includes native Kubernetes `ResourceQuota` and `LimitRange` object
 
 ### Network Policy
 A `NetworkPolicy` (`vllm-inference-restriction`) is included to:
-- **Restrict Ingress**: Only allows traffic to the vLLM inference service (port 8000) from within the same namespace.
+- **Restrict Ingress**: Only allows traffic to the vLLM inference service (port 8000) from within the same namespace (template labeled pods).
 - **Isolate Workload**: Prevents unauthorized cluster-wide access to the model serving endpoint.
 
 ## Performance Benefits
@@ -123,7 +123,5 @@ terraform destroy -var="project_id=<PROJECT_ID>"
 ### Config Connector
 ```bash
 kubectl delete -f config-connector-workload/workload.yaml
-kubectl delete job stage-model # If not using workload.yaml for cleanup
 kubectl delete -f config-connector/
 ```
-

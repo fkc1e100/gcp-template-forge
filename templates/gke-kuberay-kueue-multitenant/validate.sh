@@ -38,7 +38,9 @@ if [ -z "${CLUSTER_NAME}" ]; then
       CLUSTER_NAME="${DETECTED_TF}"
       echo "Detected Terraform cluster (suffixed): ${CLUSTER_NAME}"
     else
-      DETECTED_KCC=$(gcloud container clusters list --project ${PROJECT_ID} --filter="name ~ gke-kuberay-kueue-multitenant.*-kcc" --format="value(name)" --limit 1)
+      # KCC clusters might be gke-kuberay-kueue-multitenant-<suffix>
+      # and might or might not have -kcc at the end.
+      DETECTED_KCC=$(gcloud container clusters list --project ${PROJECT_ID} --filter="name ~ gke-kuberay-kueue-multitenant.* AND name !~ .*-tf" --format="value(name)" --limit 1)
       if [ -n "${DETECTED_KCC}" ]; then
         CLUSTER_NAME="${DETECTED_KCC}"
         echo "Detected Config Connector cluster (suffixed): ${CLUSTER_NAME}"

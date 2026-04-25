@@ -212,9 +212,9 @@ Three ClusterPolicies are active:
 
 ---
 
-### CI/CD Workflow (sandbox-validation.yml)
+### CI/CD Workflow (ci-pr-validation.yml)
 
-The CI pipeline (`.github/workflows/sandbox-validation.yml`) runs on every push to any branch and on PRs:
+The CI pipeline (`ci-pr-validation.yml`) runs on every push to any branch and on PRs:
 
 1. **Authenticate** — Workload Identity Federation (WIF) using the CI SA `forge-builder@gca-gke-2025.iam.gserviceaccount.com`. WIF is **blocked for fork PRs** — OIDC tokens are not issued to forked repositories by GitHub's security model.
 

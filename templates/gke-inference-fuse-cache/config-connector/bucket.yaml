@@ -4,12 +4,11 @@ metadata:
   name: gke-inf-fuse-cache-bucket
   namespace: forge-management
   annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025
+    cnrm.cloud.google.com/project-id: <PROJECT_ID> # UPDATE: Replace with your GCP Project ID
     cnrm.cloud.google.com/force-destroy: 'true'
   labels:
     project: gcp-template-forge
     template: gke-inference-fuse-cache
 spec:
-  location: us-central1
+  location: <REGION> # UPDATE: Replace with your region
   storageClass: STANDARD
-  uniformBucketLevelAccess: true

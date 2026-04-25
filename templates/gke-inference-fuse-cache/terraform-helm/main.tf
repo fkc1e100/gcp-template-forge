@@ -320,6 +320,8 @@ resource "local_file" "helm_values" {
 
 ${yamlencode({
   replicaCount = 1
+  projectID    = var.project_id
+  region       = var.region
   image = {
     repository = "google/cloud-sdk"
     tag        = "slim"
