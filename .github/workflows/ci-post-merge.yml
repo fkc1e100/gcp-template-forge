@@ -116,7 +116,13 @@ jobs:
           for REGION in "${REGIONS[@]}"; do
             echo "Attempting deployment in $REGION..."
             export TF_VAR_region="$REGION"
-            if terraform apply -auto-approve -input=false 2>&1 | tee /tmp/tf.log; then
+            
+            set +e
+            terraform apply -auto-approve -input=false 2>&1 | tee /tmp/tf.log
+            TF_EXIT=${PIPESTATUS[0]}
+            set -e
+
+            if [ "$TF_EXIT" -eq 0 ]; then
               SUCCESS=true; break
             else
               if grep -iE "RESOURCE_EXHAUSTED|ZONE_RESOURCE_POOL_EXHAUSTED|QUOTA_EXCEEDED|stockout" /tmp/tf.log; then
