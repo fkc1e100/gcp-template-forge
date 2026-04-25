@@ -1,22 +1,22 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerCluster
 metadata:
-  name: gke-inf-fuse-cache-123456-kcc
+  name: gke-inf-fuse-cache
   namespace: forge-management
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
     cnrm.cloud.google.com/remove-default-node-pool: 'true'
   labels:
     project: gcp-template-forge
-    template: gke-inference-fuse-cache-123456
+    template: gke-inference-fuse-cache
 spec:
   location: us-central1
   nodeLocations:
   - us-central1-a
   networkRef:
-    name: gke-inf-fuse-cache-123456-vpc
+    name: gke-inf-fuse-cache-vpc
   subnetworkRef:
-    name: gke-inf-fuse-cache-123456-subnet
+    name: gke-inf-fuse-cache-subnet
   initialNodeCount: 1
   ipAllocationPolicy:
     clusterSecondaryRangeName: pods

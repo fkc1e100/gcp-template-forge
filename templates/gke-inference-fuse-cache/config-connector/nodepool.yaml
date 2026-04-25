@@ -3,12 +3,12 @@ kind: ContainerNodePool
 metadata:
   labels:
     project: gcp-template-forge
-    template: gke-inference-fuse-cache-123456
-  name: gke-inf-fuse-cache-123456-sys
+    template: gke-inference-fuse-cache
+  name: gke-inf-fuse-cache-sys
   namespace: forge-management
 spec:
   clusterRef:
-    name: gke-inf-fuse-cache-123456-kcc
+    name: gke-inf-fuse-cache
   location: us-central1
   nodeCount: 1
   nodeConfig:
@@ -23,7 +23,7 @@ spec:
     - https://www.googleapis.com/auth/devstorage.read_only
     labels:
       project: gcp-template-forge
-      template: gke-inference-fuse-cache-123456
+      template: gke-inference-fuse-cache
       pool: system
 ---
 apiVersion: container.cnrm.cloud.google.com/v1beta1
@@ -31,12 +31,12 @@ kind: ContainerNodePool
 metadata:
   labels:
     project: gcp-template-forge
-    template: gke-inference-fuse-cache-123456
-  name: gke-inf-fuse-cache-123456-gpu
+    template: gke-inference-fuse-cache
+  name: gke-inf-fuse-cache-gpu
   namespace: forge-management
 spec:
   clusterRef:
-    name: gke-inf-fuse-cache-123456-kcc
+    name: gke-inf-fuse-cache
   location: us-central1
   autoscaling:
     totalMinNodeCount: 0
@@ -61,7 +61,7 @@ spec:
     - https://www.googleapis.com/auth/devstorage.read_only
     labels:
       project: gcp-template-forge
-      template: gke-inference-fuse-cache-123456
+      template: gke-inference-fuse-cache
       pool: gpu
       cloud.google.com/gke-accelerator: nvidia-l4
     taint:

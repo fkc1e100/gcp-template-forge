@@ -3,8 +3,8 @@ kind: IAMPolicyMember
 metadata:
   labels:
     project: gcp-template-forge
-    template: gke-inference-fuse-cache-123456
-  name: gke-inf-fuse-node-123456-log-writer
+    template: gke-inference-fuse-cache
+  name: gke-inf-fuse-node-log-writer
   namespace: forge-management
 spec:
   member: serviceAccount:forge-builder@gca-gke-2025.iam.gserviceaccount.com
@@ -19,8 +19,8 @@ kind: IAMPolicyMember
 metadata:
   labels:
     project: gcp-template-forge
-    template: gke-inference-fuse-cache-123456
-  name: gke-inf-fuse-node-123456-metric-writer
+    template: gke-inference-fuse-cache
+  name: gke-inf-fuse-node-metric-writer
   namespace: forge-management
 spec:
   member: serviceAccount:forge-builder@gca-gke-2025.iam.gserviceaccount.com
@@ -35,8 +35,8 @@ kind: IAMPolicyMember
 metadata:
   labels:
     project: gcp-template-forge
-    template: gke-inference-fuse-cache-123456
-  name: gke-inf-fuse-node-123456-registry-reader
+    template: gke-inference-fuse-cache
+  name: gke-inf-fuse-node-registry-reader
   namespace: forge-management
 spec:
   member: serviceAccount:forge-builder@gca-gke-2025.iam.gserviceaccount.com
@@ -51,8 +51,8 @@ kind: IAMPolicyMember
 metadata:
   labels:
     project: gcp-template-forge
-    template: gke-inference-fuse-cache-123456
-  name: gke-inf-fuse-workload-123456-bucket-access
+    template: gke-inference-fuse-cache
+  name: gke-inf-fuse-workload-bucket-access
   namespace: forge-management
 spec:
   member: serviceAccount:forge-builder@gca-gke-2025.iam.gserviceaccount.com
@@ -60,4 +60,4 @@ spec:
   resourceRef:
     apiVersion: storage.cnrm.cloud.google.com/v1beta1
     kind: StorageBucket
-    name: gke-inf-fuse-cache-123456-kcc-bucket
+    name: gke-inf-fuse-cache-bucket

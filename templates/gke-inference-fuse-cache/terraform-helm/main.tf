@@ -86,6 +86,12 @@ resource "google_container_cluster" "gke_inference_fuse_cache_cluster" {
     channel = "REGULAR"
   }
 
+  addons_config {
+    gcs_fuse_csi_driver_config {
+      enabled = true
+    }
+  }
+
   security_posture_config {
     mode               = "BASIC"
     vulnerability_mode = "VULNERABILITY_BASIC"

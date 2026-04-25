@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: gke-inf-fuse-cache-123456-sa
+  name: gke-inf-fuse-cache-sa
   namespace: default
   labels:
     project: gcp-template-forge
-    template: gke-inference-fuse-cache-123456
+    template: gke-inference-fuse-cache
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -13,7 +13,7 @@ metadata:
   name: vllm-inference
   labels:
     project: gcp-template-forge
-    template: gke-inference-fuse-cache-123456
+    template: gke-inference-fuse-cache
     app: vllm
 spec:
   progressDeadlineSeconds: 3600
@@ -21,12 +21,12 @@ spec:
   selector:
     matchLabels:
       app: vllm
-      template: gke-inference-fuse-cache-123456
+      template: gke-inference-fuse-cache
   template:
     metadata:
       labels:
         project: gcp-template-forge
-        template: gke-inference-fuse-cache-123456
+        template: gke-inference-fuse-cache
         app: vllm
         gpu: l4
       annotations:
@@ -35,7 +35,7 @@ spec:
         gke-gcsfuse/memory-limit: 2Gi
         gke-gcsfuse/ephemeral-storage-limit: 60Gi
     spec:
-      serviceAccountName: gke-inf-fuse-cache-123456-sa
+      serviceAccountName: gke-inf-fuse-cache-sa
       initContainers:
       - name: wait-for-model
         image: busybox:1.36.1
@@ -99,7 +99,7 @@ spec:
         csi:
           driver: gcsfuse.csi.storage.gke.io
           volumeAttributes:
-            bucketName: gke-inf-fuse-cache-123456-kcc-bucket
+            bucketName: <BUCKET_NAME>
             mountOptions: implicit-dirs
             fileCacheCapacity: 50Gi
             fileCacheForRangeRead: 'true'
@@ -120,7 +120,7 @@ metadata:
   namespace: default
   labels:
     project: gcp-template-forge
-    template: gke-inference-fuse-cache-123456
+    template: gke-inference-fuse-cache
     component: staging
 spec:
   backoffLimit: 3
@@ -128,10 +128,10 @@ spec:
     metadata:
       labels:
         project: gcp-template-forge
-        template: gke-inference-fuse-cache-123456
+        template: gke-inference-fuse-cache
         component: staging
     spec:
-      serviceAccountName: gke-inf-fuse-cache-123456-sa
+      serviceAccountName: gke-inf-fuse-cache-sa
       containers:
       - name: stager
         image: google/cloud-sdk:slim
@@ -140,16 +140,7 @@ spec:
         - sh
         - -c
         args:
-        - "BUCKET_NAME=\"gke-inf-fuse-cache-123456-kcc-bucket\" # IMPORTANT: Replace\
-          \ gke-inf-fuse-cache-123456-kcc-bucket with your GCS bucket name\nif [ \"\
-          $BUCKET_NAME\" = \"gke-inf-fuse-cache-123456-kcc-bucket\" ]; then\n    echo\
-          \ \"ERROR: You must replace gke-inf-fuse-cache-123456-kcc-bucket in the\
-          \ Job manifest before applying.\"\n    exit 1\nfi\nset -e\necho \"Staging\
-          \ dummy model files...\"\nmkdir -p /tmp/models/facebook/opt-125m\necho '{\"\
-          model_type\": \"opt\"}' > /tmp/models/facebook/opt-125m/config.json\necho\
-          \ \"Uploading dummy model to gs://${BUCKET_NAME}/facebook/opt-125m/...\"\
-          \ngcloud storage cp -r /tmp/models/facebook/opt-125m \"gs://${BUCKET_NAME}/facebook/\"\
-          \necho \"Upload complete.\"\n"
+        - "BUCKET_NAME=\"<BUCKET_NAME>\"\nif [ \"$BUCKET_NAME\" = \"<BUCKET_NAME>\" ] || [ \"$BUCKET_NAME\" = \"\" ]; then\n    echo \"ERROR: You must replace <BUCKET_NAME> in the Job manifest before applying.\"\n    exit 1\nfi\nset -e\necho \"Staging dummy model files...\"\nmkdir -p /tmp/models/facebook/opt-125m\necho '{\"model_type\": \"opt\"}' > /tmp/models/facebook/opt-125m/config.json\necho \"Uploading dummy model to gs://${BUCKET_NAME}/facebook/opt-125m/...\"\ngcloud storage cp -r /tmp/models/facebook/opt-125m \"gs://${BUCKET_NAME}/facebook/\"\necho \"Upload complete.\"\n"
       restartPolicy: OnFailure
       nodeSelector:
         gpu: l4
@@ -165,7 +156,7 @@ metadata:
   namespace: default
   labels:
     project: gcp-template-forge
-    template: gke-inference-fuse-cache-123456
+    template: gke-inference-fuse-cache
     app: vllm
 spec:
   ports:
@@ -175,17 +166,17 @@ spec:
     name: http
   selector:
     app: vllm
-    template: gke-inference-fuse-cache-123456
+    template: gke-inference-fuse-cache
   type: ClusterIP
 ---
 apiVersion: v1
 kind: ResourceQuota
 metadata:
-  name: gke-inference-fuse-cache-123456-quota
+  name: gke-inference-fuse-cache-quota
   namespace: default
   labels:
     project: gcp-template-forge
-    template: gke-inference-fuse-cache-123456
+    template: gke-inference-fuse-cache
 spec:
   hard:
     pods: '10'
@@ -199,11 +190,11 @@ spec:
 apiVersion: v1
 kind: LimitRange
 metadata:
-  name: gke-inference-fuse-cache-123456-limits
+  name: gke-inference-fuse-cache-limits
   namespace: default
   labels:
     project: gcp-template-forge
-    template: gke-inference-fuse-cache-123456
+    template: gke-inference-fuse-cache
 spec:
   limits:
   - default:
@@ -221,19 +212,19 @@ metadata:
   namespace: default
   labels:
     project: gcp-template-forge
-    template: gke-inference-fuse-cache-123456
+    template: gke-inference-fuse-cache
 spec:
   podSelector:
     matchLabels:
       app: vllm
-      template: gke-inference-fuse-cache-123456
+      template: gke-inference-fuse-cache
   policyTypes:
   - Ingress
   ingress:
   - from:
     - podSelector:
         matchLabels:
-          template: gke-inference-fuse-cache-123456
+          template: gke-inference-fuse-cache
     ports:
     - protocol: TCP
       port: 8000
