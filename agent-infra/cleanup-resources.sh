@@ -124,6 +124,11 @@ DELETED_CLUSTERS=false
 while read -r CLUSTER C_LOC T_LABEL; do
   [ -z "$CLUSTER" ] && continue
   
+  if [[ "$CLUSTER" == *"repo-agent-standard"* ]] || [[ "$CLUSTER" == *"kcc-dash-dont-delete"* ]]; then
+    echo "Skipping protected cluster: $CLUSTER"
+    continue
+  fi
+  
   SKIP=false
   while read -r RUN_ID; do
     [ -z "$RUN_ID" ] && continue
