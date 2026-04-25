@@ -45,11 +45,11 @@ spec:
           gcloud storage cp -r /tmp/models/facebook/opt-125m "gs://${BUCKET}/facebook/"
           echo "Upload complete."
       restartPolicy: OnFailure
-      {{- with .Values.nodeSelector }}
+      {{- with .Values.stager.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.tolerations }}
+      {{- with .Values.stager.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}

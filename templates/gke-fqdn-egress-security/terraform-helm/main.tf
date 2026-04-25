@@ -234,7 +234,7 @@ resource "local_file" "helm_values" {
 ${yamlencode({
   project_id = var.project_id
   pod = {
-    image = "curlimages/curl:8.4.0"
+    image = "curlimages/curl:8.4.0@sha256:4a3396ae573c44932d06ba33f8696db4429c419da87cbdc82965ee96a37dd0af"
     label = "egress-test"
   }
 })}

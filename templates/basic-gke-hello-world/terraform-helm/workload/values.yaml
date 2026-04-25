@@ -16,7 +16,7 @@ replicaCount: 3
 
 image:
   repository: us-docker.pkg.dev/google-samples/containers/gke/hello-app
-  tag: "1.0"
+  tag: "1.0@sha256:820468940656a81c01594957e3f89025df6368d4d77299a9b70830491040ed51"
   pullPolicy: IfNotPresent
 
 service:

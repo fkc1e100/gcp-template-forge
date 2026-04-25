@@ -279,6 +279,15 @@ resource "google_storage_bucket" "model_bucket" {
 
 # IAM for Workload Identity
 resource "google_storage_bucket_iam_member" "workload_sa_bucket_access" {
+  count  = var.create_gsas ? 1 : 0
+  bucket = google_storage_bucket.model_bucket.name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${google_service_account.workload_sa[0].email}"
+}
+
+# Direct KSA binding as fallback for CI/Shared SA or when GSAs are not created
+resource "google_storage_bucket_iam_member" "ksa_bucket_access" {
+  count  = var.create_gsas ? 0 : 1
   bucket = google_storage_bucket.model_bucket.name
   role   = "roles/storage.objectAdmin"
   member = "serviceAccount:${var.project_id}.svc.id.goog[default/${local.ksa_name}]"
@@ -325,7 +334,7 @@ ${yamlencode({
   region       = var.region
   image = {
     repository = "google/cloud-sdk"
-    tag        = "slim"
+    tag        = "slim@sha256:8c9ed0427dd1e0b75623d93f881c058eb45c4e292977d0228c6264e81e1a4372"
     pullPolicy = "IfNotPresent"
   }
   resources = {
@@ -350,6 +359,12 @@ ${yamlencode({
       effect   = "NoSchedule"
     }
   ]
+  stager = {
+    nodeSelector = {
+      pool = "system"
+    }
+    tolerations = []
+  }
   bucketName = google_storage_bucket.model_bucket.name
   uidSuffix  = var.uid_suffix
   cache = {

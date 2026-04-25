@@ -36,11 +36,12 @@ try:
     quotas = {q['metric']: q for q in data.get('quotas', [])}
     
     # Define critical metrics and the minimum available capacity we want to guarantee
+    # We increase these for NETWORKS and ROUTERS to allow parallel CI runs for multiple templates.
     checks = {
         'CPUS': 10.0,
-        'NETWORKS': 1.0,
-        'FIREWALLS': 5.0,
-        'ROUTERS': 2.0
+        'NETWORKS': 8.0,
+        'FIREWALLS': 20.0,
+        'ROUTERS': 8.0
     }
     
     need_cleanup = False
