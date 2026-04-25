@@ -1,0 +1,21 @@
+name: Debug KCC Cluster
+on:
+  push:
+    branches:
+      - fix-103-iam-patching
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: 'projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github'
+          service_account: 'forge-builder@gca-gke-2025.iam.gserviceaccount.com'
+      - name: Setup Gcloud
+        uses: google-github-actions/setup-gcloud@v2
+      - name: Describe Cluster
+        run: |
+          gcloud container clusters describe krmapihost-kcc-instance --region us-central1 --project gca-gke-2025 || true
+          gcloud container clusters list --project gca-gke-2025 || true
+          gcloud projects get-iam-policy gca-gke-2025 --flatten="bindings[].members" --format="table(bindings.role)" --filter="bindings.members:forge-builder" || true
