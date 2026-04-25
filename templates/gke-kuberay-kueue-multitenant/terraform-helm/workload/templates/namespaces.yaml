@@ -36,7 +36,7 @@ kind: ServiceAccount
 metadata:
   name: {{ $namespace }}-sa
   namespace: {{ $namespace }}
-  {{- $saEmail := (if eq $namespace "team-a" $.Values.teamASAEmail $.Values.teamBSAEmail) }}
+  {{- $saEmail := (eq $namespace "team-a" | ternary $.Values.teamASAEmail $.Values.teamBSAEmail) }}
   {{- if $saEmail }}
   annotations:
     iam.gke.io/gcp-service-account: {{ $saEmail }}
