@@ -104,22 +104,25 @@ def patch_doc(doc):
             if not annotations:
                 del metadata["annotations"]
 
-    # 3. Replace serviceAccountRef
-    def walk(obj):
-        if isinstance(obj, dict):
-            if "serviceAccountRef" in obj and isinstance(obj["serviceAccountRef"], dict):
-                obj["serviceAccountRef"] = {"external": shared_sa}
-            for v in obj.values():
-                walk(v)
-        elif isinstance(obj, list):
-            for i in obj:
-                walk(i)
-
-    walk(doc)
+    # 3. Replace serviceAccountRef and member emails safely
+    kind = doc.get("kind", "")
     
-    # 3. Replace member emails in IAMPolicyMember
-    if doc.get("kind") == "IAMPolicyMember":
+    if kind in ["ContainerCluster", "ContainerNodePool"]:
+        # They support external serviceAccountRef
+        def walk(obj):
+            if isinstance(obj, dict):
+                if "serviceAccountRef" in obj and isinstance(obj["serviceAccountRef"], dict):
+                    obj["serviceAccountRef"] = {"external": shared_sa}
+                for v in obj.values():
+                    walk(v)
+            elif isinstance(obj, list):
+                for i in obj:
+                    walk(i)
+        walk(doc)
+    
+    if kind == "IAMPolicyMember":
         spec = doc.get("spec", {})
+        # Replace member
         member = spec.get("member", "")
         if member.startswith("serviceAccount:") and project_id in member:
             spec["member"] = f"serviceAccount:{shared_sa}"
