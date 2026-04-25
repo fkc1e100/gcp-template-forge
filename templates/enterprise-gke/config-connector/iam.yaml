@@ -32,9 +32,6 @@ metadata:
     project: gcp-template-forge
     template: enterprise-gke
 spec:
-  # Note: workload identity pool name still requires project ID but we avoid external refs where possible.
-  # Config Connector handles project substitution in some fields but not always in member strings.
-    # UPDATE: Replace <PROJECT_ID> with your GCP Project ID
   member: "serviceAccount:<PROJECT_ID>.svc.id.goog[gke-workload/gke-workload-sa]"
   role: roles/iam.workloadIdentityUser
   resourceRef:
@@ -51,7 +48,6 @@ metadata:
     project: gcp-template-forge
     template: enterprise-gke
 spec:
-    # UPDATE: Replace <PROJECT_ID> with your GCP Project ID
   member: "serviceAccount:<PROJECT_ID>.svc.id.goog[default/gke-workload-sa]"
   role: roles/iam.workloadIdentityUser
   resourceRef:
@@ -79,14 +75,11 @@ metadata:
     project: gcp-template-forge
     template: enterprise-gke
 spec:
-  memberFrom:
-    serviceAccountRef:
-      name: enterprise-gke-n-sa
+  member: "serviceAccount:enterprise-gke-n-sa@<PROJECT_ID>.iam.gserviceaccount.com"
   role: roles/logging.logWriter
   resourceRef:
     apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
     kind: Project
-      # UPDATE: Replace <PROJECT_ID> with your GCP Project ID
     external: <PROJECT_ID>
 ---
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
@@ -98,14 +91,11 @@ metadata:
     project: gcp-template-forge
     template: enterprise-gke
 spec:
-  memberFrom:
-    serviceAccountRef:
-      name: enterprise-gke-n-sa
+  member: "serviceAccount:enterprise-gke-n-sa@<PROJECT_ID>.iam.gserviceaccount.com"
   role: roles/monitoring.metricWriter
   resourceRef:
     apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
     kind: Project
-      # UPDATE: Replace <PROJECT_ID> with your GCP Project ID
     external: <PROJECT_ID>
 ---
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
@@ -117,12 +107,9 @@ metadata:
     project: gcp-template-forge
     template: enterprise-gke
 spec:
-  memberFrom:
-    serviceAccountRef:
-      name: enterprise-gke-n-sa
+  member: "serviceAccount:enterprise-gke-n-sa@<PROJECT_ID>.iam.gserviceaccount.com"
   role: roles/stackdriver.resourceMetadata.writer
   resourceRef:
     apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
     kind: Project
-      # UPDATE: Replace <PROJECT_ID> with your GCP Project ID
     external: <PROJECT_ID>

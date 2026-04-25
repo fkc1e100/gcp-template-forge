@@ -24,7 +24,7 @@ metadata:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   clusterRef:
-    name: gke-topology-aware-routing-kcc
+    name: gke-topology-aware-routing
   location: us-central1
   nodeCount: 1
   nodeConfig:
@@ -34,7 +34,7 @@ spec:
     imageType: COS_CONTAINERD
     spot: true
     serviceAccountRef:
-      external: forge-kcc-admin@gca-gke-2025.iam.gserviceaccount.com
+      external: forge-admin@gca-gke-2025.iam.gserviceaccount.com
     oauthScopes:
       - https://www.googleapis.com/auth/cloud-platform
     shieldedInstanceConfig:

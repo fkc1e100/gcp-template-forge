@@ -15,7 +15,7 @@
 apiVersion: compute.cnrm.cloud.google.com/v1beta1
 kind: ComputeNetwork
 metadata:
-  name: gke-topology-aware-routing-kcc-vpc
+  name: gke-topology-aware-routing-vpc
   namespace: forge-management
   labels:
     project: gcp-template-forge
@@ -28,7 +28,7 @@ spec:
 apiVersion: compute.cnrm.cloud.google.com/v1beta1
 kind: ComputeSubnetwork
 metadata:
-  name: gke-topology-aware-routing-kcc-subnet
+  name: gke-topology-aware-routing-subnet
   namespace: forge-management
   labels:
     project: gcp-template-forge
@@ -39,7 +39,7 @@ spec:
   ipCidrRange: 10.32.0.0/20
   region: us-central1
   networkRef:
-    name: gke-topology-aware-routing-kcc-vpc
+    name: gke-topology-aware-routing-vpc
   privateIpGoogleAccess: true
   secondaryIpRange:
     - rangeName: pods

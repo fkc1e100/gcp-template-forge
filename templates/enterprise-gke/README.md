@@ -53,7 +53,7 @@ kubectl apply -n <KCC_NAMESPACE> -f config-connector/
 
 # 2. Once the cluster is READY, apply the workload manifests to the target cluster
 # Get credentials for the new cluster first
-gcloud container clusters get-credentials enterprise-gke-kcc --region us-central1
+gcloud container clusters get-credentials enterprise-gke --region us-central1
 kubectl apply -f config-connector-workload/
 ```
 
@@ -71,7 +71,7 @@ To verify the deployment:
    Use the `validate.sh` script to verify cluster connectivity and workload health:
    ```bash
    export PROJECT_ID=<PROJECT_ID>
-   export CLUSTER_NAME=enterprise-gke-tf # or enterprise-gke-kcc for KCC path
+   export CLUSTER_NAME=enterprise-gke-tf # or enterprise-gke for KCC path
    export REGION=us-central1
    ./validate.sh
    ```
@@ -138,7 +138,7 @@ kubectl delete -n <KCC_NAMESPACE> -f config-connector/ --wait=true
 | **Duration** | 21m 59s | 21m 57s |
 | **Region** | us-central1 | us-central1 (KCC cluster) |
 | **Zones** | us-central1-a,us-central1-b,us-central1-c,us-central1-f | us-central1 (regional) |
-| **Cluster** | enterprise-gke-tf | enterprise-gke-kcc |
+| **Cluster** | enterprise-gke-tf | enterprise-gke |
 | **Agent tokens** | 495,000 in / 70,000 out (multi-session) | (shared session) |
 | **Estimated cost** | $0.55 | -- |
 | **Commit** | dde1b73 | dde1b73 |

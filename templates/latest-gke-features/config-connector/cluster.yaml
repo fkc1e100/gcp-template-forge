@@ -15,7 +15,7 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerCluster
 metadata:
-  name: latest-gke-features-kcc
+  name: latest-gke-features
   namespace: forge-management
   labels:
     project: gcp-template-forge
@@ -29,9 +29,9 @@ spec:
   # minMasterVersion: 1.35.3-gke.1234000
   networkingMode: VPC_NATIVE
   networkRef:
-    name: latest-gke-features-kcc-vpc
+    name: latest-gke-features-vpc
   subnetworkRef:
-    name: latest-gke-features-kcc-subnet
+    name: latest-gke-features-subnet
   ipAllocationPolicy:
     clusterSecondaryRangeName: pods
     servicesSecondaryRangeName: services
@@ -67,7 +67,7 @@ spec:
         maximum: 512
     autoProvisioningDefaults:
       serviceAccountRef:
-        external: forge-kcc-admin@gca-gke-2025.iam.gserviceaccount.com
+        external: forge-admin@gca-gke-2025.iam.gserviceaccount.com
       oauthScopes:
         - https://www.googleapis.com/auth/cloud-platform
       management:

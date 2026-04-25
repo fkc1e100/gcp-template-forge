@@ -75,7 +75,7 @@ kubectl apply -f config-connector/ -n forge-management
 ### Verification
 1. **Resource Readiness:**
    ```bash
-   kubectl wait --for=condition=Ready containercluster/enterprise-gke-kcc -n forge-management --timeout=20m
+   kubectl wait --for=condition=Ready containercluster/enterprise-gke -n forge-management --timeout=20m
    ```
 2. **Workload Deployment & Integration:**
    The `config-connector-workload/` manifests handle the deployment of the workload to the newly created cluster. Run `validate.sh` to perform health checks and interaction tests.
