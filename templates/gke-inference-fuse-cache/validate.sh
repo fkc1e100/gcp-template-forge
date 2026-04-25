@@ -167,7 +167,7 @@ echo "Test 4: Workload Readiness..."
 DEPLOY_NAME="vllm-inference"
 
 # Detect Job name using label
-JOB_NAME=$(kubectl get job -n ${NAMESPACE} -l component=staging,template=${TEMPLATE_LABEL} -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
+JOB_NAME=$(kubectl get job -n ${NAMESPACE} -l component=staging,template=${TEMPLATE_LABEL} -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || echo "")
 if [ -z "${JOB_NAME}" ]; then
   echo "WARNING: Could not detect Job with label component=staging,template=${TEMPLATE_LABEL}, falling back to names..."
   if kubectl get job release-vllm-inference-stage -n ${NAMESPACE} >/dev/null 2>&1; then
