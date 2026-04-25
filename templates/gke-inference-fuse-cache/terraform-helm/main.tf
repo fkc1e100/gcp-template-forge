@@ -315,8 +315,8 @@ resource "local_file" "helm_values" {
 ${yamlencode({
   replicaCount = 1
   image = {
-    repository = "rayproject/ray"
-    tag        = "2.9.0"
+    repository = "google/cloud-sdk"
+    tag        = "slim"
     pullPolicy = "IfNotPresent"
   }
   resources = {

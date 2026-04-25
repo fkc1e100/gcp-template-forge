@@ -18,7 +18,7 @@ This document outlines the plan for verifying the `gke-kuberay-kueue-multitenant
 
 ## Test Environment
 - **Project**: `<PROJECT_ID>`
-- **Region**: `us-central1`
+- **Region**: `<REGION>`
 - **Tools**: `terraform`, `helm`, `kubectl`, `gcloud`
 
 ## 1. Infrastructure Verification (Terraform)

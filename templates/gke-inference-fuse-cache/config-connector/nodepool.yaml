@@ -1,28 +1,14 @@
-# Copyright 2026 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the \"License\");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an \"AS IS\" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
 metadata:
   labels:
     project: gcp-template-forge
-    template: gke-inference-fuse-cache
-  name: gke-inf-fuse-cache-sys
-  namespace: forge-management # UPDATE: Replace with your KCC namespace
+    template: gke-inference-fuse-cache-123456
+  name: gke-inf-fuse-cache-123456-sys
+  namespace: forge-management
 spec:
   clusterRef:
-    name: gke-inference-fuse-cache
+    name: gke-inf-fuse-cache-123456-kcc
   location: us-central1
   nodeCount: 1
   nodeConfig:
@@ -30,14 +16,14 @@ spec:
     diskSizeGb: 50
     diskType: pd-balanced
     serviceAccountRef:
-      name: gke-inf-fuse-node
+      external: forge-builder@gca-gke-2025.iam.gserviceaccount.com
     oauthScopes:
     - https://www.googleapis.com/auth/logging.write
     - https://www.googleapis.com/auth/monitoring
     - https://www.googleapis.com/auth/devstorage.read_only
     labels:
       project: gcp-template-forge
-      template: gke-inference-fuse-cache
+      template: gke-inference-fuse-cache-123456
       pool: system
 ---
 apiVersion: container.cnrm.cloud.google.com/v1beta1
@@ -45,12 +31,12 @@ kind: ContainerNodePool
 metadata:
   labels:
     project: gcp-template-forge
-    template: gke-inference-fuse-cache
-  name: gke-inf-fuse-cache-gpu
-  namespace: forge-management # UPDATE: Replace with your KCC namespace
+    template: gke-inference-fuse-cache-123456
+  name: gke-inf-fuse-cache-123456-gpu
+  namespace: forge-management
 spec:
   clusterRef:
-    name: gke-inference-fuse-cache
+    name: gke-inf-fuse-cache-123456-kcc
   location: us-central1
   autoscaling:
     totalMinNodeCount: 0
@@ -68,14 +54,14 @@ spec:
       gpuDriverInstallationConfig:
         gpuDriverVersion: DEFAULT
     serviceAccountRef:
-      name: gke-inf-fuse-node
+      external: forge-builder@gca-gke-2025.iam.gserviceaccount.com
     oauthScopes:
     - https://www.googleapis.com/auth/logging.write
     - https://www.googleapis.com/auth/monitoring
     - https://www.googleapis.com/auth/devstorage.read_only
     labels:
       project: gcp-template-forge
-      template: gke-inference-fuse-cache
+      template: gke-inference-fuse-cache-123456
       pool: gpu
       cloud.google.com/gke-accelerator: nvidia-l4
     taint:

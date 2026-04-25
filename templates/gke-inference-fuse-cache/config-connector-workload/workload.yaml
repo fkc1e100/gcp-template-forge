@@ -1,28 +1,11 @@
-# Copyright 2026 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: gke-inf-fuse-cache-sa
+  name: gke-inf-fuse-cache-123456-sa
   namespace: default
-  annotations:
-    # NOTE: Replace <PROJECT_ID> with your actual project ID
-    iam.gke.io/gcp-service-account: gke-inf-fuse-cache-sa@<PROJECT_ID>.iam.gserviceaccount.com
   labels:
     project: gcp-template-forge
-    template: gke-inference-fuse-cache
+    template: gke-inference-fuse-cache-123456
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -30,7 +13,7 @@ metadata:
   name: vllm-inference
   labels:
     project: gcp-template-forge
-    template: gke-inference-fuse-cache
+    template: gke-inference-fuse-cache-123456
     app: vllm
 spec:
   progressDeadlineSeconds: 3600
@@ -38,60 +21,51 @@ spec:
   selector:
     matchLabels:
       app: vllm
-      template: gke-inference-fuse-cache
+      template: gke-inference-fuse-cache-123456
   template:
     metadata:
       labels:
         project: gcp-template-forge
-        template: gke-inference-fuse-cache
+        template: gke-inference-fuse-cache-123456
         app: vllm
         gpu: l4
       annotations:
-        gke-gcsfuse/volumes: "true"
-        gke-gcsfuse/cpu-limit: "1"
-        gke-gcsfuse/memory-limit: "2Gi"
-        gke-gcsfuse/ephemeral-storage-limit: "60Gi"
+        gke-gcsfuse/volumes: 'true'
+        gke-gcsfuse/cpu-limit: '1'
+        gke-gcsfuse/memory-limit: 2Gi
+        gke-gcsfuse/ephemeral-storage-limit: 60Gi
     spec:
-      serviceAccountName: gke-inf-fuse-cache-sa
+      serviceAccountName: gke-inf-fuse-cache-123456-sa
       initContainers:
       - name: wait-for-model
-        image: busybox:latest
-        command: ['sh', '-c', 'until [ -f /models/facebook/opt-125m/config.json ]; do echo waiting for model; sleep 10; done']
+        image: busybox:1.36.1
+        command:
+        - sh
+        - -c
+        - until [ -f /models/facebook/opt-125m/config.json ]; do echo waiting for
+          model; sleep 10; done
         volumeMounts:
         - name: gcs-fuse-csi-ephemeral
           mountPath: /models
           readOnly: true
       containers:
       - name: vllm-openai
-        image: "google/cloud-sdk:slim"
+        image: google/cloud-sdk:slim
         imagePullPolicy: IfNotPresent
-        command: ["/usr/bin/python3", "-c"]
+        command:
+        - /usr/bin/python3
+        - -c
         args:
-        - |
-          import http.server
-          import socketserver
-          import os
-
-          PORT = 8000
-          MODEL_FILE = "/models/facebook/opt-125m/config.json"
-
-          class Handler(http.server.SimpleHTTPRequestHandler):
-              def do_GET(self):
-                  if self.path == '/health':
-                      if os.path.exists(MODEL_FILE):
-                          self.send_response(200)
-                          self.end_headers()
-                          self.wfile.write(b"OK")
-                      else:
-                          self.send_response(500)
-                          self.end_headers()
-                          self.wfile.write(b"Model not found")
-                  else:
-                      super().do_GET()
-
-          print(f"Starting dummy inference server on port {PORT}")
-          with socketserver.TCPServer(("", PORT), Handler) as httpd:
-              httpd.serve_forever()
+        - "import http.server\nimport socketserver\nimport os\n\nPORT = 8000\nMODEL_FILE\
+          \ = \"/models/facebook/opt-125m/config.json\"\n\nclass Handler(http.server.SimpleHTTPRequestHandler):\n\
+          \    def do_GET(self):\n        if self.path == '/health':\n           \
+          \ if os.path.exists(MODEL_FILE):\n                self.send_response(200)\n\
+          \                self.end_headers()\n                self.wfile.write(b\"\
+          OK\")\n            else:\n                self.send_response(500)\n    \
+          \            self.end_headers()\n                self.wfile.write(b\"Model\
+          \ not found\")\n        else:\n            super().do_GET()\n\nprint(f\"\
+          Starting dummy inference server on port {PORT}\")\nwith socketserver.TCPServer((\"\
+          \", PORT), Handler) as httpd:\n    httpd.serve_forever()\n"
         ports:
         - containerPort: 8000
           name: http
@@ -113,33 +87,31 @@ spec:
           readOnly: true
         resources:
           limits:
-            cpu: "2"
-            memory: "4Gi"
+            cpu: '2'
+            memory: 4Gi
             nvidia.com/gpu: 1
           requests:
-            cpu: "2"
-            memory: "4Gi"
+            cpu: '2'
+            memory: 4Gi
             nvidia.com/gpu: 1
       volumes:
       - name: gcs-fuse-csi-ephemeral
         csi:
           driver: gcsfuse.csi.storage.gke.io
           volumeAttributes:
-            # NOTE: Replace <BUCKET_NAME> with your actual bucket name
-            bucketName: <BUCKET_NAME>
-            mountOptions: "implicit-dirs"
-            fileCacheCapacity: "50Gi"
-            fileCacheForRangeRead: "true"
-            metadataCacheTTLSeconds: "3600"
-            metadataStatCacheCapacity: "512Mi"
-            metadataTypeCacheCapacity: "64Mi"
+            bucketName: gke-inf-fuse-cache-123456-kcc-bucket
+            mountOptions: implicit-dirs
+            fileCacheCapacity: 50Gi
+            fileCacheForRangeRead: 'true'
+            metadataCacheTTLSeconds: '3600'
+            metadataStatCacheCapacity: 512Mi
+            metadataTypeCacheCapacity: 64Mi
       nodeSelector:
         gpu: l4
       tolerations:
-      - key: "nvidia.com/gpu"
-        operator: "Exists"
-        effect: "NoSchedule"
-
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
 ---
 apiVersion: batch/v1
 kind: Job
@@ -148,7 +120,7 @@ metadata:
   namespace: default
   labels:
     project: gcp-template-forge
-    template: gke-inference-fuse-cache
+    template: gke-inference-fuse-cache-123456
     component: staging
 spec:
   backoffLimit: 3
@@ -156,36 +128,35 @@ spec:
     metadata:
       labels:
         project: gcp-template-forge
-        template: gke-inference-fuse-cache
+        template: gke-inference-fuse-cache-123456
         component: staging
     spec:
-      serviceAccountName: gke-inf-fuse-cache-sa
+      serviceAccountName: gke-inf-fuse-cache-123456-sa
       containers:
       - name: stager
         image: google/cloud-sdk:slim
         imagePullPolicy: IfNotPresent
-        command: ["sh", "-c"]
+        command:
+        - sh
+        - -c
         args:
-        - |
-          BUCKET_NAME="<BUCKET_NAME>" # IMPORTANT: Replace <BUCKET_NAME> with your GCS bucket name
-          if [ "$BUCKET_NAME" = "<BUCKET_NAME>" ]; then
-              echo "ERROR: You must replace <BUCKET_NAME> in the Job manifest before applying."
-              exit 1
-          fi
-          set -e
-          echo "Staging dummy model files..."
-          mkdir -p /tmp/models/facebook/opt-125m
-          echo '{"model_type": "opt"}' > /tmp/models/facebook/opt-125m/config.json
-          echo "Uploading dummy model to gs://${BUCKET_NAME}/facebook/opt-125m/..."
-          gcloud storage cp -r /tmp/models/facebook/opt-125m "gs://${BUCKET_NAME}/facebook/"
-          echo "Upload complete."
+        - "BUCKET_NAME=\"gke-inf-fuse-cache-123456-kcc-bucket\" # IMPORTANT: Replace\
+          \ gke-inf-fuse-cache-123456-kcc-bucket with your GCS bucket name\nif [ \"\
+          $BUCKET_NAME\" = \"gke-inf-fuse-cache-123456-kcc-bucket\" ]; then\n    echo\
+          \ \"ERROR: You must replace gke-inf-fuse-cache-123456-kcc-bucket in the\
+          \ Job manifest before applying.\"\n    exit 1\nfi\nset -e\necho \"Staging\
+          \ dummy model files...\"\nmkdir -p /tmp/models/facebook/opt-125m\necho '{\"\
+          model_type\": \"opt\"}' > /tmp/models/facebook/opt-125m/config.json\necho\
+          \ \"Uploading dummy model to gs://${BUCKET_NAME}/facebook/opt-125m/...\"\
+          \ngcloud storage cp -r /tmp/models/facebook/opt-125m \"gs://${BUCKET_NAME}/facebook/\"\
+          \necho \"Upload complete.\"\n"
       restartPolicy: OnFailure
       nodeSelector:
         gpu: l4
       tolerations:
-      - key: "nvidia.com/gpu"
-        operator: "Exists"
-        effect: "NoSchedule"
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
 ---
 apiVersion: v1
 kind: Service
@@ -194,7 +165,7 @@ metadata:
   namespace: default
   labels:
     project: gcp-template-forge
-    template: gke-inference-fuse-cache
+    template: gke-inference-fuse-cache-123456
     app: vllm
 spec:
   ports:
@@ -204,35 +175,35 @@ spec:
     name: http
   selector:
     app: vllm
-    template: gke-inference-fuse-cache
+    template: gke-inference-fuse-cache-123456
   type: ClusterIP
 ---
 apiVersion: v1
 kind: ResourceQuota
 metadata:
-  name: gke-inference-fuse-cache-quota
+  name: gke-inference-fuse-cache-123456-quota
   namespace: default
   labels:
     project: gcp-template-forge
-    template: gke-inference-fuse-cache
+    template: gke-inference-fuse-cache-123456
 spec:
   hard:
-    pods: "10"
-    requests.cpu: "8"
-    requests.memory: "16Gi"
-    limits.cpu: "16"
-    limits.memory: "32Gi"
-    requests.nvidia.com/gpu: "1"
-    limits.nvidia.com/gpu: "1"
+    pods: '10'
+    requests.cpu: '8'
+    requests.memory: 16Gi
+    limits.cpu: '16'
+    limits.memory: 32Gi
+    requests.nvidia.com/gpu: '1'
+    limits.nvidia.com/gpu: '1'
 ---
 apiVersion: v1
 kind: LimitRange
 metadata:
-  name: gke-inference-fuse-cache-limits
+  name: gke-inference-fuse-cache-123456-limits
   namespace: default
   labels:
     project: gcp-template-forge
-    template: gke-inference-fuse-cache
+    template: gke-inference-fuse-cache-123456
 spec:
   limits:
   - default:
@@ -250,19 +221,19 @@ metadata:
   namespace: default
   labels:
     project: gcp-template-forge
-    template: gke-inference-fuse-cache
+    template: gke-inference-fuse-cache-123456
 spec:
   podSelector:
     matchLabels:
       app: vllm
-      template: gke-inference-fuse-cache
+      template: gke-inference-fuse-cache-123456
   policyTypes:
   - Ingress
   ingress:
   - from:
     - podSelector:
         matchLabels:
-          template: gke-inference-fuse-cache
+          template: gke-inference-fuse-cache-123456
     ports:
     - protocol: TCP
       port: 8000

@@ -49,15 +49,13 @@ if [[ "$PROJECT_ID" == "gca-gke-2025" ]]; then
   
   # Patch placeholders in all YAML manifests
   find "${TEMPLATE_PATH}/config-connector" "${TEMPLATE_PATH}/config-connector-workload" -type f -name "*.yaml" -exec sed -i "s/<PROJECT_ID>/${PROJECT_ID}/g" {} + 2>/dev/null || true
+  find "${TEMPLATE_PATH}/config-connector" "${TEMPLATE_PATH}/config-connector-workload" -type f -name "*.yaml" -exec sed -i "s/<REGION>/${REGION:-us-central1}/g" {} + 2>/dev/null || true
   
   # Predict/Detect bucket name
   # The inference template uses <BUCKET_NAME>
   # KCC path: gke-inf-fuse-cache-kcc-bucket -> gke-inf-fuse-cache-${UID_SUFFIX}-kcc-bucket (after standard suffixing)
   # TF path: gke-inf-fuse-cache-tf-${UID_SUFFIX}-bucket
-  BUCKET_NAME="gke-inf-fuse-cache-${UID_SUFFIX}-kcc-bucket"
-  if [[ "${TEMPLATE_PATH}" == *"terraform-helm"* ]]; then
-    BUCKET_NAME="gke-inf-fuse-cache-tf-${UID_SUFFIX}-bucket"
-  fi
+  BUCKET_NAME="gke-inf-fuse-cache-tf-${UID_SUFFIX}-bucket"
   
   # Try to detect if it already exists (might be different if not using standard naming)
   EXISTING_BUCKET=$(gcloud storage buckets list --project ${PROJECT_ID} --filter="name ~ .*${UID_SUFFIX}.*" --format="value(name)" --limit 1 2>/dev/null || echo "")

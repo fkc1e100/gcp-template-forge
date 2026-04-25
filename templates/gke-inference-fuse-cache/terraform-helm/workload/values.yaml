@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-projectID: <PROJECT_ID>
-region: <REGION>
-clusterName: <CLUSTER_NAME>
-uidSuffix: ""
-bucketName: ""
+projectID: gca-gke-2025
+region: us-central1
+clusterName: gke-inference-fuse-cache-123456-tf
+uidSuffix: "123456"
+bucketName: "gke-inf-fuse-cache-tf-123456-bucket"
 
 replicaCount: 1
 

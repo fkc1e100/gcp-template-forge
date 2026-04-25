@@ -23,7 +23,7 @@ metadata:
 spec:
   clusterRef:
     name: gke-kuberay-kueue-multitenant
-  location: us-central1
+  location: <REGION>
   nodeCount: 2
   nodeConfig:
     machineType: e2-standard-4
@@ -51,7 +51,7 @@ metadata:
 spec:
   clusterRef:
     name: gke-kuberay-kueue-multitenant
-  location: us-central1
+  location: <REGION>
   autoscaling:
     totalMinNodeCount: 0
     totalMaxNodeCount: 5

@@ -24,10 +24,10 @@ metadata:
     cnrm.cloud.google.com/project-id: <PROJECT_ID> # UPDATE: Replace with your GCP Project ID
     cnrm.cloud.google.com/remove-default-node-pool: "true"
 spec:
-  location: us-central1 # UPDATE: Replace with your region
+  location: <REGION> # UPDATE: Replace with your region
   # Restrict to a single zone for the initial node count to save quota in CI
   nodeLocations:
-    - us-central1-a # UPDATE: Replace with your zone
+    - <REGION>-a # UPDATE: Replace with your zone
   initialNodeCount: 1
   networkRef:
     name: gke-kuberay-kueue-multitenant-vpc

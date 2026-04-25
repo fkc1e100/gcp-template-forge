@@ -64,7 +64,7 @@ kubectl apply -n forge-management -f config-connector/
 kubectl get -n forge-management -f config-connector/
 
 # Once all resources show READY: True, apply the workload to the workload cluster:
-# (Ensure you are connected to the newly created workload cluster)
+gcloud container clusters get-credentials gke-kuberay-kueue-multitenant --region us-central1
 kubectl apply --server-side -f config-connector-workload/
 ```
 
