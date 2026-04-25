@@ -242,7 +242,7 @@ jobs:
     name: KCC (${{ matrix.template }})
     needs: [detect-changes, lint, pre-cleanup]
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 100
     strategy:
       fail-fast: false
       matrix:
@@ -268,7 +268,7 @@ jobs:
           BASE_NAME=$(basename "$TEMPLATE")
           find "${TEMPLATE}"/config-connector* -type f -name "*.yaml" -exec sed -i "s/${BASE_NAME}/${BASE_NAME}-${UID_SUFFIX}/g" {} +
           kubectl apply -n "$KCC_NAMESPACE" -f "${TEMPLATE}/config-connector/"
-          kubectl wait -n "$KCC_NAMESPACE" --for=condition=Ready --all --timeout=3600s -f "${TEMPLATE}/config-connector/"
+          kubectl wait -n "$KCC_NAMESPACE" --for=condition=Ready --all --timeout=5400s -f "${TEMPLATE}/config-connector/"
       - name: Teardown KCC
         if: always()
         run: |
