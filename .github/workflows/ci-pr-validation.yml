@@ -1,0 +1,401 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: PR Validation
+
+on:
+  pull_request:
+    branches: [ main ]
+    types: [opened, synchronize, reopened, closed]
+    paths:
+      - 'templates/**'
+      - 'agent-infra/**'
+      - '.github/workflows/**'
+      - '.github/actions/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  id-token: write
+  pull-requests: write
+  actions: write
+
+env:
+  PROJECT_ID: gca-gke-2025
+  KCC_CLUSTER: krmapihost-kcc-instance
+  KCC_REGION: us-central1
+  KCC_NAMESPACE: forge-management
+  WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+  WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+  TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
+  USE_GKE_GCLOUD_AUTH_PLUGIN: "True"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  TF_VAR_project_id: gca-gke-2025
+  TF_VAR_service_account: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+
+jobs:
+  detect-changes:
+    name: Detect Changed Templates
+    runs-on: ubuntu-latest
+    if: github.event.action != 'closed'
+    outputs:
+      templates: ${{ steps.detect.outputs.templates }}
+      tf_templates: ${{ steps.detect.outputs.tf_templates }}
+      kcc_templates: ${{ steps.detect.outputs.kcc_templates }}
+      has_templates: ${{ steps.detect.outputs.has_templates }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: detect
+        uses: ./.github/actions/detect-changes
+      - name: Remove repo-agent Label on Start
+        run: gh pr edit "${{ github.event.number }}" --remove-label "repo-agent" || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  lint-template-static:
+    name: "Static (${{ matrix.template }})"
+    needs: detect-changes
+    if: needs.detect-changes.outputs.has_templates == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: true
+      matrix:
+        template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Structure and Mandate Check
+        run: |
+          template="${{ matrix.template }}"
+          template_name=$(basename "$template")
+          echo "--- Checking structure of $template_name ---"
+          MISSING=""
+          [ ! -d "${template}/terraform-helm" ] && MISSING="${MISSING} terraform-helm/"
+          if [ ! -f "${template}/.kcc-unsupported" ]; then
+            [ ! -d "${template}/config-connector" ] && MISSING="${MISSING} config-connector/"
+          fi
+          if [ -n "$MISSING" ]; then
+            echo "ERROR: Template '${template_name}' is missing required directories:${MISSING}"
+            exit 1
+          fi
+          
+          # 2. YAML check (plain)
+          python3 -c "
+          import yaml, sys, pathlib
+          errors = []
+          target = '${template}'
+          for p in pathlib.Path(target).rglob('*.yaml'):
+              if '.terraform' in str(p): continue
+              if 'templates' in str(p) and 'workload' in str(p): continue # skip helm
+              try:
+                  with open(p, 'r') as f: list(yaml.safe_load_all(f))
+              except Exception as e: errors.append(f'{p}: {e}')
+          if errors:
+              for e in errors: print(e)
+              sys.exit(1)
+          "
+          
+          # 3. Deletion Protection / Abandon / Lifecycle Mandates
+          if [ -d "${template}/terraform-helm" ]; then
+            if grep -r 'google_container_cluster' ${template}/terraform-helm/ >/dev/null 2>&1; then
+              if ! grep -r 'deletion_protection.*=.*false' ${template}/terraform-helm/ >/dev/null 2>&1; then
+                echo "ERROR: google_container_cluster missing deletion_protection = false"
+                exit 1
+              fi
+            fi
+            if grep -r 'prevent_destroy\s*=\s*true' ${template}/terraform-helm/ >/dev/null 2>&1; then
+              echo "ERROR: lifecycle prevent_destroy = true found"
+              exit 1
+            fi
+          fi
+          if [ -d "${template}/config-connector" ]; then
+            if grep -r 'deletion-policy.*abandon' ${template}/config-connector/ >/dev/null 2>&1; then
+              echo "ERROR: cnrm.cloud.google.com/deletion-policy: abandon found"
+              exit 1
+            fi
+          fi
+
+  lint-template-terraform:
+    name: "TF Lint (${{ matrix.template }})"
+    needs: detect-changes
+    if: needs.detect-changes.outputs.has_templates == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: true
+      matrix:
+        template: ${{ fromJson(needs.detect-changes.outputs.tf_templates) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.0"
+      - name: TF Fmt & Validate
+        working-directory: ${{ matrix.template }}/terraform-helm
+        run: |
+          terraform init -backend=false
+          terraform fmt -check
+          terraform validate
+
+  lint-template-helm:
+    name: "Helm Lint (${{ matrix.template }})"
+    needs: detect-changes
+    if: needs.detect-changes.outputs.has_templates == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: true
+      matrix:
+        template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Helm Lint and Template
+        run: |
+          CHARTS=$(find ${{ matrix.template }}/terraform-helm -name Chart.yaml -exec dirname {} \; 2>/dev/null)
+          for chart in $CHARTS; do
+            echo "--- Linting $chart ---"
+            helm lint "$chart"
+            helm template release "$chart" > /tmp/rendered.yaml
+            # Basic YAML parse of rendered output
+            python3 -c "import yaml; list(yaml.safe_load_all(open('/tmp/rendered.yaml')))"
+          done
+
+  pre-cleanup:
+    name: Quota Cleanup
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+      - name: Run Cleanup Script
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          chmod +x agent-infra/cleanup-resources.sh
+          ./agent-infra/cleanup-resources.sh
+
+  tf-provision:
+    name: TF Provision (${{ matrix.template }})
+    needs: [detect-changes, lint-template-static, lint-template-terraform, lint-template-helm, pre-cleanup]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        template: ${{ fromJson(needs.detect-changes.outputs.tf_templates) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Auth and Setup GKE
+        uses: ./.github/actions/gcp-gke-auth
+        with:
+          wif_provider: ${{ env.WIF_PROVIDER }}
+          wif_service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+      - name: TF Apply with Zonal Fallback
+        working-directory: ${{ matrix.template }}/terraform-helm
+        run: |
+          RUN_ID="${{ github.run_id }}"
+          UID_SUFFIX="${RUN_ID: -6}"
+          TEMPLATE="${{ matrix.template }}"
+          BASE_NAME=$(basename "$TEMPLATE")
+          if [[ "$TEMPLATE" == *"gke-inference-fuse-cache"* ]]; then BASE_NAME="gke-inf-fuse-cache"; fi
+          
+          export TF_VAR_cluster_name="${BASE_NAME}-${UID_SUFFIX}-tf"
+          export TF_VAR_network_name="${BASE_NAME}-${UID_SUFFIX}-tf-vpc"
+          export TF_VAR_subnet_name="${BASE_NAME}-${UID_SUFFIX}-tf-subnet"
+          export TF_VAR_uid_suffix="${UID_SUFFIX}"
+          
+          terraform init \
+            -backend-config="bucket=${TF_STATE_BUCKET}" \
+            -backend-config="prefix=${TEMPLATE}-${{ github.run_id }}/terraform-helm"
+          
+          REGIONS=("us-central1" "us-east1" "us-west1")
+          SUCCESS=false
+          for REGION in "${REGIONS[@]}"; do
+            echo "Attempting deployment in $REGION..."
+            export TF_VAR_region="$REGION"
+            
+            set +e
+            terraform apply -auto-approve -input=false 2>&1 | tee /tmp/tf.log
+            TF_EXIT=${PIPESTATUS[0]}
+            set -e
+
+            if [ "$TF_EXIT" -eq 0 ]; then
+              SUCCESS=true; break
+            else
+              echo "Deployment in $REGION failed. Checking for stockout..."
+              if grep -iE "RESOURCE_EXHAUSTED|ZONE_RESOURCE_POOL_EXHAUSTED|QUOTA_EXCEEDED|stockout" /tmp/tf.log; then
+                echo "Retryable error in $REGION. Trying next..."
+                continue
+              else
+                echo "Non-retryable error detected. Failing."
+                exit 1
+              fi
+            fi
+          done
+          [ "$SUCCESS" = true ] || exit 1
+
+  tf-test:
+    name: TF Test (${{ matrix.template }})
+    needs: [detect-changes, tf-provision]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        template: ${{ fromJson(needs.detect-changes.outputs.tf_templates) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Auth and Setup GKE
+        uses: ./.github/actions/gcp-gke-auth
+        with:
+          wif_provider: ${{ env.WIF_PROVIDER }}
+          wif_service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+      - name: Get Credentials
+        run: |
+          RUN_ID="${{ github.run_id }}"
+          UID_SUFFIX="${RUN_ID: -6}"
+          TEMPLATE="${{ matrix.template }}"
+          BASE_NAME=$(basename "$TEMPLATE")
+          if [[ "$TEMPLATE" == *"gke-inference-fuse-cache"* ]]; then BASE_NAME="gke-inf-fuse-cache"; fi
+          # Try regions to find where it was deployed
+          for REGION in us-central1 us-east1 us-west1; do
+            if gcloud container clusters get-credentials "${BASE_NAME}-${UID_SUFFIX}-tf" --region "$REGION" --project "${{ env.PROJECT_ID }}" 2>/dev/null; then
+              echo "REGION=$REGION" >> "$GITHUB_ENV"
+              break
+            fi
+          done
+      - name: Helm deploy and verify
+        run: |
+          CHARTS=$(find "${{ matrix.template }}/terraform-helm" -name Chart.yaml -exec dirname {} \; 2>/dev/null)
+          [ -z "$CHARTS" ] && exit 0
+          TIMEOUT="60m"
+          [ -f "${{ matrix.template }}/.timeout" ] && TIMEOUT=$(cat "${{ matrix.template }}/.timeout")
+          echo "$CHARTS" | while read -r chart; do
+            [ -z "$chart" ] && continue
+            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT"
+          done
+          if [ -f "${{ matrix.template }}/validate.sh" ]; then
+            chmod +x "${{ matrix.template }}/validate.sh"
+            "./${{ matrix.template }}/validate.sh"
+          fi
+
+  tf-teardown:
+    name: TF Teardown (${{ matrix.template }})
+    needs: [detect-changes, tf-provision, tf-test]
+    if: always()
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        template: ${{ fromJson(needs.detect-changes.outputs.tf_templates) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Auth and Setup GKE
+        uses: ./.github/actions/gcp-gke-auth
+        with:
+          wif_provider: ${{ env.WIF_PROVIDER }}
+          wif_service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+      - name: TF Destroy
+        working-directory: ${{ matrix.template }}/terraform-helm
+        run: |
+          terraform init \
+            -backend-config="bucket=$TF_STATE_BUCKET" \
+            -backend-config="prefix=${{ matrix.template }}-${{ github.run_id }}/terraform-helm"
+          terraform destroy -auto-approve -input=false || true
+
+  kcc-validation:
+    name: KCC (${{ matrix.template }})
+    needs: [detect-changes, lint-template-static, lint-template-terraform, lint-template-helm, pre-cleanup]
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    strategy:
+      fail-fast: false
+      matrix:
+        template: ${{ fromJson(needs.detect-changes.outputs.kcc_templates) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Auth and Setup GKE
+        uses: ./.github/actions/gcp-gke-auth
+        with:
+          wif_provider: ${{ env.WIF_PROVIDER }}
+          wif_service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+      - name: Get KCC cluster credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ env.KCC_CLUSTER }}
+          location: ${{ env.KCC_REGION }}
+          project_id: ${{ env.PROJECT_ID }}
+      - name: Apply and Wait
+        run: |
+          RUN_ID="${{ github.run_id }}"
+          UID_SUFFIX="${RUN_ID: -6}"
+          TEMPLATE="${{ matrix.template }}"
+          BASE_NAME=$(basename "$TEMPLATE")
+          find "${TEMPLATE}"/config-connector* -type f -name "*.yaml" -exec sed -i "s/${BASE_NAME}/${BASE_NAME}-${UID_SUFFIX}/g" {} +
+          kubectl apply -n "$KCC_NAMESPACE" -f "${TEMPLATE}/config-connector/"
+          kubectl wait -n "$KCC_NAMESPACE" --for=condition=Ready --all --timeout=5400s -f "${TEMPLATE}/config-connector/"
+      - name: Teardown KCC
+        if: always()
+        run: |
+          TEMPLATE="${{ matrix.template }}"
+          kubectl delete -n "$KCC_NAMESPACE" -f "${TEMPLATE}/config-connector/" --wait=true --timeout=900s || true
+
+  circuit-breaker:
+    name: Circuit Breaker
+    needs: [tf-provision, tf-test, tf-teardown, kcc-validation]
+    if: always() && (needs.tf-provision.result == 'failure' || needs.tf-test.result == 'failure' || needs.kcc-validation.result == 'failure')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Retry Count and Label
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          COMMENTS=$(gh pr view "${{ github.event.number }}" --json comments -q '.comments[].body')
+          FAIL_COUNT=$(echo "$COMMENTS" | grep -c "Infrastructure failure detected" || echo "0")
+          if [ "$FAIL_COUNT" -ge 3 ]; then
+            gh pr comment "${{ github.event.number }}" --body "🚨 **Circuit Breaker Tripped**: This PR has failed infrastructure validation 3+ times. Stopping automated retries."
+          else
+            gh pr comment "${{ github.event.number }}" --body "⚠️ Infrastructure failure detected (Attempt $((FAIL_COUNT + 1))). Re-adding repo-agent label."
+            gh pr edit "${{ github.event.number }}" --add-label "repo-agent"
+          fi
+
+  cleanup-orphans:
+    name: Cleanup Orphans
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+      - name: Run Cleanup Script
+        run: |
+          chmod +x agent-infra/cleanup-resources.sh
+          ./agent-infra/cleanup-resources.sh
