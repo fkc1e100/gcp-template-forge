@@ -15,7 +15,7 @@
 apiVersion: compute.cnrm.cloud.google.com/v1beta1
 kind: ComputeRouter
 metadata:
-  name: gke-topology-aware-routing-kcc-router
+  name: gke-topology-aware-routing-router
   namespace: forge-management
   labels:
     project: gcp-template-forge
@@ -25,12 +25,12 @@ metadata:
 spec:
   region: us-central1
   networkRef:
-    name: gke-topology-aware-routing-kcc-vpc
+    name: gke-topology-aware-routing-vpc
 ---
 apiVersion: compute.cnrm.cloud.google.com/v1beta1
 kind: ComputeRouterNAT
 metadata:
-  name: gke-topology-aware-routing-kcc-nat
+  name: gke-topology-aware-routing-nat
   namespace: forge-management
   labels:
     project: gcp-template-forge
@@ -40,7 +40,7 @@ metadata:
 spec:
   region: us-central1
   routerRef:
-    name: gke-topology-aware-routing-kcc-router
+    name: gke-topology-aware-routing-router
   natIpAllocateOption: AUTO_ONLY
   sourceSubnetworkIpRangesToNat: ALL_SUBNETWORKS_ALL_IP_RANGES
   logConfig:

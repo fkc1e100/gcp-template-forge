@@ -24,7 +24,7 @@ metadata:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   clusterRef:
-    name: gke-topology-aware-routing-kcc
+    name: gke-topology-aware-routing
   location: us-central1
   nodeCount: 1
   nodeConfig:

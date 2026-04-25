@@ -15,7 +15,7 @@
 apiVersion: compute.cnrm.cloud.google.com/v1beta1
 kind: ComputeRouter
 metadata:
-  name: latest-gke-features-kcc-router
+  name: latest-gke-features-router
   namespace: forge-management
   labels:
     project: gcp-template-forge
@@ -25,12 +25,12 @@ metadata:
 spec:
   region: us-central1
   networkRef:
-    name: latest-gke-features-kcc-vpc
+    name: latest-gke-features-vpc
 ---
 apiVersion: compute.cnrm.cloud.google.com/v1beta1
 kind: ComputeRouterNAT
 metadata:
-  name: latest-gke-features-kcc-nat
+  name: latest-gke-features-nat
   namespace: forge-management
   labels:
     project: gcp-template-forge
@@ -40,7 +40,7 @@ metadata:
 spec:
   region: us-central1
   routerRef:
-    name: latest-gke-features-kcc-router
+    name: latest-gke-features-router
   natIpAllocateOption: AUTO_ONLY
   sourceSubnetworkIpRangesToNat: ALL_SUBNETWORKS_ALL_IP_RANGES
   logConfig:
