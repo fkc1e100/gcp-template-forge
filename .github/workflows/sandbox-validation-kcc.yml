@@ -1,0 +1,542 @@
+name: Sandbox Validation (KCC)
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'templates/**'
+      - 'agent-infra/**'
+  pull_request:
+    branches: [ main ]
+    types: [opened, synchronize, reopened, closed]
+    paths:
+      - 'templates/**'
+      - 'agent-infra/**'
+
+concurrency:
+  group: kcc-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  id-token: write
+  pull-requests: write
+  actions: write
+
+env:
+  PROJECT_ID: gca-gke-2025
+  KCC_CLUSTER: krmapihost-kcc-instance
+  KCC_REGION: us-central1
+  KCC_NAMESPACE: forge-management
+  WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
+  WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+  USE_GKE_GCLOUD_AUTH_PLUGIN: "True"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+  # ── 1. Detect which templates changed ────────────────────────────────────
+  detect-changes:
+    name: Detect Changed Templates
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    outputs:
+      kcc_templates: ${{ steps.find.outputs.kcc_templates }}
+      has_kcc_templates: ${{ steps.find.outputs.has_kcc_templates }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Find changed template directories
+        id: find
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch origin ${{ github.base_ref }}
+            PR_HEAD="${{ github.event.pull_request.head.sha }}"
+            BASE=$(git merge-base "origin/${{ github.base_ref }}" "$PR_HEAD")
+            DIFF_HEAD="$PR_HEAD"
+          else
+            BASE="${{ github.event.before }}"
+            if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then
+              BASE=$(git rev-parse HEAD~1 2>/dev/null || git rev-list --max-parents=0 HEAD)
+            fi
+            DIFF_HEAD=${{ github.sha }}
+          fi
+          
+          CHANGED_FILES=$(git diff --name-only "$BASE" "$DIFF_HEAD")
+          DIRS=$(echo "$CHANGED_FILES" \
+            | grep '^templates/' \
+            | grep -v '\.md$' \
+            | awk -F/ '{print $1"/"$2}' \
+            | sort -u)
+          
+          KCC_DIRS=""
+          for dir in $DIRS; do
+            if ls "$dir/config-connector/"*.yaml >/dev/null 2>&1; then
+              if [ ! -f "$dir/.kcc-unsupported" ]; then
+                KCC_DIRS="$KCC_DIRS $dir"
+              fi
+            fi
+          done
+          KCC_TEMPLATES=$(echo "$KCC_DIRS" | tr ' ' '\n' | sort -u | jq -Rnc '[inputs | select(length>0)]')
+          echo "kcc_templates=$KCC_TEMPLATES" >> "$GITHUB_OUTPUT"
+          echo "has_kcc_templates=$([ "$KCC_TEMPLATES" = "[]" ] && echo false || echo true)" >> "$GITHUB_OUTPUT"
+          echo "KCC supported templates: $KCC_TEMPLATES"
+
+      - name: Remove repo-agent Label on Start
+        if: github.event_name == 'pull_request' && steps.find.outputs.has_kcc_templates == 'true'
+        run: gh pr edit ${{ github.event.number }} --remove-label "repo-agent" --repo ${{ github.repository }} || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  lint:
+    name: "Lint KCC (${{ matrix.template }})"
+    needs: detect-changes
+    if: needs.detect-changes.outputs.has_kcc_templates == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: true
+      matrix:
+        template: ${{ fromJson(needs.detect-changes.outputs.kcc_templates) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: KCC manifest syntax check
+        run: |
+          python3 -c "
+          import yaml, sys, pathlib
+          errors = []
+          for p in pathlib.Path('${{ matrix.template }}/config-connector').rglob('*.yaml'):
+              try:
+                  list(yaml.safe_load_all(p.read_text()))
+              except yaml.YAMLError as e:
+                  errors.append(str(p) + ': ' + str(e))
+          if errors:
+              for e in errors: print(e)
+              sys.exit(1)
+          "
+      - name: Check no KCC abandon annotations
+        run: |
+          if grep -r 'deletion-policy.*abandon' ${{ matrix.template }}/config-connector/ >/dev/null 2>&1; then
+            echo "ERROR: cnrm.cloud.google.com/deletion-policy: abandon found"
+            exit 1
+          fi
+
+  pre-cleanup:
+    name: "Quota Cleanup"
+    needs: [ detect-changes ]
+    if: github.event_name == 'pull_request' && needs.detect-changes.outputs.has_kcc_templates == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+      - name: Run Cleanup Script
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          chmod +x agent-infra/cleanup-resources.sh
+          ./agent-infra/cleanup-resources.sh
+
+  kcc-apply:
+    name: "KCC Apply (${{ matrix.template }})"
+    needs: [ detect-changes, lint, pre-cleanup ]
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        template: ${{ fromJson(needs.detect-changes.outputs.kcc_templates) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Auth and Setup GKE
+        uses: ./.github/actions/gcp-gke-auth
+        with:
+          wif_provider: ${{ env.WIF_PROVIDER }}
+          wif_service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+      - name: Get KCC cluster credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ env.KCC_CLUSTER }}
+          location: ${{ env.KCC_REGION }}
+          project_id: ${{ env.PROJECT_ID }}
+      - name: Apply KCC manifests
+        run: |
+          RUN_ID="${{ github.run_id }}"
+          UID_SUFFIX="${RUN_ID: -6}"
+          find "${{ matrix.template }}"/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename "${{ matrix.template }}")/$(basename "${{ matrix.template }}")-${UID_SUFFIX}/g" {} +
+          kubectl apply -n "$KCC_NAMESPACE" -f "${{ matrix.template }}/config-connector/"
+      - name: Wait for KCC resources Ready
+        run: |
+          kubectl wait -n "$KCC_NAMESPACE" --for=condition=Ready --all --timeout=3600s -f "${{ matrix.template }}/config-connector/"
+
+  kcc-test:
+    name: "Test KCC (${{ matrix.template }})"
+    needs: [ kcc-apply, detect-changes ]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        template: ${{ fromJson(needs.detect-changes.outputs.kcc_templates) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Auth and Setup GKE
+        uses: ./.github/actions/gcp-gke-auth
+        with:
+          wif_provider: ${{ env.WIF_PROVIDER }}
+          wif_service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+      - name: Get KCC cluster credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ env.KCC_CLUSTER }}
+          location: ${{ env.KCC_REGION }}
+          project_id: ${{ env.PROJECT_ID }}
+      - name: Get Workload Cluster Info and Validate
+        run: |
+          RUN_ID="${{ github.run_id }}"
+          UID_SUFFIX="${RUN_ID: -6}"
+          BASE_NAME=$(basename ${{ matrix.template }})
+          CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=${BASE_NAME}-${UID_SUFFIX} -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || echo "")
+          if [ -n "$CLUSTER_NAME" ]; then
+            LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=${BASE_NAME}-${UID_SUFFIX} -o jsonpath='{.items[0].spec.location}')
+            gcloud container clusters get-credentials "$CLUSTER_NAME" --region "$LOCATION" --project ${{ env.PROJECT_ID }}
+            kubectl get nodes
+            if [ -f "${{ matrix.template }}/validate.sh" ]; then
+              export CLUSTER_NAME="$CLUSTER_NAME"
+              export REGION="$LOCATION"
+              chmod +x ${{ matrix.template }}/validate.sh
+              ./${{ matrix.template }}/validate.sh
+            fi
+          fi
+
+  kcc-teardown:
+    name: "KCC Teardown (${{ matrix.template }})"
+    needs: [ kcc-apply, kcc-test, detect-changes ]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        template: ${{ fromJson(needs.detect-changes.outputs.kcc_templates) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Auth and Setup GKE
+        uses: ./.github/actions/gcp-gke-auth
+        with:
+          wif_provider: ${{ env.WIF_PROVIDER }}
+          wif_service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+      - name: Get KCC cluster credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ env.KCC_CLUSTER }}
+          location: ${{ env.KCC_REGION }}
+          project_id: ${{ env.PROJECT_ID }}
+      - name: Delete KCC resources
+        run: |
+          RUN_ID="${{ github.run_id }}"
+          UID_SUFFIX="${RUN_ID: -6}"
+          find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
+          kubectl delete -n "$KCC_NAMESPACE" -f "${{ matrix.template }}/config-connector/" --wait=true --timeout=900s || true
+
+  cleanup-pr-infra:
+    name: "Cleanup KCC (${{ matrix.template }})"
+    needs: detect-changes
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == false
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        template: ${{ fromJson(needs.detect-changes.outputs.kcc_templates) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+      - name: Get KCC cluster credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ env.KCC_CLUSTER }}
+          location: ${{ env.KCC_REGION }}
+          project_id: ${{ env.PROJECT_ID }}
+      - name: KCC cleanup
+        run: |
+          RUN_ID="${{ github.run_id }}"
+          UID_SUFFIX="${RUN_ID: -6}"
+          find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
+          kubectl delete -n $KCC_NAMESPACE -f ${{ matrix.template }}/config-connector/ --ignore-not-found --wait=false || true
+
+  validate-kcc:
+    name: "Post-merge Validate KCC (${{ matrix.template }})"
+    needs: detect-changes
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        template: ${{ fromJson(needs.detect-changes.outputs.kcc_templates) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Skip if already validated
+        id: skip-check
+        run: |
+          TEMPLATE="${{ matrix.template }}"
+          [ ! -f "$TEMPLATE/.validated" ] && echo "skip=false" >> $GITHUB_OUTPUT && exit 0
+          V_COMMIT=$(grep '^commit:' "$TEMPLATE/.validated" | awk '{print $2}')
+          CHANGED=$(git diff --name-only "$V_COMMIT" HEAD -- "$TEMPLATE/" | grep -vE '\.validated$|README\.md$' || true)
+          [ -n "$CHANGED" ] && echo "skip=false" >> $GITHUB_OUTPUT || echo "skip=true" >> $GITHUB_OUTPUT
+      - name: Auth
+        if: steps.skip-check.outputs.skip != 'true'
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+      - name: Get KCC credentials
+        if: steps.skip-check.outputs.skip != 'true'
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ env.KCC_CLUSTER }}
+          location: ${{ env.KCC_REGION }}
+          project_id: ${{ env.PROJECT_ID }}
+      - name: Apply KCC
+        id: kcc-apply
+        if: steps.skip-check.outputs.skip != 'true'
+        run: |
+          RUN_ID="${{ github.run_id }}"
+          UID_SUFFIX="${RUN_ID: -6}"
+          echo "KCC_START=$(date -u +%s)" >> $GITHUB_ENV
+          find "${{ matrix.template }}"/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename "${{ matrix.template }}")/$(basename "${{ matrix.template }}")-${UID_SUFFIX}/g" {} +
+          kubectl apply -n "$KCC_NAMESPACE" -f "${{ matrix.template }}/config-connector/"
+      - name: Wait Ready
+        id: kcc-wait
+        if: steps.kcc-apply.outcome == 'success'
+        run: |
+          kubectl wait -n "$KCC_NAMESPACE" --for=condition=Ready --all --timeout=1800s -f "${{ matrix.template }}/config-connector/"
+          KCC_DURATION=$(( $(date -u +%s) - KCC_START ))
+          echo "kcc_duration=${KCC_DURATION}" >> $GITHUB_OUTPUT
+      - name: Teardown
+        if: always() && steps.kcc-apply.outcome == 'success'
+        run: |
+          kubectl delete -n "$KCC_NAMESPACE" -f "${{ matrix.template }}/config-connector/" --wait=true --timeout=900s || true
+      - name: Save results
+        if: always() && steps.skip-check.outputs.skip != 'true'
+        run: |
+          mkdir -p /tmp/kcc-results
+          cat > /tmp/kcc-results/result.json << 'EOF'
+          {
+            "status":   "${{ steps.kcc-apply.outcome == 'success' && 'success' || 'failure' }}",
+            "duration": "${{ steps.kcc-wait.outputs.kcc_duration || '' }}"
+          }
+          EOF
+      - name: Upload results
+        if: always() && steps.skip-check.outputs.skip != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: kcc-results-${{ github.run_id }}-${{ strategy.job-index }}
+          path: /tmp/kcc-results/result.json
+          retention-days: 1
+
+  publish-validated:
+    name: "Publish KCC (${{ matrix.template }})"
+    needs: [detect-changes, validate-kcc]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && !cancelled()
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        template: ${{ fromJson(needs.detect-changes.outputs.kcc_templates) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.CODEBOT_PAT }}
+          fetch-depth: 0
+      - name: Download KCC results artifact
+        uses: actions/download-artifact@v4
+        with:
+          pattern: kcc-results-${{ github.run_id }}-*
+          merge-multiple: true
+          path: /tmp/kcc-artifacts/
+        continue-on-error: true
+      - name: Update README and mark validated (with retry)
+        env:
+          GITHUB_TOKEN: ${{ secrets.CODEBOT_PAT }}
+        run: |
+          set -e
+          TEMPLATE="${{ matrix.template }}"
+          COMMIT=${{ github.sha }}
+
+          KCC_RESULT_FILE=$(ls /tmp/kcc-artifacts/result.json 2>/dev/null | head -1 || true)
+          if [ -n "$KCC_RESULT_FILE" ]; then
+            export THIS_KCC_STATUS=$(python3   -c "import json; d=json.load(open('$KCC_RESULT_FILE')); print(d.get('status',''))")
+            export THIS_KCC_DURATION=$(python3 -c "import json; d=json.load(open('$KCC_RESULT_FILE')); print(d.get('duration',''))")
+          else
+            export THIS_KCC_STATUS="skipped"
+            export THIS_KCC_DURATION=""
+          fi
+
+          git config user.name "codebot-sfle"
+          git config user.email "codebot-sfle@users.noreply.github.com"
+
+          MAX_RETRIES=5
+          for i in $(seq 1 $MAX_RETRIES); do
+            echo "Attempt $i to update and push..."
+            git fetch origin main
+            git reset --hard origin/main
+
+            TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+            DATE=$(date -u +"%Y-%m-%d")
+
+            # Load current TF status from existing .validated file
+            TF_STATUS="pending"
+            if [ -f "${TEMPLATE}/.validated" ]; then
+              TF_STATUS=$(grep '^tf_helm:' "${TEMPLATE}/.validated" | awk '{print $2}' || echo "pending")
+              V_COMMIT=$(grep '^commit:' "${TEMPLATE}/.validated" | awk '{print $2}' || echo "")
+              if [ "$V_COMMIT" != "$COMMIT" ] && [ "$TF_STATUS" != "skipped" ]; then
+                 TF_STATUS="pending"
+              fi
+            fi
+            if [ ! -f "${TEMPLATE}/terraform-helm/main.tf" ]; then
+              TF_STATUS="skipped"
+            fi
+
+            KCC_STATUS="$THIS_KCC_STATUS"
+            KCC_DURATION="$THIS_KCC_DURATION"
+
+            fmt_duration() { local s=$1; [ -z "$s" ] && echo "n/a" || echo "$((s/60))m $((s%60))s"; }
+            KCC_DUR=$(fmt_duration "$KCC_DURATION")
+            TF_DUR="n/a"
+            REGION="us-central1"
+
+            README="${TEMPLATE}/README.md"
+            if [ ! -f "$README" ]; then
+              printf "# %s\n\n> README auto-generated by CI.\n" "$(basename $TEMPLATE)" > "$README"
+            fi
+
+            # Strip any existing validation record section
+            python3 -c "
+            import sys, re
+            content = open(sys.argv[1]).read()
+            content = re.sub(r'\n## Validation Record.*', '', content, flags=re.DOTALL).rstrip()
+            open(sys.argv[1], 'w').write(content)
+            " "$README"
+
+            # Accumulate metrics
+            python3 - "$TEMPLATE" << 'ACCUMPY'
+            import json, os, sys, datetime
+            template = sys.argv[1]
+            metrics_file      = f'{template}/.agent-metrics'
+            cumulative_file   = f'{template}/.agent-metrics-cumulative'
+            current = {}
+            if os.path.exists(metrics_file):
+                try:    current = json.load(open(metrics_file))
+                except: pass
+            cumulative = {'total_input_tokens': 0, 'total_output_tokens': 0, 'total_cost_usd': 0.0, 'sessions': []}
+            if os.path.exists(cumulative_file):
+                try:    cumulative = json.load(open(cumulative_file))
+                except: pass
+            session_start    = current.get('session_start', '')
+            already_counted  = session_start and any(s.get('session_start') == session_start for s in cumulative.get('sessions', []))
+            if session_start and not already_counted:
+                in_tok, out_tok = current.get('input_tokens'), current.get('output_tokens')
+                cost = float(current.get('estimated_cost_usd') or 0)
+                if isinstance(in_tok, (int, float)) and in_tok:
+                    cumulative['total_input_tokens']  += int(in_tok)
+                    cumulative['total_output_tokens'] += int(out_tok or 0)
+                    cumulative['total_cost_usd']       = round(cumulative['total_cost_usd'] + cost, 4)
+                    cumulative.setdefault('sessions', []).append({'session_start': session_start, 'input_tokens': int(in_tok), 'output_tokens': int(out_tok or 0), 'estimated_cost_usd': str(cost), 'model': current.get('model', ''), 'counted_at': datetime.datetime.now(datetime.timezone.utc).isoformat()})
+                    json.dump(cumulative, open(cumulative_file, 'w'), indent=2)
+ACCUMPY
+
+            # Read cumulative totals
+            eval "$(python3 - "$TEMPLATE" << 'READPY'
+            import json, os, sys
+            template = sys.argv[1]
+            f = f'{template}/.agent-metrics-cumulative'
+            d = json.load(open(f)) if os.path.exists(f) else {}
+            n, in_t, out_t, cost = len(d.get('sessions', [])), d.get('total_input_tokens', 0), d.get('total_output_tokens', 0), d.get('total_cost_usd', 0.0)
+            if n > 0 and in_t > 0:
+                print(f'INPUT_TOKENS="{in_t:,}"'); print(f'OUTPUT_TOKENS="{out_t:,}"'); print(f'AGENT_COST="{cost}"'); print(f'SESSION_SUFFIX=" ({n} session{"s" if n != 1 else ""})"')
+            else:
+                print('INPUT_TOKENS=""'); print('OUTPUT_TOKENS=""'); print('AGENT_COST=""'); print('SESSION_SUFFIX=""')
+READPY
+            )"
+            TOKEN_STR="${INPUT_TOKENS:+${INPUT_TOKENS} in / ${OUTPUT_TOKENS} out${SESSION_SUFFIX}}"
+            COST_STR="${AGENT_COST:+\$${AGENT_COST}}"
+
+            python3 - "$README" "$DATE" "$TF_STATUS" "$KCC_STATUS" "$TF_DUR" "$KCC_DUR" \
+                "$REGION" "n/a" "--" "${COMMIT:0:8}" \
+                "${TOKEN_STR:-not recorded}" "${COST_STR:--}" << 'PYEOF'
+            import sys
+            readme, date, tf_s, kcc_s, tf_d, kcc_d, region, zones, cluster, commit, tokens, cost = sys.argv[1:]
+            sep = " | "
+            rows = [
+                ("**Status**",         tf_s,      kcc_s),
+                ("**Date**",           date,      date),
+                ("**Duration**",       tf_d,      kcc_d),
+                ("**Region**",         region,    "us-central1 (KCC cluster)"),
+                ("**Zones**",          "n/a",     "forge-management namespace"),
+                ("**Cluster**",        cluster,   "krmapihost-kcc-instance"),
+                ("**Agent tokens**",   tokens,    "(shared session)"),
+                ("**Estimated cost**", cost,      "--"),
+                ("**Commit**",         commit,    commit),
+            ]
+            header = sep.join(["", "", "Terraform + Helm", "Config Connector", ""]).strip()
+            divider = sep.join(["", "---", "---", "---", ""]).strip()
+            lines = ["\n\n## Validation Record\n", header, divider]
+            for label, tf_val, kcc_val in rows:
+                lines.append(sep.join(["", label, tf_val, kcc_val, ""]).strip())
+            lines.append("")
+            with open(readme, "a") as f:
+                f.write("\n".join(lines) + "\n")
+PYEOF
+
+            printf "validated_at: %s\ncommit: %s\ntf_helm: %s\nkcc: %s\n" \
+              "$TIMESTAMP" "$COMMIT" "$TF_STATUS" "$KCC_STATUS" \
+              > "${TEMPLATE}/.validated"
+
+            git add "${TEMPLATE}/README.md" "${TEMPLATE}/.validated"
+            [ -f "${TEMPLATE}/.agent-metrics-cumulative" ] && git add "${TEMPLATE}/.agent-metrics-cumulative"
+            git commit -m "ci: validate KCC ${TEMPLATE} [skip ci]" || true
+            git push && break || sleep 10
+          done
+
+  label-failure:
+    name: "Label Failure"
+    needs: [detect-changes, lint, kcc-test]
+    if: always() && github.event_name == 'pull_request' && (needs.kcc-test.result == 'failure' || needs.lint.result == 'failure')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add label
+        run: gh pr edit ${{ github.event.number }} --add-label "repo-agent" --repo ${{ github.repository }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  auto-merge:
+    name: "Auto-merge"
+    needs: [kcc-test]
+    if: github.event_name == 'pull_request' && needs.kcc-test.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check All Checks and Merge
+        run: |
+          PR_NUM=${{ github.event.number }}
+          # Wait for API to sync
+          sleep 10
+          # Check if there are any non-completed or failed checks (excluding Auto-merge itself)
+          INCOMPLETE=$(gh pr checks $PR_NUM --json name,state,status | jq '[.[] | select(.name != "Auto-merge") | select(.status != "COMPLETED" or (.state != "SUCCESS" and .state != "SKIPPED" and .state != "NEUTRAL"))] | length')
+          if [ "$INCOMPLETE" -eq 0 ]; then
+             gh pr merge $PR_NUM --merge --delete-branch
+          else
+             echo "Still $INCOMPLETE checks pending or failed. Skipping auto-merge."
+             gh pr checks $PR_NUM
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.CODEBOT_PAT }}

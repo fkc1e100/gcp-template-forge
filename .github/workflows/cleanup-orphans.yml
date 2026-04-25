@@ -49,7 +49,7 @@ jobs:
           gcloud version
 
           echo "Capturing Quota Status before cleanup..."
-          gcloud compute project-info describe --project=$PROJECT --format="json" > /tmp/quota_before.json || true
+          gcloud compute project-info describe --project="$PROJECT" --format="json" > /tmp/quota_before.json || true
           echo "Quota Status Before Cleanup:"
           python3 -c "import sys, json; data = json.load(open('/tmp/quota_before.json')); print(f\"{'Metric':<40} {'Usage':<10} {'Limit':<10}\"); print('-'*60); [print(f\"{q.get('metric','N/A'):<40} {q.get('usage',0):<10.1f} {q.get('limit',0):<10.1f}\") for q in data.get('quotas', []) if q.get('usage', 0) > 0]" || true
 
@@ -61,7 +61,7 @@ jobs:
             local out
             out=$($cmd 2>&1)
             local status=$?
-            if [ $status -ne 0 ]; then
+            if [ "$status" -ne 0 ]; then
               if [[ "${out,,}" =~ "could not fetch resource" || "${out,,}" =~ "not found" || "${out,,}" =~ "is already being used" || "${out,,}" =~ "running incompatible operation" || "${out,,}" =~ "is not ready" || "${out,,}" =~ "permission" ]]; then
                 echo "Ignored benign error for $desc: $out"
               else
@@ -94,31 +94,33 @@ jobs:
 
           # 1. Clean up KCC Clusters and other resources FIRST
           echo "Connecting to Management Cluster..."
-          gcloud container clusters get-credentials krmapihost-kcc-instance --region $REGION --project $PROJECT
+          gcloud container clusters get-credentials krmapihost-kcc-instance --region "$REGION" --project "$PROJECT"
           
           echo "Deleting all KCC-managed resources with project=gcp-template-forge label..."
           KCC_TYPES="containercluster,computenetwork,computesubnetwork,computerouter,computerouternat,computefirewall"
-          KCC_RESOURCES=$(kubectl get $KCC_TYPES -n forge-management -l project=gcp-template-forge -o name | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
+          KCC_RESOURCES=$(kubectl get "$KCC_TYPES" -n forge-management -l project=gcp-template-forge -o name | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
           
-          for RES in $KCC_RESOURCES; do
+          echo "$KCC_RESOURCES" | while read -r RES; do
+            [ -z "$RES" ] && continue
             SKIP=false
-            for RUN_ID in $ALL_ACTIVE; do
+            while read -r RUN_ID; do
+              [ -z "$RUN_ID" ] && continue
               if [[ "$RES" == *"$RUN_ID"* ]]; then
                 echo "Skipping active resource: $RES"
                 SKIP=true
                 break
               fi
-            done
+            done <<< "$(echo "$ALL_ACTIVE" | tr ' ' '\n')"
             if [ "$SKIP" = false ]; then
               echo "Deleting orphaned KCC resource: $RES"
-              kubectl delete $RES -n forge-management --wait=false
+              kubectl delete "$RES" -n forge-management --wait=false
             fi
           done
 
           # 2. Clean up GKE Clusters (Terraform)
           echo "Searching for orphaned Terraform clusters..."
           TF_CLUSTERS=$(gcloud container clusters list \
-            --project=$PROJECT \
+            --project="$PROJECT" \
             --filter="name != repo-agent-standard AND name != krmapihost-kcc-instance AND name != kcc-dash-dont-delete" \
             --format="value(name, zone.scope())")
 
@@ -133,23 +135,23 @@ jobs:
 
             # Check active runs
             SKIP=false
-            for PAT in $ALL_ACTIVE; do
+            while read -r PAT; do
               if [ -n "$PAT" ] && [[ "$CLUSTER" == *"$PAT"* ]]; then
                 echo "Skipping active cluster: $CLUSTER (matches $PAT)"
                 SKIP=true
                 break
               fi
-            done
+            done <<< "$(echo "$ALL_ACTIVE" | tr ' ' '\n')"
             [ "$SKIP" = true ] && continue
 
             echo "Deleting orphaned TF cluster: $CLUSTER in $C_LOC"
-            delete_resource "gcloud container clusters delete $CLUSTER --location=$C_LOC --project=$PROJECT --quiet" "cluster $CLUSTER" &
+            delete_resource "gcloud container clusters delete \"$CLUSTER\" --location=\"$C_LOC\" --project=\"$PROJECT\" --quiet" "cluster $CLUSTER" &
           done <<< "$TF_CLUSTERS"
           wait
 
           # 2.5 Clean up Network Endpoint Groups (NEGs)
           echo "Cleaning up orphaned Network Endpoint Groups (NEGs)..."
-          ALL_NEGS=$(gcloud compute network-endpoint-groups list --project=$PROJECT --format="value(name, zone, network)" || true)
+          ALL_NEGS=$(gcloud compute network-endpoint-groups list --project="$PROJECT" --format="value(name, zone, network)" || true)
           
           while read -r NEG_NAME NEG_ZONE NEG_NET; do
             [ -z "$NEG_NAME" ] && continue
@@ -161,21 +163,21 @@ jobs:
               
               # Check active runs
               SKIP=false
-              for PAT in $ALL_ACTIVE; do
+              while read -r PAT; do
                 if [ -n "$PAT" ] && [[ "$NEG_NET" == *"$PAT"* ]]; then
                   echo "Skipping active NEG: $NEG_NAME (matches $PAT)"
                   SKIP=true
                   break
                 fi
-              done
+              done <<< "$(echo "$ALL_ACTIVE" | tr ' ' '\n')"
               [ "$SKIP" = true ] && continue
               
               ZONE_NAME="${NEG_ZONE##*/}"
               echo "Deleting orphaned NEG: $NEG_NAME in $ZONE_NAME"
               if [ -n "$ZONE_NAME" ]; then
-                delete_resource "gcloud compute network-endpoint-groups delete $NEG_NAME --zone=$ZONE_NAME --project=$PROJECT --quiet" "NEG $NEG_NAME" &
+                delete_resource "gcloud compute network-endpoint-groups delete \"$NEG_NAME\" --zone=\"$ZONE_NAME\" --project=\"$PROJECT\" --quiet" "NEG $NEG_NAME" &
               else
-                delete_resource "gcloud compute network-endpoint-groups delete $NEG_NAME --global --project=$PROJECT --quiet" "NEG $NEG_NAME" &
+                delete_resource "gcloud compute network-endpoint-groups delete \"$NEG_NAME\" --global --project=\"$PROJECT\" --quiet" "NEG $NEG_NAME" &
               fi
           done <<< "$ALL_NEGS"
           wait
@@ -184,97 +186,105 @@ jobs:
           echo "Cleaning up orphaned Networking resources (matching pattern)..."
           
           # Firewalls (Generic exclusion)
-          FIREWALLS=$(gcloud compute firewall-rules list --project=$PROJECT --format="value(name)" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete|default|gke-network-a64ea3f1|^k8s-fw-" || true)
-          for F in $FIREWALLS; do
+          FIREWALLS=$(gcloud compute firewall-rules list --project="$PROJECT" --format="value(name)" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete|default|gke-network-a64ea3f1|^k8s-fw-" || true)
+          echo "$FIREWALLS" | while read -r F; do
+            [ -z "$F" ] && continue
             SKIP=false
-            for PAT in $ALL_ACTIVE; do
-              if [ -n "$PAT" ] && [[ "$F" == *"$PAT"* ]]; then
+            while read -r PAT; do
+              if [ -z "$PAT" ]; then continue; fi
+              if [[ "$F" == *"$PAT"* ]]; then
                 echo "Skipping active firewall: $F"
                 SKIP=true
                 break
               fi
-            done
+            done <<< "$(echo "$ALL_ACTIVE" | tr ' ' '\n')"
             [ "$SKIP" = true ] && continue
-            
-            delete_resource "gcloud compute firewall-rules delete $F --project=$PROJECT --quiet" "firewall $F" &
+
+            delete_resource "gcloud compute firewall-rules delete \"$F\" --project=\"$PROJECT\" --quiet" "firewall $F" &
           done
           wait
 
           # Routers and NATs across all regions
           echo "Cleaning up routers across all regions..."
-          REGIONS=$(gcloud compute regions list --project=$PROJECT --format="value(name)")
-          ALL_ROUTERS=$(gcloud compute routers list --project=$PROJECT --format="value(name, region)")
+          REGIONS=$(gcloud compute regions list --project="$PROJECT" --format="value(name)")
+          ALL_ROUTERS=$(gcloud compute routers list --project="$PROJECT" --format="value(name, region)")
           
-          for RGN in $REGIONS; do
+          echo "$REGIONS" | while read -r RGN; do
+            [ -z "$RGN" ] && continue
             ROUTERS=$(echo "$ALL_ROUTERS" | grep "$RGN" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete|default|gke-network-a64ea3f1" | awk '{print $1}' || true)
-            for R in $ROUTERS; do
+            echo "$ROUTERS" | while read -r R; do
+              [ -z "$R" ] && continue
               SKIP=false
-              for PAT in $ALL_ACTIVE; do
+              while read -r PAT; do
                 if [ -n "$PAT" ] && [[ "$R" == *"$PAT"* ]]; then
                   echo "Skipping active router: $R"
                   SKIP=true
                   break
                 fi
-              done
+              done <<< "$(echo "$ALL_ACTIVE" | tr ' ' '\n')"
               [ "$SKIP" = true ] && continue
 
               echo "Checking NATs for router $R in $RGN"
-              NATS=$(gcloud compute routers describe $R --project=$PROJECT --region=$RGN --format="value(nats.name)" | tr ';' ' ')
+              NATS=$(gcloud compute routers describe "$R" --project="$PROJECT" --region="$RGN" --format="value(nats.name)" | tr ';' ' ')
               if [ -n "$NATS" ]; then
-                for NAT in $NATS; do
-                  delete_resource "gcloud compute routers nats delete $NAT --router=$R --region=$RGN --project=$PROJECT --quiet" "NAT $NAT on router $R" &
+                echo "$NATS" | tr ' ' '\n' | while read -r NAT; do
+                  [ -z "$NAT" ] && continue
+                  delete_resource "gcloud compute routers nats delete \"$NAT\" --router=\"$R\" --region=\"$RGN\" --project=\"$PROJECT\" --quiet" "NAT $NAT on router $R" &
                 done
                 wait
               fi
-              delete_resource "gcloud compute routers delete $R --region=$RGN --project=$PROJECT --quiet" "router $R" &
+              delete_resource "gcloud compute routers delete \"$R\" --region=\"$RGN\" --project=\"$PROJECT\" --quiet" "router $R" &
             done
           done
           wait
 
           # Subnets across all regions
           echo "Cleaning up subnets across all regions..."
-          ALL_SUBNETS=$(gcloud compute networks subnets list --project=$PROJECT --format="value(name, region)")
+          ALL_SUBNETS=$(gcloud compute networks subnets list --project="$PROJECT" --format="value(name, region)")
           
-          for RGN in $REGIONS; do
+          echo "$REGIONS" | while read -r RGN; do
+            [ -z "$RGN" ] && continue
             SUBNETS=$(echo "$ALL_SUBNETS" | grep "$RGN" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete|default|gke-network-a64ea3f1" | awk '{print $1}' || true)
-            for S in $SUBNETS; do
+            echo "$SUBNETS" | while read -r S; do
+              [ -z "$S" ] && continue
               SKIP=false
-              for PAT in $ALL_ACTIVE; do
+              while read -r PAT; do
                 if [ -n "$PAT" ] && [[ "$S" == *"$PAT"* ]]; then
                   echo "Skipping active subnet: $S"
                   SKIP=true
                   break
                 fi
-              done
+              done <<< "$(echo "$ALL_ACTIVE" | tr ' ' '\n')"
               [ "$SKIP" = true ] && continue
 
-              delete_resource "gcloud compute networks subnets delete $S --region=$RGN --project=$PROJECT --quiet" "subnet $S" &
+              delete_resource "gcloud compute networks subnets delete \"$S\" --region=\"$RGN\" --project=\"$PROJECT\" --quiet" "subnet $S" &
             done
           done
           wait
 
           # Networks (VPCs)
           echo "Listing all networks in project..."
-          gcloud compute networks list --project=$PROJECT
+          gcloud compute networks list --project="$PROJECT"
 
-          NETWORKS=$(gcloud compute networks list --project=$PROJECT --format="value(name)" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete|default|gke-network-a64ea3f1" || true)
-          for N in $NETWORKS; do
+          NETWORKS=$(gcloud compute networks list --project="$PROJECT" --format="value(name)" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete|default|gke-network-a64ea3f1" || true)
+          echo "$NETWORKS" | while read -r N; do
+            [ -z "$N" ] && continue
             SKIP=false
-            for PAT in $ALL_ACTIVE; do
+            while read -r PAT; do
               if [ -n "$PAT" ] && [[ "$N" == *"$PAT"* ]]; then
                 echo "Skipping active network: $N"
                 SKIP=true
                 break
               fi
-            done
+            done <<< "$(echo "$ALL_ACTIVE" | tr ' ' '\n')"
             [ "$SKIP" = true ] && continue
 
-            delete_resource "gcloud compute networks delete $N --project=$PROJECT --quiet" "network $N" &
+            delete_resource "gcloud compute networks delete \"$N\" --project=\"$PROJECT\" --quiet" "network $N" &
           done
           wait
 
           echo "Capturing Quota Status after cleanup..."
-          gcloud compute project-info describe --project=$PROJECT --format="json" > /tmp/quota_after.json || true
+          gcloud compute project-info describe --project="$PROJECT" --format="json" > /tmp/quota_after.json || true
 
           echo "Quota Comparison (Before vs After):"
           python3 -c "

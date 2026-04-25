@@ -16,9 +16,9 @@ jobs:
         run: |
           gh pr list --repo ${{ github.repository }} --state open --json number,mergeable | \
           jq -r '.[] | select(.mergeable == "CONFLICTING") | .number' | \
-          while read pr_num; do
+          while read -r pr_num; do
             echo "Labeling PR #$pr_num as needs-rebase"
-            gh pr edit $pr_num --repo ${{ github.repository }} --add-label "needs-rebase"
+            gh pr edit "$pr_num" --repo ${{ github.repository }} --add-label "needs-rebase"
           done
         env:
           GH_TOKEN: ${{ github.token }}

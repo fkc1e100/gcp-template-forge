@@ -57,7 +57,7 @@ flowchart LR
 ```
 .github/
   workflows/
-    sandbox-validation.yml  ← lint · deploy-test-tf ∥ deploy-test-kcc (PR) · validate-tf-helm ∥ validate-kcc · publish-validated (push)
+    sandbox-validation-*.yml  ← lint · deploy-test-tf ∥ deploy-test-kcc (PR) · validate-tf-helm ∥ validate-kcc · publish-validated (push)
   ISSUE_TEMPLATE/           ← template request form
 agent-infra/
   terraform/                ← control-plane GKE cluster + CI service account
@@ -86,8 +86,8 @@ flowchart LR
 
     subgraph push ["━━━  Push to main  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"]
         direction LR
-        VTH(["🏗️ validate-tf-helm\nper template · 90 min timeout\nTF apply → verify cluster\nRUNNING → TF destroy\nSaves results artifact"])
-        VKCC(["☸️ validate-kcc\nper template · 60 min timeout\nFresh runner — KCC cluster\ncreds from the start\nKCC apply → wait Ready\n→ delete\nSaves results artifact"])
+        VTH(["🏗️ validate-tf-helm\nper template · 120 min timeout\nTF apply → verify cluster\nRUNNING → TF destroy\nSaves results artifact"])
+        VKCC(["☸️ validate-kcc\nper template · 120 min timeout\nFresh runner — KCC cluster\ncreds from the start\nKCC apply → wait Ready\n→ delete\nSaves results artifact"])
         PUB(["📋 publish-validated\nper template\nAccumulate agent metrics\nUpdate README + .validated\n.agent-metrics-cumulative\ngit push [skip ci]"])
     end
 

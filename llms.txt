@@ -26,7 +26,7 @@
 
 ## CI/CD
 
-- GitHub Actions workflow: `.github/workflows/sandbox-validation.yml`
+- GitHub Actions workflows: `.github/workflows/sandbox-validation-tf.yml` and `.github/workflows/sandbox-validation-kcc.yml`
 - TF state bucket: `gs://gke-gca-2025-forge-tf-state/templates/<name>/terraform-helm/`
 - KCC target cluster: `krmapihost-kcc-instance` in `forge-management` namespace
 - CI service account: `forge-builder@gca-gke-2025.iam.gserviceaccount.com`
