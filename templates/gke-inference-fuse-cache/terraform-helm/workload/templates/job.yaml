@@ -37,11 +37,12 @@ spec:
         args:
         - |
           set -e
+          BUCKET="{{ if .Values.bucketName }}{{ .Values.bucketName }}{{ else }}gke-inf-fuse-cache-tf-{{ .Values.uidSuffix }}-bucket{{ end }}"
           echo "Staging dummy model files..."
           mkdir -p /tmp/models/facebook/opt-125m
           echo '{"model_type": "opt"}' > /tmp/models/facebook/opt-125m/config.json
-          echo "Uploading dummy model to gs://{{ .Values.bucketName }}/facebook/opt-125m/..."
-          gcloud storage cp -r /tmp/models/facebook/opt-125m "gs://{{ .Values.bucketName }}/facebook/"
+          echo "Uploading dummy model to gs://${BUCKET}/facebook/opt-125m/..."
+          gcloud storage cp -r /tmp/models/facebook/opt-125m "gs://${BUCKET}/facebook/"
           echo "Upload complete."
       restartPolicy: OnFailure
       {{- with .Values.nodeSelector }}

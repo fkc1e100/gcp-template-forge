@@ -18,8 +18,46 @@ set -e
 echo "Starting Validation Tests for gke-kuberay-kueue-multitenant..."
 
 PROJECT_ID=${PROJECT_ID:-"gca-gke-2025"}
-CLUSTER_NAME=${CLUSTER_NAME:-"gke-kuberay-kueue-multitenant"}
 REGION=${REGION:-"us-central1"}
+
+# 0. Cluster Detection
+if [ -z "${CLUSTER_NAME}" ]; then
+  echo "CLUSTER_NAME not set, attempting to detect cluster..."
+  # Try exact names first
+  if gcloud container clusters describe gke-kuberay-kueue-multitenant --region ${REGION} --project ${PROJECT_ID} >/dev/null 2>&1; then
+    CLUSTER_NAME="gke-kuberay-kueue-multitenant"
+    echo "Detected Terraform cluster: ${CLUSTER_NAME}"
+  elif gcloud container clusters describe gke-kuberay-kueue-multitenant-kcc --region ${REGION} --project ${PROJECT_ID} >/dev/null 2>&1; then
+    CLUSTER_NAME="gke-kuberay-kueue-multitenant-kcc"
+    echo "Detected Config Connector cluster: ${CLUSTER_NAME}"
+  else
+    # Try detecting via list with filter (to handle CI suffixes)
+    # The CI uses BASE_NAME which is basename of template path
+    DETECTED_TF=$(gcloud container clusters list --project ${PROJECT_ID} --filter="name ~ gke-kuberay-kueue-multitenant.*-tf" --format="value(name)" --limit 1)
+    if [ -n "${DETECTED_TF}" ]; then
+      CLUSTER_NAME="${DETECTED_TF}"
+      echo "Detected Terraform cluster (suffixed): ${CLUSTER_NAME}"
+    else
+      DETECTED_KCC=$(gcloud container clusters list --project ${PROJECT_ID} --filter="name ~ gke-kuberay-kueue-multitenant.*-kcc" --format="value(name)" --limit 1)
+      if [ -n "${DETECTED_KCC}" ]; then
+        CLUSTER_NAME="${DETECTED_KCC}"
+        echo "Detected Config Connector cluster (suffixed): ${CLUSTER_NAME}"
+      fi
+    fi
+  fi
+
+  if [ -z "${CLUSTER_NAME}" ]; then
+    echo "ERROR: Could not detect GKE cluster."
+    exit 1
+  fi
+fi
+
+# 0a. Region Detection (if not us-central1 and was detected from cluster)
+if [ -z "${REGION_DETECTED}" ]; then
+  echo "Detecting region for ${CLUSTER_NAME}..."
+  REGION=$(gcloud container clusters list --project ${PROJECT_ID} --filter="name=${CLUSTER_NAME}" --format="value(location)" --limit 1)
+  echo "Using region: ${REGION}"
+fi
 
 # Isolate KUBECONFIG
 export KUBECONFIG=$(mktemp)

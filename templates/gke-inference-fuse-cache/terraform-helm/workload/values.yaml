@@ -12,20 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Default values for vllm-inference.
-templateName: "<TEMPLATE_NAME>"
+projectID: <PROJECT_ID>
+region: <REGION>
+clusterName: <CLUSTER_NAME>
+uidSuffix: ""
+bucketName: ""
+
 replicaCount: 1
 
 image:
   repository: google/cloud-sdk
-  pullPolicy: IfNotPresent
   tag: "slim"
-
-bucketName: "<BUCKET_NAME>"
-gcpServiceAccountEmail: ""
-
-serviceAccount:
-  name: "<KSA_NAME>"
+  pullPolicy: IfNotPresent
 
 resources:
   limits:
@@ -38,18 +36,20 @@ resources:
     nvidia.com/gpu: 1
 
 nodeSelector:
-  gpu: "l4"
+  pool: gpu
 
 tolerations:
   - key: "nvidia.com/gpu"
     operator: "Exists"
     effect: "NoSchedule"
 
-# GCS FUSE Caching parameters
+serviceAccount:
+  create: true
+  name: gke-inf-fuse-cache-sa
+  annotations: {}
+
 cache:
   capacity: "50Gi"
-  # metadataCacheTTLSeconds controls the TTL for metadata caching (seconds)
   metadataCacheTTLSeconds: 3600
-  # advanced tuning for large model directories
   statCacheCapacity: "512Mi"
   typeCacheCapacity: "64Mi"

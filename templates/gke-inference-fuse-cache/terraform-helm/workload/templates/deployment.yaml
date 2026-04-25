@@ -102,7 +102,7 @@ spec:
         csi:
           driver: gcsfuse.csi.storage.gke.io
           volumeAttributes:
-            bucketName: "{{ .Values.bucketName }}"
+            bucketName: {{ if .Values.bucketName }}{{ .Values.bucketName | quote }}{{ else }}"gke-inf-fuse-cache-tf-{{ .Values.uidSuffix }}-bucket"{{ end }}
             mountOptions: "implicit-dirs"
             fileCacheCapacity: "{{ .Values.cache.capacity }}"
             fileCacheForRangeRead: "true"

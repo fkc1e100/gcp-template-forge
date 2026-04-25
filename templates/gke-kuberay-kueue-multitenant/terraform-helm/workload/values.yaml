@@ -16,3 +16,5 @@ clusterName: <CLUSTER_NAME>
 projectID: <PROJECT_ID>
 region: <REGION>
 uidSuffix: ""
+teamASAEmail: ""
+teamBSAEmail: ""

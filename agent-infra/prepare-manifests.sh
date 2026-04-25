@@ -45,9 +45,25 @@ fi
 
 # 3. CI-specific Patching for projects with restricted IAM permissions
 if [[ "$PROJECT_ID" == "gca-gke-2025" ]]; then
-  echo "Detected CI environment, applying IAM workarounds..."
+  echo "Detected CI environment, applying IAM and values.yaml workarounds..."
   
-  # Use Python for robust YAML patching
+  # Patch values.yaml if it exists
+  VALUES_PATH="${TEMPLATE_PATH}/terraform-helm/workload/values.yaml"
+  if [ -f "$VALUES_PATH" ]; then
+    echo "Patching $VALUES_PATH for CI"
+    sed -i "s/<PROJECT_ID>/${PROJECT_ID}/g" "$VALUES_PATH"
+    sed -i "s/<REGION>/${REGION:-us-central1}/g" "$VALUES_PATH"
+    sed -i "s/<CLUSTER_NAME>/${FULL_NAME}-${UID_SUFFIX}-tf/g" "$VALUES_PATH"
+    sed -i "s/uidSuffix: \"\"/uidSuffix: \"${UID_SUFFIX}\"/g" "$VALUES_PATH"
+    # Template specific value patches
+    sed -i "s/teamASAEmail: \"\"/teamASAEmail: \"${SHARED_SA}\"/g" "$VALUES_PATH"
+    sed -i "s/teamBSAEmail: \"\"/teamBSAEmail: \"${SHARED_SA}\"/g" "$VALUES_PATH"
+    sed -i "s/bucketName: \"\"/bucketName: \"gke-inf-fuse-cache-tf-${UID_SUFFIX}-bucket\"/g" "$VALUES_PATH"
+    # For inference template service account
+    sed -i "s/annotations: {}/annotations:\n    iam.gke.io\/gcp-service-account: ${SHARED_SA}/g" "$VALUES_PATH"
+  fi
+
+  # Use Python for robust YAML patching of KCC manifests
   python3 - <<EOF
 import yaml
 import sys
