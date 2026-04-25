@@ -140,7 +140,7 @@ echo "Connectivity passed."
 # 2. GCS FUSE CSI Driver Check
 echo "Test 2: GCS FUSE CSI Driver Check..."
 GCS_FUSE_ENABLED=$(gcloud container clusters describe ${CLUSTER_NAME} --region ${REGION} --project ${PROJECT_ID} --format="value(addonsConfig.gcsFuseCsiDriverConfig.enabled)")
-if [ "$GCS_FUSE_ENABLED" != "True" ]; then
+if [ "${GCS_FUSE_ENABLED,,}" != "true" ] && [ "$GCS_FUSE_ENABLED" != "True" ]; then
   echo "GCS FUSE CSI Driver is not enabled!"
   exit 1
 fi
