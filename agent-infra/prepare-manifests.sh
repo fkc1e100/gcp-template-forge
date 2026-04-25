@@ -104,7 +104,19 @@ def patch_doc(doc):
             if not annotations:
                 del metadata["annotations"]
 
-    # 3. Replace serviceAccountRef
+    # 3. Handle IAMPolicyMember specially
+    if doc.get("kind") == "IAMPolicyMember":
+        spec = doc.get("spec", {})
+        if "memberFrom" in spec:
+            print(f"Converting memberFrom to member in IAMPolicyMember {doc.get('metadata', {}).get('name')}")
+            del spec["memberFrom"]
+            spec["member"] = f"serviceAccount:{shared_sa}"
+            
+        member = spec.get("member", "")
+        if member.startswith("serviceAccount:") and project_id in member:
+            spec["member"] = f"serviceAccount:{shared_sa}"
+
+    # 4. Replace serviceAccountRef in all other places
     def walk(obj):
         if isinstance(obj, dict):
             if "serviceAccountRef" in obj and isinstance(obj["serviceAccountRef"], dict):
@@ -116,14 +128,6 @@ def patch_doc(doc):
                 walk(i)
 
     walk(doc)
-    
-    # 3. Replace member emails in IAMPolicyMember
-    if doc.get("kind") == "IAMPolicyMember":
-        spec = doc.get("spec", {})
-        member = spec.get("member", "")
-        if member.startswith("serviceAccount:") and project_id in member:
-            spec["member"] = f"serviceAccount:{shared_sa}"
-            
     return doc
 
 # Patch BOTH config-connector and config-connector-workload
