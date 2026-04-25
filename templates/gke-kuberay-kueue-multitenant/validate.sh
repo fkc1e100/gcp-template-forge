@@ -112,6 +112,35 @@ kubectl wait --for=condition=Established crd/rayclusters.ray.io --timeout=5m || 
 kubectl wait --for=condition=Established crd/clusterqueues.kueue.x-k8s.io --timeout=5m || debug_failure "ClusterQueue CRD not established"
 echo "CRDs are established."
 
+# 3a. Apply resources that use CRDs (Helm workaround)
+# These were moved out of the Helm chart to avoid validation errors during installation
+if [ -d "templates/gke-kuberay-kueue-multitenant/terraform-helm/workload/manifests" ]; then
+  echo "Applying hook-based resources (Helm workaround)..."
+  # Extract UID_SUFFIX from CLUSTER_NAME
+  # It is typically the 6 digits in the cluster name
+  CUR_UID_SUFFIX=$(echo "$CLUSTER_NAME" | grep -oE '[0-9]{6}' | head -n 1 || echo "")
+  
+  if [ -n "$CUR_UID_SUFFIX" ]; then
+    echo "Detected UID_SUFFIX: $CUR_UID_SUFFIX"
+    
+    # Create a temp dir for patched manifests
+    PATCH_DIR=$(mktemp -d)
+    cp templates/gke-kuberay-kueue-multitenant/terraform-helm/workload/manifests/*.yaml "$PATCH_DIR/"
+    
+    # Patch the manifests with the detected suffix
+    # We use the template name as the anchor for suffixing
+    find "$PATCH_DIR" -type f -name "*.yaml" -exec sed -i "s/gke-kuberay-kueue-multitenant/gke-kuberay-kueue-multitenant-${CUR_UID_SUFFIX}/g" {} +
+    
+    echo "Applying patched manifests from $PATCH_DIR..."
+    kubectl apply -f "$PATCH_DIR/"
+    rm -rf "$PATCH_DIR"
+  else
+    # For non-suffixed clusters (e.g. local dev), just apply as-is
+    echo "Applying manifests as-is (no suffix detected)..."
+    kubectl apply -f templates/gke-kuberay-kueue-multitenant/terraform-helm/workload/manifests/
+  fi
+fi
+
 # 4. Kueue Resource Readiness
 echo "Test 4: Kueue Resource Readiness..."
 echo "Waiting for ClusterQueues to be active..."

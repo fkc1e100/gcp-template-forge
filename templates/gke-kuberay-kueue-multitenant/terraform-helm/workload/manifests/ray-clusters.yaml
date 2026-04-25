@@ -15,13 +15,10 @@
 apiVersion: ray.io/v1
 kind: RayCluster
 metadata:
-  annotations:
-    helm.sh/hook: post-install,post-upgrade
-    helm.sh/hook-weight: "10"
   labels:
     kueue.x-k8s.io/queue-name: team-a-lq
     project: gcp-template-forge
-    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
+    template: gke-kuberay-kueue-multitenant
   name: raycluster-team-a
   namespace: team-a
 spec:
@@ -33,7 +30,7 @@ spec:
       metadata:
         labels:
           project: gcp-template-forge
-          template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
+          template: gke-kuberay-kueue-multitenant
       spec:
         serviceAccountName: team-a-sa
         containers:
@@ -65,7 +62,7 @@ spec:
       metadata:
         labels:
           project: gcp-template-forge
-          template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
+          template: gke-kuberay-kueue-multitenant
       spec:
         serviceAccountName: team-a-sa
         containers:
@@ -89,13 +86,10 @@ spec:
 apiVersion: ray.io/v1
 kind: RayCluster
 metadata:
-  annotations:
-    helm.sh/hook: post-install,post-upgrade
-    helm.sh/hook-weight: "10"
   labels:
     kueue.x-k8s.io/queue-name: team-b-lq
     project: gcp-template-forge
-    template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
+    template: gke-kuberay-kueue-multitenant
   name: raycluster-team-b
   namespace: team-b
 spec:
@@ -107,7 +101,7 @@ spec:
       metadata:
         labels:
           project: gcp-template-forge
-          template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
+          template: gke-kuberay-kueue-multitenant
       spec:
         serviceAccountName: team-b-sa
         containers:
@@ -139,7 +133,7 @@ spec:
       metadata:
         labels:
           project: gcp-template-forge
-          template: {{ if .Values.uidSuffix }}gke-kuberay-kueue-multitenant-{{ .Values.uidSuffix }}{{ else }}gke-kuberay-kueue-multitenant{{ end }}
+          template: gke-kuberay-kueue-multitenant
       spec:
         serviceAccountName: team-b-sa
         containers:
