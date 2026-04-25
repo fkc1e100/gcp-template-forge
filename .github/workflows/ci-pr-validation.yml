@@ -83,7 +83,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
       - name: Set up Helm
-        run: curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+        uses: azure/setup-helm@v4
       - name: Run Thorough Linting
         run: |
           chmod +x agent-infra/local-lint.sh
@@ -201,7 +201,7 @@ jobs:
             fi
           done
       - name: Set up Helm
-        run: curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+        uses: azure/setup-helm@v4
       - name: Helm deploy and verify
         run: |
           RUN_ID="${{ github.run_id }}"

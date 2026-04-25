@@ -11,8 +11,6 @@ metadata:
     template: gke-inference-fuse-cache
 spec:
   location: <REGION> # UPDATE: Replace with your region
-  nodeLocations:
-  - <REGION>-a # UPDATE: Replace with your zone
   networkRef:
     name: gke-inf-fuse-cache-vpc
   subnetworkRef:

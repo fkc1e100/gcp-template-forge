@@ -10,8 +10,6 @@ spec:
   clusterRef:
     name: gke-inf-fuse-cache
   location: <REGION>
-  nodeLocations:
-  - <REGION>-a
   nodeCount: 1
   nodeConfig:
     machineType: e2-standard-4
@@ -40,10 +38,6 @@ spec:
   clusterRef:
     name: gke-inf-fuse-cache
   location: <REGION>
-  nodeLocations:
-  - <REGION>-a
-  - <REGION>-b
-  - <REGION>-c
   autoscaling:
     totalMinNodeCount: 0
     totalMaxNodeCount: 1

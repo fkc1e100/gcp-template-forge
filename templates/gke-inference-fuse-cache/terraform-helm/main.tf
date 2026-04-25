@@ -22,6 +22,11 @@ provider "google-beta" {
   region  = var.region
 }
 
+data "google_compute_zones" "available" {
+  region  = var.region
+  project = var.project_id
+}
+
 locals {
   ksa_name       = "gke-inf-fuse-cache-${var.uid_suffix}-sa"
   template_label = var.uid_suffix != "" ? "gke-inference-fuse-cache-${var.uid_suffix}" : "gke-inference-fuse-cache"
@@ -155,7 +160,7 @@ resource "google_container_node_pool" "system_pool" {
   project    = var.project_id
   node_count = 1
 
-  node_locations = ["${var.region}-a"]
+  node_locations = [data.google_compute_zones.available.names[0]]
 
   node_config {
     spot         = false
@@ -197,11 +202,7 @@ resource "google_container_node_pool" "gpu_pool" {
   cluster  = google_container_cluster.gke_inference_fuse_cache_cluster.name
   project  = var.project_id
 
-  node_locations = [
-    "${var.region}-a",
-    "${var.region}-b",
-    "${var.region}-c",
-  ]
+  node_locations = slice(data.google_compute_zones.available.names, 0, min(3, length(data.google_compute_zones.available.names)))
 
   autoscaling {
     total_min_node_count = 0

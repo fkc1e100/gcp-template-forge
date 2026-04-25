@@ -26,8 +26,6 @@ metadata:
 spec:
   location: <REGION> # UPDATE: Replace with your region
   # Restrict to a single zone for the initial node count to save quota in CI
-  nodeLocations:
-    - <REGION>-a # UPDATE: Replace with your zone
   initialNodeCount: 1
   networkRef:
     name: gke-kuberay-kueue-multitenant-vpc

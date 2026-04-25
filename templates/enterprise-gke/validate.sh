@@ -84,7 +84,7 @@ spec:
       serviceAccountName: ${SA_NAME}
       containers:
       - name: gcloud
-        image: google/cloud-sdk:slim
+        image: google/cloud-sdk:slim@sha256:8c9ed0427dd1e0b75623d93f881c058eb45c4e292977d0228c6264e81e1a4372
         command: ["gcloud", "auth", "list"]
       restartPolicy: Never
   backoffLimit: 1

@@ -1563,7 +1563,7 @@ spec:
         - --zap-log-level=2
         command:
         - /manager
-        image: registry.k8s.io/kueue/kueue:v0.6.2 # UPDATE: Replace with desired Kueue version
+        image: registry.k8s.io/kueue/kueue:v0.6.2@sha256:ef1f07fa559eb396a93e67d682743bac602b512cf11d203e14b10bcfa2e89112 # UPDATE: Replace with desired Kueue version
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -1606,7 +1606,7 @@ spec:
         - --upstream=http://127.0.0.1:8080/
         - --logtostderr=true
         - --v=10
-        image: registry.k8s.io/kubebuilder/kube-rbac-proxy:v0.15.0
+        image: registry.k8s.io/kubebuilder/kube-rbac-proxy:v0.15.0@sha256:d8cc6ffb98190e8dd403bfe67ddcb454e6127d32b87acc237b3e5240f70a20fb
         name: kube-rbac-proxy
         ports:
         - containerPort: 8443

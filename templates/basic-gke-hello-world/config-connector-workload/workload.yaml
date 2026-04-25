@@ -37,7 +37,7 @@ spec:
     spec:
       containers:
       - name: hello-app
-        image: us-docker.pkg.dev/google-samples/containers/gke/hello-app:1.0
+        image: us-docker.pkg.dev/google-samples/containers/gke/hello-app:1.0@sha256:649188051906c9df7f87fb2ef04a21acbdb009c0877fa67b3132b83230411f6e
         ports:
         - containerPort: 8080
 ---
