@@ -3,6 +3,10 @@ on:
   push:
     branches:
       - fix-103-iam-patching
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   debug:
     runs-on: ubuntu-latest
