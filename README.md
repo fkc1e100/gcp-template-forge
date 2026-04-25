@@ -57,7 +57,7 @@ flowchart LR
 ```
 .github/
   workflows/
-    sandbox-validation.yml  ← lint · deploy-test-tf ∥ deploy-test-kcc (PR) · validate-tf-helm ∥ validate-kcc · publish-validated (push)
+    sandbox-validation-*.yml  ← lint · deploy-test-tf ∥ deploy-test-kcc (PR) · validate-tf-helm ∥ validate-kcc · publish-validated (push)
   ISSUE_TEMPLATE/           ← template request form
 agent-infra/
   terraform/                ← control-plane GKE cluster + CI service account
