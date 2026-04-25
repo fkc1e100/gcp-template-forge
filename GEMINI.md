@@ -63,7 +63,7 @@ If the dashboard is inaccessible from specific devices or networks:
 ## Engineering Mandates
 *   **Resource Labeling:** ALL infrastructure resources (GKE clusters, subnets, etc.) created by the agent MUST include the label `project: gcp-template-forge`. This ensures clear ownership and easier cleanup.
 *   **Timeouts:** Always use a minimum of 30-minute timeouts when waiting for GKE cluster readiness.
-*   **Separation of Concerns (Terraform vs. Helm):** NEVER use `local-exec` provisioners or the Terraform Helm provider to deploy Helm charts or Kubernetes manifests within `main.tf`. Terraform's sole responsibility is infrastructure provisioning. The CI/CD pipeline (`sandbox-validation.yml`) contains a dedicated, authenticated `Helm deploy and verify` step that automatically handles workload deployment. Use `local_file` in Terraform to dynamically generate a `values.yaml` file for the downstream Helm step to consume.
+*   **Separation of Concerns (Terraform vs. Helm):** NEVER use `local-exec` provisioners or the Terraform Helm provider to deploy Helm charts or Kubernetes manifests within `main.tf`. Terraform's sole responsibility is infrastructure provisioning. The CI/CD pipelines (`sandbox-validation-tf.yml` and `sandbox-validation-kcc.yml`) contain dedicated, authenticated `Helm deploy and verify` steps that automatically handle workload deployment. Use `local_file` in Terraform to dynamically generate a `values.yaml` file for the downstream Helm step to consume.
 *   **KCC Resource Waits:** NEVER use `|| true` or ignore failures when waiting for KCC resources to become ready in CI pipelines or scripts. If KCC fails to provision resources, the task must fail loudly to avoid cascade failures. Use the provided `agent-infra/check-kcc-ready.sh` script in the sandbox to verify readiness.
 *   **Complete KCC Templates:** ALL Config Connector deployment paths MUST include complete Kubernetes manifests for the workloads (e.g., `Deployment`, `Service`, `ConfigMap`, `Ingress`), ensuring functional parity with the `terraform-helm/` path. Do NOT rely solely on `validate.sh` to deploy the workload; the manifests must be present in the repository for user consumption.
 *   **KCC Workload Manifest Location**: ALL raw Kubernetes workload manifests for KCC paths MUST be placed in a dedicated directory called `config-connector-workload/` at the root of the template (e.g., `templates/<template-name>/config-connector-workload/`). They MUST NOT be placed directly in the `config-connector/` directory, as the CI pipeline applies that directory to the KCC Management Cluster, causing failures for non-KCC resources. This is the ONLY approved path forward for raw workload manifests in KCC templates.
@@ -202,9 +202,9 @@ Three ClusterPolicies are active:
 
 ---
 
-### CI/CD Workflow (sandbox-validation.yml)
+### CI/CD Workflow (sandbox-validation-tf.yml & sandbox-validation-kcc.yml)
 
-The CI pipeline (`.github/workflows/sandbox-validation.yml`) runs on every push to any branch and on PRs:
+The CI pipelines (`.github/workflows/sandbox-validation-tf.yml` and `.github/workflows/sandbox-validation-kcc.yml`) run on every push to any branch and on PRs:
 
 1. **Authenticate** — Workload Identity Federation (WIF) using the CI SA `forge-builder@gca-gke-2025.iam.gserviceaccount.com`. WIF is **blocked for fork PRs** — OIDC tokens are not issued to forked repositories by GitHub's security model.
 
@@ -269,8 +269,7 @@ GitHub Issue (label: repo-agent, no hold)
       → controller dispatches gRPC command to sandbox dev-daemon
         → repo-sandbox runs Gemini CLI agent
           → agent clones repo, makes changes, pushes to upstream, opens PR
-            → GitHub Actions: sandbox-validation.yml triggers
-              → TF lint → deploy → validate → destroy → commit .validated
+            → GitHub Actions: sandbox-validation-*.yml triggers              → TF lint → deploy → validate → destroy → commit .validated
                 → CI passes: PR can be merged, issue closed
 
 GitHub PR (opened or new commit)
