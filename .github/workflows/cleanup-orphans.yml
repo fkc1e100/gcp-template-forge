@@ -59,7 +59,7 @@ jobs:
             local desc="$2"
             echo "Attempting to delete $desc..."
             local out
-            out=$($cmd 2>&1)
+            out=$(eval "$cmd" 2>&1)
             local status=$?
             if [ "$status" -ne 0 ]; then
               if [[ "${out,,}" =~ "could not fetch resource" || "${out,,}" =~ "not found" || "${out,,}" =~ "is already being used" || "${out,,}" =~ "running incompatible operation" || "${out,,}" =~ "is not ready" || "${out,,}" =~ "permission" ]]; then
