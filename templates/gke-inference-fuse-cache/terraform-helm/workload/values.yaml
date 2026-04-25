@@ -22,7 +22,7 @@ replicaCount: 1
 
 image:
   repository: google/cloud-sdk
-  tag: "slim"
+  tag: "slim@sha256:8c9ed0427dd1e0b75623d93f881c058eb45c4e292977d0228c6264e81e1a4372"
   pullPolicy: IfNotPresent
 
 resources:

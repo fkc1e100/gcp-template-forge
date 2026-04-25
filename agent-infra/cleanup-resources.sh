@@ -90,7 +90,27 @@ gcloud container clusters get-credentials "$KCC_CLUSTER" --region "$REGION" --pr
 if kubectl cluster-info &>/dev/null; then
   echo "Deleting all KCC-managed resources for orphaned environments..."
   KCC_TYPES="containercluster,computenetwork,computevpc,computesubnetwork,computerouter,computerouternat,computefirewall,storagebucket"
-TARGET_PATTERN="latest-gke-features-|enterprise-gke-|basic-gke-|gke-kuberay-kueue-multitenant-|gke-ray-mt-|gke-inf-fuse-cache-|gke-inference-fuse-|gke-ai-inference-|gke-llm-inference-|gke-vllm-staging-|gke-basic-|latest-features-|gke-fqdn-egress-security-|gke-topology-aware-routing-|gke-inference-tf-"
+# Targeted patterns for resources to clean up
+PATTERNS=(
+  "latest-gke-features-"
+  "enterprise-gke-"
+  "basic-gke-"
+  "gke-kuberay-kueue-multitenant-"
+  "gke-ray-mt-"
+  "gke-inf-fuse-cache-"
+  "gke-inference-fuse-"
+  "gke-ai-inference-"
+  "gke-llm-inference-"
+  "gke-vllm-staging-"
+  "gke-basic-"
+  "latest-features-"
+  "gke-fqdn-egress-security-"
+  "gke-topology-aware-routing-"
+  "gke-inference-tf-"
+)
+TARGET_PATTERN=$(printf "|%s" "${PATTERNS[@]}")
+TARGET_PATTERN="${TARGET_PATTERN:1}" # Remove leading |
+
 IGNORE_PATTERN="repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete|gke-gca-2025-forge-tf-state"
 CLUSTER_FILTER="(resourceLabels.project=gcp-template-forge OR name ~ latest-gke-features- OR name ~ enterprise-gke- OR name ~ basic-gke- OR name ~ gke- OR name ~ gke-topology-aware-routing-) AND name != \$KCC_CLUSTER"
 

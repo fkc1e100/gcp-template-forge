@@ -10,9 +10,12 @@ RUN apt-get update -qq && apt-get install -y -qq unzip && \
     rm /tmp/terraform.zip && \
     terraform version
 
-# Install Helm
-RUN curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 \
-      | HELM_INSTALL_DIR=/usr/local/bin bash && \
+# Install Helm (direct binary download for better security)
+RUN HELM_VER=$(curl -fsSL https://api.github.com/repos/helm/helm/releases/latest | python3 -c "import json,sys; print(json.load(sys.stdin)['tag_name'])") && \
+    curl -fsSL "https://get.helm.sh/helm-${HELM_VER}-linux-amd64.tar.gz" -o /tmp/helm.tar.gz && \
+    tar -zxvf /tmp/helm.tar.gz -C /tmp && \
+    mv /tmp/linux-amd64/helm /usr/local/bin/helm && \
+    rm -rf /tmp/helm.tar.gz /tmp/linux-amd64 && \
     helm version
 
 # Install kubectl via gcloud components (requires gcloud to be present)
