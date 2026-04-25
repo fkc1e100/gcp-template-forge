@@ -32,12 +32,12 @@ metadata:
   name: gke-ray-mt-node-log-writer
   namespace: forge-management # UPDATE: Replace with your KCC namespace
 spec:
-  member: serviceAccount:gke-ray-mt-node@gca-gke-2025.iam.gserviceaccount.com # UPDATE: Replace with your project ID
+  member: serviceAccount:gke-ray-mt-node@<PROJECT_ID>.iam.gserviceaccount.com # UPDATE: Replace with your project ID
   role: roles/logging.logWriter
   resourceRef:
     apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
     kind: Project
-    external: gca-gke-2025 # UPDATE: Replace with your project ID
+    external: <PROJECT_ID> # UPDATE: Replace with your project ID
 ---
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPolicyMember
@@ -48,12 +48,12 @@ metadata:
   name: gke-ray-mt-node-metric-writer
   namespace: forge-management # UPDATE: Replace with your KCC namespace
 spec:
-  member: serviceAccount:gke-ray-mt-node@gca-gke-2025.iam.gserviceaccount.com # UPDATE: Replace with your project ID
+  member: serviceAccount:gke-ray-mt-node@<PROJECT_ID>.iam.gserviceaccount.com # UPDATE: Replace with your project ID
   role: roles/monitoring.metricWriter
   resourceRef:
     apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
     kind: Project
-    external: gca-gke-2025 # UPDATE: Replace with your project ID
+    external: <PROJECT_ID> # UPDATE: Replace with your project ID
 ---
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPolicyMember
@@ -64,12 +64,12 @@ metadata:
   name: gke-ray-mt-node-registry-reader
   namespace: forge-management # UPDATE: Replace with your KCC namespace
 spec:
-  member: serviceAccount:gke-ray-mt-node@gca-gke-2025.iam.gserviceaccount.com # UPDATE: Replace with your project ID
+  member: serviceAccount:gke-ray-mt-node@<PROJECT_ID>.iam.gserviceaccount.com # UPDATE: Replace with your project ID
   role: roles/artifactregistry.reader
   resourceRef:
     apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
     kind: Project
-    external: gca-gke-2025 # UPDATE: Replace with your project ID
+    external: <PROJECT_ID> # UPDATE: Replace with your project ID
 ---
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMServiceAccount
@@ -102,7 +102,7 @@ metadata:
   name: ray-team-a-wi
   namespace: forge-management # UPDATE: Replace with your KCC namespace
 spec:
-  member: serviceAccount:gca-gke-2025.svc.id.goog[team-a/team-a-sa] # UPDATE: Replace with your project ID
+  member: serviceAccount:<PROJECT_ID>.svc.id.goog[team-a/team-a-sa] # UPDATE: Replace with your project ID
   role: roles/iam.workloadIdentityUser
   resourceRef:
     apiVersion: iam.cnrm.cloud.google.com/v1beta1
@@ -118,7 +118,7 @@ metadata:
   name: ray-team-b-wi
   namespace: forge-management # UPDATE: Replace with your KCC namespace
 spec:
-  member: serviceAccount:gca-gke-2025.svc.id.goog[team-b/team-b-sa] # UPDATE: Replace with your project ID
+  member: serviceAccount:<PROJECT_ID>.svc.id.goog[team-b/team-b-sa] # UPDATE: Replace with your project ID
   role: roles/iam.workloadIdentityUser
   resourceRef:
     apiVersion: iam.cnrm.cloud.google.com/v1beta1

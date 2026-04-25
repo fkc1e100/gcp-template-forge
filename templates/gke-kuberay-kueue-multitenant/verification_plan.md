@@ -17,7 +17,7 @@
 This document outlines the plan for verifying the `gke-kuberay-kueue-multitenant` template.
 
 ## Test Environment
-- **Project**: `gca-gke-2025`
+- **Project**: `<PROJECT_ID>`
 - **Region**: `us-central1`
 - **Tools**: `terraform`, `helm`, `kubectl`, `gcloud`
 

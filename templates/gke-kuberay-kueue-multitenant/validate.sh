@@ -17,7 +17,7 @@ set -e
 
 echo "Starting Validation Tests for gke-kuberay-kueue-multitenant..."
 
-PROJECT_ID=${PROJECT_ID:-"gca-gke-2025"}
+PROJECT_ID=${PROJECT_ID:-"<PROJECT_ID>"}
 REGION=${REGION:-"us-central1"}
 
 # 0. Cluster Detection

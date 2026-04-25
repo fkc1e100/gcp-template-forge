@@ -17,7 +17,7 @@ set -e
 
 echo "Starting GKE Inference FUSE Cache Validation Tests..."
 
-PROJECT_ID=${PROJECT_ID:-"gca-gke-2025"}
+PROJECT_ID=${PROJECT_ID:-"<PROJECT_ID>"}
 REGION=${REGION:-"us-central1"}
 NAMESPACE=${NAMESPACE:-"default"}
 BUCKET_NAME_BASE="gke-inference-fuse-cache"

@@ -18,7 +18,7 @@ metadata:
   name: gke-inf-fuse-cache-vpc
   namespace: forge-management
   annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025 # UPDATE: Replace with your GCP Project ID
+    cnrm.cloud.google.com/project-id: <PROJECT_ID> # UPDATE: Replace with your GCP Project ID
   labels:
     project: gcp-template-forge
     template: gke-inference-fuse-cache
@@ -31,7 +31,7 @@ metadata:
   name: gke-inf-fuse-cache-subnet
   namespace: forge-management
   annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025 # UPDATE: Replace with your GCP Project ID
+    cnrm.cloud.google.com/project-id: <PROJECT_ID> # UPDATE: Replace with your GCP Project ID
   labels:
     project: gcp-template-forge
     template: gke-inference-fuse-cache

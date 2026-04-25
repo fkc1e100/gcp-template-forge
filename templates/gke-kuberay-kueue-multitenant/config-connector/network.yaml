@@ -21,7 +21,7 @@ metadata:
     project: gcp-template-forge
     template: gke-kuberay-kueue-multitenant
   annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025 # UPDATE: Replace with your GCP Project ID
+    cnrm.cloud.google.com/project-id: <PROJECT_ID> # UPDATE: Replace with your GCP Project ID
 spec:
   routingMode: REGIONAL
   autoCreateSubnetworks: false
@@ -35,7 +35,7 @@ metadata:
     project: gcp-template-forge
     template: gke-kuberay-kueue-multitenant
   annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025 # UPDATE: Replace with your GCP Project ID
+    cnrm.cloud.google.com/project-id: <PROJECT_ID> # UPDATE: Replace with your GCP Project ID
 spec:
   ipCidrRange: 10.0.0.0/20
   region: us-central1

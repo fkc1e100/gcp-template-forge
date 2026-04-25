@@ -32,12 +32,12 @@ metadata:
   name: gke-inf-fuse-node-log-writer
   namespace: forge-management # UPDATE: Replace with your KCC namespace
 spec:
-  member: serviceAccount:gke-inf-fuse-node@gca-gke-2025.iam.gserviceaccount.com # UPDATE: Replace with your project ID
+  member: serviceAccount:gke-inf-fuse-node@<PROJECT_ID>.iam.gserviceaccount.com # UPDATE: Replace with your project ID
   role: roles/logging.logWriter
   resourceRef:
     apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
     kind: Project
-    external: gca-gke-2025 # UPDATE: Replace with your project ID
+    external: <PROJECT_ID> # UPDATE: Replace with your project ID
 ---
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPolicyMember
@@ -48,12 +48,12 @@ metadata:
   name: gke-inf-fuse-node-metric-writer
   namespace: forge-management # UPDATE: Replace with your KCC namespace
 spec:
-  member: serviceAccount:gke-inf-fuse-node@gca-gke-2025.iam.gserviceaccount.com # UPDATE: Replace with your project ID
+  member: serviceAccount:gke-inf-fuse-node@<PROJECT_ID>.iam.gserviceaccount.com # UPDATE: Replace with your project ID
   role: roles/monitoring.metricWriter
   resourceRef:
     apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
     kind: Project
-    external: gca-gke-2025 # UPDATE: Replace with your project ID
+    external: <PROJECT_ID> # UPDATE: Replace with your project ID
 ---
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPolicyMember
@@ -64,12 +64,12 @@ metadata:
   name: gke-inf-fuse-node-registry-reader
   namespace: forge-management # UPDATE: Replace with your KCC namespace
 spec:
-  member: serviceAccount:gke-inf-fuse-node@gca-gke-2025.iam.gserviceaccount.com # UPDATE: Replace with your project ID
+  member: serviceAccount:gke-inf-fuse-node@<PROJECT_ID>.iam.gserviceaccount.com # UPDATE: Replace with your project ID
   role: roles/artifactregistry.reader
   resourceRef:
     apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
     kind: Project
-    external: gca-gke-2025 # UPDATE: Replace with your project ID
+    external: <PROJECT_ID> # UPDATE: Replace with your project ID
 ---
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPolicyMember
@@ -80,7 +80,7 @@ metadata:
   name: gke-inf-fuse-workload-bucket-access
   namespace: forge-management # UPDATE: Replace with your KCC namespace
 spec:
-  member: serviceAccount:gca-gke-2025.svc.id.goog[default/gke-inf-fuse-cache-sa] # UPDATE: Replace with your project ID and namespace/KSA
+  member: serviceAccount:<PROJECT_ID>.svc.id.goog[default/gke-inf-fuse-cache-sa] # UPDATE: Replace with your project ID and namespace/KSA
   role: roles/storage.objectAdmin
   resourceRef:
     apiVersion: storage.cnrm.cloud.google.com/v1beta1

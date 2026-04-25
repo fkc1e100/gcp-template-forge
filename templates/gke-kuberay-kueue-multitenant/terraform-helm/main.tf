@@ -163,21 +163,6 @@ resource "google_service_account_iam_member" "team_b_wi" {
   member             = "serviceAccount:${var.project_id}.svc.id.goog[team-b/team-b-sa]"
 }
 
-# If we are NOT creating GSAs, we still need the WI bindings on the shared SA
-resource "google_service_account_iam_member" "shared_sa_wi_team_a" {
-  count              = var.create_gsas ? 0 : 1
-  service_account_id = "projects/${var.project_id}/serviceAccounts/${var.service_account}"
-  role               = "roles/iam.workloadIdentityUser"
-  member             = "serviceAccount:${var.project_id}.svc.id.goog[team-a/team-a-sa]"
-}
-
-resource "google_service_account_iam_member" "shared_sa_wi_team_b" {
-  count              = var.create_gsas ? 0 : 1
-  service_account_id = "projects/${var.project_id}/serviceAccounts/${var.service_account}"
-  role               = "roles/iam.workloadIdentityUser"
-  member             = "serviceAccount:${var.project_id}.svc.id.goog[team-b/team-b-sa]"
-}
-
 # System Node Pool
 resource "google_container_node_pool" "system_nodes" {
   name       = "gke-kuberay-kueue-multitenant-sys"
@@ -314,8 +299,8 @@ ${yamlencode({
   projectID    = var.project_id
   region       = var.region
   uidSuffix    = var.uid_suffix
-  teamASAEmail = local.team_a_sa_email
-  teamBSAEmail = local.team_b_sa_email
+  teamASAEmail = var.create_gsas ? local.team_a_sa_email : ""
+  teamBSAEmail = var.create_gsas ? local.team_b_sa_email : ""
 })}
 EOF
 }

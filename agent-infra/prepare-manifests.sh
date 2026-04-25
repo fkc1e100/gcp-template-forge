@@ -76,11 +76,7 @@ if [[ "$PROJECT_ID" == "gca-gke-2025" ]]; then
     sed -i "s/<CLUSTER_NAME>/${FULL_NAME}-${UID_SUFFIX}-tf/g" "$VALUES_PATH"
     sed -i "s/uidSuffix: \"\"/uidSuffix: \"${UID_SUFFIX}\"/g" "$VALUES_PATH"
     # Template specific value patches
-    sed -i "s/teamASAEmail: \"\"/teamASAEmail: \"${SHARED_SA}\"/g" "$VALUES_PATH"
-    sed -i "s/teamBSAEmail: \"\"/teamBSAEmail: \"${SHARED_SA}\"/g" "$VALUES_PATH"
     sed -i "s/bucketName: \"\"/bucketName: \"gke-inf-fuse-cache-tf-${UID_SUFFIX}-bucket\"/g" "$VALUES_PATH"
-    # For inference template service account
-    sed -i "s/annotations: {}/annotations:\n    iam.gke.io\/gcp-service-account: ${SHARED_SA}/g" "$VALUES_PATH"
   fi
 
   # Use Python for robust YAML patching of KCC manifests
@@ -96,11 +92,21 @@ def patch_doc(doc):
     if not isinstance(doc, dict):
         return doc
     
-    # 1. Remove IAMServiceAccount
-    if doc.get("kind") == "IAMServiceAccount":
+    # 1. Remove IAMServiceAccount and other restricted resources
+    if doc.get("kind") in ["IAMServiceAccount", "IAMPolicy", "IAMPartialPolicy"]:
         return None
         
-    # 2. Replace serviceAccountRef
+    # 2. Remove Workload Identity annotations from ServiceAccounts
+    if doc.get("kind") == "ServiceAccount":
+        metadata = doc.get("metadata", {})
+        annotations = metadata.get("annotations", {})
+        if "iam.gke.io/gcp-service-account" in annotations:
+            print(f"Removing WI annotation from {metadata.get('name')}")
+            del annotations["iam.gke.io/gcp-service-account"]
+            if not annotations:
+                del metadata["annotations"]
+
+    # 3. Replace serviceAccountRef
     def walk(obj):
         if isinstance(obj, dict):
             if "serviceAccountRef" in obj and isinstance(obj["serviceAccountRef"], dict):

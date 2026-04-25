@@ -191,7 +191,11 @@ resource "google_container_node_pool" "gpu_pool" {
   cluster  = google_container_cluster.gke_inference_fuse_cache_cluster.name
   project  = var.project_id
 
-  node_locations = ["${var.region}-a"]
+  node_locations = [
+    "${var.region}-a",
+    "${var.region}-b",
+    "${var.region}-c",
+  ]
 
   autoscaling {
     total_min_node_count = 0
@@ -281,14 +285,6 @@ resource "google_service_account_iam_member" "workload_wi_binding" {
   member             = "serviceAccount:${var.project_id}.svc.id.goog[default/${local.ksa_name}]"
 }
 
-# If we are NOT creating GSAs, we still need the WI binding on the shared SA
-resource "google_service_account_iam_member" "shared_sa_wi_binding" {
-  count              = var.create_gsas ? 0 : 1
-  service_account_id = "projects/${var.project_id}/serviceAccounts/${var.service_account}"
-  role               = "roles/iam.workloadIdentityUser"
-  member             = "serviceAccount:${var.project_id}.svc.id.goog[default/${local.ksa_name}]"
-}
-
 # If we are NOT creating GSAs, we still need to give the node SA permission to access the bucket
 # so that the workload (using the node SA's credentials via WI binding to node SA) can access it.
 resource "google_storage_bucket_iam_member" "node_sa_bucket_access" {
@@ -356,9 +352,9 @@ ${yamlencode({
   serviceAccount = {
     create = true
     name   = local.ksa_name
-    annotations = {
+    annotations = var.create_gsas ? {
       "iam.gke.io/gcp-service-account" = local.gsa_email
-    }
+    } : {}
   }
 })}
 EOF

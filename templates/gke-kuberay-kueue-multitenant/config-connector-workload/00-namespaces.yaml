@@ -34,7 +34,7 @@ metadata:
   name: team-a-sa
   namespace: team-a
   annotations:
-    iam.gke.io/gcp-service-account: ray-team-a@gca-gke-2025.iam.gserviceaccount.com # UPDATE: Replace with your project ID
+    iam.gke.io/gcp-service-account: ray-team-a@<PROJECT_ID>.iam.gserviceaccount.com # UPDATE: Replace with your project ID
   labels:
     project: gcp-template-forge
     template: gke-kuberay-kueue-multitenant
@@ -71,7 +71,7 @@ metadata:
   name: team-b-sa
   namespace: team-b
   annotations:
-    iam.gke.io/gcp-service-account: ray-team-b@gca-gke-2025.iam.gserviceaccount.com # UPDATE: Replace with your project ID
+    iam.gke.io/gcp-service-account: ray-team-b@<PROJECT_ID>.iam.gserviceaccount.com # UPDATE: Replace with your project ID
   labels:
     project: gcp-template-forge
     template: gke-kuberay-kueue-multitenant

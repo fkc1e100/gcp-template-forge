@@ -54,7 +54,7 @@ This path uses Google Cloud Config Connector (KCC) to manage GCP resources as Ku
 
 ```bash
 # Update project-id in config-connector/cluster.yaml if necessary
-# (Default is gca-gke-2025)
+# (Default is <PROJECT_ID>)
 
 # Apply infrastructure resources to the management cluster
 kubectl apply -n forge-management -f config-connector/

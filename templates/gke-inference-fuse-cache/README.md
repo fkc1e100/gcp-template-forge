@@ -78,7 +78,7 @@ This template demonstrates how to achieve high-performance model loading on GKE 
 1.  **Apply Infrastructure**:
     ```bash
     # Update project-id in config-connector/cluster.yaml if necessary
-    # (Default is gca-gke-2025)
+    # (Default is <PROJECT_ID>)
     kubectl apply -f config-connector/
     ```
 
