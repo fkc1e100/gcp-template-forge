@@ -29,6 +29,7 @@ spec:
     - podSelector:
         matchLabels:
           {{- include "workload.selectorLabels" . | nindent 10 }}
+          client: vllm
     ports:
     - protocol: TCP
       port: 8000

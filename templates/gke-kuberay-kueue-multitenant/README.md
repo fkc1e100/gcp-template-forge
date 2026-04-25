@@ -50,6 +50,8 @@ The Helm chart in `workload/` installs everything needed: operators, namespaces,
 
 This path uses Google Cloud Config Connector (KCC) to manage GCP resources as Kubernetes objects.
 
+> **Note on High Availability**: For CI optimization and quota management, the KCC `ContainerCluster` manifest uses `initialNodeCount: 1` and is restricted to a single zone. For production deployments, you should increase `initialNodeCount` to 3 and expand `nodeLocations` across multiple zones to ensure High Availability (HA).
+
 ```bash
 # Update <PROJECT_ID> and <REGION> placeholders in config-connector/*.yaml
 

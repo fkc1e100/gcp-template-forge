@@ -20,6 +20,7 @@ output "cluster_name" {
 output "cluster_endpoint" {
   description = "The IP address of the GKE cluster master"
   value       = google_container_cluster.gke_kuberay_kueue_multitenant_cluster.endpoint
+  sensitive   = true
 }
 
 output "cluster_location" {

@@ -140,7 +140,7 @@ spec:
         - sh
         - -c
         args:
-        - "BUCKET_NAME=\"<BUCKET_NAME>\"\nif [ \"$BUCKET_NAME\" = \"<BUCKET_NAME>\" ] || [ \"$BUCKET_NAME\" = \"\" ]; then\n    echo \"ERROR: You must replace <BUCKET_NAME> in the Job manifest before applying.\"\n    exit 1\nfi\nset -e\necho \"Staging dummy model files...\"\nmkdir -p /tmp/models/facebook/opt-125m\necho '{\"model_type\": \"opt\"}' > /tmp/models/facebook/opt-125m/config.json\necho \"Uploading dummy model to gs://${BUCKET_NAME}/facebook/opt-125m/...\"\ngcloud storage cp -r /tmp/models/facebook/opt-125m \"gs://${BUCKET_NAME}/facebook/\"\necho \"Upload complete.\"\n"
+        - "set -e\nBUCKET_NAME=\"<BUCKET_NAME>\"\nif [ \"$BUCKET_NAME\" = \"<BUCKET_NAME>\" ] || [ \"$BUCKET_NAME\" = \"\" ]; then\n    echo \"ERROR: You must replace <BUCKET_NAME> in the Job manifest before applying.\"\n    exit 1\nfi\necho \"Staging dummy model files...\"\nmkdir -p /tmp/models/facebook/opt-125m\necho '{\"model_type\": \"opt\"}' > /tmp/models/facebook/opt-125m/config.json\necho \"Uploading dummy model to gs://${BUCKET_NAME}/facebook/opt-125m/...\"\ngcloud storage cp -r /tmp/models/facebook/opt-125m \"gs://${BUCKET_NAME}/facebook/\"\necho \"Upload complete.\"\n"
       restartPolicy: OnFailure
       nodeSelector:
         gpu: l4
@@ -225,6 +225,7 @@ spec:
     - podSelector:
         matchLabels:
           template: gke-inference-fuse-cache
+          client: vllm
     ports:
     - protocol: TCP
       port: 8000
