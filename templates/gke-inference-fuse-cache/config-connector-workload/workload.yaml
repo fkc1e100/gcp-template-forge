@@ -3,6 +3,8 @@ kind: ServiceAccount
 metadata:
   name: gke-inf-fuse-cache-sa
   namespace: default
+  annotations:
+    iam.gke.io/gcp-service-account: gke-inf-fuse-workload@<PROJECT_ID>.iam.gserviceaccount.com # UPDATE: Replace with your project ID
   labels:
     project: gcp-template-forge
     template: gke-inference-fuse-cache

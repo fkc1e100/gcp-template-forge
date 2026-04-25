@@ -43,6 +43,11 @@ tolerations:
     operator: "Exists"
     effect: "NoSchedule"
 
+stager:
+  nodeSelector:
+    pool: system
+  tolerations: []
+
 serviceAccount:
   create: true
   name: gke-inf-fuse-cache-sa
