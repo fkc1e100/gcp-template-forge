@@ -168,7 +168,8 @@ jobs:
         run: |
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
-          find "${{ matrix.template }}"/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename "${{ matrix.template }}")/$(basename "${{ matrix.template }}")-${UID_SUFFIX}/g" {} +
+          chmod +x agent-infra/prepare-manifests.sh
+          ./agent-infra/prepare-manifests.sh "${{ matrix.template }}" "${UID_SUFFIX}"
           kubectl apply -n "$KCC_NAMESPACE" -f "${{ matrix.template }}/config-connector/"
       - name: Wait for KCC resources Ready
         run: |
@@ -241,7 +242,8 @@ jobs:
         run: |
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
-          find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
+          chmod +x agent-infra/prepare-manifests.sh
+          ./agent-infra/prepare-manifests.sh "${{ matrix.template }}" "${UID_SUFFIX}"
           kubectl delete -n "$KCC_NAMESPACE" -f "${{ matrix.template }}/config-connector/" --wait=true --timeout=900s || true
 
   cleanup-pr-infra:
@@ -269,7 +271,8 @@ jobs:
         run: |
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
-          find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
+          chmod +x agent-infra/prepare-manifests.sh
+          ./agent-infra/prepare-manifests.sh "${{ matrix.template }}" "${UID_SUFFIX}"
           kubectl delete -n $KCC_NAMESPACE -f ${{ matrix.template }}/config-connector/ --ignore-not-found --wait=false || true
 
   validate-kcc:
@@ -314,7 +317,8 @@ jobs:
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
           echo "KCC_START=$(date -u +%s)" >> $GITHUB_ENV
-          find "${{ matrix.template }}"/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename "${{ matrix.template }}")/$(basename "${{ matrix.template }}")-${UID_SUFFIX}/g" {} +
+          chmod +x agent-infra/prepare-manifests.sh
+          ./agent-infra/prepare-manifests.sh "${{ matrix.template }}" "${UID_SUFFIX}"
           kubectl apply -n "$KCC_NAMESPACE" -f "${{ matrix.template }}/config-connector/"
       - name: Wait Ready
         id: kcc-wait

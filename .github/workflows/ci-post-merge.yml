@@ -207,7 +207,8 @@ jobs:
           UID_SUFFIX="${RUN_ID: -6}"
           TEMPLATE="${{ matrix.template }}"
           BASE_NAME=$(basename "$TEMPLATE")
-          find "${TEMPLATE}"/config-connector* -type f -name "*.yaml" -exec sed -i "s/${BASE_NAME}/${BASE_NAME}-${UID_SUFFIX}/g" {} +
+          chmod +x agent-infra/prepare-manifests.sh
+          ./agent-infra/prepare-manifests.sh "${TEMPLATE}" "${UID_SUFFIX}"
           kubectl apply -n "$KCC_NAMESPACE" -f "${TEMPLATE}/config-connector/"
           kubectl wait -n "$KCC_NAMESPACE" --for=condition=Ready --all --timeout=5400s -f "${TEMPLATE}/config-connector/"
           KCC_DURATION=$(( $(date -u +%s) - KCC_START ))
