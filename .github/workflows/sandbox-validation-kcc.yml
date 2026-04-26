@@ -200,10 +200,10 @@ jobs:
         run: |
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
-          BASE_NAME=$(basename ${{ matrix.template }})
-          CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=${BASE_NAME}-${UID_SUFFIX} -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || echo "")
+          BASE_NAME=$(basename "${{ matrix.template }}")
+          CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n "$KCC_NAMESPACE" -l "template=${BASE_NAME}-${UID_SUFFIX}" -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || echo "")
           if [ -n "$CLUSTER_NAME" ]; then
-            LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n $KCC_NAMESPACE -l template=${BASE_NAME}-${UID_SUFFIX} -o jsonpath='{.items[0].spec.location}')
+            LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n "$KCC_NAMESPACE" -l "template=${BASE_NAME}-${UID_SUFFIX}" -o jsonpath='{.items[0].spec.location}')
             gcloud container clusters get-credentials "$CLUSTER_NAME" --region "$LOCATION" --project ${{ env.PROJECT_ID }}
             kubectl get nodes
             if [ -f "${{ matrix.template }}/validate.sh" ]; then
@@ -241,7 +241,7 @@ jobs:
         run: |
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
-          find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
+          find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename "${{ matrix.template }}")/$(basename "${{ matrix.template }}")-${UID_SUFFIX}/g" {} +
           kubectl delete -n "$KCC_NAMESPACE" -f "${{ matrix.template }}/config-connector/" --wait=true --timeout=900s || true
 
   cleanup-pr-infra:
@@ -269,8 +269,8 @@ jobs:
         run: |
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
-          find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename ${{ matrix.template }})/$(basename ${{ matrix.template }})-${UID_SUFFIX}/g" {} +
-          kubectl delete -n $KCC_NAMESPACE -f ${{ matrix.template }}/config-connector/ --ignore-not-found --wait=false || true
+          find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename "${{ matrix.template }}")/$(basename "${{ matrix.template }}")-${UID_SUFFIX}/g" {} +
+          kubectl delete -n "$KCC_NAMESPACE" -f ${{ matrix.template }}/config-connector/ --ignore-not-found --wait=false || true
 
   validate-kcc:
     name: "Post-merge Validate KCC (${{ matrix.template }})"
@@ -290,10 +290,10 @@ jobs:
         id: skip-check
         run: |
           TEMPLATE="${{ matrix.template }}"
-          [ ! -f "$TEMPLATE/.validated" ] && echo "skip=false" >> $GITHUB_OUTPUT && exit 0
+          if [ ! -f "$TEMPLATE/.validated" ]; then echo "skip=false" >> "$GITHUB_OUTPUT"; exit 0; fi
           V_COMMIT=$(grep '^commit:' "$TEMPLATE/.validated" | awk '{print $2}')
           CHANGED=$(git diff --name-only "$V_COMMIT" HEAD -- "$TEMPLATE/" | grep -vE '\.validated$|README\.md$' || true)
-          [ -n "$CHANGED" ] && echo "skip=false" >> $GITHUB_OUTPUT || echo "skip=true" >> $GITHUB_OUTPUT
+          if [ -n "$CHANGED" ]; then echo "skip=false" >> "$GITHUB_OUTPUT"; else echo "skip=true" >> "$GITHUB_OUTPUT"; fi
       - name: Auth
         if: steps.skip-check.outputs.skip != 'true'
         uses: google-github-actions/auth@v2
@@ -313,7 +313,7 @@ jobs:
         run: |
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
-          echo "KCC_START=$(date -u +%s)" >> $GITHUB_ENV
+          echo "KCC_START=$(date -u +%s)" >> "$GITHUB_ENV"
           find "${{ matrix.template }}"/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename "${{ matrix.template }}")/$(basename "${{ matrix.template }}")-${UID_SUFFIX}/g" {} +
           kubectl apply -n "$KCC_NAMESPACE" -f "${{ matrix.template }}/config-connector/"
       - name: Wait Ready
@@ -322,7 +322,7 @@ jobs:
         run: |
           kubectl wait -n "$KCC_NAMESPACE" --for=condition=Ready --all --timeout=1800s -f "${{ matrix.template }}/config-connector/"
           KCC_DURATION=$(( $(date -u +%s) - KCC_START ))
-          echo "kcc_duration=${KCC_DURATION}" >> $GITHUB_OUTPUT
+          echo "kcc_duration=${KCC_DURATION}" >> "$GITHUB_OUTPUT"
       - name: Teardown
         if: always() && steps.kcc-apply.outcome == 'success'
         run: |
@@ -373,10 +373,13 @@ jobs:
           TEMPLATE="${{ matrix.template }}"
           COMMIT=${{ github.sha }}
 
-          KCC_RESULT_FILE=$(ls /tmp/kcc-artifacts/result.json 2>/dev/null | head -1 || true)
+          KCC_RESULT_FILE=""
+          if [ -f "/tmp/kcc-artifacts/result.json" ]; then KCC_RESULT_FILE="/tmp/kcc-artifacts/result.json"; fi
           if [ -n "$KCC_RESULT_FILE" ]; then
-            export THIS_KCC_STATUS=$(python3   -c "import json; d=json.load(open('$KCC_RESULT_FILE')); print(d.get('status',''))")
-            export THIS_KCC_DURATION=$(python3 -c "import json; d=json.load(open('$KCC_RESULT_FILE')); print(d.get('duration',''))")
+            THIS_KCC_STATUS=$(python3   -c "import json; d=json.load(open('$KCC_RESULT_FILE')); print(d.get('status',''))")
+            export THIS_KCC_STATUS
+            THIS_KCC_DURATION=$(python3 -c "import json; d=json.load(open('$KCC_RESULT_FILE')); print(d.get('duration',''))")
+            export THIS_KCC_DURATION
           else
             export THIS_KCC_STATUS="skipped"
             export THIS_KCC_DURATION=""
@@ -410,7 +413,7 @@ jobs:
             KCC_STATUS="$THIS_KCC_STATUS"
             KCC_DURATION="$THIS_KCC_DURATION"
 
-            fmt_duration() { local s=$1; [ -z "$s" ] && echo "n/a" || echo "$((s/60))m $((s%60))s"; }
+            fmt_duration() { local s=$1; if [ -z "$s" ]; then echo "n/a"; else echo "$((s/60))m $((s%60))s"; fi; }
             KCC_DUR=$(fmt_duration "$KCC_DURATION")
             TF_DUR="n/a"
             REGION="us-central1"
@@ -505,7 +508,7 @@ jobs:
             git add "${TEMPLATE}/README.md" "${TEMPLATE}/.validated"
             [ -f "${TEMPLATE}/.agent-metrics-cumulative" ] && git add "${TEMPLATE}/.agent-metrics-cumulative"
             git commit -m "ci: validate KCC ${TEMPLATE} [skip ci]" || true
-            git push && break || sleep 10
+            if git push; then break; else sleep 10; fi
           done
 
   label-failure:
