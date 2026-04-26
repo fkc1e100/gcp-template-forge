@@ -329,6 +329,7 @@ jobs:
     if: always() && (needs.tf-provision.result == 'failure' || needs.tf-test.result == 'failure' || needs.kcc-validation.result == 'failure')
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: Check Retry Count and Label
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

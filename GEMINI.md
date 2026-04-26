@@ -301,6 +301,17 @@ CI failure on PR
 
 **Plan to Fix:** We are tracking this limitation and aim to enable support for `queuedProvisioning` in KCC. Since KCC generates code from the Terraform provider, this requires updating the vendored `terraform-provider-google-beta` in the KCC repository or adding manual support. We will create an issue on the KCC repo to outline this requirement once we have a clear path forward.
 
+## KCC Resource Development Strategy (All KCC Issues)
+When working on KCC issues that require adding fields or resources not currently supported by Config Connector:
+1.  **MockGCP First:** The agent MUST prioritize adding unit tests using the **MockGCP** framework (as detailed in KCC docs `1-add-mockgcp-tests.md`). This allows validating the controller logic without needing real GCP APIs or clusters.
+2.  **Namespace Isolation for Integration Testing:** For end-to-end testing against a real cluster:
+    -   Do NOT spin up a new cluster.
+    -   Instead, deploy the custom-built KCC controller to a **dedicated test namespace** on the existing KCC Management Cluster (`krmapihost-kcc-instance`).
+    -   Ensure it runs in **Namespaced Mode** and is strictly scoped to that test namespace to avoid interfering with the production KCC instance.
+3.  **Upstream Reporting:** If the MockGCP tests and integration tests pass successfully in the sandbox, the agent MUST use the `gh` CLI to **create a new issue in the `GoogleCloudPlatform/k8s-config-connector` repository** reporting the success.
+    -   **Title:** `[Contribution] Add support for X field/resource` (replace X with the actual feature).
+    -   **Body:** Provide a detailed summary of the code changes made, the passing test results, and offer to open a Pull Request with the solution.
+
 ## AI Model Staging Pattern
 **Do not force Helm to wait for massive model downloads.** For AI workloads (like vLLM) that download 10GB+ weights from Hugging Face into a GCS bucket, the `Deployment` will fail its readiness probe and cause `helm upgrade` to timeout.
 *   **The Standard Pattern:** Deploy a Kubernetes `Job` *first* to stage the model weights to the bucket. The actual `Deployment` (e.g., vLLM) must use an init-container that simply waits for the `Job` to complete before starting the vLLM server. This decouples the slow download from the workload's readiness probe, preventing Helm from timing out.
