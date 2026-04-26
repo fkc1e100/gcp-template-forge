@@ -504,7 +504,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.CODEBOT_PAT }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
       - name: Download TF results artifact
@@ -517,7 +517,7 @@ jobs:
 
       - name: Update README and mark validated (with retry)
         env:
-          GITHUB_TOKEN: ${{ secrets.CODEBOT_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -e
           TEMPLATE="${{ matrix.template }}"
@@ -698,4 +698,4 @@ PYEOF
              gh pr checks $PR_NUM
           fi
         env:
-          GITHUB_TOKEN: ${{ secrets.CODEBOT_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
