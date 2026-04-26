@@ -86,9 +86,17 @@ jobs:
           template_name=$(basename "$template")
           echo "--- Checking structure of $template_name ---"
           MISSING=""
-          [ ! -d "${template}/terraform-helm" ] && MISSING="${MISSING} terraform-helm/"
+          # Require terraform-helm unless it is a valid KCC template
+          if [ ! -d "${template}/terraform-helm" ]; then
+            if [ ! -d "${template}/config-connector" ] || [ -f "${template}/.kcc-unsupported" ]; then
+              MISSING="${MISSING} terraform-helm/"
+            fi
+          fi
+          # Require config-connector unless it is unsupported
           if [ ! -f "${template}/.kcc-unsupported" ]; then
-            [ ! -d "${template}/config-connector" ] && MISSING="${MISSING} config-connector/"
+            if [ ! -d "${template}/config-connector" ]; then
+              MISSING="${MISSING} config-connector/"
+            fi
           fi
           if [ -n "$MISSING" ]; then
             echo "ERROR: Template '${template_name}' is missing required directories:${MISSING}"
