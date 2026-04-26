@@ -514,6 +514,7 @@ PYEOF
     if: always() && github.event_name == 'pull_request' && (needs.kcc-test.result == 'failure' || needs.lint.result == 'failure')
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: Add label
         run: gh pr edit ${{ github.event.number }} --add-label "repo-agent" --repo ${{ github.repository }}
         env:
