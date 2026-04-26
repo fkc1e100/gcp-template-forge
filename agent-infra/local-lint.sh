@@ -38,9 +38,13 @@ echo "$TEMPLATES" | while read -r template; do
   
   echo "--- Checking structure of $template_name ---"
   MISSING=""
-  [ ! -d "${template}/terraform-helm" ] && MISSING="${MISSING} terraform-helm/"
-  if [ ! -f "${template}/.kcc-unsupported" ]; then
-    [ ! -d "${template}/config-connector" ] && MISSING="${MISSING} config-connector/"
+  if [ "$LINT_MODE" == "TF" ] || [ -z "$LINT_MODE" ]; then
+    [ ! -d "${template}/terraform-helm" ] && MISSING="${MISSING} terraform-helm/"
+  fi
+  if [ "$LINT_MODE" == "KCC" ] || [ -z "$LINT_MODE" ]; then
+    if [ ! -f "${template}/.kcc-unsupported" ]; then
+      [ ! -d "${template}/config-connector" ] && MISSING="${MISSING} config-connector/"
+    fi
   fi
   if [ -n "$MISSING" ]; then
     echo "ERROR: Template '${template_name}' is missing required directories:${MISSING}"
