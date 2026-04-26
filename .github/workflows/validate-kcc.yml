@@ -36,17 +36,17 @@ permissions:
   actions: write
 
 env:
-  PROJECT_ID: gca-gke-2025
+  PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
   KCC_CLUSTER: krmapihost-kcc-instance
   KCC_REGION: us-central1
   KCC_NAMESPACE: forge-management
-  WIF_PROVIDER: projects/764460891170/locations/global/workloadIdentityPools/github-actions/providers/github
-  WIF_SERVICE_ACCOUNT: forge-builder@gca-gke-2025.iam.gserviceaccount.com
-  TF_STATE_BUCKET: gke-gca-2025-forge-tf-state
+  WIF_PROVIDER: ${{ vars.GCP_WIF_PROVIDER }}
+  WIF_SERVICE_ACCOUNT: ${{ vars.GCP_CI_SERVICE_ACCOUNT }}
+  TF_STATE_BUCKET: ${{ vars.GCP_TF_STATE_BUCKET }}
   USE_GKE_GCLOUD_AUTH_PLUGIN: "True"
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-  TF_VAR_project_id: gca-gke-2025
-  TF_VAR_service_account: forge-builder@gca-gke-2025.iam.gserviceaccount.com
+  TF_VAR_project_id: ${{ vars.GCP_PROJECT_ID }}
+  TF_VAR_service_account: ${{ vars.GCP_CI_SERVICE_ACCOUNT }}
 
 jobs:
   detect-changes:
@@ -143,7 +143,8 @@ jobs:
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
           TEMPLATE="${{ matrix.template }}"
-          BASE_NAME=$(basename "$TEMPLATE")
+          BASE_NAME=$(python3 -c "import yaml; print(yaml.safe_load(open('${TEMPLATE}/template.yaml')).get('shortName', ''))" 2>/dev/null)
+          [ -z "$BASE_NAME" ] && BASE_NAME=$(basename "$TEMPLATE")
           find "${TEMPLATE}"/config-connector* -type f -name "*.yaml" -exec sed -i "s/${BASE_NAME}/${BASE_NAME}-${UID_SUFFIX}/g" {} +
           kubectl apply -n "$KCC_NAMESPACE" -f "${TEMPLATE}/config-connector/"
           kubectl wait -n "$KCC_NAMESPACE" --for=condition=Ready --all --timeout=5400s -f "${TEMPLATE}/config-connector/"

@@ -68,75 +68,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  lint-template-static:
-    name: "Static (${{ matrix.template }})"
+  lint:
+    name: "Lint TF (${{ matrix.template }})"
     needs: detect-changes
-    if: needs.detect-changes.outputs.has_templates == 'true'
+    if: needs.detect-changes.outputs.has_tf_templates == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    strategy:
-      fail-fast: true
-      matrix:
-        template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Structure and Mandate Check
-        run: |
-          template="${{ matrix.template }}"
-          template_name=$(basename "$template")
-          echo "--- Checking structure of $template_name ---"
-          MISSING=""
-          [ ! -d "${template}/terraform-helm" ] && MISSING="${MISSING} terraform-helm/"
-          if [ ! -f "${template}/.kcc-unsupported" ]; then
-            [ ! -d "${template}/config-connector" ] && MISSING="${MISSING} config-connector/"
-          fi
-          if [ -n "$MISSING" ]; then
-            echo "ERROR: Template '${template_name}' is missing required directories:${MISSING}"
-            exit 1
-          fi
-          
-          # 2. YAML check (plain)
-          python3 -c "
-          import yaml, sys, pathlib
-          errors = []
-          target = '${template}'
-          for p in pathlib.Path(target).rglob('*.yaml'):
-              if '.terraform' in str(p): continue
-              if 'templates' in str(p) and 'workload' in str(p): continue # skip helm
-              try:
-                  with open(p, 'r') as f: list(yaml.safe_load_all(f))
-              except Exception as e: errors.append(f'{p}: {e}')
-          if errors:
-              for e in errors: print(e)
-              sys.exit(1)
-          "
-          
-          # 3. Deletion Protection / Abandon / Lifecycle Mandates
-          if [ -d "${template}/terraform-helm" ]; then
-            if grep -r 'google_container_cluster' ${template}/terraform-helm/ >/dev/null 2>&1; then
-              if ! grep -r 'deletion_protection.*=.*false' ${template}/terraform-helm/ >/dev/null 2>&1; then
-                echo "ERROR: google_container_cluster missing deletion_protection = false"
-                exit 1
-              fi
-            fi
-            if grep -r 'prevent_destroy\s*=\s*true' ${template}/terraform-helm/ >/dev/null 2>&1; then
-              echo "ERROR: lifecycle prevent_destroy = true found"
-              exit 1
-            fi
-          fi
-          if [ -d "${template}/config-connector" ]; then
-            if grep -r 'deletion-policy.*abandon' ${template}/config-connector/ >/dev/null 2>&1; then
-              echo "ERROR: cnrm.cloud.google.com/deletion-policy: abandon found"
-              exit 1
-            fi
-          fi
-
-  lint-template-terraform:
-    name: "TF Lint (${{ matrix.template }})"
-    needs: detect-changes
-    if: needs.detect-changes.outputs.has_templates == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
     strategy:
       fail-fast: true
       matrix:
@@ -145,37 +82,14 @@ jobs:
       - uses: actions/checkout@v4
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: "1.7.0"
-      - name: TF Fmt & Validate
-        working-directory: ${{ matrix.template }}/terraform-helm
+      - name: Set up Helm
+        run: curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+      - name: Run Thorough Linting
+        env:
+          LINT_MODE: TF
         run: |
-          terraform init -backend=false
-          terraform fmt -check
-          terraform validate
-
-  lint-template-helm:
-    name: "Helm Lint (${{ matrix.template }})"
-    needs: detect-changes
-    if: needs.detect-changes.outputs.has_templates == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    strategy:
-      fail-fast: true
-      matrix:
-        template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Helm Lint and Template
-        run: |
-          CHARTS=$(find ${{ matrix.template }}/terraform-helm -name Chart.yaml -exec dirname {} \; 2>/dev/null)
-          for chart in $CHARTS; do
-            echo "--- Linting $chart ---"
-            helm lint "$chart"
-            helm template release "$chart" > /tmp/rendered.yaml
-            # Basic YAML parse of rendered output
-            python3 -c "import yaml; list(yaml.safe_load_all(open('/tmp/rendered.yaml')))"
-          done
+          chmod +x agent-infra/local-lint.sh
+          ./agent-infra/local-lint.sh "${{ matrix.template }}"
 
   pre-cleanup:
     name: Quota Cleanup
