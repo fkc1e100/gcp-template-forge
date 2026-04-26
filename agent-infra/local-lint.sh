@@ -44,10 +44,26 @@ echo "$TEMPLATES" | while read -r template; do
   if [ "$LINT_MODE" == "KCC" ] || [ -z "$LINT_MODE" ]; then
     if [ ! -f "${template}/.kcc-unsupported" ]; then
       [ ! -d "${template}/config-connector" ] && MISSING="${MISSING} config-connector/"
+      [ ! -d "${template}/config-connector-workload" ] && MISSING="${MISSING} config-connector-workload/"
     fi
   fi
   if [ -n "$MISSING" ]; then
     echo "ERROR: Template '${template_name}' is missing required directories:${MISSING}"
+    exit 1
+  fi
+
+  # Portability & Standardization Guard Agent: Verify template.yaml and shortName
+  if [ ! -f "${template}/template.yaml" ]; then
+    echo "ERROR: Template '${template_name}' is missing template.yaml"
+    exit 1
+  fi
+  SHORT_NAME=$(grep "shortName:" "${template}/template.yaml" | awk '{print $2}' | tr -d '"'\''')
+  if [ -z "$SHORT_NAME" ]; then
+    echo "ERROR: Template '${template_name}' template.yaml is missing shortName"
+    exit 1
+  fi
+  if [ ${#SHORT_NAME} -gt 20 ]; then
+    echo "ERROR: Template '${template_name}' shortName '${SHORT_NAME}' exceeds 20 characters limit"
     exit 1
   fi
 

@@ -104,6 +104,19 @@ spec:
     maxSandboxes: 3
     maxActiveSandboxes: 3
     reviewShutdownAfterMinutes: 30
+    handlers:
+    - name: portability-guard
+      labels: [repo-agent]
+      taskType: review-pr
+      prompt: |
+        You are the Portability & Standardization Guard Agent.
+        Review this PR to ensure compliance with the Engineering Mandates.
+        You MUST verify:
+        1. Functional parity: The PR must not introduce features in terraform-helm/ without equivalent KCC manifests in config-connector/ (unless explicitly skipped).
+        2. Workload manifests: If KCC is present, the config-connector-workload/ directory MUST contain all necessary Kubernetes manifests.
+        3. README.md: The README must provide comprehensive deployment and verification instructions for BOTH paths.
+        4. Template Metadata: A template.yaml file MUST exist with a shortName (at most 20 characters).
+        If any mandate is violated, leave a comment requesting changes and DO NOT approve the PR.
 ```
 
 **Important fields:**
