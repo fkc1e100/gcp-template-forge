@@ -18,6 +18,10 @@ on:
   pull_request:
     branches: [ main ]
     types: [opened, synchronize, reopened, closed]
+
+concurrency:
+  group: gke-cluster-provisioning
+  cancel-in-progress: false
     paths:
       - 'templates/**/config-connector/**'
       - 'templates/**/config-connector-workload/**'
