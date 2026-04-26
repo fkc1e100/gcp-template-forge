@@ -38,6 +38,16 @@ If the dashboard is inaccessible from specific devices or networks:
         *   Specific sandbox for the `gcp-template-forge` project.
         *   Hosts dynamic PR sandboxes (e.g., `gcp-template-forge-pr-18`).
 
+### 3. Dashboard Cluster (kcc-dash-dont-delete)
+*   **Context:** `gke_gca-gke-2025_us-central1_kcc-dash-dont-delete`
+*   **Role:** Runs specific components of the Repo-Agent platform, including Redis and the GitHub MCP server.
+*   **Key Components:**
+    *   **Namespace `repo-agent-system`:**
+        *   `redis-0`: In-memory data store.
+        *   `github-mcp-server`: Model Context Protocol server.
+        *   `pr-review-api`: API for PR reviews.
+        *   `pr-review-ui`: UI for PR reviews.
+
 ## Workload Flow
 1.  **Overseer CRD:** An `Overseer` resource is created to define a managed repository (e.g., `https://github.com/fkc1e100/gcp-template-forge`).
 2.  **RepoWatch:** The `repowatch-controller` detects the resource and begins monitoring the repository for events (PRs, Issues).
