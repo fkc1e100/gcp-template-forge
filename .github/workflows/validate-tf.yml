@@ -91,28 +91,9 @@ jobs:
           chmod +x agent-infra/local-lint.sh
           ./agent-infra/local-lint.sh "${{ matrix.template }}"
 
-  pre-cleanup:
-    name: Quota Cleanup
-    needs: detect-changes
-    runs-on: ubuntu-latest
-    if: needs.detect-changes.outputs.has_templates == 'true'
-    steps:
-      - uses: actions/checkout@v4
-      - name: Authenticate to GCP
-        uses: google-github-actions/auth@v2
-        with:
-          workload_identity_provider: ${{ env.WIF_PROVIDER }}
-          service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
-      - name: Run Cleanup Script
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          chmod +x agent-infra/cleanup-resources.sh
-          ./agent-infra/cleanup-resources.sh
-
   tf-provision:
     name: TF Provision (${{ matrix.template }})
-    needs: [detect-changes, lint-template-static, lint-template-terraform, lint-template-helm, pre-cleanup]
+    needs: [detect-changes, lint]
     runs-on: ubuntu-latest
     if: needs.detect-changes.outputs.tf_templates != '[]' && needs.detect-changes.outputs.tf_templates != ''
     timeout-minutes: 60
