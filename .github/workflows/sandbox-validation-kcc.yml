@@ -453,7 +453,7 @@ jobs:
                     cumulative['total_cost_usd']       = round(cumulative['total_cost_usd'] + cost, 4)
                     cumulative.setdefault('sessions', []).append({'session_start': session_start, 'input_tokens': int(in_tok), 'output_tokens': int(out_tok or 0), 'estimated_cost_usd': str(cost), 'model': current.get('model', ''), 'counted_at': datetime.datetime.now(datetime.timezone.utc).isoformat()})
                     json.dump(cumulative, open(cumulative_file, 'w'), indent=2)
-ACCUMPY
+            ACCUMPY
 
             # Read cumulative totals
             eval "$(python3 - "$TEMPLATE" << 'READPY'
@@ -466,7 +466,7 @@ ACCUMPY
                 print(f'INPUT_TOKENS="{in_t:,}"'); print(f'OUTPUT_TOKENS="{out_t:,}"'); print(f'AGENT_COST="{cost}"'); print(f'SESSION_SUFFIX=" ({n} session{"s" if n != 1 else ""})"')
             else:
                 print('INPUT_TOKENS=""'); print('OUTPUT_TOKENS=""'); print('AGENT_COST=""'); print('SESSION_SUFFIX=""')
-READPY
+            READPY
             )"
             TOKEN_STR="${INPUT_TOKENS:+${INPUT_TOKENS} in / ${OUTPUT_TOKENS} out${SESSION_SUFFIX}}"
             COST_STR="${AGENT_COST:+\$${AGENT_COST}}"
@@ -496,7 +496,7 @@ READPY
             lines.append("")
             with open(readme, "a") as f:
                 f.write("\n".join(lines) + "\n")
-PYEOF
+            PYEOF
 
             printf "validated_at: %s\ncommit: %s\ntf_helm: %s\nkcc: %s\n" \
               "$TIMESTAMP" "$COMMIT" "$TF_STATUS" "$KCC_STATUS" \
