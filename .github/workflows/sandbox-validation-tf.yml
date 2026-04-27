@@ -128,7 +128,7 @@ jobs:
 
       - name: Helm template (render + validate YAML)
         run: |
-          CHARTS=$(find ${{ matrix.template }}/terraform-helm -name Chart.yaml -exec dirname {} \; 2>/dev/null)
+          CHARTS=$(find "${{ matrix.template }}/terraform-helm" -name Chart.yaml -exec dirname {} \; 2>/dev/null)
           if [ -z "$CHARTS" ]; then exit 0; fi
           for chart in $CHARTS; do
             echo "=== helm template: $chart ==="
@@ -215,7 +215,7 @@ jobs:
           if [[ "$TEMPLATE_PATH" == *"gke-inference-fuse-cache"* ]]; then
             BASE_NAME="gke-inf-fuse-cache"
           fi
-          echo "TF_START=$(date -u +%s)" >> $GITHUB_ENV
+          echo "TF_START=$(date -u +%s)" >> "$GITHUB_ENV"
           export TF_VAR_cluster_name="${BASE_NAME}-${UID_SUFFIX}-tf"
           export TF_VAR_network_name="${BASE_NAME}-${UID_SUFFIX}-tf-vpc"
           export TF_VAR_subnet_name="${BASE_NAME}-${UID_SUFFIX}-tf-subnet"
@@ -227,11 +227,11 @@ jobs:
         working-directory: ${{ matrix.template }}/terraform-helm
         run: |
           TF_DURATION=$(( $(date -u +%s) - TF_START ))
-          echo "tf_duration=${TF_DURATION}" >> $GITHUB_OUTPUT
+          echo "tf_duration=${TF_DURATION}" >> "$GITHUB_OUTPUT"
           CLUSTER=$(terraform output -raw cluster_name 2>/dev/null || echo "")
           LOCATION=$(terraform output -raw cluster_location 2>/dev/null || echo "")
-          echo "tf_cluster=${CLUSTER}" >> $GITHUB_OUTPUT
-          echo "tf_location=${LOCATION}" >> $GITHUB_OUTPUT
+          echo "tf_cluster=${CLUSTER}" >> "$GITHUB_OUTPUT"
+          echo "tf_location=${LOCATION}" >> "$GITHUB_OUTPUT"
 
   tf-test:
     name: "Test TF (${{ matrix.template }})"
@@ -264,20 +264,21 @@ jobs:
         run: kubectl get nodes
       - name: Helm deploy and verify
         run: |
-          CHARTS=$(find ${{ matrix.template }}/terraform-helm -name Chart.yaml -exec dirname {} \; 2>/dev/null)
+          CHARTS=$(find "${{ matrix.template }}/terraform-helm" -name Chart.yaml -exec dirname {} \; 2>/dev/null)
           if [ -z "$CHARTS" ]; then exit 0; fi
           TIMEOUT="60m"
-          [ -f "${{ matrix.template }}/.timeout" ] && TIMEOUT=$(cat ${{ matrix.template }}/.timeout)
+          if [ -f "${{ matrix.template }}/.timeout" ]; then TIMEOUT=$(cat "${{ matrix.template }}/.timeout"); fi
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
-          EXTRA_ARGS=""
-          if [[ "${{ matrix.template }}" == *"gke-inference-fuse-cache"* ]]; then
+          EXTRA_ARGS=()
+          TEMPLATE_PATH="${{ matrix.template }}"
+          if [[ "$TEMPLATE_PATH" == *"gke-inference-fuse-cache"* ]]; then
             BUCKET_NAME="gke-inf-fuse-cache-tf-${UID_SUFFIX}-bucket"
             KSA_NAME="gke-inf-fuse-cache-${UID_SUFFIX}-sa"
-            EXTRA_ARGS="--set templateName=gke-inf-fuse-cache-${UID_SUFFIX} --set bucketName=${BUCKET_NAME} --set serviceAccount.name=${KSA_NAME}"
+            EXTRA_ARGS=(--set "templateName=gke-inf-fuse-cache-${UID_SUFFIX}" --set "bucketName=${BUCKET_NAME}" --set "serviceAccount.name=${KSA_NAME}")
           fi
           for chart in $CHARTS; do
-            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT" ${EXTRA_ARGS}
+            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT" "${EXTRA_ARGS[@]}"
           done
           if [ -f "${{ matrix.template }}/validate.sh" ]; then
             export CLUSTER_NAME="${BASE_NAME}-${UID_SUFFIX}-tf"
@@ -404,10 +405,10 @@ jobs:
         id: skip-check
         run: |
           TEMPLATE="${{ matrix.template }}"
-          [ ! -f "$TEMPLATE/.validated" ] && echo "skip=false" >> $GITHUB_OUTPUT && exit 0
+          if [ ! -f "$TEMPLATE/.validated" ]; then echo "skip=false" >> "$GITHUB_OUTPUT"; exit 0; fi
           V_COMMIT=$(grep '^commit:' "$TEMPLATE/.validated" | awk '{print $2}')
           CHANGED=$(git diff --name-only "$V_COMMIT" HEAD -- "$TEMPLATE/" | grep -vE '\.validated$|README\.md$' || true)
-          [ -n "$CHANGED" ] && echo "skip=false" >> $GITHUB_OUTPUT || echo "skip=true" >> $GITHUB_OUTPUT
+          if [ -n "$CHANGED" ]; then echo "skip=false" >> "$GITHUB_OUTPUT"; else echo "skip=true" >> "$GITHUB_OUTPUT"; fi
       - name: Auth
         if: steps.skip-check.outputs.skip != 'true'
         uses: google-github-actions/auth@v2
@@ -429,7 +430,7 @@ jobs:
           if [[ "$TEMPLATE_PATH" == *"gke-inference-fuse-cache"* ]]; then
             BASE_NAME="gke-inf-fuse-cache"
           fi
-          echo "TF_START=$(date -u +%s)" >> $GITHUB_ENV
+          echo "TF_START=$(date -u +%s)" >> "$GITHUB_ENV"
           export TF_VAR_cluster_name="${BASE_NAME}-${UID_SUFFIX}-tf"
           export TF_VAR_network_name="${BASE_NAME}-${UID_SUFFIX}-tf-vpc"
           export TF_VAR_subnet_name="${BASE_NAME}-${UID_SUFFIX}-tf-subnet"
@@ -442,11 +443,11 @@ jobs:
         working-directory: ${{ matrix.template }}/terraform-helm
         run: |
           TF_DURATION=$(( $(date -u +%s) - TF_START ))
-          echo "tf_duration=${TF_DURATION}" >> $GITHUB_OUTPUT
+          echo "tf_duration=${TF_DURATION}" >> "$GITHUB_OUTPUT"
           CLUSTER=$(terraform output -raw cluster_name 2>/dev/null || echo "")
           LOCATION=$(terraform output -raw cluster_location 2>/dev/null || echo "")
-          echo "tf_cluster=${CLUSTER}" >> $GITHUB_OUTPUT
-          echo "tf_location=${LOCATION}" >> $GITHUB_OUTPUT
+          echo "tf_cluster=${CLUSTER}" >> "$GITHUB_OUTPUT"
+          echo "tf_location=${LOCATION}" >> "$GITHUB_OUTPUT"
       - name: Get credentials
         if: steps.tf-outputs.outputs.tf_cluster != ''
         uses: google-github-actions/get-gke-credentials@v2
@@ -457,7 +458,7 @@ jobs:
       - name: Helm and validate
         if: steps.tf-outputs.outputs.tf_cluster != ''
         run: |
-          CHARTS=$(find ${{ matrix.template }}/terraform-helm -name Chart.yaml -exec dirname {} \; 2>/dev/null)
+          CHARTS=$(find "${{ matrix.template }}/terraform-helm" -name Chart.yaml -exec dirname {} \; 2>/dev/null)
           for chart in $CHARTS; do
             helm upgrade --install release "$chart" --wait --timeout=60m
           done
@@ -479,10 +480,10 @@ jobs:
           mkdir -p /tmp/tf-results
           cat > /tmp/tf-results/result.json << 'EOF'
           {
-            "status":   "${{ steps.tf-apply.outcome == 'success' && 'success' || 'failure' }}",
-            "duration": "${{ steps.tf-outputs.outputs.tf_duration || '' }}",
-            "cluster":  "${{ steps.tf-outputs.outputs.tf_cluster  || '' }}",
-            "location": "${{ steps.tf-outputs.outputs.tf_location || '' }}"
+          "status":   "${{ steps.tf-apply.outcome == 'success' && 'success' || 'failure' }}",
+          "duration": "${{ steps.tf-outputs.outputs.tf_duration || '' }}",
+          "cluster":  "${{ steps.tf-outputs.outputs.tf_cluster  || '' }}",
+          "location": "${{ steps.tf-outputs.outputs.tf_location || '' }}"
           }
           EOF
       - name: Upload results
@@ -504,7 +505,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.CODEBOT_PAT }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
       - name: Download TF results artifact
@@ -517,20 +518,26 @@ jobs:
 
       - name: Update README and mark validated (with retry)
         env:
-          GITHUB_TOKEN: ${{ secrets.CODEBOT_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -e
           TEMPLATE="${{ matrix.template }}"
           COMMIT=${{ github.sha }}
           
           # Prepare results from this run
-          TF_RESULT_FILE=$(ls /tmp/tf-artifacts/result.json 2>/dev/null | head -1 || true)
+          TF_RESULT_FILE=""
+          if [ -f "/tmp/tf-artifacts/result.json" ]; then TF_RESULT_FILE="/tmp/tf-artifacts/result.json"; fi
           if [ -n "$TF_RESULT_FILE" ]; then
-            export THIS_TF_STATUS=$(python3  -c "import json; d=json.load(open('$TF_RESULT_FILE')); print(d.get('status',''))")
-            export THIS_TF_DURATION=$(python3 -c "import json; d=json.load(open('$TF_RESULT_FILE')); print(d.get('duration',''))")
-            export THIS_TF_CLUSTER=$(python3  -c "import json; d=json.load(open('$TF_RESULT_FILE')); print(d.get('cluster',''))")
-            export THIS_TF_LOCATION=$(python3 -c "import json; d=json.load(open('$TF_RESULT_FILE')); print(d.get('location',''))")
-            export THIS_TF_ZONES=$(python3    -c "import json; d=json.load(open('$TF_RESULT_FILE')); print(d.get('zones',''))")
+            THIS_TF_STATUS=$(python3  -c "import json; d=json.load(open('$TF_RESULT_FILE')); print(d.get('status',''))")
+            export THIS_TF_STATUS
+            THIS_TF_DURATION=$(python3 -c "import json; d=json.load(open('$TF_RESULT_FILE')); print(d.get('duration',''))")
+            export THIS_TF_DURATION
+            THIS_TF_CLUSTER=$(python3  -c "import json; d=json.load(open('$TF_RESULT_FILE')); print(d.get('cluster',''))")
+            export THIS_TF_CLUSTER
+            THIS_TF_LOCATION=$(python3 -c "import json; d=json.load(open('$TF_RESULT_FILE')); print(d.get('location',''))")
+            export THIS_TF_LOCATION
+            THIS_TF_ZONES=$(python3    -c "import json; d=json.load(open('$TF_RESULT_FILE')); print(d.get('zones',''))")
+            export THIS_TF_ZONES
           else
             export THIS_TF_STATUS="skipped"
             export THIS_TF_DURATION=""; export THIS_TF_CLUSTER=""; export THIS_TF_LOCATION=""; export THIS_TF_ZONES=""
@@ -567,7 +574,7 @@ jobs:
             TF_LOCATION="$THIS_TF_LOCATION"
             TF_ZONES="$THIS_TF_ZONES"
 
-            fmt_duration() { local s=$1; [ -z "$s" ] && echo "n/a" || echo "$((s/60))m $((s%60))s"; }
+            fmt_duration() { local s=$1; if [ -z "$s" ]; then echo "n/a"; else echo "$((s/60))m $((s%60))s"; fi; }
             TF_DUR=$(fmt_duration "$TF_DURATION")
             KCC_DUR="n/a"
             REGION="${TF_LOCATION:-us-central1}"
@@ -588,43 +595,43 @@ jobs:
 
             # Accumulate metrics
             python3 - "$TEMPLATE" << 'ACCUMPY'
-            import json, os, sys, datetime
-            template = sys.argv[1]
-            metrics_file      = f'{template}/.agent-metrics'
-            cumulative_file   = f'{template}/.agent-metrics-cumulative'
-            current = {}
-            if os.path.exists(metrics_file):
-                try:    current = json.load(open(metrics_file))
-                except: pass
-            cumulative = {'total_input_tokens': 0, 'total_output_tokens': 0, 'total_cost_usd': 0.0, 'sessions': []}
-            if os.path.exists(cumulative_file):
-                try:    cumulative = json.load(open(cumulative_file))
-                except: pass
-            session_start    = current.get('session_start', '')
-            already_counted  = session_start and any(s.get('session_start') == session_start for s in cumulative.get('sessions', []))
-            if session_start and not already_counted:
-                in_tok, out_tok = current.get('input_tokens'), current.get('output_tokens')
-                cost = float(current.get('estimated_cost_usd') or 0)
-                if isinstance(in_tok, (int, float)) and in_tok:
-                    cumulative['total_input_tokens']  += int(in_tok)
-                    cumulative['total_output_tokens'] += int(out_tok or 0)
-                    cumulative['total_cost_usd']       = round(cumulative['total_cost_usd'] + cost, 4)
-                    cumulative.setdefault('sessions', []).append({'session_start': session_start, 'input_tokens': int(in_tok), 'output_tokens': int(out_tok or 0), 'estimated_cost_usd': str(cost), 'model': current.get('model', ''), 'counted_at': datetime.datetime.now(datetime.timezone.utc).isoformat()})
-                    json.dump(cumulative, open(cumulative_file, 'w'), indent=2)
-ACCUMPY
+          import json, os, sys, datetime
+          template = sys.argv[1]
+          metrics_file      = f'{template}/.agent-metrics'
+          cumulative_file   = f'{template}/.agent-metrics-cumulative'
+          current = {}
+          if os.path.exists(metrics_file):
+              try:    current = json.load(open(metrics_file))
+              except: pass
+          cumulative = {'total_input_tokens': 0, 'total_output_tokens': 0, 'total_cost_usd': 0.0, 'sessions': []}
+          if os.path.exists(cumulative_file):
+              try:    cumulative = json.load(open(cumulative_file))
+              except: pass
+          session_start    = current.get('session_start', '')
+          already_counted  = session_start and any(s.get('session_start') == session_start for s in cumulative.get('sessions', []))
+          if session_start and not already_counted:
+              in_tok, out_tok = current.get('input_tokens'), current.get('output_tokens')
+              cost = float(current.get('estimated_cost_usd') or 0)
+              if isinstance(in_tok, (int, float)) and in_tok:
+                  cumulative['total_input_tokens']  += int(in_tok)
+                  cumulative['total_output_tokens'] += int(out_tok or 0)
+                  cumulative['total_cost_usd']       = round(cumulative['total_cost_usd'] + cost, 4)
+                  cumulative.setdefault('sessions', []).append({'session_start': session_start, 'input_tokens': int(in_tok), 'output_tokens': int(out_tok or 0), 'estimated_cost_usd': str(cost), 'model': current.get('model', ''), 'counted_at': datetime.datetime.now(datetime.timezone.utc).isoformat()})
+                  json.dump(cumulative, open(cumulative_file, 'w'), indent=2)
+          ACCUMPY
 
             # Read cumulative totals
             eval "$(python3 - "$TEMPLATE" << 'READPY'
-            import json, os, sys
-            template = sys.argv[1]
-            f = f'{template}/.agent-metrics-cumulative'
-            d = json.load(open(f)) if os.path.exists(f) else {}
-            n, in_t, out_t, cost = len(d.get('sessions', [])), d.get('total_input_tokens', 0), d.get('total_output_tokens', 0), d.get('total_cost_usd', 0.0)
-            if n > 0 and in_t > 0:
-                print(f'INPUT_TOKENS="{in_t:,}"'); print(f'OUTPUT_TOKENS="{out_t:,}"'); print(f'AGENT_COST="{cost}"'); print(f'SESSION_SUFFIX=" ({n} session{"s" if n != 1 else ""})"')
-            else:
-                print('INPUT_TOKENS=""'); print('OUTPUT_TOKENS=""'); print('AGENT_COST=""'); print('SESSION_SUFFIX=""')
-READPY
+          import json, os, sys
+          template = sys.argv[1]
+          f = f'{template}/.agent-metrics-cumulative'
+          d = json.load(open(f)) if os.path.exists(f) else {}
+          n, in_t, out_t, cost = len(d.get('sessions', [])), d.get('total_input_tokens', 0), d.get('total_output_tokens', 0), d.get('total_cost_usd', 0.0)
+          if n > 0 and in_t > 0:
+              print(f'INPUT_TOKENS="{in_t:,}"'); print(f'OUTPUT_TOKENS="{out_t:,}"'); print(f'AGENT_COST="{cost}"'); print(f'SESSION_SUFFIX=" ({n} session{"s" if n != 1 else ""})"')
+          else:
+              print('INPUT_TOKENS=""'); print('OUTPUT_TOKENS=""'); print('AGENT_COST=""'); print('SESSION_SUFFIX=""')
+          READPY
             )"
             TOKEN_STR="${INPUT_TOKENS:+${INPUT_TOKENS} in / ${OUTPUT_TOKENS} out${SESSION_SUFFIX}}"
             COST_STR="${AGENT_COST:+\$${AGENT_COST}}"
@@ -632,29 +639,29 @@ READPY
             python3 - "$README" "$DATE" "$TF_STATUS" "$KCC_STATUS" "$TF_DUR" "$KCC_DUR" \
                 "$REGION" "$ZONES" "${TF_CLUSTER:---}" "${COMMIT:0:8}" \
                 "${TOKEN_STR:-not recorded}" "${COST_STR:--}" << 'PYEOF'
-            import sys
-            readme, date, tf_s, kcc_s, tf_d, kcc_d, region, zones, cluster, commit, tokens, cost = sys.argv[1:]
-            sep = " | "
-            rows = [
-                ("**Status**",         tf_s,      kcc_s),
-                ("**Date**",           date,      date),
-                ("**Duration**",       tf_d,      kcc_d),
-                ("**Region**",         region,    "us-central1 (KCC cluster)"),
-                ("**Zones**",          zones,     "forge-management namespace"),
-                ("**Cluster**",        cluster,   "krmapihost-kcc-instance"),
-                ("**Agent tokens**",   tokens,    "(shared session)"),
-                ("**Estimated cost**", cost,      "--"),
-                ("**Commit**",         commit,    commit),
-            ]
-            header = sep.join(["", "", "Terraform + Helm", "Config Connector", ""]).strip()
-            divider = sep.join(["", "---", "---", "---", ""]).strip()
-            lines = ["\n\n## Validation Record\n", header, divider]
-            for label, tf_val, kcc_val in rows:
-                lines.append(sep.join(["", label, tf_val, kcc_val, ""]).strip())
-            lines.append("")
-            with open(readme, "a") as f:
-                f.write("\n".join(lines) + "\n")
-PYEOF
+          import sys
+          readme, date, tf_s, kcc_s, tf_d, kcc_d, region, zones, cluster, commit, tokens, cost = sys.argv[1:]
+          sep = " | "
+          rows = [
+              ("**Status**",         tf_s,      kcc_s),
+              ("**Date**",           date,      date),
+              ("**Duration**",       tf_d,      kcc_d),
+              ("**Region**",         region,    "us-central1 (KCC cluster)"),
+              ("**Zones**",          zones,     "forge-management namespace"),
+              ("**Cluster**",        cluster,   "krmapihost-kcc-instance"),
+              ("**Agent tokens**",   tokens,    "(shared session)"),
+              ("**Estimated cost**", cost,      "--"),
+              ("**Commit**",         commit,    commit),
+          ]
+          header = sep.join(["", "", "Terraform + Helm", "Config Connector", ""]).strip()
+          divider = sep.join(["", "---", "---", "---", ""]).strip()
+          lines = ["\n\n## Validation Record\n", header, divider]
+          for label, tf_val, kcc_val in rows:
+              lines.append(sep.join(["", label, tf_val, kcc_val, ""]).strip())
+          lines.append("")
+          with open(readme, "a") as f:
+              f.write("\n".join(lines) + "\n")
+          PYEOF
 
             printf "validated_at: %s\ncommit: %s\ntf_helm: %s\nkcc: %s\n" \
               "$TIMESTAMP" "$COMMIT" "$TF_STATUS" "$KCC_STATUS" \
@@ -663,7 +670,7 @@ PYEOF
             git add "${TEMPLATE}/README.md" "${TEMPLATE}/.validated"
             [ -f "${TEMPLATE}/.agent-metrics-cumulative" ] && git add "${TEMPLATE}/.agent-metrics-cumulative"
             git commit -m "ci: validate TF ${TEMPLATE} [skip ci]" || true
-            git push && break || sleep 10
+            if git push; then break; else sleep 10; fi
           done
 
   label-failure:
@@ -698,4 +705,4 @@ PYEOF
              gh pr checks $PR_NUM
           fi
         env:
-          GITHUB_TOKEN: ${{ secrets.CODEBOT_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
