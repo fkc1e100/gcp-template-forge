@@ -72,7 +72,7 @@ resource "google_compute_router_nat" "nat" {
 
 data "google_compute_zones" "available" {
   region = var.region
-  state  = "UP"
+  status = "UP"
 }
 
 locals {
