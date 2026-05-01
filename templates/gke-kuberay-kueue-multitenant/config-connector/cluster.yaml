@@ -1,0 +1,72 @@
+apiVersion: container.cnrm.cloud.google.com/v1beta1
+kind: ContainerCluster
+metadata:
+  name: ray-kueue-kcc-cluster
+  namespace: forge-management
+  labels:
+    project: gcp-template-forge
+    template: ray-kueue-mt
+  annotations:
+    cnrm.cloud.google.com/remove-default-node-pool: "true"
+spec:
+  location: us-central1
+  networkRef:
+    name: ray-kueue-kcc-vpc
+  subnetworkRef:
+    name: ray-kueue-kcc-subnet
+  initialNodeCount: 1
+  workloadIdentityConfig:
+    workloadPool: "gca-gke-2025.svc.id.goog"
+---
+apiVersion: container.cnrm.cloud.google.com/v1beta1
+kind: ContainerNodePool
+metadata:
+  name: ray-kueue-system-pool-2
+  namespace: forge-management
+  labels:
+    project: gcp-template-forge
+    template: ray-kueue-mt
+spec:
+  location: us-central1
+  nodeLocations:
+  - us-central1-a
+  - us-central1-c
+  clusterRef:
+    name: ray-kueue-kcc-cluster
+  nodeCount: 1
+  nodeConfig:
+    machineType: e2-standard-4
+    oauthScopes:
+    - https://www.googleapis.com/auth/cloud-platform
+    labels:
+      project: gcp-template-forge
+---
+apiVersion: container.cnrm.cloud.google.com/v1beta1
+kind: ContainerNodePool
+metadata:
+  name: ray-kueue-gpu-pool-2
+  namespace: forge-management
+  labels:
+    project: gcp-template-forge
+    template: ray-kueue-mt
+spec:
+  location: us-central1
+  nodeLocations:
+  - us-central1-a
+  - us-central1-c
+  clusterRef:
+    name: ray-kueue-kcc-cluster
+  autoscaling:
+    minNodeCount: 0
+    maxNodeCount: 10
+  nodeConfig:
+    machineType: g2-standard-4
+    oauthScopes:
+    - https://www.googleapis.com/auth/cloud-platform
+    labels:
+      project: gcp-template-forge
+    guestAccelerator:
+    - type: nvidia-l4
+      count: 1
+      gpuDriverInstallationConfig:
+        gpuDriverVersion: LATEST

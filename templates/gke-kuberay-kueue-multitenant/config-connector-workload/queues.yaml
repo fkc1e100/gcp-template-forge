@@ -1,0 +1,86 @@
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ResourceFlavor
+metadata:
+  name: l4-flavor
+spec:
+  nodeLabels:
+    cloud.google.com/gke-accelerator: nvidia-l4
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ClusterQueue
+metadata:
+  name: cq-team-a
+spec:
+  namespaceSelector: {} # match all.
+  cohort: gpu-cohort
+  resourceGroups:
+  - coveredResources: ["cpu", "memory", "nvidia.com/gpu"]
+    flavors:
+    - name: default-flavor
+      resources:
+      - name: "cpu"
+        nominalQuota: 10
+        borrowingLimit: 10
+      - name: "memory"
+        nominalQuota: 40Gi
+        borrowingLimit: 40Gi
+    - name: l4-flavor
+      resources:
+      - name: "nvidia.com/gpu"
+        nominalQuota: 1
+        borrowingLimit: 1
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ClusterQueue
+metadata:
+  name: cq-team-b
+spec:
+  namespaceSelector: {}
+  cohort: gpu-cohort
+  resourceGroups:
+  - coveredResources: ["cpu", "memory", "nvidia.com/gpu"]
+    flavors:
+    - name: default-flavor
+      resources:
+      - name: "cpu"
+        nominalQuota: 10
+        borrowingLimit: 10
+      - name: "memory"
+        nominalQuota: 40Gi
+        borrowingLimit: 40Gi
+    - name: l4-flavor
+      resources:
+      - name: "nvidia.com/gpu"
+        nominalQuota: 1
+        borrowingLimit: 1
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ResourceFlavor
+metadata:
+  name: default-flavor
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: team-a
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: team-b
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: LocalQueue
+metadata:
+  namespace: team-a
+  name: lq-team-a
+spec:
+  clusterQueue: cq-team-a
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: LocalQueue
+metadata:
+  namespace: team-b
+  name: lq-team-b
+spec:
+  clusterQueue: cq-team-b

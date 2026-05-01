@@ -1,0 +1,93 @@
+apiVersion: ray.io/v1
+kind: RayCluster
+metadata:
+  name: raycluster-team-a
+  namespace: team-a
+  labels:
+    kueue.x-k8s.io/queue-name: lq-team-a
+spec:
+  rayVersion: '2.9.0'
+  headGroupSpec:
+    rayStartParams:
+      dashboard-host: '0.0.0.0'
+    template:
+      spec:
+        containers:
+        - name: ray-head
+          image: rayproject/ray:2.9.0
+          resources:
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+            requests:
+              cpu: "1"
+              memory: "2Gi"
+  workerGroupSpecs:
+  - groupName: worker-group
+    replicas: 2
+    minReplicas: 2
+    maxReplicas: 2
+    rayStartParams: {}
+    template:
+      spec:
+        containers:
+        - name: ray-worker
+          image: rayproject/ray:2.9.0
+          resources:
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+              nvidia.com/gpu: "1"
+            requests:
+              cpu: "1"
+              memory: "2Gi"
+              nvidia.com/gpu: "1"
+          nodeSelector:
+            cloud.google.com/gke-accelerator: nvidia-l4
+---
+apiVersion: ray.io/v1
+kind: RayCluster
+metadata:
+  name: raycluster-team-b
+  namespace: team-b
+  labels:
+    kueue.x-k8s.io/queue-name: lq-team-b
+spec:
+  rayVersion: '2.9.0'
+  headGroupSpec:
+    rayStartParams:
+      dashboard-host: '0.0.0.0'
+    template:
+      spec:
+        containers:
+        - name: ray-head
+          image: rayproject/ray:2.9.0
+          resources:
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+            requests:
+              cpu: "1"
+              memory: "2Gi"
+  workerGroupSpecs:
+  - groupName: worker-group
+    replicas: 1
+    minReplicas: 1
+    maxReplicas: 1
+    rayStartParams: {}
+    template:
+      spec:
+        containers:
+        - name: ray-worker
+          image: rayproject/ray:2.9.0
+          resources:
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+              nvidia.com/gpu: "1"
+            requests:
+              cpu: "1"
+              memory: "2Gi"
+              nvidia.com/gpu: "1"
+          nodeSelector:
+            cloud.google.com/gke-accelerator: nvidia-l4
