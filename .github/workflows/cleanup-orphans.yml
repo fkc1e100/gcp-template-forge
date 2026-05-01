@@ -10,6 +10,8 @@ env:
 jobs:
   sweep:
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     permissions:
       contents: 'read'
       id-token: 'write'

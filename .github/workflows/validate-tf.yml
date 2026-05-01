@@ -52,6 +52,8 @@ jobs:
   detect-changes:
     name: Detect Changed Templates
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     if: github.event.action != 'closed'
     outputs:
       templates: ${{ steps.detect.outputs.templates }}
@@ -74,6 +76,8 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.tf_templates != '[]' && needs.detect-changes.outputs.tf_templates != ''
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     timeout-minutes: 20
     strategy:
       fail-fast: true
@@ -96,6 +100,8 @@ jobs:
     name: TF Provision (${{ matrix.template }})
     needs: [detect-changes, lint]
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     if: needs.detect-changes.outputs.tf_templates != '[]' && needs.detect-changes.outputs.tf_templates != ''
     timeout-minutes: 60
     strategy:
@@ -159,6 +165,8 @@ jobs:
     name: TF Test (${{ matrix.template }})
     needs: [detect-changes, tf-provision]
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     if: needs.detect-changes.outputs.tf_templates != '[]' && needs.detect-changes.outputs.tf_templates != ''
     timeout-minutes: 60
     strategy:
@@ -206,6 +214,8 @@ jobs:
     needs: [detect-changes, tf-provision, tf-test]
     if: always() && needs.detect-changes.outputs.tf_templates != '[]' && needs.detect-changes.outputs.tf_templates != ''
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     strategy:
       fail-fast: true
       matrix:
@@ -234,6 +244,8 @@ jobs:
     needs: [tf-provision, tf-test, tf-teardown]
     if: always() && (needs.tf-provision.result == 'failure' || needs.tf-test.result == 'failure')
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     steps:
       - name: Check Retry Count and Label
         env:
@@ -252,6 +264,8 @@ jobs:
     name: Cleanup Orphans
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     steps:
       - uses: actions/checkout@v4
       - name: Authenticate to GCP

@@ -8,6 +8,8 @@ on:
 jobs:
   detect-and-label:
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     permissions:
       pull-requests: write
       contents: read

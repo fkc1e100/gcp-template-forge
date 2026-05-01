@@ -38,6 +38,8 @@ jobs:
   detect-changes:
     name: Detect Changed Templates
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     timeout-minutes: 120
     outputs:
       kcc_templates: ${{ steps.find.outputs.kcc_templates }}
@@ -94,6 +96,8 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.has_kcc_templates == 'true'
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     timeout-minutes: 120
     strategy:
       fail-fast: true
@@ -127,6 +131,8 @@ jobs:
     needs: [ detect-changes ]
     if: github.event_name == 'pull_request' && needs.detect-changes.outputs.has_kcc_templates == 'true'
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     steps:
       - uses: actions/checkout@v4
       - name: Authenticate to GCP
@@ -146,6 +152,8 @@ jobs:
     needs: [ detect-changes, lint, pre-cleanup ]
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     timeout-minutes: 60
     strategy:
       fail-fast: true
@@ -178,6 +186,8 @@ jobs:
     name: "Test KCC (${{ matrix.template }})"
     needs: [ kcc-apply, detect-changes ]
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     timeout-minutes: 60
     strategy:
       fail-fast: true
@@ -219,6 +229,8 @@ jobs:
     needs: [ kcc-apply, kcc-test, detect-changes ]
     if: always()
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     timeout-minutes: 30
     strategy:
       fail-fast: true
@@ -249,6 +261,8 @@ jobs:
     needs: detect-changes
     if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == false
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     strategy:
       matrix:
         template: ${{ fromJson(needs.detect-changes.outputs.kcc_templates) }}
@@ -277,6 +291,8 @@ jobs:
     needs: detect-changes
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     timeout-minutes: 120
     strategy:
       fail-fast: true
@@ -350,6 +366,8 @@ jobs:
     needs: [detect-changes, validate-kcc]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && !cancelled()
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     strategy:
       matrix:
         template: ${{ fromJson(needs.detect-changes.outputs.kcc_templates) }}
@@ -516,6 +534,8 @@ jobs:
     needs: [detect-changes, lint, kcc-test]
     if: always() && github.event_name == 'pull_request' && (needs.kcc-test.result == 'failure' || needs.lint.result == 'failure')
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     steps:
       - name: Add label
         run: gh pr edit ${{ github.event.number }} --add-label "status:ai-agent-active" --repo ${{ github.repository }}
@@ -527,6 +547,8 @@ jobs:
     needs: [kcc-test]
     if: github.event_name == 'pull_request' && needs.kcc-test.result == 'success'
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     steps:
       - name: Check All Checks and Merge
         run: |

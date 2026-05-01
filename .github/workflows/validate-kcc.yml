@@ -53,6 +53,8 @@ jobs:
   detect-changes:
     name: Detect Changed Templates
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     if: github.event.action != 'closed'
     outputs:
       templates: ${{ steps.detect.outputs.templates }}
@@ -74,6 +76,8 @@ jobs:
     name: Lint (${{ matrix.template }})
     needs: detect-changes
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     if: needs.detect-changes.outputs.has_templates == 'true'
     timeout-minutes: 20
     strategy:
@@ -100,6 +104,8 @@ jobs:
     name: KCC (${{ matrix.template }})
     needs: [detect-changes, lint]
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     if: needs.detect-changes.outputs.kcc_templates != '[]' && needs.detect-changes.outputs.kcc_templates != ''
     timeout-minutes: 100
     strategy:
@@ -140,6 +146,8 @@ jobs:
     needs: [kcc-validation]
     if: always() && (needs.kcc-validation.result == 'failure')
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     steps:
       - name: Check Retry Count and Label
         env:
@@ -158,6 +166,8 @@ jobs:
     name: Cleanup Orphans
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     steps:
       - uses: actions/checkout@v4
       - name: Authenticate to GCP

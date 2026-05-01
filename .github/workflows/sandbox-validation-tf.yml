@@ -38,6 +38,8 @@ jobs:
   detect-changes:
     name: Detect Changed Templates
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     timeout-minutes: 120
     outputs:
       tf_templates: ${{ steps.find.outputs.tf_templates }}
@@ -91,6 +93,8 @@ jobs:
   lint-agent-infra:
     name: "Lint Agent Infra"
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     steps:
       - uses: actions/checkout@v4
       - name: Setup Terraform
@@ -105,6 +109,8 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.has_tf_templates == 'true'
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     timeout-minutes: 120
     strategy:
       fail-fast: true
@@ -165,6 +171,8 @@ jobs:
     needs: [ detect-changes ]
     if: github.event_name == 'pull_request' && needs.detect-changes.outputs.has_tf_templates == 'true'
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     steps:
       - uses: actions/checkout@v4
       - name: Authenticate to GCP
@@ -184,6 +192,8 @@ jobs:
     needs: [ detect-changes, lint, pre-cleanup ]
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     timeout-minutes: 60
     strategy:
       fail-fast: true
@@ -237,6 +247,8 @@ jobs:
     name: "Test TF (${{ matrix.template }})"
     needs: [ tf-provision, detect-changes ]
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     timeout-minutes: 60
     strategy:
       fail-fast: true
@@ -292,6 +304,8 @@ jobs:
     needs: [ tf-provision, tf-test, detect-changes ]
     if: always()
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     timeout-minutes: 30
     strategy:
       fail-fast: true
@@ -358,6 +372,8 @@ jobs:
     needs: detect-changes
     if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == false
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     strategy:
       matrix:
         template: ${{ fromJson(needs.detect-changes.outputs.tf_templates) }}
@@ -392,6 +408,8 @@ jobs:
     needs: detect-changes
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     timeout-minutes: 120
     strategy:
       fail-fast: true
@@ -499,6 +517,8 @@ jobs:
     needs: [detect-changes, validate-tf-helm]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && !cancelled()
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     strategy:
       matrix:
         template: ${{ fromJson(needs.detect-changes.outputs.tf_templates) }}
@@ -678,6 +698,8 @@ jobs:
     needs: [detect-changes, lint, tf-test]
     if: always() && github.event_name == 'pull_request' && (needs.tf-test.result == 'failure' || needs.lint.result == 'failure')
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     steps:
       - name: Add label
         run: gh pr edit ${{ github.event.number }} --add-label "status:ai-agent-active" --repo ${{ github.repository }}
@@ -689,6 +711,8 @@ jobs:
     needs: [tf-test]
     if: github.event_name == 'pull_request' && needs.tf-test.result == 'success'
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     steps:
       - name: Check All Checks and Merge
         run: |

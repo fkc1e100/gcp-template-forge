@@ -49,6 +49,8 @@ jobs:
   detect-changes:
     name: Detect Changed Templates
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     outputs:
       templates: ${{ steps.detect.outputs.templates }}
       tf_templates: ${{ steps.detect.outputs.tf_templates }}
@@ -65,6 +67,8 @@ jobs:
     name: Validate TF+Helm (${{ matrix.template }})
     needs: detect-changes
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     timeout-minutes: 120
     strategy:
       fail-fast: true
@@ -181,6 +185,8 @@ jobs:
     name: Validate KCC (${{ matrix.template }})
     needs: detect-changes
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     timeout-minutes: 120
     strategy:
       fail-fast: true
@@ -246,6 +252,8 @@ jobs:
     needs: [detect-changes, validate-tf-helm, validate-kcc]
     if: always() && !cancelled()
     runs-on: ubuntu-latest
+    continue-on-error: false
+    continue-on-error: false
     steps:
       - uses: actions/checkout@v4
         with:
