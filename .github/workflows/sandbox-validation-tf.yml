@@ -83,7 +83,7 @@ jobs:
 
       - name: Remove repo-agent Label on Start
         if: github.event_name == 'pull_request' && steps.find.outputs.has_tf_templates == 'true'
-        run: gh pr edit ${{ github.event.number }} --remove-label "repo-agent" --repo ${{ github.repository }} || true
+        run: gh pr edit ${{ github.event.number }} --remove-label "status:ai-agent-active" --repo ${{ github.repository }} || true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -680,7 +680,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Add label
-        run: gh pr edit ${{ github.event.number }} --add-label "repo-agent" --repo ${{ github.repository }}
+        run: gh pr edit ${{ github.event.number }} --add-label "status:ai-agent-active" --repo ${{ github.repository }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
