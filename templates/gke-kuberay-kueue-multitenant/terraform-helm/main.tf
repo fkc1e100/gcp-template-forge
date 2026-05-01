@@ -32,13 +32,13 @@ locals {
 
 # VPC Network
 resource "google_compute_network" "vpc" {
-  name                    = "${var.network_name}-${local.uid}"
+  name                    = var.network_name
   auto_create_subnetworks = false
 }
 
 # Subnet
 resource "google_compute_subnetwork" "subnet" {
-  name                     = "${var.subnet_name}-${local.uid}"
+  name                     = var.subnet_name
   ip_cidr_range            = "10.0.0.0/20"
   region                   = var.region
   network                  = google_compute_network.vpc.id
@@ -70,14 +70,23 @@ resource "google_compute_router_nat" "nat" {
   source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
 }
 
+data "google_compute_zones" "available" {
+  region = var.region
+  state  = "UP"
+}
+
+locals {
+  zone = var.zone != "us-central1-a" ? var.zone : data.google_compute_zones.available.names[0]
+}
+
 # GKE Cluster
 resource "google_container_cluster" "primary" {
   provider = google-beta
-  name     = "${var.cluster_name}-${local.uid}"
+  name     = var.cluster_name
   location = var.region
 
   # Restrict to a single zone for GPU availability and reliability
-  node_locations = [var.zone]
+  node_locations = [local.zone]
 
   deletion_protection = false
 
