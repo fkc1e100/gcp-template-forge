@@ -13,7 +13,7 @@ resource "google_compute_subnetwork" "subnet" {
 resource "google_container_cluster" "primary" {
   name     = var.cluster_name
   location = var.region
-  
+
   deletion_protection = false
   resource_labels = {
     project = "gcp-template-forge"
@@ -24,18 +24,18 @@ resource "google_container_cluster" "primary" {
 
   remove_default_node_pool = true
   initial_node_count       = 1
-  
+
   workload_identity_config {
     workload_pool = "${var.project_id}.svc.id.goog"
   }
 }
 
 resource "google_container_node_pool" "system_pool" {
-  name       = "system-pool"
-  location   = var.region
-  cluster    = google_container_cluster.primary.name
+  name           = "system-pool"
+  location       = var.region
+  cluster        = google_container_cluster.primary.name
   node_locations = ["us-central1-a", "us-central1-c"]
-  node_count = 1
+  node_count     = 1
 
   node_config {
     machine_type = "e2-standard-4"
@@ -47,16 +47,16 @@ resource "google_container_node_pool" "system_pool" {
 }
 
 resource "google_container_node_pool" "gpu_pool" {
-  name       = "gpu-pool"
-  location   = var.region
-  cluster    = google_container_cluster.primary.name
+  name           = "gpu-pool"
+  location       = var.region
+  cluster        = google_container_cluster.primary.name
   node_locations = ["us-central1-a", "us-central1-c"]
-  
+
   autoscaling {
     min_node_count = 0
     max_node_count = 10
   }
-  
+
   node_config {
     machine_type = "g2-standard-4"
     oauth_scopes = ["https://www.googleapis.com/auth/cloud-platform"]
