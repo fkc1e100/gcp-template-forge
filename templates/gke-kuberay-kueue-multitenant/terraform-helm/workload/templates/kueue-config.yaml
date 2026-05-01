@@ -1,0 +1,74 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: team-a
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: team-b
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ResourceFlavor
+metadata:
+  name: default-flavor
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ClusterQueue
+metadata:
+  name: team-a-cq
+spec:
+  cohort: shared-gpu
+  namespaceSelector: {}
+  resourceGroups:
+  - coveredResources: ["cpu", "memory", "nvidia.com/gpu"]
+    flavors:
+    - name: default-flavor
+      resources:
+      - name: "cpu"
+        nominalQuota: 4
+        borrowingLimit: 4
+      - name: "memory"
+        nominalQuota: 16Gi
+        borrowingLimit: 16Gi
+      - name: "nvidia.com/gpu"
+        nominalQuota: 1
+        borrowingLimit: 1
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ClusterQueue
+metadata:
+  name: team-b-cq
+spec:
+  cohort: shared-gpu
+  namespaceSelector: {}
+  resourceGroups:
+  - coveredResources: ["cpu", "memory", "nvidia.com/gpu"]
+    flavors:
+    - name: default-flavor
+      resources:
+      - name: "cpu"
+        nominalQuota: 4
+        borrowingLimit: 4
+      - name: "memory"
+        nominalQuota: 16Gi
+        borrowingLimit: 16Gi
+      - name: "nvidia.com/gpu"
+        nominalQuota: 1
+        borrowingLimit: 1
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: LocalQueue
+metadata:
+  namespace: team-a
+  name: team-a-queue
+spec:
+  clusterQueue: team-a-cq
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: LocalQueue
+metadata:
+  namespace: team-b
+  name: team-b-queue
+spec:
+  clusterQueue: team-b-cq

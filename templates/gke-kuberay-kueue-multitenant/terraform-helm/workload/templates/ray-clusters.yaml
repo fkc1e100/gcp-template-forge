@@ -1,0 +1,107 @@
+apiVersion: ray.io/v1
+kind: RayCluster
+metadata:
+  name: raycluster-team-a
+  namespace: team-a
+  labels:
+    kueue.x-k8s.io/queue-name: team-a-queue
+spec:
+  rayVersion: '2.9.0'
+  headGroupSpec:
+    rayStartParams:
+      dashboard-host: '0.0.0.0'
+    template:
+      spec:
+        containers:
+        - name: ray-head
+          image: rayproject/ray:2.9.0
+          resources:
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+            requests:
+              cpu: "1"
+              memory: "2Gi"
+          ports:
+          - containerPort: 6379
+            name: gcs-server
+          - containerPort: 8265
+            name: dashboard
+          - containerPort: 10001
+            name: client
+  workerGroupSpecs:
+  - groupName: worker-group
+    replicas: 1
+    minReplicas: 1
+    maxReplicas: 1
+    rayStartParams: {}
+    template:
+      spec:
+        nodeSelector:
+          cloud.google.com/gke-accelerator: nvidia-l4
+        containers:
+        - name: ray-worker
+          image: rayproject/ray:2.9.0-gpu
+          resources:
+            limits:
+              cpu: "2"
+              memory: "8Gi"
+              nvidia.com/gpu: 1
+            requests:
+              cpu: "2"
+              memory: "8Gi"
+              nvidia.com/gpu: 1
+---
+apiVersion: ray.io/v1
+kind: RayCluster
+metadata:
+  name: raycluster-team-b
+  namespace: team-b
+  labels:
+    kueue.x-k8s.io/queue-name: team-b-queue
+spec:
+  rayVersion: '2.9.0'
+  headGroupSpec:
+    rayStartParams:
+      dashboard-host: '0.0.0.0'
+    template:
+      spec:
+        containers:
+        - name: ray-head
+          image: rayproject/ray:2.9.0
+          resources:
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+            requests:
+              cpu: "1"
+              memory: "2Gi"
+          ports:
+          - containerPort: 6379
+            name: gcs-server
+          - containerPort: 8265
+            name: dashboard
+          - containerPort: 10001
+            name: client
+  workerGroupSpecs:
+  - groupName: worker-group
+    replicas: 1
+    minReplicas: 1
+    maxReplicas: 1
+    rayStartParams: {}
+    template:
+      spec:
+        nodeSelector:
+          cloud.google.com/gke-accelerator: nvidia-l4
+        containers:
+        - name: ray-worker
+          image: rayproject/ray:2.9.0-gpu
+          resources:
+            limits:
+              cpu: "2"
+              memory: "8Gi"
+              nvidia.com/gpu: 1
+            requests:
+              cpu: "2"
+              memory: "8Gi"
+              nvidia.com/gpu: 1
