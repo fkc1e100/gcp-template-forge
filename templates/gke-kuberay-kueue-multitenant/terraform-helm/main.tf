@@ -26,6 +26,10 @@ resource "google_container_cluster" "primary" {
   initial_node_count       = 1
 
   workload_identity_config {
+    }
+    timeouts {
+      create = "30m"
+    }
     workload_pool = "${var.project_id}.svc.id.goog"
   }
 }
