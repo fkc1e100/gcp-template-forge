@@ -35,6 +35,31 @@ if [[ ! "$KUEUE_PODS" =~ "Running" ]]; then
   exit 1
 fi
 
+# Wait for CRDs to be registered
+echo "Waiting for Kueue CRDs..."
+for i in {1..20}; do
+  if kubectl get crd resourceflavors.kueue.x-k8s.io clusterqueues.kueue.x-k8s.io localqueues.kueue.x-k8s.io >/dev/null 2>&1; then
+    echo "Kueue CRDs are ready"
+    break
+  fi
+  echo "Waiting for Kueue CRDs... ($i/20)"
+  sleep 10
+done
+
+echo "Waiting for KubeRay CRDs..."
+for i in {1..20}; do
+  if kubectl get crd rayclusters.ray.io >/dev/null 2>&1; then
+    echo "KubeRay CRDs are ready"
+    break
+  fi
+  echo "Waiting for KubeRay CRDs... ($i/20)"
+  sleep 10
+done
+
+# Apply multi-tenant configuration
+echo "Applying multi-tenant configuration..."
+kubectl apply -f templates/gke-kuberay-kueue-multitenant/terraform-helm/workload/extra-manifests/
+
 # Check for ResourceFlavor
 echo "Checking Kueue ResourceFlavor..."
 kubectl get resourceflavor default-flavor
