@@ -99,7 +99,7 @@ jobs:
     if: needs.detect-changes.outputs.tf_templates != '[]' && needs.detect-changes.outputs.tf_templates != ''
     timeout-minutes: 60
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         template: ${{ fromJson(needs.detect-changes.outputs.tf_templates) }}
     steps:
@@ -162,7 +162,7 @@ jobs:
     if: needs.detect-changes.outputs.tf_templates != '[]' && needs.detect-changes.outputs.tf_templates != ''
     timeout-minutes: 60
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         template: ${{ fromJson(needs.detect-changes.outputs.tf_templates) }}
     steps:
@@ -207,7 +207,7 @@ jobs:
     if: always() && needs.detect-changes.outputs.tf_templates != '[]' && needs.detect-changes.outputs.tf_templates != ''
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         template: ${{ fromJson(needs.detect-changes.outputs.tf_templates) }}
     steps:

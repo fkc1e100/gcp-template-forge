@@ -186,7 +186,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         template: ${{ fromJson(needs.detect-changes.outputs.tf_templates) }}
     outputs:
@@ -239,7 +239,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         template: ${{ fromJson(needs.detect-changes.outputs.tf_templates) }}
     steps:
@@ -294,7 +294,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         template: ${{ fromJson(needs.detect-changes.outputs.tf_templates) }}
     steps:
@@ -394,7 +394,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         template: ${{ fromJson(needs.detect-changes.outputs.tf_templates) }}
     steps:

@@ -77,7 +77,7 @@ jobs:
     if: needs.detect-changes.outputs.has_templates == 'true'
     timeout-minutes: 20
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
     steps:
@@ -103,7 +103,7 @@ jobs:
     if: needs.detect-changes.outputs.kcc_templates != '[]' && needs.detect-changes.outputs.kcc_templates != ''
     timeout-minutes: 100
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         template: ${{ fromJson(needs.detect-changes.outputs.kcc_templates) }}
     steps:
