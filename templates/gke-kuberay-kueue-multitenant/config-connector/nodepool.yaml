@@ -15,7 +15,7 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
 metadata:
-  name: ray-kueue-system-pool
+  name: gke-kuberay-sys-kcc
   namespace: forge-management
   labels:
     project: gcp-template-forge
@@ -24,7 +24,7 @@ metadata:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   clusterRef:
-    name: ray-kueue-cluster
+    name: gke-kuberay-kueue-kcc
   location: us-central1
   nodeLocations:
     - us-central1-a
@@ -46,7 +46,7 @@ spec:
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
 metadata:
-  name: ray-kueue-gpu-pool
+  name: gke-kuberay-gpu-kcc
   namespace: forge-management
   labels:
     project: gcp-template-forge
@@ -55,7 +55,7 @@ metadata:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   clusterRef:
-    name: ray-kueue-cluster
+    name: gke-kuberay-kueue-kcc
   location: us-central1
   nodeLocations:
     - us-central1-a
