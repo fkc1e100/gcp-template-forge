@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ray-system
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kueue-system
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: team-a
+  labels:
+    kueue.x-k8s.io/queue-name: team-a-local-queue
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: team-b
+  labels:
+    kueue.x-k8s.io/queue-name: team-b-local-queue

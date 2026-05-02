@@ -1,0 +1,49 @@
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ResourceFlavor
+metadata:
+  name: default-flavor
+spec:
+  nodeLabels:
+    nvidia.com/gpu: "present"
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ClusterQueue
+metadata:
+  name: team-a-cq
+spec:
+  cohort: ray-cohort
+  resourceGroups:
+  - flavors:
+    - name: default-flavor
+      resources:
+      - name: "nvidia.com/gpu"
+        nominalQuota: 1
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ClusterQueue
+metadata:
+  name: team-b-cq
+spec:
+  cohort: ray-cohort
+  resourceGroups:
+  - flavors:
+    - name: default-flavor
+      resources:
+      - name: "nvidia.com/gpu"
+        nominalQuota: 1
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: LocalQueue
+metadata:
+  name: team-a-local-queue
+  namespace: team-a
+spec:
+  clusterQueue: team-a-cq
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: LocalQueue
+metadata:
+  name: team-b-local-queue
+  namespace: team-b
+spec:
+  clusterQueue: team-b-cq
