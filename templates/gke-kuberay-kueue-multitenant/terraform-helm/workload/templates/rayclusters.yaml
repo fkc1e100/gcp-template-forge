@@ -1,0 +1,94 @@
+apiVersion: ray.io/v1
+kind: RayCluster
+metadata:
+  name: team-a-raycluster
+  namespace: team-a
+  labels:
+    kueue.x-k8s.io/queue-name: team-a-queue
+spec:
+  rayVersion: '2.9.0'
+  headGroupSpec:
+    rayStartParams:
+      dashboard-host: '0.0.0.0'
+    template:
+      spec:
+        containers:
+        - name: ray-head
+          image: rayproject/ray:2.9.0
+          resources:
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+            requests:
+              cpu: "1"
+              memory: "2Gi"
+  workerGroupSpecs:
+  - groupName: worker-group
+    replicas: 2
+    minReplicas: 0
+    maxReplicas: 5
+    rayStartParams: {}
+    template:
+      spec:
+        nodeSelector:
+          gpu: "l4"
+        containers:
+        - name: ray-worker
+          image: rayproject/ray:2.9.0
+          resources:
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+              nvidia.com/gpu: 1
+            requests:
+              cpu: "1"
+              memory: "2Gi"
+              nvidia.com/gpu: 1
+
+---
+apiVersion: ray.io/v1
+kind: RayCluster
+metadata:
+  name: team-b-raycluster
+  namespace: team-b
+  labels:
+    kueue.x-k8s.io/queue-name: team-b-queue
+spec:
+  rayVersion: '2.9.0'
+  headGroupSpec:
+    rayStartParams:
+      dashboard-host: '0.0.0.0'
+    template:
+      spec:
+        containers:
+        - name: ray-head
+          image: rayproject/ray:2.9.0
+          resources:
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+            requests:
+              cpu: "1"
+              memory: "2Gi"
+  workerGroupSpecs:
+  - groupName: worker-group
+    replicas: 1
+    minReplicas: 0
+    maxReplicas: 5
+    rayStartParams: {}
+    template:
+      spec:
+        nodeSelector:
+          gpu: "l4"
+        containers:
+        - name: ray-worker
+          image: rayproject/ray:2.9.0
+          resources:
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+              nvidia.com/gpu: 1
+            requests:
+              cpu: "1"
+              memory: "2Gi"
+              nvidia.com/gpu: 1
