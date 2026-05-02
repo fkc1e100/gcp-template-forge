@@ -10,6 +10,17 @@ A GKE template demonstrating how to solve the "Noisy Neighbor" problem for share
 - **Kueue Operator** — Cloud-native job queueing and equitable resource sharing.
 - **Workloads** — Two namespaces (`team-a` and `team-b`), each with a Kueue `LocalQueue` linked to a `ClusterQueue` sharing a single GPU `Cohort`. Kueue ensures that if Team A requests excess GPUs, their pods remain in a pending state until Team B finishes their work.
 
+## Prerequisites
+
+- **Google Cloud Project**: You must have a GCP project with billing enabled.
+- **APIs Enabled**: Ensure `compute.googleapis.com` and `container.googleapis.com` are enabled.
+- **IAM Permissions**: You need permissions to create VPCs, Subnets, GKE clusters, and Service Accounts.
+- **Tools**:
+  - `gcloud` CLI installed and authenticated.
+  - `kubectl` installed.
+  - For Terraform: `terraform` CLI installed.
+  - For Config Connector: A management cluster with Config Connector installed and configured to manage resources in your GCP project.
+
 ## Deployment Paths
 
 ### Terraform + Helm (`terraform-helm/`)
@@ -32,7 +43,7 @@ terraform apply -var="project_id=my-project-id" -var="service_account=my-service
     ```
 3.  Wait for the cluster to be ready:
     ```bash
-    kubectl wait --for=condition=Ready containercluster ray-kueue-cluster --timeout=30m
+    kubectl wait --for=condition=Ready containercluster ray-kueue-cluster -n forge-management --timeout=30m
     ```
 4.  Configure `kubectl` and deploy the operators and workloads:
     ```bash
