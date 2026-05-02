@@ -1,0 +1,86 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: container.cnrm.cloud.google.com/v1beta1
+kind: ContainerNodePool
+metadata:
+  name: ray-kueue-system-pool
+  namespace: forge-management
+  labels:
+    project: gcp-template-forge
+    template: ray-kueue
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
+spec:
+  clusterRef:
+    name: ray-kueue-cluster
+  location: us-central1
+  nodeLocations:
+    - us-central1-a
+  nodeCount: 1
+  nodeConfig:
+    machineType: e2-standard-4
+    diskSizeGb: 50
+    diskType: pd-balanced
+    spot: true
+    oauthScopes:
+      - https://www.googleapis.com/auth/cloud-platform
+    workloadMetadataConfig:
+      mode: GKE_METADATA
+    labels:
+      project: gcp-template-forge
+      template: ray-kueue
+---
+apiVersion: container.cnrm.cloud.google.com/v1beta1
+kind: ContainerNodePool
+metadata:
+  name: ray-kueue-gpu-pool
+  namespace: forge-management
+  labels:
+    project: gcp-template-forge
+    template: ray-kueue
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
+spec:
+  clusterRef:
+    name: ray-kueue-cluster
+  location: us-central1
+  nodeLocations:
+    - us-central1-a
+  autoscaling:
+    minNodeCount: 0
+    maxNodeCount: 10
+    locationPolicy: BALANCED
+  nodeConfig:
+    machineType: g2-standard-4
+    diskSizeGb: 100
+    diskType: pd-balanced
+    spot: true
+    guestAccelerator:
+      - type: nvidia-l4
+        count: 1
+        gpuDriverInstallationConfig:
+          gpuDriverVersion: DEFAULT
+    oauthScopes:
+      - https://www.googleapis.com/auth/cloud-platform
+    workloadMetadataConfig:
+      mode: GKE_METADATA
+    labels:
+      project: gcp-template-forge
+      template: ray-kueue
+      gpu: l4
+    taint:
+      - key: nvidia.com/gpu
+        value: "present"
+        effect: NO_SCHEDULE

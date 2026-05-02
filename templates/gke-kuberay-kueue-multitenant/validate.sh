@@ -37,28 +37,34 @@ fi
 
 # Wait for CRDs to be registered
 echo "Waiting for Kueue CRDs..."
-for i in {1..20}; do
+for i in {1..30}; do
   if kubectl get crd resourceflavors.kueue.x-k8s.io clusterqueues.kueue.x-k8s.io localqueues.kueue.x-k8s.io >/dev/null 2>&1; then
     echo "Kueue CRDs are ready"
     break
   fi
-  echo "Waiting for Kueue CRDs... ($i/20)"
+  echo "Waiting for Kueue CRDs... ($i/30)"
   sleep 10
 done
 
 echo "Waiting for KubeRay CRDs..."
-for i in {1..20}; do
+for i in {1..30}; do
   if kubectl get crd rayclusters.ray.io >/dev/null 2>&1; then
     echo "KubeRay CRDs are ready"
     break
   fi
-  echo "Waiting for KubeRay CRDs... ($i/20)"
+  echo "Waiting for KubeRay CRDs... ($i/30)"
   sleep 10
 done
 
 # Apply multi-tenant configuration
 echo "Applying multi-tenant configuration..."
-kubectl apply -f templates/gke-kuberay-kueue-multitenant/terraform-helm/workload/extra-manifests/
+if [ -f "templates/gke-kuberay-kueue-multitenant/config-connector-workload/workload.yaml" ]; then
+  echo "Using Config Connector workload manifests..."
+  kubectl apply -f templates/gke-kuberay-kueue-multitenant/config-connector-workload/workload.yaml
+else
+  echo "Using Terraform/Helm extra manifests..."
+  kubectl apply -f templates/gke-kuberay-kueue-multitenant/terraform-helm/workload/extra-manifests/
+fi
 
 # Check for ResourceFlavor
 echo "Checking Kueue ResourceFlavor..."

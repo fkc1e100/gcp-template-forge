@@ -42,6 +42,36 @@ This template demonstrates how to set up a multi-tenant Ray environment on GKE u
     helm upgrade --install ray-kueue ./workload
     ```
 
+### Config Connector Path
+
+1.  Navigate to the config-connector directory:
+    ```bash
+    cd templates/gke-kuberay-kueue-multitenant/config-connector
+    ```
+
+2.  Apply the infrastructure manifests to your KCC-enabled cluster:
+    ```bash
+    kubectl apply -f .
+    ```
+
+3.  Wait for the GKE cluster and node pools to be ready:
+    ```bash
+    kubectl wait --for=condition=Ready containercluster ray-kueue-cluster --timeout=30m
+    ```
+
+4.  Configure kubectl for the new cluster:
+    ```bash
+    gcloud container clusters get-credentials ray-kueue-cluster --region us-central1
+    ```
+
+5.  Deploy the operators and multi-tenant workload:
+    ```bash
+    cd ../config-connector-workload
+    kubectl apply -f kuberay-operator.yaml
+    kubectl apply -f kueue-operator.yaml
+    kubectl apply -f workload.yaml
+    ```
+
 ## Verification
 
 1.  Check the status of the Ray clusters:
