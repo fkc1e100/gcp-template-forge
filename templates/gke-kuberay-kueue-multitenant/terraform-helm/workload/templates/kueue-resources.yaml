@@ -1,0 +1,31 @@
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ResourceFlavor
+metadata:
+  name: default-flavor
+spec:
+  nodeLabels:
+    pool: gpu
+{{- range $team, $config := .Values.teams }}
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ClusterQueue
+metadata:
+  name: {{ $team }}-cq
+spec:
+  cohort: ray-cohort
+  resourceGroups:
+  - flavors:
+    - name: default-flavor
+      resources:
+      - name: "nvidia.com/gpu"
+        nominalQuota: {{ $config.nominalQuota }}
+        borrowingLimit: {{ $config.borrowingLimit }}
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: LocalQueue
+metadata:
+  name: {{ $team }}-lq
+  namespace: {{ $team }}
+spec:
+  clusterQueue: {{ $team }}-cq
+{{- end }}

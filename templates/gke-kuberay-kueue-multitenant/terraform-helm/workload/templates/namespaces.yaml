@@ -1,0 +1,9 @@
+{{- range $team, $config := .Values.teams }}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ $team }}
+  labels:
+    kueue.x-k8s.io/managed: "true"
+{{- end }}

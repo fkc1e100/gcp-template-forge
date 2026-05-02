@@ -1,0 +1,60 @@
+{{- range $team, $config := .Values.teams }}
+---
+apiVersion: ray.io/v1
+kind: RayCluster
+metadata:
+  name: ray-{{ $team }}
+  namespace: {{ $team }}
+  labels:
+    kueue.x-k8s.io/queue-name: {{ $team }}-lq
+spec:
+  rayVersion: '2.9.0'
+  headGroupSpec:
+    rayStartParams:
+      dashboard-host: '0.0.0.0'
+    template:
+      spec:
+        containers:
+        - name: ray-head
+          image: {{ $.Values.ray.image }}
+          ports:
+          - containerPort: 6379
+            name: gcs-server
+          - containerPort: 8265
+            name: dashboard
+          - containerPort: 10001
+            name: client
+          resources:
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+            requests:
+              cpu: "1"
+              memory: "2Gi"
+  workerGroupSpecs:
+  - replicas: 1
+    minReplicas: 1
+    maxReplicas: 5
+    groupName: gpu-group
+    rayStartParams: {}
+    template:
+      spec:
+        containers:
+        - name: ray-worker
+          image: {{ $.Values.ray.image }}
+          resources:
+            limits:
+              cpu: "2"
+              memory: "4Gi"
+              nvidia.com/gpu: 1
+            requests:
+              cpu: "2"
+              memory: "4Gi"
+              nvidia.com/gpu: 1
+        tolerations:
+        - key: "nvidia.com/gpu"
+          operator: "Exists"
+          effect: "NoSchedule"
+        nodeSelector:
+          pool: gpu
+{{- end }}
