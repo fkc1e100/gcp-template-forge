@@ -51,9 +51,3 @@ variable "service_account" {
   description = "The service account email to use for the node pool"
   type        = string
 }
-
-variable "uid_suffix" {
-  description = "Optional suffix to make resource names globally unique (used by CI)"
-  type        = string
-  default     = ""
-}
