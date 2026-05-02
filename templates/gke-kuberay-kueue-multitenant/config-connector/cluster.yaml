@@ -19,7 +19,7 @@ metadata:
   namespace: forge-management
   labels:
     project: gcp-template-forge
-    template: ray-kueue
+    template: gke-kuberay-kueue-multitenant
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
     cnrm.cloud.google.com/remove-default-node-pool: "true"
@@ -40,5 +40,6 @@ spec:
     workloadPool: gca-gke-2025.svc.id.goog
   releaseChannel:
     channel: REGULAR
-  gatewayApiConfig:
-    channel: CHANNEL_STANDARD
+  securityPostureConfig:
+    mode: BASIC
+    vulnerabilityMode: VULNERABILITY_BASIC

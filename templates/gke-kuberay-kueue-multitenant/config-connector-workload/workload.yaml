@@ -1,43 +1,16 @@
-# Copyright 2026 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
----
 apiVersion: v1
 kind: Namespace
 metadata:
   name: team-a
   labels:
-    project: ray-kueue
-    team: team-a
+    kueue.x-k8s.io/queue-name: team-a-queue
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
   name: team-b
   labels:
-    project: ray-kueue
-    team: team-b
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: kuberay-operator
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: kueue-system
+    kueue.x-k8s.io/queue-name: team-b-queue
 ---
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: ResourceFlavor
@@ -45,58 +18,50 @@ metadata:
   name: default-flavor
 spec:
   nodeLabels:
-    gpu: l4
-  tolerations:
-  - key: "nvidia.com/gpu"
-    operator: "Equal"
-    value: "present"
-    effect: "NoSchedule"
+    gpu: "l4"
 ---
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: ClusterQueue
 metadata:
   name: team-a-cq
 spec:
-  namespaceSelector:
-    matchLabels:
-      team: team-a
-  cohort: ray-cohort
+  cohort: shared-gpus
   resourceGroups:
-  - flavors:
+  - coveredResources: ["nvidia.com/gpu"]
+    flavors:
     - name: default-flavor
       resources:
       - name: "nvidia.com/gpu"
-        nominalQuota: 2
----
-apiVersion: kueue.x-k8s.io/v1beta1
-kind: LocalQueue
-metadata:
-  name: ray-queue
-  namespace: team-a
-spec:
-  clusterQueue: team-a-cq
+        nominalQuota: 1
+        borrowingLimit: 1
 ---
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: ClusterQueue
 metadata:
   name: team-b-cq
 spec:
-  namespaceSelector:
-    matchLabels:
-      team: team-b
-  cohort: ray-cohort
+  cohort: shared-gpus
   resourceGroups:
-  - flavors:
+  - coveredResources: ["nvidia.com/gpu"]
+    flavors:
     - name: default-flavor
       resources:
       - name: "nvidia.com/gpu"
-        nominalQuota: 2
-        borrowingLimit: 2
+        nominalQuota: 1
+        borrowingLimit: 1
 ---
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: LocalQueue
 metadata:
-  name: ray-queue
+  name: team-a-queue
+  namespace: team-a
+spec:
+  clusterQueue: team-a-cq
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: LocalQueue
+metadata:
+  name: team-b-queue
   namespace: team-b
 spec:
   clusterQueue: team-b-cq
@@ -104,10 +69,10 @@ spec:
 apiVersion: ray.io/v1
 kind: RayCluster
 metadata:
-  name: ray-team-a
+  name: team-a-raycluster
   namespace: team-a
   labels:
-    kueue.x-k8s.io/queue-name: ray-queue
+    kueue.x-k8s.io/queue-name: team-a-queue
 spec:
   rayVersion: '2.9.0'
   headGroupSpec:
@@ -117,7 +82,7 @@ spec:
       spec:
         containers:
         - name: ray-head
-          image: rayproject/ray:2.9.0-py310
+          image: rayproject/ray:2.9.0
           resources:
             limits:
               cpu: "1"
@@ -125,46 +90,36 @@ spec:
             requests:
               cpu: "1"
               memory: "2Gi"
-          ports:
-          - containerPort: 6379
-            name: gcs-server
-          - containerPort: 8265
-            name: dashboard
-          - containerPort: 10001
-            name: client
   workerGroupSpecs:
-  - replicas: 2
+  - groupName: worker-group
+    replicas: 2
     minReplicas: 0
     maxReplicas: 5
-    groupName: gpu-group
     rayStartParams: {}
     template:
       spec:
+        nodeSelector:
+          gpu: "l4"
         containers:
         - name: ray-worker
-          image: rayproject/ray:2.9.0-py310
+          image: rayproject/ray:2.9.0
           resources:
             limits:
-              cpu: "2"
-              memory: "4Gi"
+              cpu: "1"
+              memory: "2Gi"
               nvidia.com/gpu: 1
             requests:
-              cpu: "2"
-              memory: "4Gi"
+              cpu: "1"
+              memory: "2Gi"
               nvidia.com/gpu: 1
-        tolerations:
-        - key: "nvidia.com/gpu"
-          operator: "Equal"
-          value: "present"
-          effect: "NoSchedule"
 ---
 apiVersion: ray.io/v1
 kind: RayCluster
 metadata:
-  name: ray-team-b
+  name: team-b-raycluster
   namespace: team-b
   labels:
-    kueue.x-k8s.io/queue-name: ray-queue
+    kueue.x-k8s.io/queue-name: team-b-queue
 spec:
   rayVersion: '2.9.0'
   headGroupSpec:
@@ -174,7 +129,7 @@ spec:
       spec:
         containers:
         - name: ray-head
-          image: rayproject/ray:2.9.0-py310
+          image: rayproject/ray:2.9.0
           resources:
             limits:
               cpu: "1"
@@ -182,35 +137,25 @@ spec:
             requests:
               cpu: "1"
               memory: "2Gi"
-          ports:
-          - containerPort: 6379
-            name: gcs-server
-          - containerPort: 8265
-            name: dashboard
-          - containerPort: 10001
-            name: client
   workerGroupSpecs:
-  - replicas: 2
+  - groupName: worker-group
+    replicas: 1
     minReplicas: 0
     maxReplicas: 5
-    groupName: gpu-group
     rayStartParams: {}
     template:
       spec:
+        nodeSelector:
+          gpu: "l4"
         containers:
         - name: ray-worker
-          image: rayproject/ray:2.9.0-py310
+          image: rayproject/ray:2.9.0
           resources:
             limits:
-              cpu: "2"
-              memory: "4Gi"
+              cpu: "1"
+              memory: "2Gi"
               nvidia.com/gpu: 1
             requests:
-              cpu: "2"
-              memory: "4Gi"
+              cpu: "1"
+              memory: "2Gi"
               nvidia.com/gpu: 1
-        tolerations:
-        - key: "nvidia.com/gpu"
-          operator: "Equal"
-          value: "present"
-          effect: "NoSchedule"
