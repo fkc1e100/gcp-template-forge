@@ -64,8 +64,8 @@ jobs:
           fetch-depth: 0
       - id: detect
         uses: ./.github/actions/detect-changes
-      - name: Remove status:ai-agent-active Label on Start
-        run: gh pr edit "${{ github.event.number }}" --remove-label "status:ai-agent-active" || true
+      - name: Remove repo-agent Label on Start
+        run: gh pr edit "${{ github.event.number }}" --remove-label "repo-agent" || true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -244,8 +244,8 @@ jobs:
           if [ "$FAIL_COUNT" -ge 3 ]; then
             gh pr comment "${{ github.event.number }}" --body "🚨 **Circuit Breaker Tripped**: This PR has failed infrastructure validation 3+ times. Stopping automated retries."
           else
-            gh pr comment "${{ github.event.number }}" --body "⚠️ Infrastructure failure detected (Attempt $((FAIL_COUNT + 1))). Re-adding status:ai-agent-active label."
-            gh pr edit "${{ github.event.number }}" --add-label "status:ai-agent-active"
+            gh pr comment "${{ github.event.number }}" --body "⚠️ Infrastructure failure detected (Attempt $((FAIL_COUNT + 1))). Re-adding repo-agent label."
+            gh pr edit "${{ github.event.number }}" --add-label "repo-agent"
           fi
 
   cleanup-orphans:

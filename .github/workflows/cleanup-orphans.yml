@@ -98,7 +98,7 @@ jobs:
           
           echo "Deleting all KCC-managed resources with project=gcp-template-forge label..."
           KCC_TYPES="containercluster,computenetwork,computesubnetwork,computerouter,computerouternat,computefirewall"
-          KCC_RESOURCES=$(kubectl get "$KCC_TYPES" -n forge-management -l project=gcp-template-forge -o name | grep -v -E "status:ai-agent-active-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
+          KCC_RESOURCES=$(kubectl get "$KCC_TYPES" -n forge-management -l project=gcp-template-forge -o name | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
           
           echo "$KCC_RESOURCES" | while read -r RES; do
             [ -z "$RES" ] && continue
@@ -121,14 +121,14 @@ jobs:
           echo "Searching for orphaned Terraform clusters..."
           TF_CLUSTERS=$(gcloud container clusters list \
             --project="$PROJECT" \
-            --filter="name != status:ai-agent-active-standard AND name != krmapihost-kcc-instance AND name != kcc-dash-dont-delete" \
+            --filter="name != repo-agent-standard AND name != krmapihost-kcc-instance AND name != kcc-dash-dont-delete" \
             --format="value(name, zone.scope())")
 
           while read -r CLUSTER C_LOC; do
             [ -z "$CLUSTER" ] && continue
             
             # Check safe-list
-            if [[ "$CLUSTER" =~ "status:ai-agent-active-standard" || "$CLUSTER" =~ "krmapihost-kcc-instance" || "$CLUSTER" =~ "kcc-dash-dont-delete" ]]; then
+            if [[ "$CLUSTER" =~ "repo-agent-standard" || "$CLUSTER" =~ "krmapihost-kcc-instance" || "$CLUSTER" =~ "kcc-dash-dont-delete" ]]; then
               echo "Skipping protected cluster: $CLUSTER"
               continue
             fi
@@ -157,7 +157,7 @@ jobs:
             [ -z "$NEG_NAME" ] && continue
             
             # Check safe-list (Generic exclusion)
-            if [[ "$NEG_NET" =~ "status:ai-agent-active-standard" || "$NEG_NET" =~ "krmapihost-kcc-instance" || "$NEG_NET" =~ "kcc-dash-dont-delete" || "$NEG_NET" =~ "default" || "$NEG_NET" =~ "gke-network-a64ea3f1" ]]; then
+            if [[ "$NEG_NET" =~ "repo-agent-standard" || "$NEG_NET" =~ "krmapihost-kcc-instance" || "$NEG_NET" =~ "kcc-dash-dont-delete" || "$NEG_NET" =~ "default" || "$NEG_NET" =~ "gke-network-a64ea3f1" ]]; then
               continue
             fi
               
@@ -186,7 +186,7 @@ jobs:
           echo "Cleaning up orphaned Networking resources (matching pattern)..."
           
           # Firewalls (Generic exclusion)
-          FIREWALLS=$(gcloud compute firewall-rules list --project="$PROJECT" --format="value(name)" | grep -v -E "status:ai-agent-active-standard|krmapihost-kcc-instance|kcc-dash-dont-delete|default|gke-network-a64ea3f1|^k8s-fw-" || true)
+          FIREWALLS=$(gcloud compute firewall-rules list --project="$PROJECT" --format="value(name)" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete|default|gke-network-a64ea3f1|^k8s-fw-" || true)
           echo "$FIREWALLS" | while read -r F; do
             [ -z "$F" ] && continue
             SKIP=false
@@ -211,7 +211,7 @@ jobs:
           
           echo "$REGIONS" | while read -r RGN; do
             [ -z "$RGN" ] && continue
-            ROUTERS=$(echo "$ALL_ROUTERS" | grep "$RGN" | grep -v -E "status:ai-agent-active-standard|krmapihost-kcc-instance|kcc-dash-dont-delete|default|gke-network-a64ea3f1" | awk '{print $1}' || true)
+            ROUTERS=$(echo "$ALL_ROUTERS" | grep "$RGN" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete|default|gke-network-a64ea3f1" | awk '{print $1}' || true)
             echo "$ROUTERS" | while read -r R; do
               [ -z "$R" ] && continue
               SKIP=false
@@ -244,7 +244,7 @@ jobs:
           
           echo "$REGIONS" | while read -r RGN; do
             [ -z "$RGN" ] && continue
-            SUBNETS=$(echo "$ALL_SUBNETS" | grep "$RGN" | grep -v -E "status:ai-agent-active-standard|krmapihost-kcc-instance|kcc-dash-dont-delete|default|gke-network-a64ea3f1" | awk '{print $1}' || true)
+            SUBNETS=$(echo "$ALL_SUBNETS" | grep "$RGN" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete|default|gke-network-a64ea3f1" | awk '{print $1}' || true)
             echo "$SUBNETS" | while read -r S; do
               [ -z "$S" ] && continue
               SKIP=false
@@ -266,7 +266,7 @@ jobs:
           echo "Listing all networks in project..."
           gcloud compute networks list --project="$PROJECT"
 
-          NETWORKS=$(gcloud compute networks list --project="$PROJECT" --format="value(name)" | grep -v -E "status:ai-agent-active-standard|krmapihost-kcc-instance|kcc-dash-dont-delete|default|gke-network-a64ea3f1" || true)
+          NETWORKS=$(gcloud compute networks list --project="$PROJECT" --format="value(name)" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete|default|gke-network-a64ea3f1" || true)
           echo "$NETWORKS" | while read -r N; do
             [ -z "$N" ] && continue
             SKIP=false
