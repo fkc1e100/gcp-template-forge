@@ -1,0 +1,80 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeNetwork
+metadata:
+  name: ray-kueue-vpc
+  namespace: forge-management
+  labels:
+    project: gcp-template-forge
+    template: ray-kueue
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
+spec:
+  autoCreateSubnetworks: false
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeSubnetwork
+metadata:
+  name: ray-kueue-subnet
+  namespace: forge-management
+  labels:
+    project: gcp-template-forge
+    template: ray-kueue
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
+spec:
+  ipCidrRange: 10.0.0.0/20
+  region: us-central1
+  networkRef:
+    name: ray-kueue-vpc
+  privateIpGoogleAccess: true
+  secondaryIpRange:
+    - rangeName: pods
+      ipCidrRange: 10.4.0.0/14
+    - rangeName: services
+      ipCidrRange: 10.8.0.0/20
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRouter
+metadata:
+  name: ray-kueue-router
+  namespace: forge-management
+  labels:
+    project: gcp-template-forge
+    template: ray-kueue
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
+spec:
+  networkRef:
+    name: ray-kueue-vpc
+  region: us-central1
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRouterNAT
+metadata:
+  name: ray-kueue-nat
+  namespace: forge-management
+  labels:
+    project: gcp-template-forge
+    template: ray-kueue
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
+spec:
+  routerRef:
+    name: ray-kueue-router
+  region: us-central1
+  natIpAllocateOption: AUTO_ONLY
+  sourceSubnetworkIpRangesToNat: ALL_SUBNETWORKS_ALL_IP_RANGES

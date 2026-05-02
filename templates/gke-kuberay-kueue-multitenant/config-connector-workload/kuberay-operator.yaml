@@ -1,0 +1,568 @@
+---
+# Source: kuberay-operator/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kuberay-operator
+  namespace: kuberay-operator
+  labels:
+    app.kubernetes.io/name: kuberay-operator
+    helm.sh/chart: kuberay-operator-1.6.1
+    app.kubernetes.io/instance: kuberay-operator
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: kuberay-operator/templates/ray_raycronjob_editor_role.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: raycronjob-editor-role
+  labels:
+    app.kubernetes.io/name: kuberay-operator
+    helm.sh/chart: kuberay-operator-1.6.1
+    app.kubernetes.io/instance: kuberay-operator
+    app.kubernetes.io/managed-by: Helm
+rules:
+- apiGroups:
+  - ray.io
+  resources:
+  - raycronjobs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ray.io
+  resources:
+  - raycronjobs/status
+  verbs:
+  - get
+---
+# Source: kuberay-operator/templates/ray_raycronjob_viewer_role.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: raycronjob-viewer-role
+  labels:
+    app.kubernetes.io/name: kuberay-operator
+    helm.sh/chart: kuberay-operator-1.6.1
+    app.kubernetes.io/instance: kuberay-operator
+    app.kubernetes.io/managed-by: Helm
+rules:
+- apiGroups:
+  - ray.io
+  resources:
+  - raycronjobs
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ray.io
+  resources:
+  - raycronjobs/status
+  verbs:
+  - get
+---
+# Source: kuberay-operator/templates/ray_rayjob_editor_role.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: rayjob-editor-role
+  labels:
+    app.kubernetes.io/name: kuberay-operator
+    helm.sh/chart: kuberay-operator-1.6.1
+    app.kubernetes.io/instance: kuberay-operator
+    app.kubernetes.io/managed-by: Helm
+rules:
+- apiGroups:
+  - ray.io
+  resources:
+  - rayjobs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ray.io
+  resources:
+  - rayjobs/status
+  verbs:
+  - get
+---
+# Source: kuberay-operator/templates/ray_rayjob_viewer_role.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: rayjob-viewer-role
+  labels:
+    app.kubernetes.io/name: kuberay-operator
+    helm.sh/chart: kuberay-operator-1.6.1
+    app.kubernetes.io/instance: kuberay-operator
+    app.kubernetes.io/managed-by: Helm
+rules:
+- apiGroups:
+  - ray.io
+  resources:
+  - rayjobs
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ray.io
+  resources:
+  - rayjobs/status
+  verbs:
+  - get
+---
+# Source: kuberay-operator/templates/ray_rayservice_editor_role.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: rayservice-editor-role
+  labels:
+    app.kubernetes.io/name: kuberay-operator
+    helm.sh/chart: kuberay-operator-1.6.1
+    app.kubernetes.io/instance: kuberay-operator
+    app.kubernetes.io/managed-by: Helm
+rules:
+- apiGroups:
+  - ray.io
+  resources:
+  - rayservices
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ray.io
+  resources:
+  - rayservices/status
+  verbs:
+  - get
+---
+# Source: kuberay-operator/templates/ray_rayservice_viewer_role.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: rayservice-viewer-role
+  labels:
+    app.kubernetes.io/name: kuberay-operator
+    helm.sh/chart: kuberay-operator-1.6.1
+    app.kubernetes.io/instance: kuberay-operator
+    app.kubernetes.io/managed-by: Helm
+rules:
+- apiGroups:
+  - ray.io
+  resources:
+  - rayservices
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ray.io
+  resources:
+  - rayservices/status
+  verbs:
+  - get
+---
+# Source: kuberay-operator/templates/role.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: kuberay-operator
+  labels:
+    app.kubernetes.io/name: kuberay-operator
+    helm.sh/chart: kuberay-operator-1.6.1
+    app.kubernetes.io/instance: kuberay-operator
+    app.kubernetes.io/managed-by: Helm
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - events
+  - pods/status
+  - services
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - create
+  - delete
+  - deletecollection
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - pods/proxy
+  - services/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - pods/resize
+  verbs:
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - serviceaccounts
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - services/proxy
+  verbs:
+  - create
+  - get
+  - patch
+  - update
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - create
+  - get
+  - list
+  - update
+- apiGroups:
+  - discovery.k8s.io
+  resources:
+  - endpointslices
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - extensions
+  - networking.k8s.io
+  resources:
+  - ingresses
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - gateway.networking.k8s.io
+  resources:
+  - gateways
+  - httproutes
+  verbs:
+  - create
+  - get
+  - list
+  - update
+  - watch
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - ingressclasses
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ray.io
+  resources:
+  - rayclusters
+  - raycronjobs
+  - rayjobs
+  - rayservices
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ray.io
+  resources:
+  - rayclusters/finalizers
+  - raycronjobs/finalizers
+  - rayjobs/finalizers
+  - rayservices/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - ray.io
+  resources:
+  - rayclusters/status
+  - raycronjobs/status
+  - rayjobs/status
+  - rayservices/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - rolebindings
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - watch
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - roles
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - update
+  - watch
+- apiGroups:
+  - route.openshift.io
+  resources:
+  - routes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+---
+# Source: kuberay-operator/templates/rolebinding.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: kuberay-operator
+  labels:
+    app.kubernetes.io/name: kuberay-operator
+    helm.sh/chart: kuberay-operator-1.6.1
+    app.kubernetes.io/instance: kuberay-operator
+    app.kubernetes.io/managed-by: Helm
+subjects:
+- kind: ServiceAccount
+  name: kuberay-operator
+  namespace: kuberay-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kuberay-operator
+---
+# Source: kuberay-operator/templates/leader_election_role.yaml
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: kuberay-operator-leader-election
+  namespace: kuberay-operator
+  labels:
+    app.kubernetes.io/name: kuberay-operator
+    helm.sh/chart: kuberay-operator-1.6.1
+    app.kubernetes.io/instance: kuberay-operator
+    app.kubernetes.io/managed-by: Helm
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - create
+  - get
+  - list
+  - update
+---
+# Source: kuberay-operator/templates/leader_election_role_binding.yaml
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: kuberay-operator-leader-election
+  namespace: kuberay-operator
+  labels:
+    app.kubernetes.io/name: kuberay-operator
+    helm.sh/chart: kuberay-operator-1.6.1
+    app.kubernetes.io/instance: kuberay-operator
+    app.kubernetes.io/managed-by: Helm
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: kuberay-operator-leader-election
+subjects:
+- kind: ServiceAccount
+  name: kuberay-operator
+  namespace: kuberay-operator
+---
+# Source: kuberay-operator/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: kuberay-operator
+  namespace: kuberay-operator
+  labels:
+    app.kubernetes.io/name: kuberay-operator
+    helm.sh/chart: kuberay-operator-1.6.1
+    app.kubernetes.io/instance: kuberay-operator
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: kuberay-operator
+    app.kubernetes.io/instance: kuberay-operator
+---
+# Source: kuberay-operator/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kuberay-operator
+  namespace: kuberay-operator
+  labels:
+    app.kubernetes.io/name: kuberay-operator
+    helm.sh/chart: kuberay-operator-1.6.1
+    app.kubernetes.io/instance: kuberay-operator
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kuberay-operator
+      app.kubernetes.io/instance: kuberay-operator
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: kuberay-operator
+        app.kubernetes.io/instance: kuberay-operator
+        app.kubernetes.io/component: kuberay-operator
+    spec:
+      serviceAccountName: kuberay-operator
+      containers:
+        - name: kuberay-operator
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          image: "quay.io/kuberay/operator:v1.6.1"
+          imagePullPolicy: IfNotPresent
+          command:
+            - /manager
+          args:
+            - --log-stdout-encoder
+            - json
+            - --log-file-encoder
+            - json
+            - --enable-leader-election=true
+            - --enable-metrics=true
+            - --reconcile-concurrency=1
+            - --qps=100
+            - --burst=200
+            - --feature-gates=RayClusterStatusConditions=true,RayJobDeletionPolicy=true,RayMultiHostIndexing=true,RayServiceIncrementalUpgrade=false,RayCronJob=false
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /metrics
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 5
+          resources:
+            limits:
+              cpu: 100m
+              memory: 512Mi

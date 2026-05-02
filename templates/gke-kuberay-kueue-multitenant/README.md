@@ -21,7 +21,31 @@ terraform apply -var="project_id=my-project-id" -var="service_account=my-service
 ```
 
 ### Config Connector (`config-connector/`)
-(Not implemented yet for this template)
+
+1.  Navigate to the directory:
+    ```bash
+    cd templates/gke-kuberay-kueue-multitenant/config-connector
+    ```
+2.  Apply the infrastructure manifests:
+    ```bash
+    kubectl apply -f .
+    ```
+3.  Wait for the cluster to be ready:
+    ```bash
+    kubectl wait --for=condition=Ready containercluster ray-kueue-cluster --timeout=30m
+    ```
+4.  Configure `kubectl` and deploy the operators and workloads:
+    ```bash
+    gcloud container clusters get-credentials ray-kueue-cluster --region us-central1
+    cd ../config-connector-workload
+    kubectl create namespace kuberay-operator
+    kubectl create namespace kueue-system
+    kubectl apply --server-side -f kuberay-operator.yaml
+    kubectl apply --server-side -f kueue-operator.yaml
+    
+    # Wait for the operators to start, then apply the workload
+    kubectl apply -f workload.yaml
+    ```
 
 ## Verification
 
