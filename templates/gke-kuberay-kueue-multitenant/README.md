@@ -32,11 +32,11 @@ terraform apply -var="project_id=my-project-id" -var="service_account=my-service
     ```
 3.  Wait for the cluster to be ready:
     ```bash
-    kubectl wait --for=condition=Ready containercluster ray-kueue-cluster --timeout=30m
+    kubectl wait --for=condition=Ready containercluster gke-kuberay-kueue-multitenant-cluster --timeout=30m
     ```
 4.  Configure `kubectl` and deploy the operators and workloads:
     ```bash
-    gcloud container clusters get-credentials ray-kueue-cluster --region us-central1
+    gcloud container clusters get-credentials gke-kuberay-kueue-multitenant-cluster --region us-central1
     cd ../config-connector-workload
     kubectl create namespace kuberay-operator
     kubectl create namespace kueue-system

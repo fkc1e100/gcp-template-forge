@@ -15,11 +15,11 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerCluster
 metadata:
-  name: ray-kueue-cluster
+  name: gke-kuberay-kueue-multitenant-cluster
   namespace: forge-management
   labels:
     project: gcp-template-forge
-    template: ray-kueue
+    template: gke-kuberay-kueue-multitenant
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
     cnrm.cloud.google.com/remove-default-node-pool: "true"
@@ -30,9 +30,9 @@ spec:
     - us-central1-a
   initialNodeCount: 1
   networkRef:
-    name: ray-kueue-vpc
+    name: gke-kuberay-kueue-multitenant-vpc
   subnetworkRef:
-    name: ray-kueue-subnet
+    name: gke-kuberay-kueue-multitenant-subnet
   ipAllocationPolicy:
     clusterSecondaryRangeName: pods
     servicesSecondaryRangeName: services

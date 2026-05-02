@@ -15,56 +15,58 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
 metadata:
-  name: ray-kueue-system-pool
+  name: gke-kuberay-kueue-multitenant-system-pool
   namespace: forge-management
   labels:
     project: gcp-template-forge
-    template: ray-kueue
+    template: gke-kuberay-kueue-multitenant
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   clusterRef:
-    name: ray-kueue-cluster
+    name: gke-kuberay-kueue-multitenant-cluster
   location: us-central1
   nodeLocations:
     - us-central1-a
-  nodeCount: 1
+  autoscaling:
+    minNodeCount: 1
+    maxNodeCount: 3
+    locationPolicy: BALANCED
   nodeConfig:
     machineType: e2-standard-4
     diskSizeGb: 50
-    diskType: pd-balanced
-    spot: true
+    diskType: pd-standard
     oauthScopes:
       - https://www.googleapis.com/auth/cloud-platform
     workloadMetadataConfig:
       mode: GKE_METADATA
     labels:
       project: gcp-template-forge
-      template: ray-kueue
+      template: gke-kuberay-kueue-multitenant
 ---
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
 metadata:
-  name: ray-kueue-gpu-pool
+  name: gke-kuberay-kueue-multitenant-gpu-pool
   namespace: forge-management
   labels:
     project: gcp-template-forge
-    template: ray-kueue
+    template: gke-kuberay-kueue-multitenant
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   clusterRef:
-    name: ray-kueue-cluster
+    name: gke-kuberay-kueue-multitenant-cluster
   location: us-central1
   nodeLocations:
     - us-central1-a
   autoscaling:
     minNodeCount: 0
-    maxNodeCount: 10
+    maxNodeCount: 5
     locationPolicy: BALANCED
   nodeConfig:
     machineType: g2-standard-4
-    diskSizeGb: 100
+    diskSizeGb: 50
     diskType: pd-balanced
     spot: true
     guestAccelerator:
@@ -78,9 +80,5 @@ spec:
       mode: GKE_METADATA
     labels:
       project: gcp-template-forge
-      template: ray-kueue
+      template: gke-kuberay-kueue-multitenant
       gpu: l4
-    taint:
-      - key: nvidia.com/gpu
-        value: "present"
-        effect: NO_SCHEDULE
