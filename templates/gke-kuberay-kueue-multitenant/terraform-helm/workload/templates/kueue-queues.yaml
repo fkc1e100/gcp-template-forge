@@ -1,6 +1,9 @@
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: ResourceFlavor
 metadata:
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-weight: "3"
   name: default-flavor
 spec:
   nodeLabels:
@@ -10,6 +13,9 @@ spec:
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: ClusterQueue
 metadata:
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-weight: "3"
   name: team-a-cq
 spec:
   cohort: shared-gpus
@@ -26,6 +32,9 @@ spec:
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: ClusterQueue
 metadata:
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-weight: "3"
   name: team-b-cq
 spec:
   cohort: shared-gpus
@@ -42,6 +51,9 @@ spec:
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: LocalQueue
 metadata:
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-weight: "3"
   name: team-a-queue
   namespace: team-a
 spec:
@@ -51,6 +63,9 @@ spec:
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: LocalQueue
 metadata:
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-weight: "3"
   name: team-b-queue
   namespace: team-b
 spec:
