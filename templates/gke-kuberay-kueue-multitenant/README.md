@@ -29,6 +29,11 @@ A GKE template demonstrating how to solve the "Noisy Neighbor" problem for share
 cd terraform-helm
 terraform init
 terraform apply -var="project_id=my-project-id" -var="service_account=my-service-account@my-project-id.iam.gserviceaccount.com"
+# Authenticate to the cluster
+gcloud container clusters get-credentials gke-kuberay-kueue --region us-central1
+
+# Deploy the Helm chart
+helm upgrade --install release workload/ --wait
 ```
 
 ### Config Connector (`config-connector/`)

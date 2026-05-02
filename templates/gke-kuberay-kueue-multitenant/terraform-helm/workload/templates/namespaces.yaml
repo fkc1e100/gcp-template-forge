@@ -1,6 +1,9 @@
 apiVersion: v1
 kind: Namespace
 metadata:
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-weight: "1"
   name: team-a
   labels:
     kueue.x-k8s.io/queue-name: team-a-queue
@@ -8,6 +11,9 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-weight: "1"
   name: team-b
   labels:
     kueue.x-k8s.io/queue-name: team-b-queue
