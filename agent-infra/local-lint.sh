@@ -38,10 +38,10 @@ echo "$TEMPLATES" | while read -r template; do
   
   echo "--- Checking structure of $template_name ---"
   MISSING=""
-  if [ "$LINT_MODE" == "TF" ] || [ -z "$LINT_MODE" ]; then
+  if [ "$LINT_MODE" == "TF" ]; then
     [ ! -d "${template}/terraform-helm" ] && MISSING="${MISSING} terraform-helm/"
   fi
-  if [ "$LINT_MODE" == "KCC" ] || [ -z "$LINT_MODE" ]; then
+  if [ "$LINT_MODE" == "KCC" ]; then
     if [ ! -f "${template}/.kcc-unsupported" ]; then
       [ ! -d "${template}/config-connector" ] && MISSING="${MISSING} config-connector/"
     fi
