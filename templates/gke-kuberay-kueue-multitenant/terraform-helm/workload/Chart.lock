@@ -1,0 +1,9 @@
+dependencies:
+- name: kuberay-operator
+  repository: https://ray-project.github.io/kuberay-helm/
+  version: 1.6.1
+- name: kueue
+  repository: oci://registry.k8s.io/kueue/charts
+  version: 0.17.2
+digest: sha256:49a72f50fdb337e6a39033bb754f8b2b83c8e01fd2814aaa85079843c5c69d42
+generated: "2026-05-01T23:07:38.620481191Z"
