@@ -31,6 +31,27 @@ gcloud container clusters get-credentials ${CLUSTER_NAME} --region ${REGION} --p
 kubectl cluster-info
 echo "Connectivity passed."
 
+# 1.5 KCC Workload Apply
+if [[ "$CLUSTER_NAME" == *"-kcc" ]]; then
+  echo "Applying KCC Workloads..."
+  kubectl create namespace kuberay-operator --dry-run=client -o yaml | kubectl apply -f -
+  kubectl create namespace kueue-system --dry-run=client -o yaml | kubectl apply -f -
+  kubectl apply --server-side -f templates/gke-kuberay-kueue-multitenant/config-connector-workload/kuberay-operator.yaml
+  kubectl apply --server-side -f templates/gke-kuberay-kueue-multitenant/config-connector-workload/kueue-operator.yaml
+  
+  echo "Waiting for CRDs..."
+  for i in {1..30}; do
+    if kubectl get crd resourceflavors.kueue.x-k8s.io clusterqueues.kueue.x-k8s.io localqueues.kueue.x-k8s.io rayclusters.ray.io >/dev/null 2>&1; then
+      echo "CRDs are ready"
+      break
+    fi
+    echo "Waiting for CRDs... ($i/30)"
+    sleep 10
+  done
+  
+  kubectl apply -f templates/gke-kuberay-kueue-multitenant/config-connector-workload/workload.yaml
+fi
+
 # 2. Operator Readiness
 echo "Test 2: KubeRay and Kueue Operator Readiness..."
 kubectl wait --for=condition=available deployment -l app.kubernetes.io/name=kuberay-operator --timeout=15m || true
