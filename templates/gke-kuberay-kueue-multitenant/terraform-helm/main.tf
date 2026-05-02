@@ -93,9 +93,9 @@ provider "google-beta" {
 
 # Node pool â€” system pool for operators
 resource "google_container_node_pool" "system_pool" {
-  name       = "system-pool"
-  location   = var.region
-  cluster    = google_container_cluster.primary.name
+  name     = "system-pool"
+  location = var.region
+  cluster  = google_container_cluster.primary.name
 
   autoscaling {
     min_node_count = 1
@@ -119,7 +119,7 @@ resource "google_container_node_pool" "system_pool" {
     service_account = var.service_account
 
     labels = {
-      project = "gcp-template-forge"
+      project  = "gcp-template-forge"
       template = "gke-kuberay-kueue-multitenant"
     }
 
@@ -132,10 +132,10 @@ resource "google_container_node_pool" "system_pool" {
 
 # GPU Node Pool with Autoscaling
 resource "google_container_node_pool" "gpu_pool" {
-  provider   = google-beta
-  name       = "l4-gpu-pool"
-  location   = var.region
-  cluster    = google_container_cluster.primary.name
+  provider = google-beta
+  name     = "l4-gpu-pool"
+  location = var.region
+  cluster  = google_container_cluster.primary.name
 
   autoscaling {
     min_node_count = 0
@@ -184,7 +184,7 @@ resource "google_container_node_pool" "gpu_pool" {
 
 resource "local_file" "helm_values" {
   filename = "${path.module}/workload/values.yaml"
-  content = <<EOT
+  content  = <<EOT
 templateName: gke-kuberay-kueue-multitenant
 EOT
 }
