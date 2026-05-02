@@ -5,6 +5,11 @@ metadata:
 spec:
   nodeLabels:
     gpu: "l4" # Match our node pool
+  tolerations:
+  - key: "nvidia.com/gpu"
+    operator: "Equal"
+    value: "present"
+    effect: "NoSchedule"
 
 ---
 apiVersion: kueue.x-k8s.io/v1beta1

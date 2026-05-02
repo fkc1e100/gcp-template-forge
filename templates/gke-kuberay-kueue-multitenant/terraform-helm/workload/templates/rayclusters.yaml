@@ -6,6 +6,7 @@ metadata:
   labels:
     kueue.x-k8s.io/queue-name: team-a-queue
 spec:
+  suspend: true
   rayVersion: '2.9.0'
   headGroupSpec:
     rayStartParams:
@@ -44,6 +45,11 @@ spec:
               cpu: "1"
               memory: "2Gi"
               nvidia.com/gpu: 1
+        tolerations:
+        - key: "nvidia.com/gpu"
+          operator: "Equal"
+          value: "present"
+          effect: "NoSchedule"
 
 ---
 apiVersion: ray.io/v1
@@ -54,6 +60,7 @@ metadata:
   labels:
     kueue.x-k8s.io/queue-name: team-b-queue
 spec:
+  suspend: true
   rayVersion: '2.9.0'
   headGroupSpec:
     rayStartParams:
@@ -92,3 +99,8 @@ spec:
               cpu: "1"
               memory: "2Gi"
               nvidia.com/gpu: 1
+        tolerations:
+        - key: "nvidia.com/gpu"
+          operator: "Equal"
+          value: "present"
+          effect: "NoSchedule"
