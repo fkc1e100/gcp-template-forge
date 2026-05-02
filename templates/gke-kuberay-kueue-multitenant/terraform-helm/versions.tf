@@ -13,7 +13,9 @@
 # limitations under the License.
 
 terraform {
-  backend "gcs" {}
+  backend "gcs" {
+    bucket = "gke-gca-2025-forge-tf-state"
+  }
   required_providers {
     google = {
       source  = "hashicorp/google"
