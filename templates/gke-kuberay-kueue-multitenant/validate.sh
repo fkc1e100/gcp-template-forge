@@ -50,11 +50,13 @@ fi
 
 # Wait for KubeRay operator
 echo "Waiting for KubeRay operator..."
-kubectl wait --for=condition=available deployment/kuberay-operator -n kuberay-operator --timeout=120s
+KUBERAY_NS=$(kubectl get deployment kuberay-operator -A -o jsonpath='{.items[0].metadata.namespace}' 2>/dev/null || echo "default")
+kubectl wait --for=condition=available deployment/kuberay-operator -n $KUBERAY_NS --timeout=120s
 
 # Wait for Kueue operator
 echo "Waiting for Kueue operator..."
-kubectl wait --for=condition=available deployment/kueue-controller-manager -n kueue-system --timeout=120s
+KUEUE_NS=$(kubectl get deployment kueue-controller-manager -A -o jsonpath='{.items[0].metadata.namespace}' 2>/dev/null || echo "default")
+kubectl wait --for=condition=available deployment/kueue-controller-manager -n $KUEUE_NS --timeout=120s
 
 # Wait for CRDs to be registered
 echo "Waiting for Kueue CRDs..."
