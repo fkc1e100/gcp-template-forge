@@ -22,13 +22,13 @@ metadata:
     template: ray-kueue
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
+    cnrm.cloud.google.com/remove-default-node-pool: "true"
 spec:
   location: us-central1
   # Use a single zone for GPU availability
   nodeLocations:
     - us-central1-a
   initialNodeCount: 1
-  removeDefaultNodePool: true
   networkRef:
     name: ray-kueue-vpc
   subnetworkRef:

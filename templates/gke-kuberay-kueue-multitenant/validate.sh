@@ -17,23 +17,44 @@ set -e
 
 echo "Starting validation for ray-kueue template..."
 
-# Check if KubeRay operator is running
-echo "Checking KubeRay operator..."
-kubectl get pods -l app.kubernetes.io/name=kuberay-operator -A
-KUBERAY_PODS=$(kubectl get pods -l app.kubernetes.io/name=kuberay-operator -A -o jsonpath='{.items[*].status.phase}')
-if [[ ! "$KUBERAY_PODS" =~ "Running" ]]; then
-  echo "KubeRay operator is not running"
-  exit 1
+# Check if we are running in KCC path or TF path
+IS_KCC=false
+if [[ "$CLUSTER_NAME" == *"-kcc" ]] || [[ "$CLUSTER_NAME" == *"-tf" && -z "$TF_VAR_project_id" ]]; then
+  # The runner will provide KCC_NAMESPACE or we can infer it. 
+  # Wait, in KCC sandbox we will just check if we have config-connector-workload and KCC_NAMESPACE is set, but KCC_NAMESPACE is for forge-management.
+  # If we see that the operators aren't running, we might be in KCC.
+  IS_KCC=true
+fi
+if kubectl get pods -l app.kubernetes.io/name=kuberay-operator -A >/dev/null 2>&1; then
+  if kubectl get pods -l app.kubernetes.io/name=kuberay-operator -A -o jsonpath='{.items[*].status.phase}' | grep -q "Running"; then
+    IS_KCC=false
+  else
+    # They are there but not running yet?
+    :
+  fi
+else
+  # No pods found, must be KCC needing apply
+  IS_KCC=true
 fi
 
-# Check if Kueue operator is running
-echo "Checking Kueue operator..."
-kubectl get pods -l app.kubernetes.io/name=kueue -n kueue-system
-KUEUE_PODS=$(kubectl get pods -l app.kubernetes.io/name=kueue -n kueue-system -o jsonpath='{.items[*].status.phase}')
-if [[ ! "$KUEUE_PODS" =~ "Running" ]]; then
-  echo "Kueue operator is not running"
-  exit 1
+# The surest way: in TF CI, Helm has already applied the workloads before validate.sh is called.
+# In KCC CI, Helm is not used, so the workloads must be applied now.
+echo "Applying workloads if necessary..."
+if [[ "$IS_KCC" == "true" ]]; then
+  echo "Applying operators (KCC path)..."
+  kubectl create namespace kuberay-operator --dry-run=client -o yaml | kubectl apply -f -
+  kubectl create namespace kueue-system --dry-run=client -o yaml | kubectl apply -f -
+  kubectl apply --server-side -f templates/gke-kuberay-kueue-multitenant/config-connector-workload/kuberay-operator.yaml
+  kubectl apply --server-side -f templates/gke-kuberay-kueue-multitenant/config-connector-workload/kueue-operator.yaml
 fi
+
+# Wait for KubeRay operator
+echo "Waiting for KubeRay operator..."
+kubectl wait --for=condition=available deployment/kuberay-operator -n kuberay-operator --timeout=120s
+
+# Wait for Kueue operator
+echo "Waiting for Kueue operator..."
+kubectl wait --for=condition=available deployment/kueue-controller-manager -n kueue-system --timeout=120s
 
 # Wait for CRDs to be registered
 echo "Waiting for Kueue CRDs..."
@@ -58,12 +79,16 @@ done
 
 # Apply multi-tenant configuration
 echo "Applying multi-tenant configuration..."
-if [ -f "templates/gke-kuberay-kueue-multitenant/config-connector-workload/workload.yaml" ]; then
-  echo "Using Config Connector workload manifests..."
-  kubectl apply -f templates/gke-kuberay-kueue-multitenant/config-connector-workload/workload.yaml
+if [[ "$IS_KCC" == "true" ]]; then
+  if ! kubectl get resourceflavor default-flavor >/dev/null 2>&1; then
+    echo "Applying KCC workload.yaml..."
+    kubectl apply -f templates/gke-kuberay-kueue-multitenant/config-connector-workload/workload.yaml
+  fi
 else
-  echo "Using Terraform/Helm extra manifests..."
-  kubectl apply -f templates/gke-kuberay-kueue-multitenant/terraform-helm/workload/extra-manifests/
+  if ! kubectl get resourceflavor default-flavor >/dev/null 2>&1; then
+    echo "Applying TF extra manifests..."
+    kubectl apply -f templates/gke-kuberay-kueue-multitenant/terraform-helm/workload/extra-manifests/
+  fi
 fi
 
 # Check for ResourceFlavor
