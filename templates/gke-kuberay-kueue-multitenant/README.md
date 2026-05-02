@@ -64,11 +64,18 @@ This template demonstrates how to set up a multi-tenant Ray environment on GKE u
     gcloud container clusters get-credentials ray-kueue-cluster --region us-central1
     ```
 
-5.  Deploy the operators and multi-tenant workload:
+5.  Deploy the operators (KubeRay and Kueue):
     ```bash
     cd ../config-connector-workload
-    kubectl apply -f kuberay-operator.yaml
-    kubectl apply -f kueue-operator.yaml
+    kubectl create namespace kuberay-operator
+    kubectl create namespace kueue-system
+    kubectl apply --server-side -f kuberay-operator.yaml
+    kubectl apply --server-side -f kueue-operator.yaml
+    ```
+
+6.  Deploy the multi-tenant workload configurations:
+    ```bash
+    # Wait for the operators to be running first
     kubectl apply -f workload.yaml
     ```
 
