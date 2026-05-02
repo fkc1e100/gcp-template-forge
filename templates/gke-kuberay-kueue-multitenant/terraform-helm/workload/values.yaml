@@ -1,0 +1,4 @@
+# Default values for ray-kueue-multi.
+# This file is overwritten by Terraform during deployment.
+templateName: ray-kueue-multi
+projectID: gca-gke-2025

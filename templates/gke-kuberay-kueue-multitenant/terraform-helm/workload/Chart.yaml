@@ -1,0 +1,6 @@
+apiVersion: v2
+name: ray-kueue-multi
+description: A Helm chart for Multi-Tenant Ray on GKE with Equitable Queuing
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

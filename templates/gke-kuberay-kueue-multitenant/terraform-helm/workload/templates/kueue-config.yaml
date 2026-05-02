@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: team-a
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: team-b
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ResourceFlavor
+metadata:
+  name: default-flavor
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ClusterQueue
+metadata:
+  name: cluster-queue
+spec:
+  namespaceSelector: {} # matches all namespaces
+  resourceGroups:
+  - flavors:
+    - name: default-flavor
+      resources:
+      - name: "cpu"
+        nominalQuota: 8
+      - name: "memory"
+        nominalQuota: 32Gi
+      - name: "nvidia.com/gpu"
+        nominalQuota: 2
+        borrowingLimit: 0
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: LocalQueue
+metadata:
+  name: ray-queue
+  namespace: team-a
+spec:
+  clusterQueue: cluster-queue
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: LocalQueue
+metadata:
+  name: ray-queue
+  namespace: team-b
+spec:
+  clusterQueue: cluster-queue
