@@ -25,11 +25,20 @@ A GKE template demonstrating how to solve the "Noisy Neighbor" problem for share
 
 ### Terraform + Helm (`terraform-helm/`)
 
-```bash
-cd terraform-helm
-terraform init
-terraform apply -var="project_id=my-project-id" -var="service_account=my-service-account@my-project-id.iam.gserviceaccount.com"
-```
+1.  Navigate to the directory and apply the infrastructure:
+    ```bash
+    cd terraform-helm
+    terraform init
+    terraform apply -var="project_id=my-project-id" -var="service_account=my-service-account@my-project-id.iam.gserviceaccount.com"
+    ```
+2.  Configure `kubectl` to connect to the new cluster:
+    ```bash
+    gcloud container clusters get-credentials $(terraform output -raw cluster_name) --region $(terraform output -raw cluster_location)
+    ```
+3.  Deploy the workload using Helm:
+    ```bash
+    helm upgrade --install kuberay-kueue-multitenant ./workload --wait
+    ```
 
 ### Config Connector (`config-connector/`)
 
