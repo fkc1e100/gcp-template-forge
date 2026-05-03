@@ -80,7 +80,7 @@
       {
         "title": "validate.sh MUST prove the workload works — not just that pods are Running",
         "description": "A validate.sh that only checks 'kubectl wait --for=condition=available' is INCOMPLETE and will be treated as a CI failure. Every template's validate.sh MUST include at least one functional verification step that proves the workload is actually serving or processing: (A) curl/wget to an HTTP/HTTPS endpoint and verify a non-error HTTP response, OR (B) kubectl exec into a running pod and run a meaningful command (psql SELECT 1, redis-cli PING, grpcurl, etc.), OR (C) for batch/ML workloads: submit a test job or inference request and verify it completes successfully. Use the basic-gke-hello-world validate.sh as the reference — it curls the LoadBalancer IP and fails if the endpoint doesn't respond. The validate.sh scaffold's Test 5 section must be implemented; leaving it with 'exit 1' is not acceptable.",
-        "example": "For a Ray + Kueue template: after kubectl wait raycluster --for=condition=Ready, submit a RayJob that runs 'import ray; ray.init(); print(ray.cluster_resources())' and wait for it to Complete. For a web service: curl http://${SERVICE_IP}/healthz and assert HTTP 200."
+        "example": "Web service or API: curl http://${SERVICE_IP}/healthz or similar and assert HTTP 2xx. Database/cache: kubectl exec into app pod and run psql 'SELECT 1', redis-cli PING, or equivalent. Operator-managed CRD: kubectl wait <resource-kind> --for=condition=Ready. Batch/job workload: submit a minimal test job and wait for condition=Complete. Choose the pattern that fits the template's workload type — the basic-gke-hello-world curl pattern is the canonical reference."
       }
     ],
     "clarity": [],

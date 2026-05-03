@@ -123,36 +123,31 @@ echo "--- Test 5: Workload Functional Verification ---"
 #   redis-cli ping | grep -q PONG \
 #   && echo "PASS: Redis is responding."
 
-# ── PATTERN C: Custom resource status (KubeRay, Kueue, etc.) ─────────────────
-# Use this for templates that deploy CRD-backed resources.
+# ── PATTERN C: Custom resource readiness (operator-managed CRDs) ──────────────
+# Use this for templates that deploy operator-managed resources where the operator
+# exposes a Ready/Active condition on a custom resource.
+# Replace the resource kind and condition with whatever your operator exposes.
 #
-# kubectl wait raycluster --all -n "${NAMESPACE}" \
+# Generic CRD wait pattern:
+# kubectl wait <resource-kind> --all -n "${NAMESPACE}" \
 #   --for=condition=Ready --timeout=20m \
-#   && echo "PASS: RayCluster is Ready."
+#   && echo "PASS: <Resource> is Ready."
 #
-# kubectl wait localqueue --all -n "${NAMESPACE}" \
-#   --for=condition=Active --timeout=5m \
-#   && echo "PASS: LocalQueue is Active."
+# Examples by technology:
+#   KubeRay:  kubectl wait raycluster --all -n "${NAMESPACE}" --for=condition=Ready --timeout=20m
+#   Kueue:    kubectl wait localqueue --all -n "${NAMESPACE}" --for=condition=Active --timeout=5m
+#   Argo:     kubectl wait workflow --all -n "${NAMESPACE}" --for=condition=Completed --timeout=20m
+#   Knative:  kubectl wait ksvc --all -n "${NAMESPACE}" --for=condition=Ready --timeout=10m
+#   Kafka:    kubectl wait kafka --all -n "${NAMESPACE}" --for=condition=Ready --timeout=15m
 #
-# Submit a test job and verify completion:
-# kubectl create -f - <<JOB_EOF
-# apiVersion: batch/v1
-# kind: Job
-# metadata:
-#   name: validate-test-$(date +%s)
-#   namespace: ${NAMESPACE}
-# spec:
-#   template:
-#     spec:
-#       restartPolicy: Never
-#       containers:
-#       - name: test
-#         image: gcr.io/google-containers/busybox
-#         command: ["sh", "-c", "echo 'workload verification ok'"]
-# JOB_EOF
-# kubectl wait job -l app=validate-test -n "${NAMESPACE}" \
+# Submit a test batch job and verify it completes (generic pattern):
+# TEST_JOB="validate-$(date +%s)"
+# kubectl create job "$TEST_JOB" --image=busybox -n "${NAMESPACE}" \
+#   -- sh -c "echo workload-ok"
+# kubectl wait job "$TEST_JOB" -n "${NAMESPACE}" \
 #   --for=condition=Complete --timeout=10m \
 #   && echo "PASS: Test job completed."
+# kubectl delete job "$TEST_JOB" -n "${NAMESPACE}" --ignore-not-found
 
 # ── TODO: IMPLEMENT ONE OF THE PATTERNS ABOVE ────────────────────────────────
 # Do NOT leave this section empty. A validate.sh that only reaches this line
