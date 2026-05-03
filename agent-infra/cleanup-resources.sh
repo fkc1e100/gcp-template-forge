@@ -170,15 +170,81 @@ if [ "$DELETED_CLUSTERS" = true ]; then
   done
 fi
 
-# 3. Clean up Networking resources
-# Use label filter: all template resources must have project=gcp-template-forge.
-# This is future-proof — no need to add new template names here.
+# 3. Clean up Networking resources — deletion order: routers → subnets → VPCs → firewalls
+# Use label filter for labeled resources (labeled since VPCs gained label support).
+# Also use name-pattern filter for legacy orphans created before labels were added.
+PROTECTED="repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete|default"
+
+echo "Cleaning up orphaned Cloud Routers..."
+# By label (new resources)
+ROUTERS_LABEL=$(gcloud compute routers list --project="$PROJECT" --regions="$REGION" \
+  --filter="labels.project=gcp-template-forge" \
+  --format="value(name)" 2>/dev/null || true)
+# By name pattern (legacy orphans — *-router-* but not permanent infra)
+ROUTERS_PATTERN=$(gcloud compute routers list --project="$PROJECT" --regions="$REGION" \
+  --format="value(name)" 2>/dev/null | \
+  grep -E "\-(router|tf\-router)\-" | grep -vE "$PROTECTED" || true)
+for ROUTER in $(echo "$ROUTERS_LABEL $ROUTERS_PATTERN" | tr ' ' '\n' | sort -u); do
+  [ -z "$ROUTER" ] && continue
+  # Skip if name matches an active run ID suffix
+  SKIP=false
+  while read -r RUN_ID; do
+    [ -z "$RUN_ID" ] && continue
+    SUFFIX="${RUN_ID: -6}"
+    [[ "$ROUTER" == *"$SUFFIX"* ]] && SKIP=true && break
+  done <<< "$(echo "$ALL_ACTIVE" | tr ' ' '\n')"
+  [ "$SKIP" = true ] && echo "Skipping active router: $ROUTER" && continue
+  echo "Deleting orphaned router: $ROUTER"
+  gcloud compute routers delete "$ROUTER" --region="$REGION" --project="$PROJECT" --quiet 2>/dev/null || true
+done
+
+echo "Cleaning up orphaned Subnets..."
+SUBNETS_LABEL=$(gcloud compute networks subnets list --project="$PROJECT" --regions="$REGION" \
+  --filter="labels.project=gcp-template-forge" \
+  --format="value(name)" 2>/dev/null || true)
+SUBNETS_PATTERN=$(gcloud compute networks subnets list --project="$PROJECT" --regions="$REGION" \
+  --format="value(name)" 2>/dev/null | \
+  grep -E "\-tf\-subnet$|\-subnet\-[0-9]" | grep -vE "$PROTECTED" || true)
+for SUBNET in $(echo "$SUBNETS_LABEL $SUBNETS_PATTERN" | tr ' ' '\n' | sort -u); do
+  [ -z "$SUBNET" ] && continue
+  SKIP=false
+  while read -r RUN_ID; do
+    [ -z "$RUN_ID" ] && continue
+    SUFFIX="${RUN_ID: -6}"
+    [[ "$SUBNET" == *"$SUFFIX"* ]] && SKIP=true && break
+  done <<< "$(echo "$ALL_ACTIVE" | tr ' ' '\n')"
+  [ "$SKIP" = true ] && echo "Skipping active subnet: $SUBNET" && continue
+  echo "Deleting orphaned subnet: $SUBNET"
+  gcloud compute networks subnets delete "$SUBNET" --region="$REGION" \
+    --project="$PROJECT" --quiet 2>/dev/null || true
+done
+
+echo "Cleaning up orphaned VPC Networks..."
+VPCS_LABEL=$(gcloud compute networks list --project="$PROJECT" \
+  --filter="labels.project=gcp-template-forge" \
+  --format="value(name)" 2>/dev/null || true)
+VPCS_PATTERN=$(gcloud compute networks list --project="$PROJECT" \
+  --format="value(name)" 2>/dev/null | \
+  grep -E "\-tf\-vpc$|\-tf\-net$|\-tf\-network$" | grep -vE "$PROTECTED" || true)
+for VPC in $(echo "$VPCS_LABEL $VPCS_PATTERN" | tr ' ' '\n' | sort -u); do
+  [ -z "$VPC" ] && continue
+  SKIP=false
+  while read -r RUN_ID; do
+    [ -z "$RUN_ID" ] && continue
+    SUFFIX="${RUN_ID: -6}"
+    [[ "$VPC" == *"$SUFFIX"* ]] && SKIP=true && break
+  done <<< "$(echo "$ALL_ACTIVE" | tr ' ' '\n')"
+  [ "$SKIP" = true ] && echo "Skipping active VPC: $VPC" && continue
+  echo "Deleting orphaned VPC: $VPC"
+  gcloud compute networks delete "$VPC" --project="$PROJECT" --quiet 2>/dev/null || true
+done
+
 echo "Cleaning up orphaned Networking resources (label: project=gcp-template-forge)..."
 
 # Firewalls
 FIREWALLS=$(gcloud compute firewall-rules list --project="$PROJECT" \
   --filter="labels.project=gcp-template-forge" \
-  --format="value(name)" | grep -v -E "repo-agent-standard|krmapihost-kcc-instance|kcc-dash-dont-delete" || true)
+  --format="value(name)" | grep -vE "$PROTECTED" || true)
 echo "$FIREWALLS" | while read -r F; do
   [ -z "$F" ] && continue
   echo "Deleting firewall: $F"

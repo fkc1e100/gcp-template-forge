@@ -21,6 +21,12 @@ provider "google" {
 resource "google_compute_network" "vpc" {
   name                    = var.network_name
   auto_create_subnetworks = false
+
+  # Labels required for orphan cleanup — do not remove
+  labels = {
+    project  = "gcp-template-forge"
+    template = "gke-kuberay-kueue-multitenant"
+  }
 }
 
 # Subnet with secondary ranges for VPC-native GKE
