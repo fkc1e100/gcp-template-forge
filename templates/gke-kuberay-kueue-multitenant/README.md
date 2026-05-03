@@ -29,6 +29,13 @@ A GKE template demonstrating how to solve the "Noisy Neighbor" problem for share
 cd terraform-helm
 terraform init
 terraform apply -var="project_id=my-project-id" -var="service_account=my-service-account@my-project-id.iam.gserviceaccount.com"
+
+After the cluster is created, configure `kubectl` and deploy the workload using Helm:
+```bash
+gcloud container clusters get-credentials gke-kuberay-kueue-tf --region us-central1 --project my-project-id
+cd workload
+helm upgrade --install kuberay-kueue-workload . --wait
+```
 ```
 
 ### Config Connector (`config-connector/`)
