@@ -695,14 +695,16 @@ jobs:
           PR_NUM=${{ github.event.number }}
           # Wait for API to sync
           sleep 10
-          # Check if there are any non-completed or failed checks (excluding Auto-merge itself)
-          # We also exclude "Label Failure" and "Cleanup TF" as they might be skipped or irrelevant
-          INCOMPLETE=$(gh pr checks $PR_NUM --json name,state,status | jq '[.[] | select(.name != "Auto-merge") | select(.status != "COMPLETED" or (.state != "SUCCESS" and .state != "SKIPPED" and .state != "NEUTRAL"))] | length')
+          # Check if there are any pending or failed checks (excluding Auto-merge itself).
+          # Valid --json fields for gh pr checks: name, state, startedAt, completedAt,
+          # bucket, description, event, link, workflow. There is no "status" field.
+          INCOMPLETE=$(gh pr checks $PR_NUM --repo ${{ github.repository }} --json name,state \
+            | jq '[.[] | select(.name != "Auto-merge") | select(.state != "SUCCESS" and .state != "SKIPPED" and .state != "NEUTRAL")] | length')
           if [ "$INCOMPLETE" -eq 0 ]; then
-             gh pr merge $PR_NUM --merge --delete-branch
+             gh pr merge $PR_NUM --repo ${{ github.repository }} --merge --delete-branch
           else
              echo "Still $INCOMPLETE checks pending or failed. Skipping auto-merge."
-             gh pr checks $PR_NUM
+             gh pr checks $PR_NUM --repo ${{ github.repository }}
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -102,6 +102,9 @@ jobs:
       fail-fast: false
       matrix:
         template: ${{ fromJson(needs.detect-changes.outputs.tf_templates) }}
+    outputs:
+      # "quota" when all regions failed with stockout/quota exhaustion; "code" for all other failures
+      failure_reason: ${{ steps.tf-apply.outputs.failure_reason }}
     steps:
       - uses: actions/checkout@v4
       - name: Auth and Setup GKE
@@ -112,6 +115,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
       - name: TF Apply with Zonal Fallback
+        id: tf-apply
         working-directory: ${{ matrix.template }}/terraform-helm
         run: |
           RUN_ID="${{ github.run_id }}"
@@ -119,22 +123,23 @@ jobs:
           TEMPLATE="${{ matrix.template }}"
           BASE_NAME=$(basename "$TEMPLATE")
           if [[ "$TEMPLATE" == *"gke-inference-fuse-cache"* ]]; then BASE_NAME="gke-inf-fuse-cache"; fi
-          
+
           export TF_VAR_cluster_name="${BASE_NAME}-${UID_SUFFIX}-tf"
           export TF_VAR_network_name="${BASE_NAME}-${UID_SUFFIX}-tf-vpc"
           export TF_VAR_subnet_name="${BASE_NAME}-${UID_SUFFIX}-tf-subnet"
           export TF_VAR_uid_suffix="${UID_SUFFIX}"
-          
+
           terraform init \
             -backend-config="bucket=${TF_STATE_BUCKET}" \
             -backend-config="prefix=${TEMPLATE}-${{ github.run_id }}/terraform-helm"
-          
+
           REGIONS=("us-central1" "us-east1" "us-west1")
           SUCCESS=false
+          FAILURE_REASON="code"
           for REGION in "${REGIONS[@]}"; do
             echo "Attempting deployment in $REGION..."
             export TF_VAR_region="$REGION"
-            
+
             set +e
             terraform apply -auto-approve -input=false 2>&1 | tee /tmp/tf.log
             TF_EXIT=${PIPESTATUS[0]}
@@ -143,17 +148,35 @@ jobs:
             if [ "$TF_EXIT" -eq 0 ]; then
               SUCCESS=true; break
             else
-              echo "Deployment in $REGION failed. Checking for stockout..."
+              echo "Deployment in $REGION failed. Checking for stockout/quota..."
               if grep -iE "RESOURCE_EXHAUSTED|ZONE_RESOURCE_POOL_EXHAUSTED|QUOTA_EXCEEDED|stockout" /tmp/tf.log; then
-                echo "Retryable error in $REGION. Trying next..."
+                echo "Quota/stockout error in $REGION. Trying next region..."
+                FAILURE_REASON="quota"
                 continue
               else
-                echo "Non-retryable error detected. Failing."
+                echo "Non-retryable code error detected. Failing immediately."
+                tail -60 /tmp/tf.log > /tmp/tf-failure.txt || true
+                echo "failure_reason=code" >> "$GITHUB_OUTPUT"
                 exit 1
               fi
             fi
           done
-          [ "$SUCCESS" = true ] || exit 1
+
+          if [ "$SUCCESS" = false ]; then
+            tail -60 /tmp/tf.log > /tmp/tf-failure.txt || true
+            echo "failure_reason=${FAILURE_REASON}" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+          echo "failure_reason=none" >> "$GITHUB_OUTPUT"
+
+      - name: Upload TF failure log
+        if: failure() && steps.tf-apply.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: tf-failure-log-${{ github.run_id }}-${{ strategy.job-index }}
+          path: /tmp/tf-failure.txt
+          if-no-files-found: ignore
+          retention-days: 3
 
   tf-test:
     name: TF Test (${{ matrix.template }})
@@ -235,17 +258,53 @@ jobs:
     if: always() && (needs.tf-provision.result == 'failure' || needs.tf-test.result == 'failure')
     runs-on: ubuntu-latest
     steps:
-      - name: Check Retry Count and Label
+      - name: Download TF failure log
+        uses: actions/download-artifact@v4
+        with:
+          pattern: tf-failure-log-${{ github.run_id }}-*
+          merge-multiple: true
+          path: /tmp/
+        continue-on-error: true
+
+      - name: Classify failure and act
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          COMMENTS=$(gh pr view "${{ github.event.number }}" --json comments -q '.comments[].body')
-          FAIL_COUNT=$(echo "$COMMENTS" | grep -c "Infrastructure failure detected" || echo "0")
-          if [ "$FAIL_COUNT" -ge 3 ]; then
-            gh pr comment "${{ github.event.number }}" --body "🚨 **Circuit Breaker Tripped**: This PR has failed infrastructure validation 3+ times. Stopping automated retries."
+          FAILURE_REASON="${{ needs.tf-provision.outputs.failure_reason }}"
+          PR_NUM="${{ github.event.number }}"
+          REPO="${{ github.repository }}"
+
+          if [ "$FAILURE_REASON" = "quota" ]; then
+            # Infrastructure flake: quota exhausted across all regions.
+            # Trigger cleanup workflow and requeue — do NOT count as a code-bug strike.
+            gh workflow run cleanup-orphans.yml --repo "$REPO"
+            gh pr comment "$PR_NUM" --repo "$REPO" --body \
+              "⚡ **GCP Quota/Stockout detected** across all fallback regions (us-central1, us-east1, us-west1). Triggered \`cleanup-orphans\` to free VPC/CPU quota. Will requeue for retry after cleanup completes (~2-3 min). This does **not** count against the circuit-breaker retry limit."
+            gh pr edit "$PR_NUM" --repo "$REPO" --add-label "repo-agent"
           else
-            gh pr comment "${{ github.event.number }}" --body "⚠️ Infrastructure failure detected (Attempt $((FAIL_COUNT + 1))). Re-adding repo-agent label."
-            gh pr edit "${{ github.event.number }}" --add-label "repo-agent"
+            # Code or infrastructure error — count as a strike.
+            COMMENTS=$(gh pr view "$PR_NUM" --repo "$REPO" --json comments -q '.comments[].body')
+            FAIL_COUNT=$(echo "$COMMENTS" | grep -c "Infrastructure failure detected" || echo "0")
+
+            # Build failure excerpt section if log was captured
+            EXCERPT_SECTION=""
+            if [ -f "/tmp/tf-failure.txt" ]; then
+              EXCERPT=$(tail -30 /tmp/tf-failure.txt | head -25)
+              if [ -n "$EXCERPT" ]; then
+                EXCERPT_SECTION=$(printf '\n\n<details><summary>Failure excerpt — use this to guide the fix</summary>\n\n```\n%s\n```\n\n</details>' "$EXCERPT")
+              fi
+            fi
+
+            if [ "$FAIL_COUNT" -ge 3 ]; then
+              printf '🚨 **Circuit Breaker Tripped**: This PR has failed code validation 3+ times. Stopping automated retries. Human intervention required.%s' \
+                "$EXCERPT_SECTION" > /tmp/cb-comment.txt
+              gh pr comment "$PR_NUM" --repo "$REPO" --body-file /tmp/cb-comment.txt
+            else
+              printf '⚠️ **Infrastructure failure detected** (Attempt %s). Re-adding repo-agent label for automated retry.%s' \
+                "$((FAIL_COUNT + 1))" "$EXCERPT_SECTION" > /tmp/cb-comment.txt
+              gh pr comment "$PR_NUM" --repo "$REPO" --body-file /tmp/cb-comment.txt
+              gh pr edit "$PR_NUM" --repo "$REPO" --add-label "repo-agent"
+            fi
           fi
 
   cleanup-orphans:
