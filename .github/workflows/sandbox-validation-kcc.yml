@@ -4,20 +4,22 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'templates/**'
+      - 'templates/**/config-connector/**'
+      - 'templates/**/config-connector-workload/**'
       - 'agent-infra/**'
   pull_request:
     branches: [ main ]
     types: [opened, synchronize, reopened, closed]
     paths:
-      - 'templates/**'
+      - 'templates/**/config-connector/**'
+      - 'templates/**/config-connector-workload/**'
       - 'agent-infra/**'
 
 concurrency:
-  # Share concurrency group with TF workflow to prevent concurrent .validated writes
-  # to the same branch. If both workflows fire on the same push, one will queue.
-  group: validation-${{ github.ref }}
-  cancel-in-progress: false
+  # Per-PR group for KCC sandbox only; cancel-in-progress stops stale queued runs
+  # from blocking KCC validation behind unrelated TF sandbox runs.
+  group: sandbox-kcc-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: write
