@@ -27,8 +27,10 @@ on:
       - 'agent-infra/**'
 
 concurrency:
-  group: gke-cluster-provisioning
-  cancel-in-progress: false
+  # Per-PR group prevents parallel KCC runs on the same PR; cancel-in-progress
+  # ensures a new push cancels stale queued/running runs for THIS PR only.
+  group: validate-kcc-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: write
