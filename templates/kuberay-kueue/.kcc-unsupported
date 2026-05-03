@@ -1,2 +1,1 @@
-KCC v1beta1 ContainerNodePool lacks the queuedProvisioning field required for Kueue batch jobs.
-Workload: queuedProvisioning enabled in the GPU node pool.
+queuedProvisioning is unsupported in KCC ContainerNodePool

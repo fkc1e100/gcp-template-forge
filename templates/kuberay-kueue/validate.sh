@@ -49,7 +49,9 @@ if [[ "$CLUSTER_NAME" == *"-kcc" ]]; then
     sleep 10
   done
   
-  kubectl apply -f templates/kuberay-kueue/config-connector-workload/workload.yaml
+  export BASE_NAME="kuberay-kueue"
+  export UID_SUFFIX="${UID_SUFFIX:-}"
+  envsubst < templates/kuberay-kueue/config-connector-workload/workload.yaml | kubectl apply -f -
 fi
 
 # 2. Operator Readiness

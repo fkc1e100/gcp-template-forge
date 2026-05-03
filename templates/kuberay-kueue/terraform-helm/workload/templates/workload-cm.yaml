@@ -20,7 +20,7 @@ data:
     apiVersion: kueue.x-k8s.io/v1beta1
     kind: ResourceFlavor
     metadata:
-      name: default-flavor{{ if .Values.uidSuffix }}-{{ .Values.uidSuffix }}{{ end }}
+      name: gke-kuberay-kueue-{{ .Values.uidSuffix }}-flavor
     spec:
       nodeLabels:
         gpu: "l4"
@@ -35,7 +35,7 @@ data:
       resourceGroups:
       - coveredResources: ["nvidia.com/gpu"]
         flavors:
-        - name: default-flavor{{ if .Values.uidSuffix }}-{{ .Values.uidSuffix }}{{ end }}
+        - name: gke-kuberay-kueue-{{ .Values.uidSuffix }}-flavor
           resources:
           - name: "nvidia.com/gpu"
             nominalQuota: 1
@@ -51,7 +51,7 @@ data:
       resourceGroups:
       - coveredResources: ["nvidia.com/gpu"]
         flavors:
-        - name: default-flavor{{ if .Values.uidSuffix }}-{{ .Values.uidSuffix }}{{ end }}
+        - name: gke-kuberay-kueue-{{ .Values.uidSuffix }}-flavor
           resources:
           - name: "nvidia.com/gpu"
             nominalQuota: 1
