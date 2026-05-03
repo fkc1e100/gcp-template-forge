@@ -1,0 +1,11 @@
+shortName: "enterprise-gke"
+displayName: "Enterprise GKE Cluster"
+description: "Enterprise-grade GKE with Binary Authorization, Workload Identity, and hardened security controls"
+gcpServices:
+  - GKE
+  - VPC
+  - Binary Authorization
+  - Cloud Armor
+kccSupported: true
+estimatedMonthlyCost: "~$300"
+issueNumber: 0

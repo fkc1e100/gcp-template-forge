@@ -13,4 +13,4 @@ gcpServices:                          # List of GCP services provisioned by this
   # - GPU Node Pool
 kccSupported: true                    # Set to false if .kcc-unsupported file is present.
 estimatedMonthlyCost: "~${{COST}}"   # Rough estimate. E.g. "~$150" or "~$800 (GPU)"
-issueNumber: {{ISSUE_NUMBER}}         # GitHub issue number that requested this template.
+issueNumber: "{{ISSUE_NUMBER}}"       # GitHub issue number that requested this template.

@@ -1,0 +1,10 @@
+shortName: "gke-fuse-cache"
+displayName: "GKE GCS FUSE Inference Cache"
+description: "High-performance AI inference with GCS FUSE + Local SSD caching for fast model loading on L4 GPUs"
+gcpServices:
+  - GKE
+  - GCS
+  - GPU Node Pool
+kccSupported: true
+estimatedMonthlyCost: "~$600 (L4 GPU)"
+issueNumber: 0

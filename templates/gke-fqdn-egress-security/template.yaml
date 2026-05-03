@@ -1,0 +1,10 @@
+shortName: "gke-fqdn-egress"
+displayName: "GKE Zero-Trust FQDN Egress"
+description: "Zero-trust egress security with FQDN network policies for controlling AI API traffic from GKE"
+gcpServices:
+  - GKE
+  - VPC
+  - Cloud DNS
+kccSupported: true
+estimatedMonthlyCost: "~$150"
+issueNumber: 0
