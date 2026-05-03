@@ -24,8 +24,8 @@ spec:
   clusterRef:
     name: kuberay-queuing-cluster
   location: us-central1
-  # Explicitly set locations for regional cluster
-  locations:
+  # Explicitly set node locations for regional cluster
+  nodeLocations:
     - us-central1-a
     - us-central1-b
     - us-central1-c
@@ -57,7 +57,7 @@ spec:
     name: kuberay-queuing-cluster
   location: us-central1
   # Pin to a single zone for GPU availability
-  locations:
+  nodeLocations:
     - us-central1-a
   autoscaling:
     minNodeCount: 0

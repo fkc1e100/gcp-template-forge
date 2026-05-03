@@ -90,14 +90,14 @@ workarounds:
     tf_resource: google_container_node_pool
     tf_field: node_locations
     kcc_resource: ContainerNodePool
-    kcc_field: spec.locations
+    kcc_field: spec.nodeLocations
     note: >
-      KCC uses spec.locations (array of zone strings) on ContainerNodePool,
+      KCC uses spec.nodeLocations (array of zone strings) on ContainerNodePool,
       equivalent to Terraform's node_locations. Always specify this explicitly
       for regional clusters to avoid API validation errors.
     example: |
       spec:
-        locations:
+        nodeLocations:
           - us-central1-a
           - us-central1-b
           - us-central1-c
