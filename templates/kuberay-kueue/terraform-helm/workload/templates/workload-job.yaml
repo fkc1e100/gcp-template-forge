@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: workload-applier
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "-5"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: workload-applier-admin
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "-5"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: workload-applier
+  namespace: default
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: apply-workloads
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "0"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 10
+  template:
+    spec:
+      serviceAccountName: workload-applier
+      restartPolicy: OnFailure
+      containers:
+      - name: kubectl
+        image: bitnami/kubectl:latest
+        command:
+        - /bin/bash
+        - -c
+        - |
+          echo "Waiting for Kueue CRDs..."
+          kubectl wait --for=condition=established crd/clusterqueues.kueue.x-k8s.io --timeout=5m || exit 1
+          echo "Waiting for Ray CRDs..."
+          kubectl wait --for=condition=established crd/rayclusters.ray.io --timeout=5m || exit 1
+          echo "Waiting for Kueue Controller..."
+          kubectl wait deployment -n kueue-system -l app.kubernetes.io/component=controller --for=condition=available --timeout=5m || exit 1
+          echo "Waiting for KubeRay Operator..."
+          kubectl wait deployment -l app.kubernetes.io/name=kuberay-operator -A --for=condition=available --timeout=5m || true
+          echo "Applying workloads..."
+          kubectl apply -f /workload/
+        volumeMounts:
+        - name: workload-vol
+          mountPath: /workload
+      volumes:
+      - name: workload-vol
+        configMap:
+          name: kuberay-kueue-workload

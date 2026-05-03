@@ -1,1 +1,5 @@
 shortName: kuberay-kueue
+displayName: Multi-Tenant Ray on GKE
+description: KubeRay + Kueue multi-tenant batch ML
+gcpServices: [GKE, GPU]
+issueNumber: 122
