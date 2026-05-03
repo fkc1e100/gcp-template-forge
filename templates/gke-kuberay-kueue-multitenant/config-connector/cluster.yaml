@@ -30,9 +30,9 @@ spec:
     - us-central1-a
   initialNodeCount: 1
   networkRef:
-    name: gke-kuberay-kueue-vpc-kcc
+    name: kuberay-kueue-vpc-kcc
   subnetworkRef:
-    name: gke-kuberay-kueue-subnet-kcc
+    name: kuberay-kueue-sub-kcc
   ipAllocationPolicy:
     clusterSecondaryRangeName: pods
     servicesSecondaryRangeName: services
