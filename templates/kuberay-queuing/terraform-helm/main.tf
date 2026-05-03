@@ -17,6 +17,15 @@ provider "google" {
   region  = var.region
 }
 
+provider "google-beta" {
+  project = var.project_id
+  region  = var.region
+}
+
+data "google_compute_zones" "available" {
+  region = var.region
+}
+
 # VPC Network
 resource "google_compute_network" "vpc" {
   name                    = var.network_name
@@ -51,7 +60,7 @@ resource "google_container_cluster" "primary" {
 
   resource_labels = {
     project  = "gcp-template-forge"
-    template = "gke-kuberay-kueue-multitenant"
+    template = "kuberay-queuing"
   }
 
   # Remove default node pool; managed separately below
@@ -86,16 +95,12 @@ resource "google_container_cluster" "primary" {
   }
 }
 
-provider "google-beta" {
-  project = var.project_id
-  region  = var.region
-}
-
-# Node pool â€” system pool for operators
+# Node pool - system pool for operators
 resource "google_container_node_pool" "system_pool" {
-  name     = "system-pool"
-  location = var.region
-  cluster  = google_container_cluster.primary.name
+  name           = "system-pool"
+  location       = var.region
+  cluster        = google_container_cluster.primary.name
+  node_locations = [data.google_compute_zones.available.names[0]]
 
   autoscaling {
     min_node_count = 1
@@ -120,22 +125,23 @@ resource "google_container_node_pool" "system_pool" {
 
     labels = {
       project  = "gcp-template-forge"
-      template = "gke-kuberay-kueue-multitenant"
+      template = "kuberay-queuing"
     }
 
     resource_labels = {
       project  = "gcp-template-forge"
-      template = "gke-kuberay-kueue-multitenant"
+      template = "kuberay-queuing"
     }
   }
 }
 
 # GPU Node Pool with Autoscaling
 resource "google_container_node_pool" "gpu_pool" {
-  provider = google-beta
-  name     = "l4-gpu-pool"
-  location = var.region
-  cluster  = google_container_cluster.primary.name
+  provider       = google-beta
+  name           = "l4-gpu-pool"
+  location       = var.region
+  cluster        = google_container_cluster.primary.name
+  node_locations = [data.google_compute_zones.available.names[0]]
 
   autoscaling {
     min_node_count = 0
@@ -171,13 +177,13 @@ resource "google_container_node_pool" "gpu_pool" {
 
     labels = {
       project  = "gcp-template-forge"
-      template = "gke-kuberay-kueue-multitenant"
+      template = "kuberay-queuing"
       gpu      = "l4"
     }
 
     resource_labels = {
       project  = "gcp-template-forge"
-      template = "gke-kuberay-kueue-multitenant"
+      template = "kuberay-queuing"
     }
   }
 }
@@ -185,7 +191,6 @@ resource "google_container_node_pool" "gpu_pool" {
 resource "local_file" "helm_values" {
   filename = "${path.module}/workload/values.yaml"
   content  = <<EOT
-templateName: gke-kuberay-kueue-multitenant
+templateName: kuberay-queuing
 EOT
 }
-

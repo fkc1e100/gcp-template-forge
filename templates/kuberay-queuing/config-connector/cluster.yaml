@@ -15,31 +15,28 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerCluster
 metadata:
-  name: gke-kuberay-kueue-multitenant-cluster-kcc
+  name: kuberay-queuing-cluster
   namespace: forge-management
   labels:
     project: gcp-template-forge
-    template: gke-kuberay-kueue-multitenant
+    template: kuberay-queuing
   annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025
     cnrm.cloud.google.com/remove-default-node-pool: "true"
 spec:
   location: us-central1
-  # Use a single zone for GPU availability
-  nodeLocations:
-    - us-central1-a
   initialNodeCount: 1
   networkRef:
-    name: gke-kuberay-kueue-multitenant-vpc-kcc
+    name: kuberay-queuing-vpc
   subnetworkRef:
-    name: gke-kuberay-kueue-multitenant-sub-kcc
+    name: kuberay-queuing-subnet
   ipAllocationPolicy:
     clusterSecondaryRangeName: pods
     servicesSecondaryRangeName: services
   workloadIdentityConfig:
-    workloadPool: gca-gke-2025.svc.id.goog
+    workloadPool: PROJECT_ID.svc.id.goog
   releaseChannel:
     channel: REGULAR
+  datapathProvider: ADVANCED_DATAPATH
   securityPostureConfig:
     mode: BASIC
     vulnerabilityMode: VULNERABILITY_BASIC

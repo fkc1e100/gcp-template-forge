@@ -32,19 +32,19 @@ variable "zone" {
 variable "cluster_name" {
   description = "The name of the GKE cluster"
   type        = string
-  default     = "gke-kuberay-kueue"
+  default     = "kuberay-queuing-cluster-tf"
 }
 
 variable "network_name" {
   description = "The name of the VPC network"
   type        = string
-  default     = "gke-kuberay-kueue-vpc"
+  default     = "kuberay-queuing-vpc-tf"
 }
 
 variable "subnet_name" {
   description = "The name of the subnet"
   type        = string
-  default     = "gke-kuberay-kueue-subnet"
+  default     = "kuberay-queuing-subnet-tf"
 }
 
 variable "service_account" {

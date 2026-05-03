@@ -1,6 +1,6 @@
 # Multi-Tenant Ray on GKE with Equitable Queuing
 
-A GKE template demonstrating how to solve the "Noisy Neighbor" problem for shared GPU clusters using the KubeRay Operator and the Kueue Operator. 
+A GKE template demonstrating how to solve the "Noisy Neighbor" problem for shared GPU clusters using the KubeRay Operator and the Kueue Operator.
 
 ## Architecture
 
@@ -35,7 +35,7 @@ terraform apply -var="project_id=my-project-id" -var="service_account=my-service
 
 1.  Navigate to the directory:
     ```bash
-    cd templates/gke-kuberay-kueue-multitenant/config-connector
+    cd templates/kuberay-queuing/config-connector
     ```
 2.  Apply the infrastructure manifests:
     ```bash
@@ -43,11 +43,11 @@ terraform apply -var="project_id=my-project-id" -var="service_account=my-service
     ```
 3.  Wait for the cluster to be ready:
     ```bash
-    kubectl wait --for=condition=Ready containercluster gke-kuberay-kueue-multitenant-cluster-kcc -n forge-management --timeout=30m
+    kubectl wait --for=condition=Ready containercluster kuberay-queuing-cluster -n forge-management --timeout=30m
     ```
 4.  Configure `kubectl` and deploy the operators and workloads:
     ```bash
-    gcloud container clusters get-credentials gke-kuberay-kueue-multitenant-cluster-kcc --region us-central1
+    gcloud container clusters get-credentials kuberay-queuing-cluster --region us-central1
     cd ../config-connector-workload
     kubectl create namespace kuberay-operator
     kubectl create namespace kueue-system
@@ -66,3 +66,7 @@ kubectl get clusterqueues
 kubectl get localqueues -A
 kubectl get rayclusters -A
 ```
+
+## KCC Limitations
+
+- **Queued Provisioning**: The KCC path uses standard GKE autoscaling as `queuedProvisioning` is currently unsupported in Config Connector `ContainerNodePool` (v1beta1).

@@ -15,19 +15,20 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
 metadata:
-  name: gke-kuberay-kueue-multitenant-sys-kcc
+  name: kuberay-queuing-sys-pool
   namespace: forge-management
   labels:
     project: gcp-template-forge
-    template: gke-kuberay-kueue-multitenant
-  annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025
+    template: kuberay-queuing
 spec:
   clusterRef:
-    name: gke-kuberay-kueue-multitenant-cluster-kcc
+    name: kuberay-queuing-cluster
   location: us-central1
-  nodeLocations:
+  # Explicitly set locations for regional cluster
+  locations:
     - us-central1-a
+    - us-central1-b
+    - us-central1-c
   autoscaling:
     minNodeCount: 1
     maxNodeCount: 3
@@ -37,29 +38,26 @@ spec:
     diskType: pd-standard
     oauthScopes:
       - https://www.googleapis.com/auth/cloud-platform
-    serviceAccountRef:
-      external: forge-builder@gca-gke-2025.iam.gserviceaccount.com
     workloadMetadataConfig:
       mode: GKE_METADATA
     labels:
       project: gcp-template-forge
-      template: gke-kuberay-kueue-multitenant
+      template: kuberay-queuing
 ---
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
 metadata:
-  name: gke-kuberay-kueue-multitenant-gpu-kcc
+  name: kuberay-queuing-gpu-pool
   namespace: forge-management
   labels:
     project: gcp-template-forge
-    template: gke-kuberay-kueue-multitenant
-  annotations:
-    cnrm.cloud.google.com/project-id: gca-gke-2025
+    template: kuberay-queuing
 spec:
   clusterRef:
-    name: gke-kuberay-kueue-multitenant-cluster-kcc
+    name: kuberay-queuing-cluster
   location: us-central1
-  nodeLocations:
+  # Pin to a single zone for GPU availability
+  locations:
     - us-central1-a
   autoscaling:
     minNodeCount: 0
@@ -76,11 +74,9 @@ spec:
           gpuDriverVersion: DEFAULT
     oauthScopes:
       - https://www.googleapis.com/auth/cloud-platform
-    serviceAccountRef:
-      external: forge-builder@gca-gke-2025.iam.gserviceaccount.com
     workloadMetadataConfig:
       mode: GKE_METADATA
     labels:
       project: gcp-template-forge
-      template: gke-kuberay-kueue-multitenant
+      template: kuberay-queuing
       gpu: l4

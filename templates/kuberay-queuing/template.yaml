@@ -1,0 +1,12 @@
+shortName: "kuberay-queuing"
+displayName: "Ray on GKE with Kueue"
+description: >
+  Multi-tenant GPU cluster using KubeRay and Kueue for equitable resource
+  sharing and job queuing.
+gcpServices:
+  - GKE
+  - Compute Engine
+  - VPC
+kccSupported: true
+estimatedMonthlyCost: "$150-$250 (GPU spot instances)"
+issueNumber: 122
