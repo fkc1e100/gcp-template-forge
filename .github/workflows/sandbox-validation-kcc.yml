@@ -4,13 +4,15 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'templates/**'
+      - 'templates/**/config-connector/**'
+      - 'templates/**/config-connector-workload/**'
       - 'agent-infra/**'
   pull_request:
     branches: [ main ]
     types: [opened, synchronize, reopened, closed]
     paths:
-      - 'templates/**'
+      - 'templates/**/config-connector/**'
+      - 'templates/**/config-connector-workload/**'
       - 'agent-infra/**'
 
 concurrency:
