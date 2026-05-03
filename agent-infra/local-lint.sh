@@ -35,13 +35,13 @@ echo "$TEMPLATES" | while read -r template; do
   [ -z "$template" ] && continue
   template_name=$(basename "$template")
   [ "$template_name" == "README.md" ] && continue
-  
+
   echo "--- Checking structure of $template_name ---"
   MISSING=""
-  if [ "$LINT_MODE" == "TF" ]; then
+  if [ "$LINT_MODE" == "TF" ] || [ -z "$LINT_MODE" ]; then
     [ ! -d "${template}/terraform-helm" ] && MISSING="${MISSING} terraform-helm/"
   fi
-  if [ "$LINT_MODE" == "KCC" ]; then
+  if [ "$LINT_MODE" == "KCC" ] || [ -z "$LINT_MODE" ]; then
     if [ ! -f "${template}/.kcc-unsupported" ]; then
       [ ! -d "${template}/config-connector" ] && MISSING="${MISSING} config-connector/"
     fi
@@ -49,6 +49,63 @@ echo "$TEMPLATES" | while read -r template; do
   if [ -n "$MISSING" ]; then
     echo "ERROR: Template '${template_name}' is missing required directories:${MISSING}"
     exit 1
+  fi
+
+  # Mandate: template.yaml must exist with a valid shortName
+  if [ ! -f "${template}/template.yaml" ]; then
+    echo "ERROR: Template '${template_name}' is missing template.yaml (required for resource naming and index)"
+    exit 1
+  fi
+  SHORT_NAME=$(python3 -c "
+import yaml, sys
+try:
+    d = yaml.safe_load(open('${template}/template.yaml'))
+    print(d.get('shortName',''))
+except Exception as e:
+    print('', file=sys.stderr)
+    sys.exit(1)
+" 2>/dev/null || true)
+  if [ -z "$SHORT_NAME" ]; then
+    echo "ERROR: ${template}/template.yaml is missing or has empty 'shortName' field"
+    exit 1
+  fi
+  if [ ${#SHORT_NAME} -gt 20 ]; then
+    echo "ERROR: ${template}/template.yaml shortName '${SHORT_NAME}' exceeds 20 characters (${#SHORT_NAME} chars)"
+    exit 1
+  fi
+
+  # KCC capability check: warn if KCC manifests use known-unsupported fields without .kcc-unsupported
+  if [ -d "${template}/config-connector" ] && [ ! -f "${template}/.kcc-unsupported" ]; then
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    KCC_CAP="${SCRIPT_DIR}/kcc-capabilities.yaml"
+    if [ -f "$KCC_CAP" ]; then
+      python3 - "${template}/config-connector" "$KCC_CAP" "${template}" << 'KCCPY'
+import yaml, sys, pathlib
+cc_dir, cap_file, template_dir = sys.argv[1], sys.argv[2], sys.argv[3]
+caps = yaml.safe_load(open(cap_file))
+unsupported = {u['tf_field'].split('.')[-1]: u for u in caps.get('unsupported', [])
+               if u.get('action') == 'kcc-unsupported-marker'}
+errors = []
+for p in pathlib.Path(cc_dir).rglob('*.yaml'):
+    try:
+        for doc in yaml.safe_load_all(p.read_text()):
+            if not doc: continue
+            content = p.read_text()
+            for field, info in unsupported.items():
+                # Check for the KCC field name (last segment) in manifest content
+                kcc_field = info.get('kcc_field', field)
+                search_key = kcc_field.split('.')[-1] if '.' in kcc_field else field
+                if search_key in content:
+                    errors.append(f"  {p}: uses '{search_key}' which maps to unsupported TF field '{info['tf_field']}'")
+    except Exception:
+        pass
+if errors:
+    print(f"ERROR: {template_dir}/config-connector/ references known-unsupported KCC fields without a .kcc-unsupported marker:")
+    for e in errors: print(e)
+    print(f"  Fix: create '{template_dir}/.kcc-unsupported' or remove the unsupported field.")
+    sys.exit(1)
+KCCPY
+    fi
   fi
 
   # Check for non-standard directories

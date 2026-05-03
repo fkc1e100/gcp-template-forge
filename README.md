@@ -1,32 +1,36 @@
 # GCP Template Forge
 
-> An AI-driven pipeline that designs, deploys, and validates production-ready GKE reference architectures — dual-path (Terraform + Helm and Config Connector) — with every merge.
+> An autonomous, AI-driven Factory pipeline that designs, deploys, and validates production-ready GKE reference architectures — dual-path (Terraform + Helm and Config Connector) — triggered entirely by GitHub issues.
 
 ## Objectives
 
-1. **Design** — Use an AI agent (Gemini CLI + Claude) to author complete, enterprise-grade IaC templates from Google Cloud reference architectures, covering both Terraform/Helm and Config Connector deployment paths.
-2. **Deploy & Test** — Run every template through a full apply → verify → destroy cycle in a real GCP sandbox project before any PR is merged, and again after merge to confirm the published artifact works end-to-end.
-3. **Consolidate** — Act as a living, continuously-validated library of GKE patterns drawn from Google Cloud's public reference repositories, so teams can adopt them with confidence.
+1. **Autonomous Design** — Utilize a specialized AI Agent Factory (powered by Gemini models) to ingest GitHub Issues and autonomously author complete, enterprise-grade IaC templates from Google Cloud reference architectures, covering both Terraform/Helm and Config Connector deployment paths.
+2. **Deploy & Validate** — Ensure every generated template physically provisions in a real GCP sandbox (`gca-gke-2025`). The Agent actively monitors the deployment until all workloads reach a 'Running' state before opening a Pull Request. 
+3. **CI/CD Healing** — The Factory continuously monitors the repository's GitHub Actions pipeline. If CI validation fails, the Agent autonomously reads the logs, heals the codebase, and pushes fixes until the PR is green and mergeable.
+4. **Consolidate** — Act as a living, continuously-validated library of GKE patterns drawn from Google Cloud's public reference repositories, so platform teams can adopt them with confidence.
 
 ---
 
-## System Architecture
+## System Architecture: The Factory Approach
 
-The forge is powered by the operator stack from [`gke-labs/gemini-for-kubernetes-development`](https://github.com/gke-labs/gemini-for-kubernetes-development), running on a GKE Standard control-plane cluster.
+The Factory operates on an event-driven model where infrastructure requests are transformed into validated code through a closed-loop automated lifecycle, hosted on a dedicated GKE control-plane cluster.
 
 ```mermaid
 flowchart LR
-    DEV["👤 Developer\nopens issue"]
+    DEV["👤 Platform Architect\nopens GitHub Issue"]
 
-    subgraph OPS ["gke-labs Operator Stack"]
-        OV["🎯 Overseer + Repo-Agent\ncreates branch & PR"]
-        AG["🤖 Agent Sandbox\nauthors Terraform + KCC templates"]
-        OV --> AG
+    subgraph FACTORY ["Autonomous Factory Platform"]
+        WATCH["👁️ Watcher\ndetects Issue & creates branch"]
+        AG["🤖 AI Agent Sandbox\ndesigns TF/KCC & deploys locally"]
+        HEAL["🏥 CI Healer\nmonitors PR & fixes failures"]
+        WATCH --> AG
+        AG --> HEAL
     end
 
     subgraph GH ["GitHub — gcp-template-forge"]
-        PR["🔀 Pull Request\nlint · deploy-test-tf ∥ deploy-test-kcc"]
+        PR["🔀 Pull Request\nCI: lint · deploy-test"]
         MAIN["✅ main\nvalidated template library"]
+        HEAL -->|commits fixes| PR
         PR -->|approved + merged| MAIN
     end
 
@@ -35,151 +39,58 @@ flowchart LR
         KCC["☸️ Config Connector\ncluster"]
     end
 
-    DEV --> OV
-    AG -->|commits templates| PR
-    PR -->|deploy-test-tf| TF
-    PR -->|deploy-test-kcc| KCC
-    MAIN -->|validate-tf-helm ∥ validate-kcc\nthen publish-validated| TF
-    MAIN -->|validate-tf-helm ∥ validate-kcc\nthen publish-validated| KCC
+    DEV --> WATCH
+    AG -->|local pre-flight deployment| TF
+    AG -->|local pre-flight deployment| KCC
+    AG -->|opens PR| PR
+    PR -->|CI validation| TF
+    PR -->|CI validation| KCC
 ```
 
 ### Key Components
 
-| Component | Role | Repo |
-|---|---|---|
-| **Overseer** | Kubernetes operator that watches GitHub for new issues, coordinates the agent lifecycle, and manages PR state | [`gke-labs/gemini-for-kubernetes-development`](https://github.com/gke-labs/gemini-for-kubernetes-development) |
-| **Repo-Agent** | Creates GitHub issues, branches, and PRs; posts status comments; triggers the agent sandbox | same |
-| **AgentSandboxes** | Kubernetes Jobs that spin up an isolated Gemini CLI session per template; the agent authors all IaC files and commits them | same |
-| **CI Service Account** | GCP service account used by GitHub Actions CI to authenticate and run Terraform/Helm/KCC against the sandbox project | `agent-infra/` |
+| Component | Role |
+|---|---|
+| **The Watcher** | A continuous polling service that monitors the repository for issues tagged with `status:ai-agent-active`. It provisions the workspace, creates a git branch, and delegates the task to the Agent Factory. |
+| **Agent Factory** | An isolated environment that executes the LLM reasoning loop. The Factory reads repository standards, authors dual-path IaC files, and executes physical deployments against the sandbox project to ensure the architecture is functional. |
+| **CI Healer** | An active polling loop that monitors the GitHub Actions CI pipeline for a given PR. If checks fail (e.g. linting or validation), the Healer automatically fetches logs, applies fixes to the code, and pushes a new commit to restore pipeline health. |
+| **The Housekeeper** | A cron job that purges orphaned GCP infrastructure, breaks stale Terraform state locks, and cleans up the sandbox to maintain budget and quota efficiency. |
 
 ### Repository Layout
 
 ```
 .github/
   workflows/
-    sandbox-validation-*.yml  ← lint · deploy-test-tf ∥ deploy-test-kcc (PR) · validate-tf-helm ∥ validate-kcc · publish-validated (push)
-  ISSUE_TEMPLATE/           ← template request form
+    sandbox-validation-*.yml  ← Parallel CI gates (Lint, TF Deploy, KCC Deploy)
+    cleanup-orphans.yml       ← Automated quota management
 agent-infra/
-  terraform/                ← control-plane GKE cluster + CI service account
-  manifests/                ← Overseer + Repo-Agent + AgentSandboxes deployments
-templates/                  ← validated template library (see Templates section below)
-GEMINI.md                   ← guardrails and instructions for the Gemini CLI agent
-GUIDANCE.md                 ← manual setup steps (identity, Secret Manager)
+  manifests/                ← Deployment manifests for the Factory infrastructure
+templates/                  ← Validated template library
+README.md                   ← This document
 ```
 
 ---
 
-## CI Pipeline
+## The Deployment Lifecycle
 
-### Job dependency graph
+### 1. Issue Ingestion
+A user opens an Epic detailing architectural requirements. The Watcher detects the issue and triggers the Agent Factory.
 
-```mermaid
-flowchart LR
-    DC(["🔍 detect-changes\nDiff PR head SHA or push\nagainst base — outputs\nchanged template list"])
+### 2. Research & Strategy
+The Factory clones the repository and reads local architectural standards (like this `README.md`) to apply strict formatting, unique resource naming conventions, and constraints.
 
-    subgraph pr ["━━━  Pull Request  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"]
-        direction LR
-        L(["🔎 lint\nper template\ntf fmt · tf validate\nhelm lint · KCC YAML\nboth-paths check"])
-        DTTF(["🏗️ deploy-test-tf\nper template\nTF apply → verify → Helm deploy\n→ security scan → TF destroy\nPost PR summary comment"])
-        DTKCC(["☸️ deploy-test-kcc\nper template\nKCC apply → wait Ready\n→ delete\nPost PR summary comment"])
-    end
+### 3. Dual-Path Execution & Pre-flight
+The Factory authors the code for both paths:
+*   **Terraform/Helm (`terraform-helm/`)**: Provisions infrastructure via Terraform and deploys operator workloads (e.g., KubeRay, Kueue) via Helm.
+*   **Config Connector (`config-connector/`)**: Provisions infra via raw KRM YAML and independently deploys the necessary operators and CRDs to prove the architecture's intent.
 
-    subgraph push ["━━━  Push to main  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"]
-        direction LR
-        VTH(["🏗️ validate-tf-helm\nper template · 120 min timeout\nTF apply → verify cluster\nRUNNING → TF destroy\nSaves results artifact"])
-        VKCC(["☸️ validate-kcc\nper template · 120 min timeout\nFresh runner — KCC cluster\ncreds from the start\nKCC apply → wait Ready\n→ delete\nSaves results artifact"])
-        PUB(["📋 publish-validated\nper template\nAccumulate agent metrics\nUpdate README + .validated\n.agent-metrics-cumulative\ngit push [skip ci]"])
-    end
+The Factory executes these files natively against GCP, running an active polling loop to verify the resources reach a `RUNNING` status.
 
-    DC --> L
-    L --> DTTF
-    L --> DTKCC
-    DC --> VTH
-    DC --> VKCC
-    VTH --> PUB
-    VKCC --> PUB
-```
-
-> `deploy-test-tf` and `deploy-test-kcc` run **in parallel** on separate runners after lint passes. Likewise, `validate-tf-helm` and `validate-kcc` both run in parallel on push to main — GCP resource name collisions are avoided by the `-tf` / `-kcc` suffix convention on all resource names. `publish-validated` waits for both validate jobs to complete before updating the README and `.validated` marker.
-
-### End-to-end sequence
-
-```mermaid
-sequenceDiagram
-    actor Dev as Developer / Overseer
-    participant GH as GitHub
-    participant CI as GitHub Actions
-    participant GCP as GCP Sandbox
-
-    Dev->>GH: Open issue (template request)
-    GH->>CI: Overseer creates branch + triggers AgentSandbox
-    CI->>GH: Agent commits terraform-helm/ + config-connector/
-
-    Note over GH,CI: ── Pull Request CI Gate ──────────────────────────────
-    GH->>CI: PR opened → detect-changes (PR head SHA diff)
-    CI->>CI: lint: tf fmt/validate · helm lint · KCC YAML · both-paths check
-    par deploy-test-tf (parallel)
-        CI->>GCP: TF apply (VPC · cluster · node pool)
-        GCP-->>CI: cluster RUNNING ✓
-        CI->>GCP: helm upgrade --install
-        GCP-->>CI: workload ready ✓
-        CI->>GCP: TF destroy
-    and deploy-test-kcc (parallel)
-        CI->>GCP: KCC apply (Config Connector manifests)
-        GCP-->>CI: ContainerCluster Ready ✓
-        CI->>GCP: kubectl delete (KCC teardown)
-    end
-    CI->>GH: Post deploy summary comment to PR (both paths)
-    Dev->>GH: Review + merge PR
-
-    Note over GH,CI: ── Post-Merge CI Gate (4 independent jobs) ──────────
-    GH->>CI: push to main → detect-changes
-    par validate-tf-helm (parallel)
-        CI->>CI: skip-check (changed since last .validated?)
-        CI->>GCP: TF apply (VPC · cluster · node pool · Helm workload)
-        GCP-->>CI: cluster RUNNING ✓  nodes ready ✓
-        CI->>GCP: TF destroy (full teardown)
-    and validate-kcc (parallel)
-        CI->>CI: skip-check (changed since last .validated?)
-        CI->>GCP: kubectl apply (KCC manifests)
-        GCP-->>CI: ContainerCluster Ready ✓
-        CI->>GCP: kubectl delete (KCC teardown)
-    end
-    CI->>CI: publish-validated starts (waits for both above)
-    CI->>CI: accumulate .agent-metrics across all sandbox sessions
-    CI->>GH: Commit README.md + .validated + .agent-metrics-cumulative
-```
-
-### Template structure
-
-```
-templates/<name>/
-├── terraform-helm/              ← Terraform + Helm deployment path
-│   ├── main.tf                  ← VPC · cluster · workload resources
-│   ├── variables.tf
-│   ├── versions.tf              ← pinned provider versions + GCS backend
-│   ├── outputs.tf               ← cluster_name + cluster_location (required by CI)
-│   └── workload/                ← Helm chart for the workload
-│       ├── Chart.yaml
-│       ├── values.yaml
-│       └── templates/
-├── config-connector/            ← Config Connector (KCC) deployment path
-│   ├── network.yaml             ← ComputeNetwork + ComputeSubnetwork
-│   ├── cluster.yaml             ← ContainerCluster (+ NodePool if standard)
-│   └── workload/                ← Kubernetes manifests for the workload (required)
-│       └── *.yaml               ← Deployment · Service · HPA · NetworkPolicy etc.
-├── README.md                    ← auto-updated by CI with validation record
-├── .validated                   ← CI marker: commit + status after successful deploy
-├── .agent-metrics               ← written by agent sandbox (latest session)
-└── .agent-metrics-cumulative    ← CI-maintained running total across all sessions
-```
-
-**CI enforcement rules:**
-- Both `terraform-helm/` and `config-connector/` must exist (lint fails otherwise)
-- `google_container_cluster` must have `deletion_protection = false`
-- KCC manifests must not use `cnrm.cloud.google.com/deletion-policy: abandon`
-- Resources must use template-based names (e.g., `enterprise-gke-vpc`) not issue numbers
-- `validate-tf-helm` / `validate-kcc` re-run whenever the template changes since last `.validated` commit
+### 4. Continuous CI Validation
+Once the PR is opened, the native GitHub Actions pipeline acts as the independent gatekeeper:
+1. **Linting:** Validates formatting (`terraform fmt`) and YAML syntax.
+2. **Parallel Deployments:** Distinct jobs spin up the TF path and the KCC path simultaneously to prevent naming collisions.
+3. **Healing:** If the CI pipeline fails, the Factory's Healer intervenes, reads the log, pushes a fix, and waits for a green build.
 
 ---
 
@@ -195,20 +106,15 @@ templates/<name>/
 
 ---
 
-## Public Reference Sources
+## Handling GCP Quota Errors
+If your CI run or local Factory deployment fails with a quota limit error (e.g., `Quota 'NETWORKS' exceeded. Limit: 30.0 globally`), it means previous runs have left orphaned resources clogging up the project. You must not attempt to modify your template code if the only failure is a quota limit. 
 
-The forge validates patterns drawn from:
-
-| Source | Focus |
-|---|---|
-| [Cloud Foundation Toolkit](https://github.com/GoogleCloudPlatform/cloud-foundation-toolkit) | GCP security baselines |
-| [Cluster Toolkit](https://github.com/GoogleCloudPlatform/cluster-toolkit) | HPC + AI/ML clusters |
-| [Kubernetes Engine Samples](https://github.com/GoogleCloudPlatform/kubernetes-engine-samples) | GKE workload patterns |
-| [Terraform GKE Modules](https://github.com/terraform-google-modules/terraform-google-kubernetes-engine) | Reusable TF modules |
-| [GKE AI Labs](https://gke-ai-labs.dev/) | AI/ML on GKE |
-| [Gemini for Kubernetes Development](https://github.com/gke-labs/gemini-for-kubernetes-development) | Operator stack powering this forge |
-| [Accelerated Platforms](https://github.com/GoogleCloudPlatform/accelerated-platforms) | GPU/TPU workloads |
-| [GKE Policy Automation](https://github.com/google/gke-policy-automation) | Policy as code |
-| [LLM-D](https://github.com/llm-d/llm-d) | LLM inference on GKE |
-# Test Janitor
-This was tested by closing issue #137.
+Instead, execute the following command in your terminal to manually trigger the Housekeeper workflow:
+```bash
+gh workflow run cleanup-orphans.yml --repo fkc1e100/gcp-template-forge
+```
+After the cleanup finishes, push an empty commit to your branch to re-trigger the pipeline:
+```bash
+git commit --allow-empty -m "ci: retry after quota cleanup"
+git push origin HEAD
+```

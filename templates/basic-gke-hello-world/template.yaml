@@ -1,0 +1,13 @@
+shortName: "gke-basic"
+displayName: "Basic GKE Hello World"
+description: >
+  A minimal GKE Standard cluster deploying a Hello World web service via
+  Helm (terraform-helm path) and Config Connector (config-connector path).
+  Exposes the workload via a LoadBalancer Service and validates via HTTP endpoint.
+gcpServices:
+  - GKE
+  - VPC
+  - Cloud Load Balancing
+kccSupported: true
+estimatedMonthlyCost: "$75–$120 (e2-medium × 2 nodes)"
+issueNumber: 0
