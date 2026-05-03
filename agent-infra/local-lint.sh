@@ -83,20 +83,22 @@ except Exception as e:
 import yaml, sys, pathlib
 cc_dir, cap_file, template_dir = sys.argv[1], sys.argv[2], sys.argv[3]
 caps = yaml.safe_load(open(cap_file))
-unsupported = {u['tf_field'].split('.')[-1]: u for u in caps.get('unsupported', [])
-               if u.get('action') == 'kcc-unsupported-marker'}
+# Build search entries: use kcc_search_key when present (explicit), else feature name.
+# Never use the last segment of tf_field — it's often too generic (e.g. 'enabled').
+unsupported = []
+for u in caps.get('unsupported', []):
+    if u.get('action') != 'kcc-unsupported-marker':
+        continue
+    search_key = u.get('kcc_search_key') or u.get('feature', '')
+    if search_key:
+        unsupported.append((search_key, u))
 errors = []
 for p in pathlib.Path(cc_dir).rglob('*.yaml'):
     try:
-        for doc in yaml.safe_load_all(p.read_text()):
-            if not doc: continue
-            content = p.read_text()
-            for field, info in unsupported.items():
-                # Check for the KCC field name (last segment) in manifest content
-                kcc_field = info.get('kcc_field', field)
-                search_key = kcc_field.split('.')[-1] if '.' in kcc_field else field
-                if search_key in content:
-                    errors.append(f"  {p}: uses '{search_key}' which maps to unsupported TF field '{info['tf_field']}'")
+        content = p.read_text()
+        for search_key, info in unsupported:
+            if search_key in content:
+                errors.append(f"  {p}: uses '{search_key}' which maps to unsupported TF field '{info['tf_field']}'")
     except Exception:
         pass
 if errors:

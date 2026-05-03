@@ -21,6 +21,7 @@ unsupported:
     tf_resource: google_container_node_pool
     tf_field: node_pool.queued_provisioning.enabled
     kcc_resource: ContainerNodePool
+    kcc_search_key: "queuedProvisioning"
     action: kcc-unsupported-marker
     reason: >
       KCC v1beta1 ContainerNodePool lacks the queuedProvisioning field.
@@ -76,6 +77,7 @@ unsupported:
     tf_resource: google_container_node_pool
     tf_field: node_pool.node_config.confidential_nodes
     kcc_resource: ContainerNodePool
+    kcc_search_key: "confidentialNodes"
     action: kcc-unsupported-marker
     reason: >
       Confidential node configuration is not available in KCC ContainerNodePool.
