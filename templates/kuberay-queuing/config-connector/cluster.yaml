@@ -33,7 +33,7 @@ spec:
     clusterSecondaryRangeName: pods
     servicesSecondaryRangeName: services
   workloadIdentityConfig:
-    workloadPool: PROJECT_ID.svc.id.goog
+    workloadPool: gca-gke-2025.svc.id.goog
   releaseChannel:
     channel: REGULAR
   datapathProvider: ADVANCED_DATAPATH
