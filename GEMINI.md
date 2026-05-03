@@ -6,6 +6,7 @@ Before working on any issue, read these files in order:
 
 | File | Purpose |
 |---|---|
+| **`.gemini/SUCCESS.md`** | **Read this first — defines exactly what "done" means for every template** |
 | `agent-infra/kcc-capabilities.yaml` | KCC unsupported features — check BEFORE generating config-connector/ manifests |
 | `.gemini/user-instructions.json` | Per-workload correctness rules (GPU, Ray, Cloud SQL, GCS FUSE, etc.) |
 | `agent-infra/scaffolds/README.template.md` | Starting point for every template README |

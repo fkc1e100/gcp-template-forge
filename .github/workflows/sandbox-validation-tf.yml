@@ -14,8 +14,10 @@ on:
       - 'agent-infra/**'
 
 concurrency:
-  group: tf-${{ github.ref }}
-  cancel-in-progress: true
+  # Share concurrency group with KCC workflow to prevent concurrent .validated writes
+  # to the same branch. If both workflows fire on the same push, one will queue.
+  group: validation-${{ github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: write
