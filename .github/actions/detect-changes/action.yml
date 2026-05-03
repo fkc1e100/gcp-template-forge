@@ -57,7 +57,15 @@ runs:
           | awk -F/ '{print $1"/"$2}' \
           | sort -u || true)
         
-        TEMPLATES=$(echo "$DIRS" | jq -Rnc '[inputs | select(length>0)]')
+        # Only include directories that still exist on the branch (filter out deletions)
+        EXISTING_DIRS=""
+        while read -r dir; do
+          [ -z "$dir" ] && continue
+          if [ -d "$dir" ]; then
+            EXISTING_DIRS="$EXISTING_DIRS $dir"
+          fi
+        done <<< "$DIRS"
+        TEMPLATES=$(echo "$EXISTING_DIRS" | tr ' ' '\n' | sort -u | jq -Rnc '[inputs | select(length>0)]')
         echo "templates=$TEMPLATES" >> "$GITHUB_OUTPUT"
         echo "has_templates=$([ "$TEMPLATES" = "[]" ] && echo false || echo true)" >> "$GITHUB_OUTPUT"
         echo "Changed templates: $TEMPLATES"
