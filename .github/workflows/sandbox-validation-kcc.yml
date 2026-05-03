@@ -534,7 +534,7 @@ jobs:
           # Wait for API to sync
           sleep 10
           # Check if there are any non-completed or failed checks (excluding Auto-merge itself)
-          INCOMPLETE=$(gh pr checks $PR_NUM --json name,state,status | jq '[.[] | select(.name != "Auto-merge") | select(.status != "COMPLETED" or (.state != "SUCCESS" and .state != "SKIPPED" and .state != "NEUTRAL"))] | length')
+          INCOMPLETE=$(gh pr checks $PR_NUM --json name,state | jq '[.[] | select(.name != "Auto-merge") | select(.state != "SUCCESS" and .state != "SKIPPED" and .state != "NEUTRAL")] | length')
           if [ "$INCOMPLETE" -eq 0 ]; then
              gh pr merge $PR_NUM --merge --delete-branch
           else
