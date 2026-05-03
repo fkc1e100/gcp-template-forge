@@ -141,10 +141,6 @@ resource "google_container_node_pool" "gpu_pool" {
 
   node_locations = [var.zone]
 
-  queued_provisioning {
-    enabled = true
-  }
-
   autoscaling {
     min_node_count = 0
     max_node_count = 5
@@ -153,6 +149,9 @@ resource "google_container_node_pool" "gpu_pool" {
 
   node_config {
     spot = true
+    reservation_affinity {
+      consume_reservation_type = "NO_RESERVATION"
+    }
 
     machine_type = "g2-standard-4"
     disk_size_gb = 50
