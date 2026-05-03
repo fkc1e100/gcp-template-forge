@@ -15,7 +15,7 @@
 apiVersion: compute.cnrm.cloud.google.com/v1beta1
 kind: ComputeNetwork
 metadata:
-  name: kuberay-kueue-vpc-kcc
+  name: gke-kuberay-kueue-multitenant-vpc-kcc
   namespace: forge-management
   labels:
     project: gcp-template-forge
@@ -28,7 +28,7 @@ spec:
 apiVersion: compute.cnrm.cloud.google.com/v1beta1
 kind: ComputeSubnetwork
 metadata:
-  name: kuberay-kueue-sub-kcc
+  name: gke-kuberay-kueue-multitenant-sub-kcc
   namespace: forge-management
   labels:
     project: gcp-template-forge
@@ -39,7 +39,7 @@ spec:
   ipCidrRange: 10.0.0.0/20
   region: us-central1
   networkRef:
-    name: kuberay-kueue-vpc-kcc
+    name: gke-kuberay-kueue-multitenant-vpc-kcc
   privateIpGoogleAccess: true
   secondaryIpRange:
     - rangeName: pods
