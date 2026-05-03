@@ -246,6 +246,9 @@ jobs:
     needs: [detect-changes, validate-tf-helm, validate-kcc]
     if: always() && !cancelled()
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -267,39 +270,198 @@ jobs:
             TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
             DATE=$(date -u +"%Y-%m-%d")
             COMMIT="${{ github.sha }}"
-            
-            # Fetch results from artifacts if they exist
+
             SLUG=$(echo "$TEMPLATE" | tr '/' '-')
             TF_RES="/tmp/artifacts/tf-results-${SLUG}/result.json"
             KCC_RES="/tmp/artifacts/kcc-results-${SLUG}/result.json"
-            
+
             TF_STATUS="skipped"; TF_DUR="n/a"
             if [ -f "$TF_RES" ]; then
-              TF_STATUS=$(jq -r .status "$TF_RES")
-              TF_DUR=$(jq -r .duration "$TF_RES")
+              TF_STATUS=$(jq -r .status "$TF_RES" || echo "unknown")
+              TF_DUR_S=$(jq -r .duration "$TF_RES" || echo "")
+              [ -n "$TF_DUR_S" ] && TF_DUR="${TF_DUR_S%.*}s" || true
             fi
-            
+
             KCC_STATUS="skipped"; KCC_DUR="n/a"
             if [ -f "$KCC_RES" ]; then
-              KCC_STATUS=$(jq -r .status "$KCC_RES")
-              KCC_DUR=$(jq -r .duration "$KCC_RES")
+              KCC_STATUS=$(jq -r .status "$KCC_RES" || echo "unknown")
+              KCC_DUR_S=$(jq -r .duration "$KCC_RES" || echo "")
+              [ -n "$KCC_DUR_S" ] && KCC_DUR="${KCC_DUR_S%.*}s" || true
             fi
-            
-            # Write .validated file
+
             printf "validated_at: %s\ncommit: %s\ntf_helm: %s\nkcc: %s\n" \
               "$TIMESTAMP" "$COMMIT" "$TF_STATUS" "$KCC_STATUS" \
               > "${TEMPLATE}/.validated"
-              
-            # Update README (Simplified table update)
+
             README="${TEMPLATE}/README.md"
             if [ -f "$README" ]; then
-              # Just append for now, in reality would use the python logic to replace section
-              echo -e "\n## Validation Record\n| Path | Status | Date | Duration |\n| --- | --- | --- | --- |\n| Terraform+Helm | $TF_STATUS | $DATE | $TF_DUR |\n| Config Connector | $KCC_STATUS | $DATE | $KCC_DUR |" >> "$README"
+              python3 -c "
+import sys, re
+content = open(sys.argv[1]).read()
+content = re.sub(r'\n## Validation Record.*', '', content, flags=re.DOTALL).rstrip()
+open(sys.argv[1], 'w').write(content)
+" "$README"
+              printf '\n\n## Validation Record\n\n| Path | Status | Date | Duration |\n| --- | --- | --- | --- |\n| Terraform+Helm | %s | %s | %s |\n| Config Connector | %s | %s | %s |\n' \
+                "$TF_STATUS" "$DATE" "$TF_DUR" \
+                "$KCC_STATUS" "$DATE" "$KCC_DUR" >> "$README"
             fi
           done
-          
+
           git config user.name "codebot-sfle"
           git config user.email "codebot-sfle@sfle.ca"
-          git add templates/**/.validated templates/**/README.md
-          git commit -m "ci: bulk validate templates [skip ci]" || true
+          git add -A templates/
+          git commit -m "ci: update validation records [skip ci]" || true
           git push origin main || (git pull --rebase origin main && git push origin main)
+
+      - name: Regenerate template index in root README
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 - "${{ github.sha }}" "${{ github.repository }}" << 'PYEOF'
+          import sys, pathlib, yaml, json, re, subprocess, datetime
+
+          commit_sha, repo = sys.argv[1], sys.argv[2]
+          templates_dir = pathlib.Path("templates")
+          rows = []
+
+          for tmpl_dir in sorted(templates_dir.iterdir()):
+              if not tmpl_dir.is_dir():
+                  continue
+              tname = tmpl_dir.name
+              if tname.startswith('.') or tname == 'README.md':
+                  continue
+
+              # Read template.yaml for metadata
+              meta_file = tmpl_dir / "template.yaml"
+              meta = {}
+              if meta_file.exists():
+                  try:
+                      meta = yaml.safe_load(meta_file.read_text()) or {}
+                  except Exception:
+                      pass
+
+              display = meta.get("displayName") or tname
+              desc    = meta.get("description") or ""
+              cost    = meta.get("estimatedMonthlyCost") or "—"
+              services = ", ".join(meta.get("gcpServices") or []) or "GKE"
+              issue_num = meta.get("issueNumber") or ""
+
+              # Read .validated for status
+              validated_file = tmpl_dir / ".validated"
+              tf_status  = "—"
+              kcc_status = "—"
+              val_date   = "—"
+              if validated_file.exists():
+                  for line in validated_file.read_text().splitlines():
+                      if line.startswith("tf_helm:"):
+                          tf_status = line.split(":", 1)[1].strip()
+                      elif line.startswith("kcc:"):
+                          kcc_status = line.split(":", 1)[1].strip()
+                      elif line.startswith("validated_at:"):
+                          val_date = line.split(":", 1)[1].strip()[:10]
+
+              tf_icon  = "✅" if tf_status  == "success" else ("⏭" if tf_status  == "skipped" else ("❌" if tf_status  == "failure" else "⏳"))
+              kcc_icon = "✅" if kcc_status == "success" else ("⏭" if kcc_status == "skipped" else ("❌" if kcc_status == "failure" else "⏳"))
+              if (tmpl_dir / ".kcc-unsupported").exists():
+                  kcc_icon = "⏭ (unsupported)"
+
+              issue_link = f"[#{issue_num}](https://github.com/{repo}/issues/{issue_num})" if issue_num else "—"
+              tmpl_link  = f"[`{tname}`](templates/{tname}/)"
+
+              rows.append((tmpl_link, display, desc, services, tf_icon, kcc_icon, cost, val_date, issue_link))
+
+          if not rows:
+              print("No templates found — skipping index update.")
+              sys.exit(0)
+
+          header = "| Template | Display Name | Description | GCP Services | TF+Helm | KCC | Est. Cost/mo | Last Validated | Issue |"
+          divider = "|---|---|---|---|:---:|:---:|---|---|---|"
+          table_lines = [header, divider]
+          for r in rows:
+              table_lines.append("| " + " | ".join(str(x) for x in r) + " |")
+
+          table = "\n".join(table_lines)
+          now = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+          section = f"\n\n## Published Templates\n\n*Auto-generated by CI on {now} from commit `{commit_sha[:8]}`.*\n\n{table}\n"
+
+          readme = pathlib.Path("README.md")
+          if readme.exists():
+              content = readme.read_text()
+              content = re.sub(r'\n## Published Templates.*', '', content, flags=re.DOTALL).rstrip()
+              readme.write_text(content + section)
+              print(f"Updated README.md with {len(rows)} template(s).")
+          else:
+              readme.write_text(f"# GCP Template Forge\n{section}")
+              print(f"Created README.md with {len(rows)} template(s).")
+          PYEOF
+
+          git config user.name "codebot-sfle"
+          git config user.email "codebot-sfle@sfle.ca"
+          git add README.md
+          git commit -m "ci: regenerate template index [skip ci]" || true
+          git push origin main || (git pull --rebase origin main && git push origin main)
+
+  on-failure:
+    name: File Recovery Issue on Failure
+    needs: [detect-changes, validate-tf-helm, validate-kcc]
+    if: >
+      always() && !cancelled() &&
+      (needs.validate-tf-helm.result == 'failure' || needs.validate-kcc.result == 'failure')
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: File recovery issue for each failed template
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TEMPLATES='${{ needs.detect-changes.outputs.templates }}'
+          TF_RESULT='${{ needs.validate-tf-helm.result }}'
+          KCC_RESULT='${{ needs.validate-kcc.result }}'
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          COMMIT="${{ github.sha }}"
+          REPO="${{ github.repository }}"
+
+          echo "$TEMPLATES" | jq -r '.[]' | while read -r TEMPLATE; do
+            [ -z "$TEMPLATE" ] && continue
+            TNAME=$(basename "$TEMPLATE")
+
+            # Determine which path(s) failed
+            FAILED_PATHS=""
+            [ "$TF_RESULT" = "failure" ] && FAILED_PATHS="${FAILED_PATHS} Terraform+Helm"
+            [ "$KCC_RESULT" = "failure" ] && FAILED_PATHS="${FAILED_PATHS} Config-Connector"
+
+            TITLE="[CI-BUG] Post-merge validation failure: ${TNAME}"
+
+            # Check if an open issue with this title already exists to avoid duplicates
+            EXISTING=$(gh issue list --repo "$REPO" \
+              --state open --search "$TITLE" --json number -q '.[0].number' || echo "")
+            if [ -n "$EXISTING" ]; then
+              echo "Issue already exists (#${EXISTING}) for ${TNAME} — skipping."
+              continue
+            fi
+
+            gh issue create \
+              --repo "$REPO" \
+              --title "$TITLE" \
+              --label "repo-agent,ci-bug" \
+              --body "Post-merge CI failed for \`${TEMPLATE}\` at commit \`${COMMIT:0:8}\`.
+
+**Failed paths:**${FAILED_PATHS}
+
+**Workflow run:** ${RUN_URL}
+
+The previous validation passed (PR gate), but the post-merge re-validation failed.
+Possible causes: GKE API version change, quota exhaustion, GCP service deprecation,
+or template-specific regression.
+
+## Agent Instructions
+
+1. Check the workflow run linked above for the specific error.
+2. Read the circuit-breaker failure excerpt if present.
+3. Fix the root cause in \`${TEMPLATE}/\`.
+4. Run \`terraform validate\` and \`local-lint.sh\` locally before pushing.
+5. Open a PR to main with title: \`fix: restore post-merge validation for ${TNAME}\`
+6. Run \`gh pr merge --auto --merge\` on the PR."
+            echo "Filed recovery issue for ${TNAME}."
+          done

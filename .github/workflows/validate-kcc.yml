@@ -187,6 +187,12 @@ jobs:
         run: |
           PR_NUM="${{ github.event.number }}"
           REPO="${{ github.repository }}"
+
+          # Extract linked issue number from PR body
+          PR_BODY=$(gh pr view "$PR_NUM" --repo "$REPO" --json body -q '.body' || echo "")
+          ISSUE_NUM=$(echo "$PR_BODY" | grep -oiE '(closes|fixes|resolves)\s+#([0-9]+)' \
+            | grep -oE '[0-9]+' | head -1 || echo "")
+
           COMMENTS=$(gh pr view "$PR_NUM" --repo "$REPO" --json comments -q '.comments[].body')
           FAIL_COUNT=$(echo "$COMMENTS" | grep -c "Infrastructure failure detected" || echo "0")
 
@@ -203,11 +209,25 @@ jobs:
             printf '🚨 **Circuit Breaker Tripped**: This PR has failed KCC validation 3+ times. Stopping automated retries. Human intervention required.%s' \
               "$EXCERPT_SECTION" > /tmp/cb-comment.txt
             gh pr comment "$PR_NUM" --repo "$REPO" --body-file /tmp/cb-comment.txt
+            # Surface to the linked issue for triage
+            if [ -n "$ISSUE_NUM" ]; then
+              gh issue edit "$ISSUE_NUM" --repo "$REPO" --add-label "needs-human" \
+                --remove-label "repo-agent" 2>/dev/null || true
+              gh issue comment "$ISSUE_NUM" --repo "$REPO" \
+                --body "🚨 KCC circuit breaker tripped on PR #${PR_NUM} after 3+ failures. Human review required.${EXCERPT_SECTION}"
+            fi
           else
             printf '⚠️ **Infrastructure failure detected** (Attempt %s). Re-adding repo-agent label for automated retry.%s' \
               "$((FAIL_COUNT + 1))" "$EXCERPT_SECTION" > /tmp/cb-comment.txt
             gh pr comment "$PR_NUM" --repo "$REPO" --body-file /tmp/cb-comment.txt
             gh pr edit "$PR_NUM" --repo "$REPO" --add-label "repo-agent"
+            # Re-label the linked ISSUE to trigger repowatch-controller heal SandboxTask
+            if [ -n "$ISSUE_NUM" ]; then
+              gh issue comment "$ISSUE_NUM" --repo "$REPO" \
+                --body "$(printf '⚠️ KCC validation failure on PR #%s (attempt %s). Re-queuing for automated fix.%s' \
+                  "$PR_NUM" "$((FAIL_COUNT + 1))" "$EXCERPT_SECTION")"
+              gh issue edit "$ISSUE_NUM" --repo "$REPO" --add-label "repo-agent" || true
+            fi
           fi
 
   cleanup-orphans:

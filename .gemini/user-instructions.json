@@ -3,9 +3,79 @@
   "guidelines": {
     "correctness": [
       {
-        "title": "GKE Dynamic Workload Scheduler (Queued Provisioning)",
-        "description": "Do NOT enable `queuedProvisioning` (or `queued_provisioning` in Terraform) on GKE node pools when deploying standard, long-running Kubernetes workloads like `Deployment`, `DaemonSet`, or `StatefulSet` via Helm. Queued Provisioning bypasses the standard cluster autoscaler and requires workloads to be submitted as batch `Job` resources (specifically Kueue workloads) to trigger node creation. If standard resources are used, the pods will remain stuck in a 'Pending' state indefinitely.",
-        "example": "If a template deploys a vLLM inference server using a standard Deployment Helm chart, ensure the GKE GPU node pool configuration uses standard autoscaling and does NOT include the `queued_provisioning { enabled = true }` block."
+        "title": "GKE Queued Provisioning — Standard Workloads",
+        "description": "Do NOT enable `queuedProvisioning` (or `queued_provisioning` in Terraform) on GKE node pools that serve standard long-running workloads like `Deployment`, `DaemonSet`, or `StatefulSet`. Queued Provisioning bypasses the standard cluster autoscaler and only triggers node creation for Kueue batch `Job` workloads. Standard pods will remain stuck `Pending` indefinitely.",
+        "example": "A vLLM inference server uses a standard Deployment — ensure the GPU node pool does NOT include `queued_provisioning { enabled = true }`."
+      },
+      {
+        "title": "Regional GKE Clusters — node_locations Required",
+        "description": "ALWAYS specify `node_locations` explicitly on `google_container_node_pool` when the cluster is regional (not zonal). Omitting `node_locations` causes a GKE API validation error. The list must contain zones within the cluster's region.",
+        "example": "node_locations = [\"us-central1-a\", \"us-central1-b\", \"us-central1-c\"]"
+      },
+      {
+        "title": "google_compute_subnetwork — No labels block",
+        "description": "The Terraform `google_compute_subnetwork` resource does NOT support a `labels` argument. Adding `labels = {}` causes `terraform apply` to fail immediately with an unsupported argument error. Never add labels to subnet resources.",
+        "example": "Remove any `labels` block from `google_compute_subnetwork` resources."
+      },
+      {
+        "title": "GPU Node Pools — No Zone Pinning",
+        "description": "Never hard-code a specific zone for GPU node pools (e.g., `node_locations = [\"us-central1-f\"]`). L4, A100, and H100 GPUs are frequently zone-exhausted. Templates MUST accept a `var.region` variable. The CI pipeline's three-region fallback (us-central1 → us-east1 → us-west1) handles zone selection. Add `variable \"region\" {}` to `variables.tf`.",
+        "example": "Use `var.region` throughout and let CI set `TF_VAR_region` per region attempt."
+      },
+      {
+        "title": "KubeRay + Kueue — CRD Install Order",
+        "description": "Kueue CRDs and the ClusterQueue/LocalQueue resources MUST be applied and Ready BEFORE any RayCluster or RayJob is created. Use `initContainers` in any workload that depends on Kueue CRDs to wait for their existence. Install Kueue via Helm (separate release) before the KubeRay operator release.",
+        "example": "Add `helm upgrade --install kueue kueue/kueue --wait` before `helm upgrade --install kuberay kuberay/kuberay-operator --wait`."
+      },
+      {
+        "title": "AI Model Staging — Large Weight Downloads",
+        "description": "For AI workloads (vLLM, Triton, etc.) that download model weights >1GB from Hugging Face or GCS: (1) deploy a Kubernetes `Job` FIRST to stage weights to a GCS bucket, (2) the serving `Deployment` MUST use an `initContainer` that waits for the Job to complete before starting the server, (3) set `progressDeadlineSeconds: 3600` on the Deployment. Helm's default --wait timeout will fail if the model download runs inside the Deployment readiness probe.",
+        "example": "Stage weights Job → initContainer waits → vLLM Deployment starts. Never download >1GB inside a Deployment's main container startup."
+      },
+      {
+        "title": "Cloud SQL — Private IP Requires Private Service Access",
+        "description": "When provisioning Cloud SQL with private IP, the VPC must have Private Service Access configured (`google_service_networking_connection` + `google_compute_global_address`). KCC `SQLInstance` takes 10-15 minutes to provision — set `kubectl wait --timeout=900s`. Always deploy Cloud SQL Auth Proxy as a sidecar for workload connectivity.",
+        "example": "Add `google_service_networking_connection` to main.tf before `google_sql_database_instance` with `ip_configuration { ipv4_enabled = false, private_network = ... }`."
+      },
+      {
+        "title": "GCS FUSE — Addon Required on Node Pool",
+        "description": "GKE node pools using GCS FUSE (CSI driver) must have the addon explicitly enabled on the cluster: `addons_config { gcs_fuse_csi_driver_config { enabled = true } }`. The CSI driver is not enabled by default on Standard clusters. Without this, PVCs using the `gcsfuse.csi.storage.gke.io` driver will remain `Pending`.",
+        "example": "Add to `google_container_cluster`: `addons_config { gcs_fuse_csi_driver_config { enabled = true } }`."
+      },
+      {
+        "title": "Gateway API — GKE Gateway Controller",
+        "description": "The GKE Gateway API controller (Envoy-based) must be enabled on the cluster: `gateway_api_config { channel = \"CHANNEL_STANDARD\" }` in the `google_container_cluster` resource. The `GatewayClass` name is `gke-l7-global-external-managed`. Gateway provisioning takes 3-5 minutes — validate.sh must poll for Gateway address, not assume immediate availability.",
+        "example": "Add `gateway_api_config { channel = \"CHANNEL_STANDARD\" }` to the cluster resource and poll with `kubectl get gateway -o jsonpath='{.status.addresses[0].value}'`."
+      },
+      {
+        "title": "Multi-Tenant Quota — Kueue ResourceFlavor Naming",
+        "description": "Kueue `ResourceFlavor` names must be unique cluster-wide and should include the template UID suffix to avoid collisions when multiple CI runs execute concurrently. Use `${BASE_NAME}-${UID_SUFFIX}` as the naming pattern, consistent with cluster and network naming.",
+        "example": "Name ResourceFlavor as `gpu-flavor-${UID_SUFFIX}` not just `gpu-flavor`."
+      },
+      {
+        "title": "KCC Feature Parity — Check Registry Before Generating",
+        "description": "Before generating any `config-connector/` manifests, read `agent-infra/kcc-capabilities.yaml` to check for unsupported features. If the template requires a feature listed as `action: kcc-unsupported-marker`, create a `.kcc-unsupported` file in the template root and document the limitation in README.md. Do NOT generate broken KCC manifests that will fail CI.",
+        "example": "If template needs `queuedProvisioning`, check kcc-capabilities.yaml → `action: kcc-unsupported-marker` → create `.kcc-unsupported`, skip KCC path."
+      },
+      {
+        "title": "Template Metadata — template.yaml Required",
+        "description": "Every template directory MUST contain a `template.yaml` file with at minimum: `shortName` (≤20 chars), `displayName`, `description`, `gcpServices` (list), and `issueNumber`. The `shortName` is used for GCP resource naming — CI will fail if it exceeds 20 characters or is missing.",
+        "example": "shortName: gke-ray-kueue\ndisplayName: Multi-Tenant Ray on GKE\ndescription: KubeRay + Kueue multi-tenant batch ML\ngcpServices: [GKE, GPU]\nissueNumber: 122"
+      },
+      {
+        "title": "Agent Plan Step — Post Before Coding",
+        "description": "Before creating any sub-issues or writing code for an EPIC, post a structured plan comment on the EPIC issue listing: (1) template directory name and shortName, (2) GCP resources TF path will create, (3) GCP resources KCC path will create, (4) known KCC limitations requiring .kcc-unsupported, (5) estimated validation time. Wait 30 minutes for a thumbs-down reaction before proceeding. Auto-proceed if no negative reaction.",
+        "example": "gh issue comment $EPIC_NUM --body '## Implementation Plan\\n**Template:** gke-ray-kueue\\n**TF path:** GKE cluster, GPU node pool, VPC\\n**KCC path:** ContainerCluster, ContainerNodePool (queuedProvisioning unsupported → .kcc-unsupported)\\n**Est. validation:** 25 min\\n\\nProceeding in 30 min unless thumbs-down reaction received.'"
+      },
+      {
+        "title": "Epic Sub-Issue Retry Limit",
+        "description": "Before creating a new sub-issue pair (TF + KCC) for a parent EPIC, count how many sub-issue pairs have already been created and closed without a successful merge. If 3 or more pairs have been attempted, do NOT create another. Post a comment on the EPIC with label `needs-human` explaining what was tried and what the specific blocker is. Stop work until a human responds.",
+        "example": "Search EPIC comments and linked issues. Count closed-without-merge sub-issue pairs. If >= 3: gh issue comment $EPIC --body 'needs-human: ...' && gh issue edit $EPIC --add-label needs-human && exit 0"
+      },
+      {
+        "title": "Carry Forward Failure Context into New Sub-Issues",
+        "description": "When creating a new sub-issue after a previous one failed, ALWAYS include the specific failure message from the previous PR's circuit-breaker comment in the new sub-issue body under a '## Previous Failure Context' section. Never start a new attempt without knowing what the last error was.",
+        "example": "gh pr view $PREV_PR --json comments -q '.comments[-1].body' → include in new issue body under '## Previous Failure Context'"
       }
     ],
     "clarity": [],

@@ -92,9 +92,69 @@ jobs:
           chmod +x agent-infra/local-lint.sh
           ./agent-infra/local-lint.sh "${{ matrix.template }}"
 
+  cost-gate:
+    name: "Cost Gate (${{ matrix.template }})"
+    needs: [detect-changes, lint]
+    if: needs.detect-changes.outputs.tf_templates != '[]' && needs.detect-changes.outputs.tf_templates != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        template: ${{ fromJson(needs.detect-changes.outputs.tf_templates) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Static cost analysis
+        env:
+          COST_CEILING_HOURLY: ${{ vars.COST_CEILING_HOURLY || '15' }}
+        run: |
+          python3 - "${{ matrix.template }}" "$COST_CEILING_HOURLY" << 'PYEOF'
+          import sys, pathlib, re
+
+          template_dir, ceiling_str = sys.argv[1], sys.argv[2]
+          ceiling = float(ceiling_str)
+
+          tf_dir = pathlib.Path(template_dir) / "terraform-helm"
+          if not tf_dir.exists():
+              print("No terraform-helm/ dir — skipping cost gate.")
+              sys.exit(0)
+
+          tf_content = "\n".join(p.read_text() for p in tf_dir.rglob("*.tf"))
+
+          # GPU accelerators: ~$0.70/hr per L4, ~$2.50/hr per A100
+          l4_count  = len(re.findall(r'nvidia[-_]l4',   tf_content, re.I))
+          a100_count = len(re.findall(r'nvidia[-_]a100', tf_content, re.I))
+          h100_count = len(re.findall(r'nvidia[-_]h100', tf_content, re.I))
+          # Large machine types: a2/a3/g2 families ~$3-8/hr each
+          large_machines = len(re.findall(r'machine_type\s*=\s*"(a2|a3|g2)-', tf_content, re.I))
+          # Clusters: ~$0.10/hr control plane each
+          clusters = len(re.findall(r'resource\s+"google_container_cluster"', tf_content))
+
+          hourly = (
+              l4_count   * 0.70 +
+              a100_count * 2.50 +
+              h100_count * 8.00 +
+              large_machines * 3.00 +
+              clusters   * 0.10
+          )
+          monthly = hourly * 730
+
+          print(f"Cost estimate: ${hourly:.2f}/hr (~${monthly:.0f}/mo)")
+          print(f"  Clusters: {clusters}x  L4 GPUs: {l4_count}x  A100 GPUs: {a100_count}x  "
+                f"H100 GPUs: {h100_count}x  Large machines: {large_machines}x")
+
+          if hourly > ceiling:
+              print(f"ERROR: Estimated ${hourly:.2f}/hr exceeds ceiling ${ceiling:.2f}/hr.")
+              print("If this template legitimately requires expensive hardware, increase")
+              print("COST_CEILING_HOURLY in the repository variables (Settings → Variables).")
+              sys.exit(1)
+          else:
+              print(f"OK: ${hourly:.2f}/hr is within the ${ceiling:.2f}/hr ceiling.")
+          PYEOF
+
   tf-provision:
     name: TF Provision (${{ matrix.template }})
-    needs: [detect-changes, lint]
+    needs: [detect-changes, lint, cost-gate]
     runs-on: ubuntu-latest
     if: needs.detect-changes.outputs.tf_templates != '[]' && needs.detect-changes.outputs.tf_templates != ''
     timeout-minutes: 60
@@ -274,36 +334,61 @@ jobs:
           PR_NUM="${{ github.event.number }}"
           REPO="${{ github.repository }}"
 
+          # Extract linked issue number from PR body ("Closes #N" / "Fixes #N" / "Resolves #N")
+          PR_BODY=$(gh pr view "$PR_NUM" --repo "$REPO" --json body -q '.body' || echo "")
+          ISSUE_NUM=$(echo "$PR_BODY" | grep -oiE '(closes|fixes|resolves)\s+#([0-9]+)' \
+            | grep -oE '[0-9]+' | head -1 || echo "")
+
+          # Build failure excerpt section if log was captured
+          EXCERPT_SECTION=""
+          if [ -f "/tmp/tf-failure.txt" ]; then
+            EXCERPT=$(tail -30 /tmp/tf-failure.txt | head -25)
+            if [ -n "$EXCERPT" ]; then
+              EXCERPT_SECTION=$(printf '\n\n<details><summary>Failure excerpt — use this to guide the fix</summary>\n\n```\n%s\n```\n\n</details>' "$EXCERPT")
+            fi
+          fi
+
           if [ "$FAILURE_REASON" = "quota" ]; then
             # Infrastructure flake: quota exhausted across all regions.
             # Trigger cleanup workflow and requeue — do NOT count as a code-bug strike.
             gh workflow run cleanup-orphans.yml --repo "$REPO"
-            gh pr comment "$PR_NUM" --repo "$REPO" --body \
-              "⚡ **GCP Quota/Stockout detected** across all fallback regions (us-central1, us-east1, us-west1). Triggered \`cleanup-orphans\` to free VPC/CPU quota. Will requeue for retry after cleanup completes (~2-3 min). This does **not** count against the circuit-breaker retry limit."
+            QUOTA_MSG="⚡ **GCP Quota/Stockout detected** across all fallback regions (us-central1, us-east1, us-west1). Triggered \`cleanup-orphans\` to free VPC/CPU quota. Will requeue for retry after cleanup completes (~2-3 min). This does **not** count against the circuit-breaker retry limit."
+            gh pr comment "$PR_NUM" --repo "$REPO" --body "$QUOTA_MSG"
             gh pr edit "$PR_NUM" --repo "$REPO" --add-label "repo-agent"
+            # Also comment on linked issue so repowatch-controller picks it up
+            if [ -n "$ISSUE_NUM" ]; then
+              gh issue comment "$ISSUE_NUM" --repo "$REPO" \
+                --body "⚡ Quota retry triggered from PR #${PR_NUM}. Re-adding \`repo-agent\` label after cleanup."
+              gh issue edit "$ISSUE_NUM" --repo "$REPO" --add-label "repo-agent" || true
+            fi
           else
             # Code or infrastructure error — count as a strike.
             COMMENTS=$(gh pr view "$PR_NUM" --repo "$REPO" --json comments -q '.comments[].body')
             FAIL_COUNT=$(echo "$COMMENTS" | grep -c "Infrastructure failure detected" || echo "0")
 
-            # Build failure excerpt section if log was captured
-            EXCERPT_SECTION=""
-            if [ -f "/tmp/tf-failure.txt" ]; then
-              EXCERPT=$(tail -30 /tmp/tf-failure.txt | head -25)
-              if [ -n "$EXCERPT" ]; then
-                EXCERPT_SECTION=$(printf '\n\n<details><summary>Failure excerpt — use this to guide the fix</summary>\n\n```\n%s\n```\n\n</details>' "$EXCERPT")
-              fi
-            fi
-
             if [ "$FAIL_COUNT" -ge 3 ]; then
               printf '🚨 **Circuit Breaker Tripped**: This PR has failed code validation 3+ times. Stopping automated retries. Human intervention required.%s' \
                 "$EXCERPT_SECTION" > /tmp/cb-comment.txt
               gh pr comment "$PR_NUM" --repo "$REPO" --body-file /tmp/cb-comment.txt
+              # Label the issue as needs-human so it surfaces in triage
+              if [ -n "$ISSUE_NUM" ]; then
+                gh issue edit "$ISSUE_NUM" --repo "$REPO" --add-label "needs-human" \
+                  --remove-label "repo-agent" 2>/dev/null || true
+                gh issue comment "$ISSUE_NUM" --repo "$REPO" \
+                  --body "🚨 Circuit breaker tripped on PR #${PR_NUM} after 3+ code failures. Human review required before re-queuing.${EXCERPT_SECTION}"
+              fi
             else
               printf '⚠️ **Infrastructure failure detected** (Attempt %s). Re-adding repo-agent label for automated retry.%s' \
                 "$((FAIL_COUNT + 1))" "$EXCERPT_SECTION" > /tmp/cb-comment.txt
               gh pr comment "$PR_NUM" --repo "$REPO" --body-file /tmp/cb-comment.txt
               gh pr edit "$PR_NUM" --repo "$REPO" --add-label "repo-agent"
+              # Re-label the linked ISSUE so repowatch-controller creates a new heal SandboxTask
+              if [ -n "$ISSUE_NUM" ]; then
+                gh issue comment "$ISSUE_NUM" --repo "$REPO" \
+                  --body "$(printf '⚠️ TF validation failure on PR #%s (attempt %s). Re-queuing for automated fix.%s' \
+                    "$PR_NUM" "$((FAIL_COUNT + 1))" "$EXCERPT_SECTION")"
+                gh issue edit "$ISSUE_NUM" --repo "$REPO" --add-label "repo-agent" || true
+              fi
             fi
           fi
 

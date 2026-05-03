@@ -1,5 +1,41 @@
 # Project Infrastructure: gca-gke-2025 & Repo-Agent
 
+## Agent Quick-Start Reference
+
+Before working on any issue, read these files in order:
+
+| File | Purpose |
+|---|---|
+| `agent-infra/kcc-capabilities.yaml` | KCC unsupported features — check BEFORE generating config-connector/ manifests |
+| `.gemini/user-instructions.json` | Per-workload correctness rules (GPU, Ray, Cloud SQL, GCS FUSE, etc.) |
+| `agent-infra/scaffolds/README.template.md` | Starting point for every template README |
+| `agent-infra/scaffolds/validate.template.sh` | Starting point for every validate.sh |
+| `agent-infra/scaffolds/template.template.yaml` | Required metadata for every template |
+| `agent-infra/repowatch-cr-template.yaml` | RepoWatch CR config (apply to update issue-handling prompt) |
+
+### Updating the RepoWatch Configuration
+
+To apply changes to how the agent handles issues (prompt, issue filters, max sandboxes):
+```bash
+kubectl config use-context gke_gca-gke-2025_us-central1_repo-agent-standard
+kubectl apply -f agent-infra/repowatch-cr-template.yaml
+# Force immediate reconciliation:
+kubectl annotate repowatch -n fkc1e100 gcp-template-forge \
+  reconcile-trigger="$(date +%s)" --overwrite
+```
+
+### Fixing Stalled Overseer Iterate Tasks
+
+When CI fails and the Overseer heal loop doesn't fire (iterate SandboxTasks stuck undispatched):
+```bash
+# Dry-run first:
+./agent-infra/patch-overseer-iterate-labels.sh --dry-run
+# Apply:
+./agent-infra/patch-overseer-iterate-labels.sh
+```
+
+---
+
 ## Overview
 The project infrastructure is hosted on Google Cloud Platform (Project: `gca-gke-2025`) and consists of a management cluster and a workload cluster. The system uses Kubernetes-native patterns to manage both infrastructure (via Config Connector) and automated repository agents (via the Repo-Agent platform).
 

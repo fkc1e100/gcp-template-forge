@@ -1,0 +1,114 @@
+# RepoWatch CR Template for gcp-template-forge
+#
+# Apply this to the repo-agent-standard cluster to update the RepoWatch
+# configuration, including the plan-step prompt and label-based issue filtering.
+#
+# APPLY:
+#   kubectl config use-context gke_gca-gke-2025_us-central1_repo-agent-standard
+#   kubectl apply -f agent-infra/repowatch-cr-template.yaml
+#
+# VERIFY:
+#   kubectl get repowatch -n fkc1e100 gcp-template-forge -o yaml
+#   # Force immediate reconciliation:
+#   kubectl annotate repowatch -n fkc1e100 gcp-template-forge \
+#     reconcile-trigger="$(date +%s)" --overwrite
+#
+# KEY CHANGES FROM PREVIOUS CONFIG:
+#   - issues: []  (watch ALL issues with matching labels, not a hardcoded list)
+#   - assignedToSelf: false  (see all issues, not just robot-assigned ones)
+#   - Handler prompt includes mandatory plan-step before code generation
+#   - maxSandboxes/maxActiveSandboxes: 6 (unchanged)
+#   - excludeLabels: [hold, needs-human]  (skip human-escalated issues)
+
+apiVersion: review.gemini.google.com/v1alpha1
+kind: RepoWatch
+metadata:
+  name: gcp-template-forge
+  namespace: fkc1e100
+spec:
+  repoURL: https://github.com/fkc1e100/gcp-template-forge
+  pollIntervalSeconds: 60
+  githubSecretName: github-pat
+  issue:
+    # false = handle ALL issues matching label filters, not just robot-assigned ones.
+    # CRITICAL: if this is true, the dashboard Issues tab will be empty for human-created issues.
+    assignedToSelf: false
+    robotAccount: codebot-sfle
+    # Empty list = watch ALL issues. To restrict to specific numbers: [195, 196]
+    issues: []
+    maxSandboxes: 6
+    maxActiveSandboxes: 6
+    handlers:
+    - name: fix
+      labels: [repo-agent]
+      excludeLabels: [hold, needs-human]
+      taskType: fix-issue
+      prompt: |
+        You are an autonomous GCP infrastructure engineer working on the gcp-template-forge project.
+        Your job is to implement a validated, dual-path IaC template from the GitHub issue below.
+
+        ## Mandatory Steps — Follow in Order
+
+        ### STEP 1: Read Project Context
+        Before writing any code, read these files:
+        - GEMINI.md — engineering mandates and guardrails
+        - agent-infra/kcc-capabilities.yaml — KCC unsupported features
+        - .gemini/user-instructions.json — per-workload correctness rules
+        - agent-infra/scaffolds/ — README, validate.sh, and template.yaml scaffolds
+
+        ### STEP 2: Check Previous Failure Context
+        Search the issue comments for any "Previous Failure Context" or circuit-breaker
+        failure excerpts. If found, read them carefully — do NOT repeat the same mistake.
+
+        ### STEP 3: Check Epic Sub-Issue Retry Limit
+        Count how many sub-issue pairs (TF + KCC) have been created and closed without
+        a successful merge for the parent EPIC. If 3 or more pairs have been attempted,
+        post a `needs-human` comment on the EPIC and stop.
+
+        ### STEP 4: Post Implementation Plan (Wait 30 min)
+        Post a comment on THIS issue (not the EPIC) with:
+        - Template directory name and shortName (≤ 20 chars)
+        - GCP resources the terraform-helm/ path will create
+        - GCP resources the config-connector/ path will create
+        - Any KCC features that will need .kcc-unsupported (check kcc-capabilities.yaml)
+        - Estimated CI validation time
+
+        Wait 30 minutes for a 👎 reaction. If none, proceed. If 👎, stop and ask for clarification.
+
+        ### STEP 5: Implement the Template
+        Use the scaffolds in agent-infra/scaffolds/ as starting points. Enforce:
+        1. STRICT issue scope — only create/modify files for this template. No workflow changes.
+        2. Dual-path: terraform-helm/ AND config-connector/ (or .kcc-unsupported if required)
+        3. config-connector-workload/ for raw K8s manifests (NEVER in config-connector/)
+        4. template.yaml with shortName ≤ 20 chars
+        5. validate.sh based on the scaffold — tests must actually verify the workload works
+        6. README.md based on the scaffold with instructions for BOTH paths
+
+        ### STEP 6: Open PR and Enable Auto-Merge
+        - Push to upstream: git push upstream HEAD
+        - Open PR against fkc1e100/gcp-template-forge main (NOT a fork)
+        - PR title format: "feat: implement <shortName> template (closes #<issueNum>)"
+        - PR body must include "Closes #<issueNum>" on its own line
+        - Immediately run: gh pr merge --auto --merge <PR_NUM>
+
+        ## Correctness Requirements
+        Fix this issue. You MUST ensure:
+        1. Strict adherence to the issue scope.
+        2. Functional parity between terraform-helm/ and config-connector/ paths.
+        3. config-connector-workload/ contains ALL necessary K8s workload manifests.
+        4. README.md is comprehensive and accurate for BOTH paths.
+        5. All Terraform passes `terraform fmt` and `terraform validate`.
+        6. template.yaml exists with a valid shortName (≤ 20 chars).
+
+  review:
+    maxSandboxes: 3
+    maxActiveSandboxes: 3
+    reviewShutdownAfterMinutes: 30
+    prompt: |
+      Review this pull request against the gcp-template-forge standards.
+      Check: (1) template.yaml present with shortName ≤ 20 chars, (2) dual-path completeness,
+      (3) config-connector-workload/ used for raw K8s manifests not config-connector/,
+      (4) validate.sh exercises the actual workload not just cluster connectivity,
+      (5) no .kcc-unsupported-marker fields in config-connector/ without a .kcc-unsupported file,
+      (6) no local-exec or helm provider in Terraform, (7) deletion_protection = false on clusters.
+      Post specific, actionable feedback with file:line references.
