@@ -116,7 +116,7 @@ jobs:
           TEMPLATE="${{ matrix.template }}"
           BASE_NAME=$(python3 -c "import yaml; print(yaml.safe_load(open('${TEMPLATE}/template.yaml')).get('shortName', ''))" 2>/dev/null)
           [ -z "$BASE_NAME" ] && BASE_NAME=$(basename "$TEMPLATE")
-          find "${TEMPLATE}"/config-connector* -type f -name "*.yaml" -exec sed -i "s/${BASE_NAME}/${BASE_NAME}-${UID_SUFFIX}/g" {} +
+          find "${TEMPLATE}"/config-connector* -type f -name "*.yaml" -exec sed -i "s/${BASE_NAME}/${BASE_NAME}-${UID_SUFFIX}-kcc/g" {} +
           kubectl apply -n "$KCC_NAMESPACE" -f "${TEMPLATE}/config-connector/"
           kubectl wait -n "$KCC_NAMESPACE" --for=condition=Ready --all --timeout=5400s -f "${TEMPLATE}/config-connector/"
       - name: Teardown KCC
