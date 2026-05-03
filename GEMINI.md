@@ -20,29 +20,97 @@ This project is driven by **OpenClaw** — a Gemini-powered autonomous agent run
 Deployment in `openclaw-system` on the local K3s cluster. It is NOT the repowatch/repo-agent
 operator system.
 
-**How it works:**
-1. A GitHub Issue is labeled `repo-agent`
-2. `agent/watcher.sh` (running in `openclaw-watcher` pod) detects it and calls `bootstrap-epic.sh`
-3. `bootstrap-epic.sh` decomposes the EPIC into `[TF]` and `[KCC]` sub-issues, then runs
-   Tier-1 (local Gemma 4 via Ollama) and falls back to Tier-2 (Cloud Gemini `--yolo`)
+#### Full Pipeline: EPIC → Template in main
 
-**To redeploy OpenClaw after script changes:**
-```bash
-# From forge-claw/ (the parent project directory):
-./k8s/deploy.sh --scripts   # fast: update ConfigMaps and restart pods
-./k8s/deploy.sh             # full: rebuild all K8s manifests
+```
+1. Human creates GitHub Issue: "[EPIC] Template: <description>"
+   └─ Adds label: agent-dev
+
+2. openclaw-watcher (60s poll, openclaw-system namespace)
+   └─ Detects issue with label agent-dev and WITHOUT status:ai-agent-active
+   └─ Adds: status:ai-agent-active   Removes: agent-dev   (prevents re-trigger)
+   └─ Dispatches: kubectl exec -n openclaw-system deploy/openclaw-agent
+                    -- /usr/local/bin/bootstrap-epic.sh <EPIC_ID>
+
+3. bootstrap-epic.sh <EPIC_ID>  [MUST be an [EPIC] issue — see guard below]
+   ├─ GUARD: Verifies issue title contains [EPIC]. Exits if [TF] or [KCC].
+   ├─ Checks retry limit: if ≥3 prior TF+KCC pairs → labels needs-human, exits
+   ├─ Creates sub-issues (if they don't already exist):
+   │     [TF] <description> (Epic #EPIC_ID)   → labeled status:ai-agent-active
+   │     [KCC] <description> (Epic #EPIC_ID)  → labeled status:ai-agent-active
+   ├─ Updates EPIC body with: "- [ ] #TF_NUM" and "- [ ] #KCC_NUM"
+   └─ For each sub-issue sequentially:
+         Tier 1: Gemma 4 via Ollama (fast, local) — up to 3 attempts
+           └─ Generates all template files via bash heredocs
+           └─ Validates: shortName ≤20 chars, terraform fmt, YAML syntax
+         Tier 2: Cloud Gemini --yolo (if Tier 1 fails)
+           └─ Full agentic tool-use with repo read access
+         → Commits templates/<shortName>/, creates PR "Closes #SUB_ID"
+         → gh pr merge --auto --merge (immediately after PR creation)
+
+4. GitHub Actions CI (on PR)
+   ├─ sandbox-validation-tf.yml:
+   │     Lint TF → Provision TF → Test TF (validate.sh) → Teardown TF
+   │     On success: commits .validated (tf_helm: success), triggers Auto-merge
+   └─ sandbox-validation-kcc.yml:
+         Lint KCC → KCC Apply → Test KCC (validate.sh) → KCC Teardown
+         On success: commits .validated (kcc: success), triggers Auto-merge
+         If .kcc-unsupported exists: skips with kcc: skipped
+
+5. Auto-merge fires → template lands in main with .validated marker
+   └─ ci-post-merge.yml updates root README.md Published Templates table
+
+6. After BOTH [TF] and [KCC] sub-issues close → close parent EPIC
 ```
 
-**To trigger processing of a stalled epic:**
+#### Anti-Recursion Rule (Critical)
+
+**NEVER label a `[TF]` or `[KCC]` sub-issue with `agent-dev`.**
+The watcher will call `bootstrap-epic.sh` with that sub-issue number, which will
+create a new set of sub-sub-issues and recurse infinitely.
+
+If a sub-issue is stuck (has `status:ai-agent-active` but no agent running):
 ```bash
-# Re-add the trigger label — the watcher will pick it up within 60s
-gh issue edit <EPIC_NUM> --repo fkc1e100/gcp-template-forge --add-label repo-agent
+# WRONG — causes recursion:
+gh issue edit <SUB_ISSUE_NUM> --add-label agent-dev  # DO NOT DO THIS
+
+# CORRECT — remove active label, then re-trigger the PARENT EPIC:
+gh issue edit <SUB_ISSUE_NUM> --repo fkc1e100/gcp-template-forge \
+  --remove-label "status:ai-agent-active"
+gh issue edit <PARENT_EPIC_NUM> --repo fkc1e100/gcp-template-forge \
+  --remove-label "status:ai-agent-active" \
+  --add-label "agent-dev"
 ```
 
-**To watch agent logs:**
+bootstrap-epic.sh detects this case and exits with an error (it checks for `[TF]`/`[KCC]`
+in the title and refuses to run, instead printing recovery instructions).
+
+#### Issue States
+
+| Label | Meaning |
+|---|---|
+| `agent-dev` | Trigger — watcher will pick up within 60s |
+| `status:ai-agent-active` | Agent is working (or was working) — watcher skips |
+| `needs-human` | Agent gave up — retry limit hit or unrecoverable error |
+| *(no label)* | Idle — not being processed |
+
+#### Operations
+
 ```bash
+# Trigger a stalled EPIC (use the EPIC number, not a sub-issue):
+gh issue edit <EPIC_NUM> --repo fkc1e100/gcp-template-forge \
+  --remove-label "status:ai-agent-active" --add-label "agent-dev"
+
+# Watch live agent activity:
 kubectl logs -n openclaw-system deploy/openclaw-watcher -f
 kubectl logs -n openclaw-system deploy/openclaw-agent -f
+
+# Redeploy OpenClaw after script changes (from forge-claw/ directory):
+./k8s/deploy.sh --scripts   # fast: update ConfigMaps and restart pods
+./k8s/deploy.sh             # full: rebuild all K8s manifests
+
+# Remove a stale TF state lock:
+gsutil rm gs://gke-gca-2025-forge-tf-state/templates/<name>/terraform-helm/default.tflock
 ```
 
 ---
