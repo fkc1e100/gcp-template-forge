@@ -1,8 +1,9 @@
 name: Cleanup Orphaned Infrastructure
 on:
-  schedule:
-    - cron: '*/10 * * * *' # Runs every 10 minutes
-  workflow_dispatch: # Allows manual triggering from the GitHub Actions UI
+  # Schedule removed — cleanup is now handled by the openclaw-cleanup K8s CronJob
+  # which runs every 5 minutes and is not subject to GitHub Actions scheduler delays.
+  # Keep workflow_dispatch for emergency manual runs only.
+  workflow_dispatch: # Manual emergency cleanup
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
