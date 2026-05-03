@@ -51,7 +51,7 @@ resource "google_container_cluster" "primary" {
 
   resource_labels = {
     project  = "gcp-template-forge"
-    template = "gke-kuberay-kueue-multitenant"
+    template = "kuberay-kueue"
   }
 
   # Remove default node pool; managed separately below
@@ -120,12 +120,12 @@ resource "google_container_node_pool" "system_pool" {
 
     labels = {
       project  = "gcp-template-forge"
-      template = "gke-kuberay-kueue-multitenant"
+      template = "kuberay-kueue"
     }
 
     resource_labels = {
       project  = "gcp-template-forge"
-      template = "gke-kuberay-kueue-multitenant"
+      template = "kuberay-kueue"
     }
   }
 }
@@ -171,13 +171,13 @@ resource "google_container_node_pool" "gpu_pool" {
 
     labels = {
       project  = "gcp-template-forge"
-      template = "gke-kuberay-kueue-multitenant"
+      template = "kuberay-kueue"
       gpu      = "l4"
     }
 
     resource_labels = {
       project  = "gcp-template-forge"
-      template = "gke-kuberay-kueue-multitenant"
+      template = "kuberay-kueue"
     }
   }
 }
@@ -185,7 +185,8 @@ resource "google_container_node_pool" "gpu_pool" {
 resource "local_file" "helm_values" {
   filename = "${path.module}/workload/values.yaml"
   content  = <<EOT
-templateName: gke-kuberay-kueue-multitenant
+templateName: kuberay-kueue
+uidSuffix: ${var.uid_suffix}
 EOT
 }
 

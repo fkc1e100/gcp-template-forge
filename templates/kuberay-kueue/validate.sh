@@ -15,7 +15,7 @@
 
 set -e
 
-echo "Starting Validation Tests for gke-kuberay-kueue-multitenant..."
+echo "Starting Validation Tests for kuberay-kueue..."
 
 PROJECT_ID=${PROJECT_ID:-"gca-gke-2025"}
 CLUSTER_NAME=${CLUSTER_NAME:-"gke-kuberay-kueue"}
@@ -36,8 +36,8 @@ if [[ "$CLUSTER_NAME" == *"-kcc" ]]; then
   echo "Applying KCC Workloads..."
   kubectl create namespace kuberay-operator --dry-run=client -o yaml | kubectl apply -f -
   kubectl create namespace kueue-system --dry-run=client -o yaml | kubectl apply -f -
-  kubectl apply --server-side -f templates/gke-kuberay-kueue-multitenant/config-connector-workload/kuberay-operator.yaml
-  kubectl apply --server-side -f templates/gke-kuberay-kueue-multitenant/config-connector-workload/kueue-operator.yaml
+  kubectl apply --server-side -f templates/kuberay-kueue/config-connector-workload/kuberay-operator.yaml
+  kubectl apply --server-side -f templates/kuberay-kueue/config-connector-workload/kueue-operator.yaml
   
   echo "Waiting for CRDs..."
   for i in {1..30}; do
@@ -49,7 +49,7 @@ if [[ "$CLUSTER_NAME" == *"-kcc" ]]; then
     sleep 10
   done
   
-  kubectl apply -f templates/gke-kuberay-kueue-multitenant/config-connector-workload/workload.yaml
+  kubectl apply -f templates/kuberay-kueue/config-connector-workload/workload.yaml
 fi
 
 # 2. Operator Readiness
@@ -73,5 +73,74 @@ for i in {1..20}; do
   fi
   sleep 15
 done
+
+echo "Test 4: Submit RayJob to verify workload execution..."
+cat << 'JOBEOF' > rayjob.yaml
+apiVersion: ray.io/v1
+kind: RayJob
+metadata:
+  name: test-rayjob
+  namespace: team-a
+spec:
+  entrypoint: python -c "print('RayJob completed successfully!')"
+  rayClusterSpec:
+    rayVersion: '2.9.0'
+    headGroupSpec:
+      rayStartParams:
+        dashboard-host: '0.0.0.0'
+      template:
+        spec:
+          containers:
+          - name: ray-head
+            image: rayproject/ray:2.9.0
+            resources:
+              limits:
+                cpu: "1"
+                memory: "2Gi"
+              requests:
+                cpu: "1"
+                memory: "2Gi"
+    workerGroupSpecs:
+    - groupName: worker-group
+      replicas: 1
+      minReplicas: 0
+      maxReplicas: 1
+      rayStartParams: {}
+      template:
+        spec:
+          nodeSelector:
+            gpu: "l4"
+          containers:
+          - name: ray-worker
+            image: rayproject/ray:2.9.0
+            resources:
+              limits:
+                cpu: "1"
+                memory: "2Gi"
+                nvidia.com/gpu: 1
+              requests:
+                cpu: "1"
+                memory: "2Gi"
+                nvidia.com/gpu: 1
+JOBEOF
+
+kubectl apply -f rayjob.yaml
+
+echo "Waiting for RayJob to complete..."
+for i in {1..90}; do
+  if kubectl get rayjob/test-rayjob -n team-a -o jsonpath='{.status.jobStatus}' | grep -q "SUCCEEDED"; then
+    echo "RayJob completed successfully."
+    break
+  fi
+  echo "Waiting for RayJob to complete... ($i/90)"
+  sleep 10
+done
+
+if ! kubectl get rayjob/test-rayjob -n team-a -o jsonpath='{.status.jobStatus}' | grep -q "SUCCEEDED"; then
+  echo "RayJob failed or timed out!"
+  kubectl get rayjob/test-rayjob -n team-a -o yaml
+  kubectl get pods -n team-a
+  exit 1
+fi
 
 echo "All Validation Tests passed successfully!"
