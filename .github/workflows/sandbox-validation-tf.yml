@@ -1,14 +1,10 @@
 name: Sandbox Validation (TF)
 
 on:
+  # Post-merge only — validate-tf.yml handles PR validation.
+  # Running both on PRs causes duplicate cluster provisioning.
   push:
     branches: [ main ]
-    paths:
-      - 'templates/**/terraform-helm/**'
-      - 'agent-infra/**'
-  pull_request:
-    branches: [ main ]
-    types: [opened, synchronize, reopened, closed]
     paths:
       - 'templates/**/terraform-helm/**'
       - 'agent-infra/**'

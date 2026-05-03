@@ -1,15 +1,10 @@
 name: Sandbox Validation (KCC)
 
 on:
+  # Post-merge only — validate-kcc.yml handles PR validation.
+  # Running both on PRs causes duplicate KCC resource provisioning.
   push:
     branches: [ main ]
-    paths:
-      - 'templates/**/config-connector/**'
-      - 'templates/**/config-connector-workload/**'
-      - 'agent-infra/**'
-  pull_request:
-    branches: [ main ]
-    types: [opened, synchronize, reopened, closed]
     paths:
       - 'templates/**/config-connector/**'
       - 'templates/**/config-connector-workload/**'
