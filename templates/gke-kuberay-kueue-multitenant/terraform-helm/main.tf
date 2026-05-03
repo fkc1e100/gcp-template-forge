@@ -189,3 +189,17 @@ templateName: gke-kuberay-kueue-multitenant
 EOT
 }
 
+
+# Allow master to talk to webhook ports on nodes
+resource "google_compute_firewall" "allow_webhooks" {
+  name    = "${var.cluster_name}-allow-webhooks"
+  network = google_compute_network.vpc.name
+  project = var.project_id
+
+  allow {
+    protocol = "tcp"
+    ports    = ["8443", "9443"]
+  }
+
+  source_ranges = ["172.16.0.0/12", "10.0.0.0/8"]
+}

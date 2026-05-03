@@ -11,3 +11,8 @@ metadata:
   name: team-b
   labels:
     kueue.x-k8s.io/queue-name: team-b-queue
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kueue-system
