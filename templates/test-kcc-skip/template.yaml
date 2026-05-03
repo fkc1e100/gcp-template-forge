@@ -1,0 +1,9 @@
+shortName: "test-kcc-skip"
+displayName: "Test KCC Skip"
+description: "Test template verifying the KCC-unsupported skip mechanism in CI validation"
+gcpServices:
+  - GKE
+  - VPC
+kccSupported: false
+estimatedMonthlyCost: "~$100"
+issueNumber: 0

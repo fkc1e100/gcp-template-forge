@@ -1,16 +1,123 @@
 name: New GKE Architecture Request
-description: Request a new GKE architecture template based on natural language intent.
-labels: [intent-capture]
+description: Request a new GKE architecture template. The AI agent will design, validate, and publish dual-path IaC (Terraform+Helm and Config Connector) from this issue.
+labels: [intent-capture, repo-agent]
 body:
   - type: markdown
     attributes:
       value: |
-        Please describe your desired GKE architecture in natural language.
+        ## Template Request
+        Fill in the fields below. The more specific you are, the fewer CI retries the agent will need.
+        The `Short Name` and `GCP Services` fields directly prevent the most common agent errors.
+
+  - type: input
+    id: display-name
+    attributes:
+      label: Template Display Name
+      description: Human-readable name shown in the template index.
+      placeholder: "Multi-Tenant Ray on GKE with Kueue"
+    validations:
+      required: true
+
+  - type: input
+    id: short-name
+    attributes:
+      label: Short Name (≤ 20 characters)
+      description: |
+        Used as the GKE cluster name prefix and in all GCP resource names. Must be ≤ 20 chars,
+        lowercase, hyphens only (no underscores). Example: gke-ray-kueue
+      placeholder: "gke-ray-kueue"
+    validations:
+      required: true
+
   - type: textarea
     id: intent
     attributes:
       label: Architecture Intent
-      description: "Example: I need a private GKE cluster that can run a high-traffic web app connecting to Cloud SQL."
-      placeholder: Describe your requirements here...
+      description: Describe what this template should demonstrate and why. Include workload type, scale, and any specific GKE features.
+      placeholder: |
+        Deploy a GKE cluster that supports multi-tenant batch ML workloads using KubeRay and
+        Kueue. Each tenant gets a Kueue ClusterQueue with resource quotas. A GPU node pool
+        serves Ray workers. An example RayJob should demonstrate end-to-end job submission.
     validations:
       required: true
+
+  - type: checkboxes
+    id: gcp-services
+    attributes:
+      label: GCP Services Required
+      description: Check all services this template will provision. This prevents the agent from guessing and hitting unsupported KCC features.
+      options:
+        - label: GKE Standard Cluster
+        - label: GKE Autopilot Cluster
+        - label: GPU Node Pool (L4 / A100 / H100)
+        - label: Spot / Preemptible Node Pool
+        - label: Cloud SQL (PostgreSQL / MySQL)
+        - label: Cloud Storage (GCS buckets)
+        - label: Pub/Sub (topics + subscriptions)
+        - label: Cloud Load Balancing (L4 / L7)
+        - label: Cloud NAT + Cloud Router
+        - label: VPC Network Peering / Private Service Access
+        - label: Workload Identity (IAM bindings)
+        - label: Artifact Registry
+        - label: GCS FUSE (CSI driver)
+        - label: Gateway API (Envoy Gateway)
+        - label: Topology-Aware Routing
+
+  - type: dropdown
+    id: kcc-path
+    attributes:
+      label: Config Connector (KCC) Path
+      description: |
+        KCC is 6-12 months behind Terraform in feature support. Choose "Best effort" if your
+        template uses cutting-edge GKE features (GPU DWS, queued provisioning, NAP, etc.).
+      options:
+        - "Required — full functional parity with Terraform path"
+        - "Best effort — skip KCC if features are unsupported (.kcc-unsupported marker)"
+        - "Not required — Terraform path only"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: cluster-mode
+    attributes:
+      label: GKE Cluster Mode
+      options:
+        - "Standard (node pool control required)"
+        - "Autopilot (managed nodes)"
+        - "Both (template should support either via variable)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: workload
+    attributes:
+      label: Workload / Application
+      description: Describe the workload the template should deploy to demonstrate the architecture works end-to-end.
+      placeholder: |
+        Deploy a sample RayJob (Python π estimation) that exercises the Kueue queue and
+        runs on the GPU node pool. The job should complete successfully and output a result.
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: What must be true for this template to be considered complete and validated?
+      placeholder: |
+        - [ ] GKE cluster provisions with GPU node pool
+        - [ ] KubeRay operator and Kueue are installed and healthy
+        - [ ] ClusterQueue and LocalQueue created for each tenant namespace
+        - [ ] Sample RayJob submits, queues, runs on GPU node, and completes
+        - [ ] terraform destroy runs cleanly with no orphaned resources
+    validations:
+      required: true
+
+  - type: textarea
+    id: known-constraints
+    attributes:
+      label: Known Constraints or Limitations (optional)
+      description: |
+        Any known GKE API limitations, quota requirements, or KCC unsupported features.
+        The agent will use this to avoid wasting CI cycles.
+      placeholder: |
+        - queuedProvisioning on ContainerNodePool is NOT supported in KCC (use .kcc-unsupported)
+        - GPU quota required: at least 4x nvidia-l4 in us-central1 or us-east1

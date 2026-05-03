@@ -14,8 +14,10 @@ on:
       - 'agent-infra/**'
 
 concurrency:
-  group: kcc-${{ github.ref }}
-  cancel-in-progress: true
+  # Share concurrency group with TF workflow to prevent concurrent .validated writes
+  # to the same branch. If both workflows fire on the same push, one will queue.
+  group: validation-${{ github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -83,9 +85,9 @@ jobs:
           echo "has_kcc_templates=$([ "$KCC_TEMPLATES" = "[]" ] && echo false || echo true)" >> "$GITHUB_OUTPUT"
           echo "KCC supported templates: $KCC_TEMPLATES"
 
-      - name: Remove status:ai-agent-active Label on Start
+      - name: Remove repo-agent Label on Start
         if: github.event_name == 'pull_request' && steps.find.outputs.has_kcc_templates == 'true'
-        run: gh pr edit ${{ github.event.number }} --remove-label "status:ai-agent-active" --repo ${{ github.repository }} || true
+        run: gh pr edit ${{ github.event.number }} --remove-label "repo-agent" --repo ${{ github.repository }} || true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -518,7 +520,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Add label
-        run: gh pr edit ${{ github.event.number }} --add-label "status:ai-agent-active" --repo ${{ github.repository }}
+        run: gh pr edit ${{ github.event.number }} --add-label "repo-agent" --repo ${{ github.repository }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -533,13 +535,16 @@ jobs:
           PR_NUM=${{ github.event.number }}
           # Wait for API to sync
           sleep 10
-          # Check if there are any non-completed or failed checks (excluding Auto-merge itself)
-          INCOMPLETE=$(gh pr checks $PR_NUM --json name,state,status | jq '[.[] | select(.name != "Auto-merge") | select(.status != "COMPLETED" or (.state != "SUCCESS" and .state != "SKIPPED" and .state != "NEUTRAL"))] | length')
+          # Check if there are any pending or failed checks (excluding Auto-merge itself).
+          # Valid --json fields for gh pr checks: name, state, startedAt, completedAt,
+          # bucket, description, event, link, workflow. There is no "status" field.
+          INCOMPLETE=$(gh pr checks $PR_NUM --repo ${{ github.repository }} --json name,state \
+            | jq '[.[] | select(.name != "Auto-merge") | select(.state != "SUCCESS" and .state != "SKIPPED" and .state != "NEUTRAL")] | length')
           if [ "$INCOMPLETE" -eq 0 ]; then
-             gh pr merge $PR_NUM --merge --delete-branch
+             gh pr merge $PR_NUM --repo ${{ github.repository }} --merge --delete-branch
           else
              echo "Still $INCOMPLETE checks pending or failed. Skipping auto-merge."
-             gh pr checks $PR_NUM
+             gh pr checks $PR_NUM --repo ${{ github.repository }}
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

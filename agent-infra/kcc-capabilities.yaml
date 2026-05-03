@@ -1,0 +1,152 @@
+# KCC Capability Registry
+#
+# Lists known unsupported Config Connector features as of 2026-Q2.
+# KCC is typically 6-12 months behind the Terraform provider in feature parity.
+#
+# AGENT USAGE: Read this file BEFORE generating any config-connector/ manifests.
+# - If a feature your template requires is listed under `unsupported`, follow
+#   the `action` field: either create a .kcc-unsupported marker file or use
+#   the listed workaround.
+# - If a feature is listed under `workarounds`, use the kcc_equivalent pattern
+#   instead of the terraform field.
+# - If you discover a new unsupported feature during CI, add it here and
+#   create a separate [CI-BUG] issue documenting the gap.
+#
+# LINT: local-lint.sh checks that any template using a field listed here
+# under action: kcc-unsupported-marker has a .kcc-unsupported file present.
+
+unsupported:
+  - feature: queuedProvisioning
+    resource: ContainerNodePool
+    tf_resource: google_container_node_pool
+    tf_field: node_pool.queued_provisioning.enabled
+    kcc_resource: ContainerNodePool
+    kcc_search_key: "queuedProvisioning"
+    action: kcc-unsupported-marker
+    reason: >
+      KCC v1beta1 ContainerNodePool lacks the queuedProvisioning field.
+      KCC generates resources from the Terraform provider proto but this
+      field has not yet been mapped.
+    upstream_issue: https://github.com/GoogleCloudPlatform/k8s-config-connector/issues/TBD
+    workaround: >
+      Use standard autoscaling in the KCC path. Document the limitation in
+      README.md under a "KCC Limitations" section.
+
+  - feature: subnetwork_labels
+    resource: ComputeSubnetwork
+    tf_resource: google_compute_subnetwork
+    tf_field: labels
+    kcc_resource: ComputeSubnetwork
+    action: omit
+    reason: >
+      KCC ComputeSubnetwork does not support resource labels. The field is
+      silently ignored in some versions and causes failures in others.
+      Labels on subnets provide no functional value for these templates.
+    workaround: >
+      Simply omit the labels block from ComputeSubnetwork KCC manifests.
+      Labels can be applied to ContainerCluster and ContainerNodePool instead.
+
+  - feature: network_policy_config_provider_calico
+    resource: ContainerCluster
+    tf_resource: google_container_cluster
+    tf_field: network_policy.provider = "CALICO"
+    kcc_resource: ContainerCluster
+    action: omit
+    reason: >
+      KCC ContainerCluster does not support the network_policy.provider field.
+      DataplaneV2 (the modern equivalent) is configured via datapathProvider instead.
+    workaround: >
+      Use `spec.datapathProvider: ADVANCED_DATAPATH` in KCC to enable network
+      policy enforcement without specifying Calico explicitly.
+
+  - feature: node_pool_placement_policy
+    resource: ContainerNodePool
+    tf_resource: google_container_node_pool
+    tf_field: node_pool.placement_policy
+    kcc_resource: ContainerNodePool
+    action: omit
+    reason: >
+      Node pool placement policies (COMPACT for GPU colocation) are not
+      supported in KCC ContainerNodePool v1beta1.
+    workaround: >
+      Omit placement_policy from the KCC path. Document in README.md that
+      compact placement is only available via the Terraform path.
+
+  - feature: confidential_nodes
+    resource: ContainerNodePool
+    tf_resource: google_container_node_pool
+    tf_field: node_pool.node_config.confidential_nodes
+    kcc_resource: ContainerNodePool
+    kcc_search_key: "confidentialNodes"
+    action: kcc-unsupported-marker
+    reason: >
+      Confidential node configuration is not available in KCC ContainerNodePool.
+    workaround: >
+      Create a .kcc-unsupported marker. The Terraform path fully supports
+      confidential nodes. Document the limitation in README.md.
+
+workarounds:
+  - feature: regional_cluster_node_locations
+    tf_resource: google_container_node_pool
+    tf_field: node_locations
+    kcc_resource: ContainerNodePool
+    kcc_field: spec.locations
+    note: >
+      KCC uses spec.locations (array of zone strings) on ContainerNodePool,
+      equivalent to Terraform's node_locations. Always specify this explicitly
+      for regional clusters to avoid API validation errors.
+    example: |
+      spec:
+        locations:
+          - us-central1-a
+          - us-central1-b
+          - us-central1-c
+
+  - feature: workload_identity_config
+    tf_resource: google_container_cluster
+    tf_field: workload_identity_config.workload_pool
+    kcc_resource: ContainerCluster
+    kcc_field: spec.workloadIdentityConfig.workloadPool
+    note: >
+      KCC uses spec.workloadIdentityConfig.workloadPool. Set to
+      "${PROJECT_ID}.svc.id.goog" to enable Workload Identity.
+    example: |
+      spec:
+        workloadIdentityConfig:
+          workloadPool: PROJECT_ID.svc.id.goog
+
+  - feature: dataplane_v2
+    tf_resource: google_container_cluster
+    tf_field: datapath_provider = "ADVANCED_DATAPATH"
+    kcc_resource: ContainerCluster
+    kcc_field: spec.datapathProvider
+    note: >
+      KCC uses spec.datapathProvider: ADVANCED_DATAPATH to enable GKE
+      Dataplane V2 (eBPF-based network policy enforcement).
+    example: |
+      spec:
+        datapathProvider: ADVANCED_DATAPATH
+
+  - feature: release_channel
+    tf_resource: google_container_cluster
+    tf_field: release_channel.channel
+    kcc_resource: ContainerCluster
+    kcc_field: spec.releaseChannel.channel
+    note: >
+      KCC uses spec.releaseChannel.channel. Valid values: RAPID, REGULAR, STABLE.
+    example: |
+      spec:
+        releaseChannel:
+          channel: REGULAR
+
+  - feature: gateway_api_config
+    tf_resource: google_container_cluster
+    tf_field: gateway_api_config.channel
+    kcc_resource: ContainerCluster
+    kcc_field: spec.gatewayApiConfig.channel
+    note: >
+      KCC ContainerCluster supports Gateway API config via spec.gatewayApiConfig.
+    example: |
+      spec:
+        gatewayApiConfig:
+          channel: CHANNEL_STANDARD

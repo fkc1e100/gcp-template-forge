@@ -1,0 +1,10 @@
+shortName: "latest-gke-feat"
+displayName: "Latest GKE Features"
+description: "Showcase of latest GKE features: Gateway API, Node Auto-Provisioning, and modern workload patterns"
+gcpServices:
+  - GKE
+  - VPC
+  - Cloud Load Balancing
+kccSupported: true
+estimatedMonthlyCost: "~$200"
+issueNumber: 0

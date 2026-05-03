@@ -1,0 +1,9 @@
+shortName: "gke-topo-routing"
+displayName: "GKE Topology-Aware Routing"
+description: "Minimize cross-zone egress costs using Topology-Aware Routing hints in multi-zonal GKE clusters"
+gcpServices:
+  - GKE
+  - VPC
+kccSupported: true
+estimatedMonthlyCost: "~$150"
+issueNumber: 0

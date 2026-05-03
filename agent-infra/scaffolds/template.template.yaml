@@ -1,0 +1,16 @@
+# Template metadata — required in every template directory.
+# local-lint.sh enforces: shortName present, ≤ 20 chars.
+# ci-post-merge.yml reads this to build the template index table.
+
+shortName: "{{SHORT_NAME}}"          # ≤ 20 chars, lowercase, hyphens only. Used in GCP resource names.
+displayName: "{{DISPLAY_NAME}}"      # Human-readable name for the index table.
+description: "{{ONE_LINE_DESCRIPTION}}"
+gcpServices:                          # List of GCP services provisioned by this template.
+  - GKE
+  # - Cloud SQL
+  # - GCS
+  # - Pub/Sub
+  # - GPU Node Pool
+kccSupported: true                    # Set to false if .kcc-unsupported file is present.
+estimatedMonthlyCost: "~${{COST}}"   # Rough estimate. E.g. "~$150" or "~$800 (GPU)"
+issueNumber: "{{ISSUE_NUMBER}}"       # GitHub issue number that requested this template.

@@ -1,4 +1,51 @@
-# Project Infrastructure: gca-gke-2025 & Repo-Agent
+# Project Infrastructure: gca-gke-2025
+
+## Agent Quick-Start Reference
+
+Before working on any issue, read these files in order:
+
+| File | Purpose |
+|---|---|
+| **`.gemini/SUCCESS.md`** | **Read this first — defines exactly what "done" means for every template** |
+| `agent-infra/kcc-capabilities.yaml` | KCC unsupported features — check BEFORE generating config-connector/ manifests |
+| `.gemini/user-instructions.json` | Per-workload correctness rules (GPU, Ray, Cloud SQL, GCS FUSE, etc.) |
+| `agent-infra/scaffolds/README.template.md` | Starting point for every template README |
+| `agent-infra/scaffolds/validate.template.sh` | Starting point for every validate.sh |
+| `agent-infra/scaffolds/template.template.yaml` | Required metadata for every template |
+| `templates/basic-gke-hello-world/` | Complete working example — reference this |
+
+### OpenClaw Orchestration
+
+This project is driven by **OpenClaw** — a Gemini-powered autonomous agent running as a K8s
+Deployment in `openclaw-system` on the local K3s cluster. It is NOT the repowatch/repo-agent
+operator system.
+
+**How it works:**
+1. A GitHub Issue is labeled `repo-agent`
+2. `agent/watcher.sh` (running in `openclaw-watcher` pod) detects it and calls `bootstrap-epic.sh`
+3. `bootstrap-epic.sh` decomposes the EPIC into `[TF]` and `[KCC]` sub-issues, then runs
+   Tier-1 (local Gemma 4 via Ollama) and falls back to Tier-2 (Cloud Gemini `--yolo`)
+
+**To redeploy OpenClaw after script changes:**
+```bash
+# From forge-claw/ (the parent project directory):
+./k8s/deploy.sh --scripts   # fast: update ConfigMaps and restart pods
+./k8s/deploy.sh             # full: rebuild all K8s manifests
+```
+
+**To trigger processing of a stalled epic:**
+```bash
+# Re-add the trigger label — the watcher will pick it up within 60s
+gh issue edit <EPIC_NUM> --repo fkc1e100/gcp-template-forge --add-label repo-agent
+```
+
+**To watch agent logs:**
+```bash
+kubectl logs -n openclaw-system deploy/openclaw-watcher -f
+kubectl logs -n openclaw-system deploy/openclaw-agent -f
+```
+
+---
 
 ## Overview
 The project infrastructure is hosted on Google Cloud Platform (Project: `gca-gke-2025`) and consists of a management cluster and a workload cluster. The system uses Kubernetes-native patterns to manage both infrastructure (via Config Connector) and automated repository agents (via the Repo-Agent platform).
@@ -87,6 +134,11 @@ If the dashboard is inaccessible from specific devices or networks:
 *   **Workflow Fixes Separation:** The agent MUST NOT pile workflow fixes (e.g., `.github/workflows/` changes) in with template development issues. If the agent discovers a bug or improvement needed in the CI/CD workflows while working on a template, it MUST create a separate issue with the title/label prefix `[CI-BUG]` and address it in a separate PR.
 *   **Template Naming and Metadata:** When creating or updating a template, the agent MUST ensure it has a short, descriptive, and compliant name (at most 20 characters) to prevent violating GKE cluster and resource naming limits. This name MUST be stored in a standard `template.yaml` file at the root of the template directory with the key `shortName`. The agent should use Gemini to generate this short name if it is not provided.
 *   **Autonomous Auto-Merge:** When a sandbox agent successfully creates a Pull Request to fix an issue, it MUST immediately run `gh pr merge --auto --merge` on that PR. This ensures that once the CI checks turn green, the platform heals itself without waiting for human intervention.
+*   **Regional GKE Cluster `node_locations`:** ALWAYS specify `node_locations` explicitly on `google_container_node_pool` resources when deploying to a regional GKE cluster (e.g., `node_locations = ["us-central1-a", "us-central1-b", "us-central1-c"]`). Omitting `node_locations` causes Terraform to fail with a GKE API validation error on regional clusters.
+*   **`google_compute_subnetwork` has no `labels` block:** The Terraform `google_compute_subnetwork` resource does NOT support a `labels` argument. Never add a `labels = {}` block to subnet resources — it causes `terraform apply` to fail immediately with "unsupported argument".
+*   **GPU zone pinning is forbidden:** NEVER hard-code a specific zone for GPU node pools (e.g., `node_locations = ["us-central1-f"]`). L4 and A100 GPUs are frequently exhausted in specific zones. Always accept a `var.region` variable and let the CI pipeline's three-region fallback (us-central1 → us-east1 → us-west1) select an available zone. The template's `variables.tf` MUST declare `variable "region"`.
+*   **Epic Sub-Issue Retry Limit:** Before creating a new sub-issue pair (TF + KCC) for a parent EPIC, count how many sub-issue pairs have already been created and closed without a successful merge. To do this, search the EPIC's issue body and comments for linked closed issues/PRs. If **3 or more** sub-issue pairs have already been attempted, do NOT create another pair. Instead, post a comment on the EPIC issue with label `needs-human` that explains: (1) what was tried, (2) the specific error from the last failure, (3) what a human needs to decide. Stop work until a human responds.
+*   **Carry Forward Failure Context:** When creating a new sub-issue after a previous attempt failed, ALWAYS include the specific failure message from the previous PR's circuit-breaker comment in the new sub-issue body. Look at the closed PRs from the previous sub-issue and extract the last "Infrastructure failure detected" or circuit-breaker comment. Paste the failure excerpt into the new sub-issue's description under a `## Previous Failure Context` section. Never start a new attempt blind — the agent MUST know what the last error was.
 
 #### `fkc1e100/gcp-template-forge` (namespace for gcp-template-forge)
 ```yaml
