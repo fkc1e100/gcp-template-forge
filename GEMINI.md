@@ -1,4 +1,4 @@
-# Project Infrastructure: gca-gke-2025 & Repo-Agent
+# Project Infrastructure: gca-gke-2025
 
 ## Agent Quick-Start Reference
 
@@ -11,27 +11,37 @@ Before working on any issue, read these files in order:
 | `agent-infra/scaffolds/README.template.md` | Starting point for every template README |
 | `agent-infra/scaffolds/validate.template.sh` | Starting point for every validate.sh |
 | `agent-infra/scaffolds/template.template.yaml` | Required metadata for every template |
-| `agent-infra/repowatch-cr-template.yaml` | RepoWatch CR config (apply to update issue-handling prompt) |
+| `templates/basic-gke-hello-world/` | Complete working example — reference this |
 
-### Updating the RepoWatch Configuration
+### OpenClaw Orchestration
 
-To apply changes to how the agent handles issues (prompt, issue filters, max sandboxes):
+This project is driven by **OpenClaw** — a Gemini-powered autonomous agent running as a K8s
+Deployment in `openclaw-system` on the local K3s cluster. It is NOT the repowatch/repo-agent
+operator system.
+
+**How it works:**
+1. A GitHub Issue is labeled `repo-agent`
+2. `agent/watcher.sh` (running in `openclaw-watcher` pod) detects it and calls `bootstrap-epic.sh`
+3. `bootstrap-epic.sh` decomposes the EPIC into `[TF]` and `[KCC]` sub-issues, then runs
+   Tier-1 (local Gemma 4 via Ollama) and falls back to Tier-2 (Cloud Gemini `--yolo`)
+
+**To redeploy OpenClaw after script changes:**
 ```bash
-kubectl config use-context gke_gca-gke-2025_us-central1_repo-agent-standard
-kubectl apply -f agent-infra/repowatch-cr-template.yaml
-# Force immediate reconciliation:
-kubectl annotate repowatch -n fkc1e100 gcp-template-forge \
-  reconcile-trigger="$(date +%s)" --overwrite
+# From forge-claw/ (the parent project directory):
+./k8s/deploy.sh --scripts   # fast: update ConfigMaps and restart pods
+./k8s/deploy.sh             # full: rebuild all K8s manifests
 ```
 
-### Fixing Stalled Overseer Iterate Tasks
-
-When CI fails and the Overseer heal loop doesn't fire (iterate SandboxTasks stuck undispatched):
+**To trigger processing of a stalled epic:**
 ```bash
-# Dry-run first:
-./agent-infra/patch-overseer-iterate-labels.sh --dry-run
-# Apply:
-./agent-infra/patch-overseer-iterate-labels.sh
+# Re-add the trigger label — the watcher will pick it up within 60s
+gh issue edit <EPIC_NUM> --repo fkc1e100/gcp-template-forge --add-label repo-agent
+```
+
+**To watch agent logs:**
+```bash
+kubectl logs -n openclaw-system deploy/openclaw-watcher -f
+kubectl logs -n openclaw-system deploy/openclaw-agent -f
 ```
 
 ---
