@@ -54,7 +54,7 @@ fi
 
 # 2. Operator Readiness
 echo "Test 2: KubeRay and Kueue Operator Readiness..."
-kubectl wait --for=condition=available deployment -l app.kubernetes.io/name=kuberay-operator --timeout=15m || true
+kubectl wait --for=condition=available deployment -A -l app.kubernetes.io/name=kuberay-operator --timeout=15m || true
 kubectl wait --for=condition=available deployment -n kueue-system -l app.kubernetes.io/component=controller --timeout=15m || true
 echo "Operators are ready."
 
