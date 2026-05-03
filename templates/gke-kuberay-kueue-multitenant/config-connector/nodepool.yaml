@@ -15,7 +15,7 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
 metadata:
-  name: gke-kuberay-sys-kcc
+  name: kuberay-kueue-sys-kcc
   namespace: forge-management
   labels:
     project: gcp-template-forge
@@ -46,7 +46,7 @@ spec:
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
 metadata:
-  name: gke-kuberay-gpu-kcc
+  name: kuberay-kueue-gpu-kcc
   namespace: forge-management
   labels:
     project: gcp-template-forge
