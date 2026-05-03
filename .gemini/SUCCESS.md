@@ -68,6 +68,11 @@ This is the difference between "infrastructure provisioned" and "success."
 - [ ] `gh pr merge --auto --merge <PR_NUM> --repo fkc1e100/gcp-template-forge` was run immediately after PR creation
 - [ ] Only files under `templates/<shortName>/` are changed — no workflow files, no other templates
 
+> **Critical:** `--auto` is mandatory. It means the PR (and therefore the linked issue) will NOT
+> close until every CI check passes — including sandbox deploy, `validate.sh`, and teardown.
+> Never use `gh pr merge` without `--auto`. Never manually merge a PR before CI is green.
+> The issue staying open is correct and expected while CI runs.
+
 ### 6. Published
 
 - [ ] PR is merged to `main` (auto-merge triggered and all checks passed)

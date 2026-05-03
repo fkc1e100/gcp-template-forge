@@ -47,6 +47,8 @@ operator system.
            └─ Full agentic tool-use with repo read access
          → Commits templates/<shortName>/, creates PR "Closes #SUB_ID"
          → gh pr merge --auto --merge (immediately after PR creation)
+           NOTE: --auto means the PR will NOT merge until ALL CI checks pass.
+           The linked issue stays open until that point. Never force-merge.
 
 4. GitHub Actions CI (on PR)
    ├─ sandbox-validation-tf.yml:
