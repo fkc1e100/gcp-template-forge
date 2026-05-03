@@ -136,6 +136,7 @@ resource "google_container_node_pool" "gpu_pool" {
   name     = "l4-gpu-pool"
   location = var.region
   cluster  = google_container_cluster.primary.name
+  node_locations = ["us-central1-a", "us-central1-b", "us-central1-c"]
 
   autoscaling {
     min_node_count = 0
