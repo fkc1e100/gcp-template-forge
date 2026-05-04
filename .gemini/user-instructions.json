@@ -114,8 +114,13 @@
       },
       {
         "title": "Template Directory Structure — Follow basic-gke-hello-world",
-        "description": "Every template MUST follow the exact directory structure of templates/basic-gke-hello-world/. The TF path needs: terraform-helm/main.tf, variables.tf, outputs.tf, versions.tf, workload/Chart.yaml, workload/values.yaml, workload/templates/. The KCC path needs: config-connector/cluster.yaml, config-connector/network.yaml, config-connector/nodepool.yaml. Both paths need: config-connector-workload/ for K8s workloads, template.yaml, validate.sh, README.md. Read templates/basic-gke-hello-world/ FIRST before generating any files.",
+        "description": "Every template MUST follow the exact directory structure of templates/basic-gke-hello-world/. The TF path needs: terraform-helm/main.tf, variables.tf, outputs.tf, versions.tf, workload/Chart.yaml, workload/values.yaml, workload/templates/. The KCC path needs: config-connector/cluster.yaml, config-connector/network.yaml, config-connector/nodepool.yaml. KCC workloads go in config-connector-workload/. TF workloads go in terraform-helm/workload/ (Helm chart). Read templates/basic-gke-hello-world/ FIRST before generating any files.",
         "example": "ls templates/basic-gke-hello-world/ to see the complete required structure"
+      },
+      {
+        "title": "Terraform Resource Naming — Use CI Variables, Not Hardcoded Names",
+        "description": "NEVER hardcode GCP resource names or use random_string in main.tf. CI controls all resource naming via TF_VAR_* environment variables. main.tf MUST declare these variables: cluster_name, network_name, subnet_name, uid_suffix, project_id, region, zone, service_account. The cluster uses var.cluster_name (CI sets it to '{shortName}-{UID}-tf'), the VPC uses var.network_name ('{shortName}-{UID}-tf-vpc'), the subnet uses var.subnet_name. This ensures CI can track and destroy resources after tests.",
+        "example": "resource \"google_container_cluster\" \"primary\" {\n  name = var.cluster_name\n}\nresource \"google_compute_network\" \"vpc\" {\n  name = var.network_name\n}\nvariable \"cluster_name\" {}\nvariable \"network_name\" {}\nvariable \"subnet_name\" {}\nvariable \"uid_suffix\" {}"
       }
     ],
     "clarity": [],
