@@ -1,9 +1,9 @@
 name: Cleanup Orphaned Infrastructure
+# ⚠️  PRIMARY CLEANUP IS THE K3s CRONJOB (openclaw-cleanup, every 5 min).
+# This workflow is EMERGENCY ONLY. The CronJob has PROTECTED_CLUSTERS enforcement.
+# If you must run this, verify the filter below excludes all permanent clusters.
 on:
-  # Schedule removed — cleanup is now handled by the openclaw-cleanup K8s CronJob
-  # which runs every 5 minutes and is not subject to GitHub Actions scheduler delays.
-  # Keep workflow_dispatch for emergency manual runs only.
-  workflow_dispatch: # Manual emergency cleanup
+  workflow_dispatch: # Emergency manual cleanup only
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"

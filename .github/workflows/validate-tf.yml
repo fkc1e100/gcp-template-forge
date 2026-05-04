@@ -249,18 +249,6 @@ jobs:
             gh pr edit "${{ github.event.number }}" --add-label "status:ai-agent-active"
           fi
 
-  cleanup-orphans:
-    name: Cleanup Orphans
-    if: github.event_name == 'pull_request' && github.event.action == 'closed'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Authenticate to GCP
-        uses: google-github-actions/auth@v2
-        with:
-          workload_identity_provider: ${{ env.WIF_PROVIDER }}
-          service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
-      - name: Run Cleanup Script
-        run: |
-          chmod +x agent-infra/cleanup-resources.sh
-          ./agent-infra/cleanup-resources.sh
+  # Cleanup is handled by the openclaw-cleanup K3s CronJob (every 5 min).
+  # Removed from CI to consolidate into a single cleanup path with proper
+  # PROTECTED_CLUSTERS enforcement.
