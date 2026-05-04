@@ -118,7 +118,7 @@ fi
 echo "Searching for orphaned Terraform clusters..."
 TF_CLUSTERS=$(gcloud container clusters list \
   --project="$PROJECT" \
-  --filter="(resourceLabels.project=gcp-template-forge OR name ~ latest-gke-features- OR name ~ enterprise-gke- OR name ~ basic-gke- OR name ~ gke- OR name ~ gke-topology-aware-routing-) AND name != $KCC_CLUSTER" \
+  --filter="(resourceLabels.project=gcp-template-forge OR name ~ latest-gke-features- OR name ~ enterprise-gke- OR name ~ basic-gke- OR name ~ gke- OR name ~ gke-topology-aware-routing-) AND name != $KCC_CLUSTER AND name != kcc-dash-dont-delete AND name != repo-agent-standard AND name != gemma4-inference" \
   --format="value(name, zone.scope(), resourceLabels.template)")
 
 DELETED_CLUSTERS=false
@@ -159,7 +159,7 @@ if [ "$DELETED_CLUSTERS" = true ]; then
   echo "Waiting for clusters to be deleted (up to 10 minutes)..."
   i=1
   while [ "$i" -le 20 ]; do
-    STILL_THERE=$(gcloud container clusters list --project="$PROJECT" --filter="(resourceLabels.project=gcp-template-forge OR name ~ latest-gke-features- OR name ~ enterprise-gke- OR name ~ basic-gke- OR name ~ gke- OR name ~ gke-topology-aware-routing-) AND name != $KCC_CLUSTER" --format="value(name)" 2>/dev/null | wc -l || echo "0")
+    STILL_THERE=$(gcloud container clusters list --project="$PROJECT" --filter="(resourceLabels.project=gcp-template-forge OR name ~ latest-gke-features- OR name ~ enterprise-gke- OR name ~ basic-gke- OR name ~ gke- OR name ~ gke-topology-aware-routing-) AND name != $KCC_CLUSTER AND name != kcc-dash-dont-delete AND name != repo-agent-standard AND name != gemma4-inference" --format="value(name)" 2>/dev/null | wc -l || echo "0")
     if [ "$STILL_THERE" -le 0 ]; then
       echo "All clusters deleted."
       break
