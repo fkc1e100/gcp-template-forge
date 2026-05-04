@@ -22,15 +22,17 @@ unsupported:
     tf_field: node_pool.queued_provisioning.enabled
     kcc_resource: ContainerNodePool
     kcc_search_key: "queuedProvisioning"
-    action: kcc-unsupported-marker
+    action: use-workaround
     reason: >
       KCC v1beta1 ContainerNodePool lacks the queuedProvisioning field.
-      KCC generates resources from the Terraform provider proto but this
-      field has not yet been mapped.
+      DO NOT create .kcc-unsupported — use standard autoscaling instead.
     upstream_issue: https://github.com/GoogleCloudPlatform/k8s-config-connector/issues/TBD
     workaround: >
-      Use standard autoscaling in the KCC path. Document the limitation in
-      README.md under a "KCC Limitations" section.
+      Use standard autoscaling (minNodeCount/maxNodeCount) in the KCC path
+      instead of queuedProvisioning. The KCC template is still fully functional
+      — it just uses the standard autoscaler instead of Kueue-driven provisioning.
+      Document the difference in README.md under a "KCC Limitations" section.
+      DO NOT create .kcc-unsupported for this — generate the full KCC template.
 
   - feature: subnetwork_labels
     resource: ComputeSubnetwork
