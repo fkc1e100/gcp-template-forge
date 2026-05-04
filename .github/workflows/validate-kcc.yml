@@ -78,6 +78,8 @@ jobs:
         template: ${{ fromJson(needs.detect-changes.outputs.kcc_templates) }}
     steps:
       - uses: actions/checkout@v4
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
       - name: Run KCC Linting
         env:
           LINT_MODE: KCC
