@@ -1,0 +1,5 @@
+shortName: "kcc-template-multi-t"
+displayName: Multi-Tenant Ray on GKE
+description: KubeRay + Kueue multi-tenant batch ML with equitable queuing
+gcpServices: [GKE]
+issueNumber: 122

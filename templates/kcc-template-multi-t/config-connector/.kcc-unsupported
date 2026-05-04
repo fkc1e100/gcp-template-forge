@@ -1,0 +1,3 @@
+Feature: queuedProvisioning
+Reason: KCC v1beta1 ContainerNodePool lacks the queuedProvisioning field. This feature is critical for Kueue equitable queuing to properly autoscale node pools without standard pods getting stuck Pending.
+Reference: agent-infra/kcc-capabilities.yaml
