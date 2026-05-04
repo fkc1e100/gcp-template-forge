@@ -1,5 +1,0 @@
-shortName: ray-kueue-gke-arch
-displayName: Multi-Tenant Ray on GKE
-description: KubeRay and Kueue on GKE for multi-tenant equitable batch scheduling.
-gcpServices: [GKE, Compute Engine]
-issueNumber: 122
