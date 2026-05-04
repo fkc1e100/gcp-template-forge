@@ -12,33 +12,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: compute.cnrm.cloud.google.com/v1beta1
-kind: ComputeNetwork
+apiVersion: container.cnrm.cloud.google.com/v1beta1
+kind: ContainerCluster
 metadata:
-  name: kuberay-queuing-vpc
+  name: kuberay-kueue
   namespace: forge-management
   labels:
     project: gcp-template-forge
-    template: kuberay-queuing
+    template: kuberay-kueue
+  annotations:
+    cnrm.cloud.google.com/remove-default-node-pool: "true"
 spec:
-  autoCreateSubnetworks: false
----
-apiVersion: compute.cnrm.cloud.google.com/v1beta1
-kind: ComputeSubnetwork
-metadata:
-  name: kuberay-queuing-subnet
-  namespace: forge-management
-  labels:
-    project: gcp-template-forge
-    template: kuberay-queuing
-spec:
-  ipCidrRange: 10.0.0.0/20
-  region: us-central1
+  location: us-central1
+  initialNodeCount: 1
   networkRef:
-    name: kuberay-queuing-vpc
-  privateIpGoogleAccess: true
-  secondaryIpRange:
-    - rangeName: pods
-      ipCidrRange: 10.4.0.0/14
-    - rangeName: services
-      ipCidrRange: 10.8.0.0/20
+    name: kuberay-kueue-vpc
+  subnetworkRef:
+    name: kuberay-kueue-subnet
+  ipAllocationPolicy:
+    clusterSecondaryRangeName: pods
+    servicesSecondaryRangeName: services
+  workloadIdentityConfig:
+    workloadPool: gca-gke-2025.svc.id.goog
+  releaseChannel:
+    channel: REGULAR
+  datapathProvider: ADVANCED_DATAPATH
+  securityPostureConfig:
+    mode: BASIC
+    vulnerabilityMode: VULNERABILITY_BASIC
+

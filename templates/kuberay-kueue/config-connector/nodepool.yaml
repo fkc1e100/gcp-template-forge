@@ -15,14 +15,14 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
 metadata:
-  name: kuberay-queuing-sys-pool
+  name: kuberay-kueue-sys-pool
   namespace: forge-management
   labels:
     project: gcp-template-forge
-    template: kuberay-queuing
+    template: kuberay-kueue
 spec:
   clusterRef:
-    name: kuberay-queuing
+    name: kuberay-kueue
   location: us-central1
   # Explicitly set node locations for regional cluster
   nodeLocations:
@@ -42,19 +42,19 @@ spec:
       mode: GKE_METADATA
     labels:
       project: gcp-template-forge
-      template: kuberay-queuing
+      template: kuberay-kueue
 ---
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
 metadata:
-  name: kuberay-queuing-gpu-pool
+  name: kuberay-kueue-gpu-pool
   namespace: forge-management
   labels:
     project: gcp-template-forge
-    template: kuberay-queuing
+    template: kuberay-kueue
 spec:
   clusterRef:
-    name: kuberay-queuing
+    name: kuberay-kueue
   location: us-central1
   # Pin to a single zone for GPU availability
   nodeLocations:
@@ -78,5 +78,5 @@ spec:
       mode: GKE_METADATA
     labels:
       project: gcp-template-forge
-      template: kuberay-queuing
+      template: kuberay-kueue
       gpu: l4

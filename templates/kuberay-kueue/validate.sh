@@ -7,7 +7,7 @@
 #
 #      http://www.apache.org/licenses/LICENSE-2.0
 #
-# validate.sh for kuberay-queuing
+# validate.sh for kuberay-kueue
 
 set -euo pipefail
 
@@ -15,7 +15,7 @@ echo "=== Validation: Ray on GKE with Kueue ==="
 
 PROJECT_ID="${PROJECT_ID:-gca-gke-2025}"
 # Support both TF and KCC naming
-CLUSTER_NAME="${CLUSTER_NAME:-kuberay-queuing-cluster}"
+CLUSTER_NAME="${CLUSTER_NAME:-kuberay-kueue-cluster}"
 REGION="${REGION:-us-central1}"
 
 # Isolate kubeconfig
@@ -62,4 +62,4 @@ kubectl logs "$POD_A" -n team-a --tail=20
 
 echo "PASS: RayClusters are Ready and pods are running."
 
-echo "=== All Validation Tests PASSED for kuberay-queuing ==="
+echo "=== All Validation Tests PASSED for kuberay-kueue ==="

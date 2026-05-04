@@ -1,4 +1,4 @@
-shortName: "kuberay-queuing"
+shortName: "kuberay-kueue"
 displayName: "Ray on GKE with Kueue"
 description: >
   Multi-tenant GPU cluster using KubeRay and Kueue for equitable resource
