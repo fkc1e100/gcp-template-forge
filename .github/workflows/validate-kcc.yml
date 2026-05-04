@@ -86,7 +86,7 @@ jobs:
           ./agent-infra/local-lint.sh "${{ matrix.template }}"
 
   kcc-validation:
-    name: KCC (${{ matrix.template }})
+    name: "KCC Provision (${{ matrix.template }})"
     needs: [detect-changes, lint]
     runs-on: ubuntu-latest
     if: needs.detect-changes.outputs.kcc_templates != '[]' && needs.detect-changes.outputs.kcc_templates != ''
@@ -102,13 +102,13 @@ jobs:
         with:
           wif_provider: ${{ env.WIF_PROVIDER }}
           wif_service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
-      - name: Get KCC cluster credentials
+      - name: Get KCC management cluster credentials
         uses: google-github-actions/get-gke-credentials@v2
         with:
           cluster_name: ${{ env.KCC_CLUSTER }}
           location: ${{ env.KCC_REGION }}
           project_id: ${{ env.PROJECT_ID }}
-      - name: Apply and Wait
+      - name: Uniquify resource names for sandbox
         run: |
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
@@ -116,18 +116,119 @@ jobs:
           BASE_NAME=$(python3 -c "import yaml; print(yaml.safe_load(open('${TEMPLATE}/template.yaml')).get('shortName', ''))" 2>/dev/null)
           [ -z "$BASE_NAME" ] && BASE_NAME=$(basename "$TEMPLATE")
           find "${TEMPLATE}"/config-connector* -type f -name "*.yaml" -exec sed -i "s/${BASE_NAME}/${BASE_NAME}-${UID_SUFFIX}-kcc/g" {} +
-          kubectl apply -n "$KCC_NAMESPACE" -f "${TEMPLATE}/config-connector/"
-          kubectl wait -n "$KCC_NAMESPACE" --for=condition=Ready --all --timeout=5400s -f "${TEMPLATE}/config-connector/"
-      - name: Teardown KCC
-        if: always()
+      - name: Apply KCC manifests to management cluster
+        run: |
+          kubectl apply -n "$KCC_NAMESPACE" -f "${{ matrix.template }}/config-connector/"
+      - name: Wait for KCC resources Ready (GKE cluster provisioning)
+        run: |
+          kubectl wait -n "$KCC_NAMESPACE" --for=condition=Ready --all --timeout=5400s -f "${{ matrix.template }}/config-connector/"
+
+  kcc-test:
+    name: "KCC Test (${{ matrix.template }})"
+    needs: [detect-changes, kcc-validation]
+    runs-on: ubuntu-latest
+    if: needs.detect-changes.outputs.kcc_templates != '[]' && needs.detect-changes.outputs.kcc_templates != ''
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        template: ${{ fromJson(needs.detect-changes.outputs.kcc_templates) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Auth and Setup GKE
+        uses: ./.github/actions/gcp-gke-auth
+        with:
+          wif_provider: ${{ env.WIF_PROVIDER }}
+          wif_service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+      - name: Get KCC management cluster credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ env.KCC_CLUSTER }}
+          location: ${{ env.KCC_REGION }}
+          project_id: ${{ env.PROJECT_ID }}
+      - name: Get provisioned cluster credentials
+        run: |
+          RUN_ID="${{ github.run_id }}"
+          UID_SUFFIX="${RUN_ID: -6}"
+          BASE_NAME=$(basename "${{ matrix.template }}")
+          CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com \
+            -n "$KCC_NAMESPACE" -o jsonpath='{.items[0].metadata.name}' \
+            -l "template=${BASE_NAME}-${UID_SUFFIX}-kcc" 2>/dev/null || echo "")
+          if [ -z "$CLUSTER_NAME" ]; then
+            echo "No KCC cluster found — skipping workload test"
+            echo "SKIP_TEST=true" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com \
+            -n "$KCC_NAMESPACE" "$CLUSTER_NAME" -o jsonpath='{.spec.location}')
+          echo "CLUSTER_NAME=$CLUSTER_NAME" >> "$GITHUB_ENV"
+          echo "REGION=$LOCATION" >> "$GITHUB_ENV"
+          gcloud container clusters get-credentials "$CLUSTER_NAME" --region "$LOCATION" --project ${{ env.PROJECT_ID }}
+          kubectl get nodes
+      - name: Deploy workloads to provisioned cluster
+        if: env.SKIP_TEST != 'true'
         run: |
           TEMPLATE="${{ matrix.template }}"
-          kubectl delete -n "$KCC_NAMESPACE" -f "${TEMPLATE}/config-connector/" --wait=true --timeout=900s || true
+          if [ -d "${TEMPLATE}/config-connector-workload" ]; then
+            kubectl apply -f "${TEMPLATE}/config-connector-workload/"
+            echo "Waiting for workload pods..."
+            sleep 30
+            kubectl get pods -A --field-selector=status.phase!=Running,status.phase!=Succeeded 2>/dev/null || true
+          else
+            echo "No config-connector-workload/ directory — skipping"
+          fi
+      - name: Run validation tests
+        if: env.SKIP_TEST != 'true'
+        run: |
+          TEMPLATE="${{ matrix.template }}"
+          if [ -f "${TEMPLATE}/validate.sh" ]; then
+            export CLUSTER_NAME="${{ env.CLUSTER_NAME }}"
+            export REGION="${{ env.REGION }}"
+            chmod +x "${TEMPLATE}/validate.sh"
+            "./${TEMPLATE}/validate.sh"
+          else
+            echo "No validate.sh — cluster provisioned and workloads deployed successfully"
+          fi
+
+  kcc-teardown:
+    name: "KCC Teardown (${{ matrix.template }})"
+    needs: [detect-changes, kcc-validation, kcc-test]
+    if: always() && needs.detect-changes.outputs.kcc_templates != '[]' && needs.detect-changes.outputs.kcc_templates != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        template: ${{ fromJson(needs.detect-changes.outputs.kcc_templates) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Auth and Setup GKE
+        uses: ./.github/actions/gcp-gke-auth
+        with:
+          wif_provider: ${{ env.WIF_PROVIDER }}
+          wif_service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+      - name: Get KCC management cluster credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ env.KCC_CLUSTER }}
+          location: ${{ env.KCC_REGION }}
+          project_id: ${{ env.PROJECT_ID }}
+      - name: Uniquify resource names (must match provision step)
+        run: |
+          RUN_ID="${{ github.run_id }}"
+          UID_SUFFIX="${RUN_ID: -6}"
+          TEMPLATE="${{ matrix.template }}"
+          BASE_NAME=$(python3 -c "import yaml; print(yaml.safe_load(open('${TEMPLATE}/template.yaml')).get('shortName', ''))" 2>/dev/null)
+          [ -z "$BASE_NAME" ] && BASE_NAME=$(basename "$TEMPLATE")
+          find "${TEMPLATE}"/config-connector* -type f -name "*.yaml" -exec sed -i "s/${BASE_NAME}/${BASE_NAME}-${UID_SUFFIX}-kcc/g" {} +
+      - name: Delete KCC resources
+        run: |
+          kubectl delete -n "$KCC_NAMESPACE" -f "${{ matrix.template }}/config-connector/" --wait=true --timeout=900s || true
 
   circuit-breaker:
     name: Circuit Breaker
-    needs: [kcc-validation]
-    if: always() && (needs.kcc-validation.result == 'failure')
+    needs: [kcc-validation, kcc-test]
+    if: always() && (needs.kcc-validation.result == 'failure' || needs.kcc-test.result == 'failure')
     runs-on: ubuntu-latest
     steps:
       - name: Check Retry Count and Label
