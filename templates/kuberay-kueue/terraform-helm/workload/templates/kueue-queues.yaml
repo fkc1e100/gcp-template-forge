@@ -1,7 +1,8 @@
+{{- $flavorName := printf "gpu-flavor-%s" .Values.uidSuffix }}
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: ResourceFlavor
 metadata:
-  name: default-flavor
+  name: {{ $flavorName }}
 spec:
   nodeLabels:
     gpu: "l4" # Match our node pool
@@ -16,7 +17,7 @@ spec:
   resourceGroups:
   - coveredResources: ["nvidia.com/gpu"]
     flavors:
-    - name: default-flavor
+    - name: {{ $flavorName }}
       resources:
       - name: "nvidia.com/gpu"
         nominalQuota: 1
@@ -32,7 +33,7 @@ spec:
   resourceGroups:
   - coveredResources: ["nvidia.com/gpu"]
     flavors:
-    - name: default-flavor
+    - name: {{ $flavorName }}
       resources:
       - name: "nvidia.com/gpu"
         nominalQuota: 1
