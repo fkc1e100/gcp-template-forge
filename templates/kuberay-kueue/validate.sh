@@ -15,7 +15,7 @@
 
 set -e
 
-echo "Starting Validation Tests for gke-kuberay-kueue-multitenant..."
+echo "Starting Validation Tests for kuberay-kueue..."
 
 PROJECT_ID=${PROJECT_ID:-"gca-gke-2025"}
 CLUSTER_NAME=${CLUSTER_NAME:-"gke-kuberay-kueue"}
@@ -36,8 +36,8 @@ if [[ "$CLUSTER_NAME" == *"-kcc" ]]; then
   echo "Applying KCC Workloads..."
   kubectl create namespace kuberay-operator --dry-run=client -o yaml | kubectl apply -f -
   kubectl create namespace kueue-system --dry-run=client -o yaml | kubectl apply -f -
-  kubectl apply --server-side -f templates/gke-kuberay-kueue-multitenant/config-connector-workload/kuberay-operator.yaml
-  kubectl apply --server-side -f templates/gke-kuberay-kueue-multitenant/config-connector-workload/kueue-operator.yaml
+  kubectl apply --server-side -f templates/kuberay-kueue/config-connector-workload/kuberay-operator.yaml
+  kubectl apply --server-side -f templates/kuberay-kueue/config-connector-workload/kueue-operator.yaml
   
   echo "Waiting for CRDs..."
   for i in {1..30}; do
@@ -49,7 +49,7 @@ if [[ "$CLUSTER_NAME" == *"-kcc" ]]; then
     sleep 10
   done
   
-  kubectl apply -f templates/gke-kuberay-kueue-multitenant/config-connector-workload/workload.yaml
+  kubectl apply -f templates/kuberay-kueue/config-connector-workload/workload.yaml
 fi
 
 # 2. Operator Readiness
@@ -65,13 +65,19 @@ kubectl get clusterqueues
 kubectl get localqueues -A
 
 echo "Waiting for RayClusters to be admitted or active..."
-# We expect Kueue to suspend or admit the RayClusters. We just check if they exist.
-for i in {1..20}; do
-  if kubectl get rayclusters -A | grep -q team-a-raycluster; then
-    echo "RayClusters created successfully!"
-    break
-  fi
-  sleep 15
-done
+# We expect Kueue to suspend or admit the RayClusters. We check if they become Ready.
+
+echo "--- Test 5: Workload Functional Verification ---"
+echo "Waiting for RayClusters to become Ready..."
+kubectl wait raycluster --all -A --for=condition=Ready --timeout=15m || true
+
+# Check if at least one RayCluster is Ready
+if kubectl get rayclusters -A -o json | grep -q '"state": "ready"'; then
+  echo "PASS: At least one RayCluster is Ready."
+else
+  echo "ERROR: No RayCluster became Ready."
+  kubectl get rayclusters -A -o yaml
+  exit 1
+fi
 
 echo "All Validation Tests passed successfully!"

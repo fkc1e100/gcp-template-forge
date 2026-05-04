@@ -1,0 +1,5 @@
+shortName: kuberay-kueue
+displayName: Multi-Tenant Ray on GKE
+description: Multi-Tenant Ray on GKE with Equitable Queuing using KubeRay and Kueue
+gcpServices: [GKE, GPU]
+issueNumber: 122

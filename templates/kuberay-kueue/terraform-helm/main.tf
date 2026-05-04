@@ -51,7 +51,7 @@ resource "google_container_cluster" "primary" {
 
   resource_labels = {
     project  = "gcp-template-forge"
-    template = "gke-kuberay-kueue-multitenant"
+    template = "kuberay-kueue"
   }
 
   # Remove default node pool; managed separately below
@@ -93,9 +93,10 @@ provider "google-beta" {
 
 # Node pool â€” system pool for operators
 resource "google_container_node_pool" "system_pool" {
-  name     = "system-pool"
-  location = var.region
-  cluster  = google_container_cluster.primary.name
+  name           = "system-pool"
+  location       = var.region
+  node_locations = [var.zone]
+  cluster        = google_container_cluster.primary.name
 
   autoscaling {
     min_node_count = 1
@@ -120,22 +121,27 @@ resource "google_container_node_pool" "system_pool" {
 
     labels = {
       project  = "gcp-template-forge"
-      template = "gke-kuberay-kueue-multitenant"
+      template = "kuberay-kueue"
     }
 
     resource_labels = {
       project  = "gcp-template-forge"
-      template = "gke-kuberay-kueue-multitenant"
+      template = "kuberay-kueue"
     }
   }
 }
 
 # GPU Node Pool with Autoscaling
 resource "google_container_node_pool" "gpu_pool" {
-  provider = google-beta
-  name     = "l4-gpu-pool"
-  location = var.region
-  cluster  = google_container_cluster.primary.name
+  provider       = google-beta
+  name           = "l4-gpu-pool"
+  location       = var.region
+  node_locations = [var.zone]
+  cluster        = google_container_cluster.primary.name
+
+  queued_provisioning {
+    enabled = true
+  }
 
   autoscaling {
     min_node_count = 0
@@ -144,8 +150,6 @@ resource "google_container_node_pool" "gpu_pool" {
   initial_node_count = 0
 
   node_config {
-    spot = true
-
     machine_type = "g2-standard-4"
     disk_size_gb = 50
     disk_type    = "pd-balanced"
@@ -171,13 +175,13 @@ resource "google_container_node_pool" "gpu_pool" {
 
     labels = {
       project  = "gcp-template-forge"
-      template = "gke-kuberay-kueue-multitenant"
+      template = "kuberay-kueue"
       gpu      = "l4"
     }
 
     resource_labels = {
       project  = "gcp-template-forge"
-      template = "gke-kuberay-kueue-multitenant"
+      template = "kuberay-kueue"
     }
   }
 }
@@ -185,7 +189,8 @@ resource "google_container_node_pool" "gpu_pool" {
 resource "local_file" "helm_values" {
   filename = "${path.module}/workload/values.yaml"
   content  = <<EOT
-templateName: gke-kuberay-kueue-multitenant
+templateName: kuberay-kueue
+uidSuffix: "${var.uid_suffix}"
 EOT
 }
 
