@@ -122,7 +122,7 @@ jobs:
           echo "Searching for orphaned Terraform clusters..."
           TF_CLUSTERS=$(gcloud container clusters list \
             --project="$PROJECT" \
-            --filter="name != status:ai-agent-active-standard AND name != krmapihost-kcc-instance AND name != kcc-dash-dont-delete" \
+            --filter="name != status:ai-agent-active-standard AND name != krmapihost-kcc-instance AND name != kcc-dash-dont-delete AND name != repo-agent-standard AND name != gemma4-inference" \
             --format="value(name, zone.scope())")
 
           while read -r CLUSTER C_LOC; do
