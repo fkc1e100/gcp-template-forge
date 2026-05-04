@@ -27,8 +27,10 @@ on:
       - 'agent-infra/**'
 
 concurrency:
-  group: gke-cluster-provisioning
-  cancel-in-progress: false
+  # Per-PR group prevents parallel KCC runs on the same PR; cancel-in-progress
+  # ensures a new push cancels stale queued/running runs for THIS PR only.
+  group: validate-kcc-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: write
@@ -43,11 +45,8 @@ env:
   KCC_NAMESPACE: forge-management
   WIF_PROVIDER: ${{ vars.GCP_WIF_PROVIDER }}
   WIF_SERVICE_ACCOUNT: ${{ vars.GCP_CI_SERVICE_ACCOUNT }}
-  TF_STATE_BUCKET: ${{ vars.GCP_TF_STATE_BUCKET }}
   USE_GKE_GCLOUD_AUTH_PLUGIN: "True"
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-  TF_VAR_project_id: ${{ vars.GCP_PROJECT_ID }}
-  TF_VAR_service_account: ${{ vars.GCP_CI_SERVICE_ACCOUNT }}
 
 jobs:
   detect-changes:
@@ -55,8 +54,6 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.action != 'closed'
     outputs:
-      templates: ${{ steps.detect.outputs.templates }}
-      tf_templates: ${{ steps.detect.outputs.tf_templates }}
       kcc_templates: ${{ steps.detect.outputs.kcc_templates }}
       has_templates: ${{ steps.detect.outputs.has_templates }}
     steps:
@@ -71,30 +68,23 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   lint:
-    name: Lint (${{ matrix.template }})
+    name: Lint KCC (${{ matrix.template }})
     needs: detect-changes
     runs-on: ubuntu-latest
-    if: needs.detect-changes.outputs.has_templates == 'true'
+    if: needs.detect-changes.outputs.kcc_templates != '[]' && needs.detect-changes.outputs.kcc_templates != ''
     timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
-        template: ${{ fromJson(needs.detect-changes.outputs.templates) }}
+        template: ${{ fromJson(needs.detect-changes.outputs.kcc_templates) }}
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-      - name: Set up Helm
-        run: curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-      - name: Run Thorough Linting
+      - name: Run KCC Linting
+        env:
+          LINT_MODE: KCC
         run: |
           chmod +x agent-infra/local-lint.sh
           ./agent-infra/local-lint.sh "${{ matrix.template }}"
-      - name: Actionlint
-        run: |
-          if [ -f "./actionlint" ]; then
-            ./actionlint
-          fi
 
   kcc-validation:
     name: KCC (${{ matrix.template }})
@@ -126,7 +116,7 @@ jobs:
           TEMPLATE="${{ matrix.template }}"
           BASE_NAME=$(python3 -c "import yaml; print(yaml.safe_load(open('${TEMPLATE}/template.yaml')).get('shortName', ''))" 2>/dev/null)
           [ -z "$BASE_NAME" ] && BASE_NAME=$(basename "$TEMPLATE")
-          find "${TEMPLATE}"/config-connector* -type f -name "*.yaml" -exec sed -i "s/${BASE_NAME}/${BASE_NAME}-${UID_SUFFIX}/g" {} +
+          find "${TEMPLATE}"/config-connector* -type f -name "*.yaml" -exec sed -i "s/${BASE_NAME}/${BASE_NAME}-${UID_SUFFIX}-kcc/g" {} +
           kubectl apply -n "$KCC_NAMESPACE" -f "${TEMPLATE}/config-connector/"
           kubectl wait -n "$KCC_NAMESPACE" --for=condition=Ready --all --timeout=5400s -f "${TEMPLATE}/config-connector/"
       - name: Teardown KCC

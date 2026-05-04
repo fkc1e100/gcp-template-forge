@@ -1,25 +1,20 @@
 name: Sandbox Validation (KCC)
 
 on:
+  # Post-merge only — validate-kcc.yml handles PR validation.
+  # Running both on PRs causes duplicate KCC resource provisioning.
   push:
     branches: [ main ]
     paths:
       - 'templates/**/config-connector/**'
       - 'templates/**/config-connector-workload/**'
       - 'agent-infra/**'
-  pull_request:
-    branches: [ main ]
-    types: [opened, synchronize, reopened, closed]
-    paths:
-      - 'templates/**/config-connector/**'
-      - 'templates/**/config-connector-workload/**'
-      - 'agent-infra/**'
 
 concurrency:
-  # Share concurrency group with TF workflow to prevent concurrent .validated writes
-  # to the same branch. If both workflows fire on the same push, one will queue.
-  group: validation-${{ github.ref }}
-  cancel-in-progress: false
+  # Per-PR group for KCC sandbox only; cancel-in-progress stops stale queued runs
+  # from blocking KCC validation behind unrelated TF sandbox runs.
+  group: sandbox-kcc-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: write
@@ -172,7 +167,7 @@ jobs:
         run: |
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
-          find "${{ matrix.template }}"/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename "${{ matrix.template }}")/$(basename "${{ matrix.template }}")-${UID_SUFFIX}/g" {} +
+          find "${{ matrix.template }}"/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename "${{ matrix.template }}")/$(basename "${{ matrix.template }}")-${UID_SUFFIX}-kcc/g" {} +
           kubectl apply -n "$KCC_NAMESPACE" -f "${{ matrix.template }}/config-connector/"
       - name: Wait for KCC resources Ready
         run: |
@@ -205,9 +200,9 @@ jobs:
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
           BASE_NAME=$(basename "${{ matrix.template }}")
-          CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n "$KCC_NAMESPACE" -l "template=${BASE_NAME}-${UID_SUFFIX}" -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || echo "")
+          CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n "$KCC_NAMESPACE" -l "template=${BASE_NAME}-${UID_SUFFIX}-kcc" -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || echo "")
           if [ -n "$CLUSTER_NAME" ]; then
-            LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n "$KCC_NAMESPACE" -l "template=${BASE_NAME}-${UID_SUFFIX}" -o jsonpath='{.items[0].spec.location}')
+            LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n "$KCC_NAMESPACE" -l "template=${BASE_NAME}-${UID_SUFFIX}-kcc" -o jsonpath='{.items[0].spec.location}')
             gcloud container clusters get-credentials "$CLUSTER_NAME" --region "$LOCATION" --project ${{ env.PROJECT_ID }}
             kubectl get nodes
             if [ -f "${{ matrix.template }}/validate.sh" ]; then
@@ -245,7 +240,7 @@ jobs:
         run: |
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
-          find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename "${{ matrix.template }}")/$(basename "${{ matrix.template }}")-${UID_SUFFIX}/g" {} +
+          find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename "${{ matrix.template }}")/$(basename "${{ matrix.template }}")-${UID_SUFFIX}-kcc/g" {} +
           kubectl delete -n "$KCC_NAMESPACE" -f "${{ matrix.template }}/config-connector/" --wait=true --timeout=900s || true
 
   cleanup-pr-infra:
@@ -273,7 +268,7 @@ jobs:
         run: |
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
-          find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename "${{ matrix.template }}")/$(basename "${{ matrix.template }}")-${UID_SUFFIX}/g" {} +
+          find ${{ matrix.template }}/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename "${{ matrix.template }}")/$(basename "${{ matrix.template }}")-${UID_SUFFIX}-kcc/g" {} +
           kubectl delete -n "$KCC_NAMESPACE" -f ${{ matrix.template }}/config-connector/ --ignore-not-found --wait=false || true
 
   validate-kcc:
@@ -318,7 +313,7 @@ jobs:
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
           echo "KCC_START=$(date -u +%s)" >> "$GITHUB_ENV"
-          find "${{ matrix.template }}"/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename "${{ matrix.template }}")/$(basename "${{ matrix.template }}")-${UID_SUFFIX}/g" {} +
+          find "${{ matrix.template }}"/config-connector* -type f -name "*.yaml" -exec sed -i "s/$(basename "${{ matrix.template }}")/$(basename "${{ matrix.template }}")-${UID_SUFFIX}-kcc/g" {} +
           kubectl apply -n "$KCC_NAMESPACE" -f "${{ matrix.template }}/config-connector/"
       - name: Wait Ready
         id: kcc-wait

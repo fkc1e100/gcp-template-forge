@@ -26,8 +26,10 @@ on:
       - 'agent-infra/**'
 
 concurrency:
-  group: gke-cluster-provisioning
-  cancel-in-progress: false
+  # Per-PR group prevents parallel TF runs on the same PR; cancel-in-progress
+  # ensures a new push cancels stale queued/running runs for THIS PR only.
+  group: validate-tf-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: write
@@ -68,6 +70,19 @@ jobs:
         run: gh pr edit "${{ github.event.number }}" --remove-label "status:ai-agent-active" || true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  lint-agent-infra:
+    name: "Lint Agent Infra"
+    runs-on: ubuntu-latest
+    if: github.event.action != 'closed'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+      - name: Run Thorough Linting
+        run: |
+          chmod +x agent-infra/local-lint.sh
+          ./agent-infra/local-lint.sh agent-infra
 
   lint:
     name: "Lint TF (${{ matrix.template }})"

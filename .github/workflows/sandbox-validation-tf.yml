@@ -1,23 +1,19 @@
 name: Sandbox Validation (TF)
 
 on:
+  # Post-merge only — validate-tf.yml handles PR validation.
+  # Running both on PRs causes duplicate cluster provisioning.
   push:
     branches: [ main ]
     paths:
       - 'templates/**/terraform-helm/**'
       - 'agent-infra/**'
-  pull_request:
-    branches: [ main ]
-    types: [opened, synchronize, reopened, closed]
-    paths:
-      - 'templates/**/terraform-helm/**'
-      - 'agent-infra/**'
 
 concurrency:
-  # Share concurrency group with KCC workflow to prevent concurrent .validated writes
-  # to the same branch. If both workflows fire on the same push, one will queue.
-  group: validation-${{ github.ref }}
-  cancel-in-progress: false
+  # Per-PR group for TF sandbox only; cancel-in-progress stops stale queued runs
+  # from executing and provisioning orphan clusters on every push.
+  group: sandbox-tf-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: write
