@@ -18,9 +18,11 @@ on:
   push:
     paths:
       - '.github/workflows/**'
+      - 'agent-infra/**'
   pull_request:
     paths:
       - '.github/workflows/**'
+      - 'agent-infra/**'
 
 jobs:
   actionlint:
@@ -30,3 +32,15 @@ jobs:
       - uses: actions/checkout@v4
       - name: Run actionlint
         uses: reviewdog/action-actionlint@v1
+
+  lint-agent-infra:
+    name: "Lint Agent Infra"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+      - name: Run Thorough Linting
+        run: |
+          chmod +x agent-infra/local-lint.sh
+          ./agent-infra/local-lint.sh agent-infra

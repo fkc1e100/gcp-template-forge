@@ -24,7 +24,6 @@ on:
       - 'templates/**/config-connector-workload/**'
       - '.github/workflows/validate-kcc.yml'
       - '.github/actions/**'
-      - 'agent-infra/**'
 
 concurrency:
   # Per-PR group prevents parallel KCC runs on the same PR; cancel-in-progress
