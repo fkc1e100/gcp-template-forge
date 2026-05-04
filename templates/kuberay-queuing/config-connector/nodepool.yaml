@@ -22,7 +22,7 @@ metadata:
     template: kuberay-queuing
 spec:
   clusterRef:
-    name: kuberay-queuing-cluster
+    name: kuberay-queuing
   location: us-central1
   # Explicitly set node locations for regional cluster
   nodeLocations:
@@ -54,7 +54,7 @@ metadata:
     template: kuberay-queuing
 spec:
   clusterRef:
-    name: kuberay-queuing-cluster
+    name: kuberay-queuing
   location: us-central1
   # Pin to a single zone for GPU availability
   nodeLocations:
