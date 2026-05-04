@@ -121,28 +121,12 @@ jobs:
             exit 1
           fi
 
-  pre-cleanup:
-    name: "Quota Cleanup"
-    needs: [ detect-changes ]
-    if: github.event_name == 'pull_request' && needs.detect-changes.outputs.has_kcc_templates == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Authenticate to GCP
-        uses: google-github-actions/auth@v2
-        with:
-          workload_identity_provider: ${{ env.WIF_PROVIDER }}
-          service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
-      - name: Run Cleanup Script
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          chmod +x agent-infra/cleanup-resources.sh
-          ./agent-infra/cleanup-resources.sh
+  # pre-cleanup removed — cleanup is handled by the openclaw-cleanup K3s CronJob
+  # (every 5 min) with PROTECTED_CLUSTERS enforcement.
 
   kcc-apply:
     name: "KCC Apply (${{ matrix.template }})"
-    needs: [ detect-changes, lint, pre-cleanup ]
+    needs: [ detect-changes, lint ]
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 60
