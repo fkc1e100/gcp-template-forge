@@ -4,54 +4,51 @@
 **Title:** [CI-BUG] basic-gke-hello-world README does not follow standard template
 **Description:** The `README.md` in `templates/basic-gke-hello-world/` is inconsistent with the standard defined in `agent-infra/scaffolds/README.template.md`.
 
+Specific missing/inconsistent items reported:
+- `<!-- CI: validation record ... -->` comment.
+- Inconsistent headers or ordering.
+
 ## Root Cause Analysis
-The `templates/basic-gke-hello-world/README.md` file was likely created before the current standard template was finalized, or it was manually modified without referencing the standard scaffold. As `basic-gke-hello-world` is designated as the "Complete working example" (per `GEMINI.md`), its deviations from the standard cause confusion and trigger CI/consistency bugs.
+The `templates/basic-gke-hello-world/README.md` diverged from the `agent-infra/scaffolds/README.template.md` because it was likely one of the first templates created, possibly before the scaffold was finalized.
 
-## Discrepancies Identified
+While the current branch (`fix/issue-238`) has already applied some fixes to the README, my research identified deeper structural and logic issues:
 
-| Feature | `README.template.md` (Standard) | `basic-gke-hello-world/README.md` (Current) |
-|---|---|---|
-| **CI Marker Location** | Directly below the 1-line description. | At the very bottom of the file. |
-| **Header Ordering** | Description -> CI Marker -> Architecture -> Resource Naming -> Cost -> Deployment -> Verification -> Inputs | Description -> Architecture -> Resource Naming -> Cost -> Deployment -> Verification -> Inputs -> CI Marker -> Validation Record |
-| **Resource Naming** | Config Connector uses `{{SHORT_NAME}}-<uid>-kcc` | Config Connector uses `basic-gke-hello-world-<uid>` (instead of `gke-basic-<uid>-kcc`) |
-| **KCC Limitations** | Placeholder `{{KCC_LIMITATIONS_SECTION}}` present | Missing entirely |
+### 1. README Divergence
+- **Status:** Partially fixed in this branch. The headers now follow the scaffold.
+- **Remaining Issue:** The `{{KCC_LIMITATIONS_SECTION}}` placeholder is present as a literal string. Since this template has no known KCC limitations (verified against `agent-infra/kcc-capabilities.yaml`), this section should be cleaned up.
 
-*Note: The existing issue report claims the CI Marker and Template Inputs are missing; however, they are present but located at the bottom of the file.*
+### 2. Naming Inconsistency (Code vs. README)
+- **The README claims:** KCC resources are named `gke-basic-<uid>-kcc`.
+- **The manifests use:** `gke-basic-vpc` and `gke-basic-subnet` (no `-kcc` suffix).
+- **The Problem:** This breaks the promise of "functional parity" in naming between TF and KCC paths.
+
+### 3. CI Workflow Bug (Post-Merge)
+- **File:** `.github/workflows/ci-post-merge.yml`
+- **Logic:** `BASE_NAME=$(basename "$TEMPLATE")` and `sed -i "s/${BASE_NAME}/${BASE_NAME}-${UID_SUFFIX}/g"`.
+- **The Conflict:** For `basic-gke-hello-world`, the `BASE_NAME` is the directory name (21 chars), but the manifests use the `shortName` (`gke-basic`).
+- **Result:** The `sed` command fails to find and replace the resource names in `basic-gke-hello-world`. This causes CI to attempt to create resources with static names (`gke-basic-vpc`), leading to collisions and failures if multiple jobs run.
+
+### 4. CI Validation Record Logic
+- **File:** `.github/workflows/ci-post-merge.yml`
+- **Logic:** `echo "## Validation Record..." >> "$README"`.
+- **The Conflict:** This appends to the end of the file, ignoring the `<!-- CI: validation record ... -->` marker at the top. This makes the "do not edit below this line" warning in the README misleading.
 
 ## Proposed Action Plan
 
-To fix this issue without overstepping the scope (modifying only the README to match the template), perform the following changes in `templates/basic-gke-hello-world/README.md`:
+### Step 1: Align Naming and Cleanup README
+- **Update Manifests:** Modify `templates/basic-gke-hello-world/config-connector/*.yaml` to use the naming pattern `gke-basic-kcc` for the base resource names. This allows CI to append a UID and matches the README's claims.
+- **Cleanup README:** Remove the literal `{{KCC_LIMITATIONS_SECTION}}` from `templates/basic-gke-hello-world/README.md` and replace it with a brief statement or a commented-out block as per scaffold instructions.
 
-1.  **Relocate the CI Marker:**
-    Move the `<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->` comment from the bottom of the file to directly below the one-line description quotation.
-    
-2.  **Reorder Sections:**
-    Ensure the headers follow the exact sequence defined in the scaffold:
-    - `# Basic GKE Hello World`
-    - `> A minimal GKE Standard cluster...`
-    - `<!-- CI: validation record... -->`
-    - `## Architecture`
-    - `### Resource Naming`
-    - `### Estimated Cost`
-    - `## Deployment Paths`
-    - `### Path 1: Terraform + Helm`
-    - `### Path 2: Config Connector (KCC)`
-    - *(Add KCC Limitations section here)*
-    - `## Verification`
-    - `## Template Inputs`
+### Step 2: Fix CI Workflow (Addressing the [CI-BUG] prefix)
+- **Update `ci-post-merge.yml`:** Modify the naming replacement logic to use the `shortName` from `template.yaml` instead of the directory name.
+- **Update `ci-post-merge.yml`:** (Optional but recommended) Update the README update logic to search for the marker instead of just appending.
 
-3.  **Update Resource Naming Table:**
-    Update the "Config Connector" column in the Resource Naming table to match the standard `{{SHORT_NAME}}-<uid>-kcc` format using the template's short name (`gke-basic`).
-    | Resource | Terraform + Helm | Config Connector |
-    |---|---|---|
-    | GKE Cluster | `gke-basic-<uid>-tf` | `gke-basic-<uid>-kcc` |
-    | VPC Network | `gke-basic-<uid>-tf-vpc` | `gke-basic-<uid>-kcc-vpc` |
-    | Subnet | `gke-basic-<uid>-tf-subnet` | `gke-basic-<uid>-kcc-subnet` |
-
-4.  **Add KCC Limitations Placeholder:**
-    Insert the standard KCC Limitations placeholder (or a statement saying there are no known limitations) below the Config Connector deployment path.
-
-5.  **Remove Existing Validation Record Table:**
-    Delete the existing `## Validation Record` section and its table at the bottom of the file, as the CI pipeline is responsible for generating and appending it.
-
-*Note on Implementation:* The actual KCC manifests currently use `basic-gke-hello-world` instead of `gke-basic`. The agent executing this fix should consider whether to also update the manifests to strictly enforce the standard naming convention, but the primary objective is to fix the README layout.
+## Detailed Changes for `templates/basic-gke-hello-world/`
+- **README.md:** 
+    - Ensure CI marker is at line 5.
+    - Remove `{{KCC_LIMITATIONS_SECTION}}`.
+    - Ensure all `---` rules are in the correct place.
+- **config-connector/*.yaml:**
+    - Rename `gke-basic` -> `gke-basic-kcc`
+    - Rename `gke-basic-vpc` -> `gke-basic-kcc-vpc`
+    - Rename `gke-basic-subnet` -> `gke-basic-kcc-subnet`
