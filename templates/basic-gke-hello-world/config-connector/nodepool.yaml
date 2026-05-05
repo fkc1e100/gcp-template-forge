@@ -25,7 +25,7 @@ metadata:
 spec:
   location: us-central1
   clusterRef:
-    name: gke-basic
+    name: gke-basic-kcc
   nodeCount: 1
   nodeConfig:
     spot: true

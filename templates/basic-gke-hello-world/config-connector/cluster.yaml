@@ -15,7 +15,7 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerCluster
 metadata:
-  name: gke-basic
+  name: gke-basic-kcc
   namespace: forge-management
   labels:
     project: gcp-template-forge
@@ -28,9 +28,9 @@ spec:
   # GKE Standard cluster — explicit node pool defined in nodepool.yaml
   initialNodeCount: 1
   networkRef:
-    name: gke-basic-vpc
+    name: gke-basic-kcc-vpc
   subnetworkRef:
-    name: gke-basic-subnet
+    name: gke-basic-kcc-subnet
   ipAllocationPolicy:
     clusterSecondaryRangeName: pods
     servicesSecondaryRangeName: services
