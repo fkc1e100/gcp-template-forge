@@ -303,3 +303,4 @@ jobs:
           git add templates/**/.validated templates/**/README.md
           git commit -m "ci: bulk validate templates [skip ci]" || true
           git push origin main || (git pull --rebase origin main && git push origin main)
+ush origin main)
