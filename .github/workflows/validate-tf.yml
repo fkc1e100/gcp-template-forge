@@ -195,7 +195,10 @@ jobs:
           [ -f "${{ matrix.template }}/.timeout" ] && TIMEOUT=$(cat "${{ matrix.template }}/.timeout")
           echo "$CHARTS" | while read -r chart; do
             [ -z "$chart" ] && continue
-            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT"
+            CHART_NAME=$(basename "$chart")
+            RELEASE_NAME="$CHART_NAME"
+            if [ "$CHART_NAME" == "workload" ]; then RELEASE_NAME="release"; fi
+            helm upgrade --install "$RELEASE_NAME" "$chart" --wait --timeout="$TIMEOUT"
           done
           if [ -f "${{ matrix.template }}/validate.sh" ]; then
             chmod +x "${{ matrix.template }}/validate.sh"
@@ -223,6 +226,24 @@ jobs:
       - name: TF Destroy
         working-directory: ${{ matrix.template }}/terraform-helm
         run: |
+          RUN_ID="${{ github.run_id }}"
+          UID_SUFFIX="${RUN_ID: -6}"
+          TEMPLATE="${{ matrix.template }}"
+          BASE_NAME=$(basename "$TEMPLATE")
+          if [[ "$TEMPLATE" == *"gke-inference-fuse-cache"* ]]; then BASE_NAME="gke-inf-fuse-cache"; fi
+          # Get Credentials (needed for helm uninstall)
+          for REGION in us-central1 us-east1 us-west1; do
+            if gcloud container clusters get-credentials "${BASE_NAME}-${UID_SUFFIX}-tf" --region "$REGION" --project "${{ env.PROJECT_ID }}" 2>/dev/null; then
+              break
+            fi
+          done
+          CHARTS=$(find . -name Chart.yaml -exec dirname {} \; 2>/dev/null)
+          for chart in $CHARTS; do
+            CHART_NAME=$(basename "$chart")
+            RELEASE_NAME="$CHART_NAME"
+            if [ "$CHART_NAME" == "workload" ]; then RELEASE_NAME="release"; fi
+            helm uninstall "$RELEASE_NAME" --wait || true
+          done
           terraform init \
             -backend-config="bucket=$TF_STATE_BUCKET" \
             -backend-config="prefix=${{ matrix.template }}-${{ github.run_id }}/terraform-helm"

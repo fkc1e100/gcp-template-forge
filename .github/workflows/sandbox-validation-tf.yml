@@ -130,7 +130,10 @@ jobs:
           if [ -z "$CHARTS" ]; then exit 0; fi
           for chart in $CHARTS; do
             echo "=== helm template: $chart ==="
-            helm template release "$chart" > /tmp/helm-rendered.yaml
+            CHART_NAME=$(basename "$chart")
+            RELEASE_NAME="$CHART_NAME"
+            if [ "$CHART_NAME" == "workload" ]; then RELEASE_NAME="release"; fi
+            helm template "$RELEASE_NAME" "$chart" > /tmp/helm-rendered.yaml
             python3 -c "
           import yaml, sys
           docs = list(yaml.safe_load_all(open('/tmp/helm-rendered.yaml')))
@@ -256,7 +259,10 @@ jobs:
             EXTRA_ARGS=(--set "templateName=gke-inf-fuse-cache-${UID_SUFFIX}" --set "bucketName=${BUCKET_NAME}" --set "serviceAccount.name=${KSA_NAME}")
           fi
           for chart in $CHARTS; do
-            helm upgrade --install release "$chart" --wait --timeout="$TIMEOUT" "${EXTRA_ARGS[@]}"
+            CHART_NAME=$(basename "$chart")
+            RELEASE_NAME="$CHART_NAME"
+            if [ "$CHART_NAME" == "workload" ]; then RELEASE_NAME="release"; fi
+            helm upgrade --install "$RELEASE_NAME" "$chart" --wait --timeout="$TIMEOUT" "${EXTRA_ARGS[@]}"
           done
           if [ -f "${{ matrix.template }}/validate.sh" ]; then
             export CLUSTER_NAME="${BASE_NAME}-${UID_SUFFIX}-tf"
@@ -296,7 +302,13 @@ jobs:
           CLUSTER_NAME="${BASE_NAME}-${UID_SUFFIX}-tf"
           NETWORK_NAME="${BASE_NAME}-${UID_SUFFIX}-tf-vpc"
           gcloud container clusters get-credentials "${CLUSTER_NAME}" --region us-central1 --project ${{ env.PROJECT_ID }} || true
-          helm uninstall release --wait --timeout=5m || true
+          CHARTS=$(find "${{ matrix.template }}/terraform-helm" -name Chart.yaml -exec dirname {} \; 2>/dev/null)
+          for chart in $CHARTS; do
+            CHART_NAME=$(basename "$chart")
+            RELEASE_NAME="$CHART_NAME"
+            if [ "$CHART_NAME" == "workload" ]; then RELEASE_NAME="release"; fi
+            helm uninstall "$RELEASE_NAME" --wait --timeout=5m || true
+          done
           kubectl delete gateway,ingress --all -A --wait=true --timeout=2m || true
           for _ in {1..20}; do
             NEGS=$(gcloud compute network-endpoint-groups list --filter="network:($NETWORK_NAME)" --project="${{ env.PROJECT_ID }}" --format="value(name)" 2>/dev/null || true)
@@ -358,6 +370,16 @@ jobs:
           if [[ "$TEMPLATE_PATH" == *"gke-inference-fuse-cache"* ]]; then
             BASE_NAME="gke-inf-fuse-cache"
           fi
+          CLUSTER_NAME="${BASE_NAME}-${UID_SUFFIX}-tf"
+          # Get Credentials (needed for helm uninstall)
+          gcloud container clusters get-credentials "${CLUSTER_NAME}" --region us-central1 --project ${{ env.PROJECT_ID }} || true
+          CHARTS=$(find . -name Chart.yaml -exec dirname {} \; 2>/dev/null)
+          for chart in $CHARTS; do
+            CHART_NAME=$(basename "$chart")
+            RELEASE_NAME="$CHART_NAME"
+            if [ "$CHART_NAME" == "workload" ]; then RELEASE_NAME="release"; fi
+            helm uninstall "$RELEASE_NAME" --wait || true
+          done
           export TF_VAR_cluster_name="${BASE_NAME}-${UID_SUFFIX}-tf"
           export TF_VAR_network_name="${BASE_NAME}-${UID_SUFFIX}-tf-vpc"
           export TF_VAR_subnet_name="${BASE_NAME}-${UID_SUFFIX}-tf-subnet"
@@ -438,7 +460,10 @@ jobs:
         run: |
           CHARTS=$(find "${{ matrix.template }}/terraform-helm" -name Chart.yaml -exec dirname {} \; 2>/dev/null)
           for chart in $CHARTS; do
-            helm upgrade --install release "$chart" --wait --timeout=60m
+            CHART_NAME=$(basename "$chart")
+            RELEASE_NAME="$CHART_NAME"
+            if [ "$CHART_NAME" == "workload" ]; then RELEASE_NAME="release"; fi
+            helm upgrade --install "$RELEASE_NAME" "$chart" --wait --timeout=60m
           done
           if [ -f "${{ matrix.template }}/validate.sh" ]; then
             export CLUSTER_NAME="${{ steps.tf-outputs.outputs.tf_cluster }}"
@@ -450,7 +475,13 @@ jobs:
         if: always() && steps.tf-outputs.outputs.tf_cluster != ''
         working-directory: ${{ matrix.template }}/terraform-helm
         run: |
-          helm uninstall release --wait || true
+          CHARTS=$(find . -name Chart.yaml -exec dirname {} \; 2>/dev/null)
+          for chart in $CHARTS; do
+            CHART_NAME=$(basename "$chart")
+            RELEASE_NAME="$CHART_NAME"
+            if [ "$CHART_NAME" == "workload" ]; then RELEASE_NAME="release"; fi
+            helm uninstall "$RELEASE_NAME" --wait || true
+          done
           terraform destroy -auto-approve || true
       - name: Save results
         if: always() && steps.skip-check.outputs.skip != 'true'
