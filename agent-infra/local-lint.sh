@@ -162,7 +162,10 @@ echo "Checking Helm..."
 find "$TARGET_DIR" -name "Chart.yaml" -not -path "*/.*" -exec dirname {} \; | sort -u | while read -r chart; do
   echo "--- Linting Helm chart in $chart ---"
   helm lint "$chart"
-  helm template release "$chart" > /dev/null
+  CHART_NAME=$(basename "$chart")
+  RELEASE_NAME="$CHART_NAME"
+  if [ "$CHART_NAME" == "workload" ]; then RELEASE_NAME="release"; fi
+  helm template "$RELEASE_NAME" "$chart" > /dev/null
 done
 
 # 3. YAML syntax check (KCC and other plain YAML)

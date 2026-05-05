@@ -66,7 +66,7 @@ REGION=$(terraform output -raw cluster_location)
 gcloud container clusters get-credentials "${CLUSTER_NAME}" --region "${REGION}"
 
 # Deploy the workload via Helm
-helm upgrade --install release ./helm --wait --timeout=30m
+helm upgrade --install release ./workload --wait --timeout=30m
 
 # Verify
 kubectl get nodes
