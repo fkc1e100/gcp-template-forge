@@ -15,11 +15,11 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerCluster
 metadata:
-  name: basic-gke-hello-world
+  name: gke-basic
   namespace: forge-management
   labels:
     project: gcp-template-forge
-    template: basic-gke-hello-world
+    template: gke-basic
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
     cnrm.cloud.google.com/remove-default-node-pool: "true"
@@ -28,9 +28,9 @@ spec:
   # GKE Standard cluster — explicit node pool defined in nodepool.yaml
   initialNodeCount: 1
   networkRef:
-    name: basic-gke-hello-world-vpc
+    name: gke-basic-vpc
   subnetworkRef:
-    name: basic-gke-hello-world-subnet
+    name: gke-basic-subnet
   ipAllocationPolicy:
     clusterSecondaryRangeName: pods
     servicesSecondaryRangeName: services

@@ -15,7 +15,7 @@
 
 set -e
 
-echo "Starting Validation Tests for basic-gke-hello-world..."
+echo "Starting Validation Tests for Basic GKE Hello World..."
 
 PROJECT_ID=${PROJECT_ID:-"gca-gke-2025"}
 CLUSTER_NAME=${CLUSTER_NAME:-"gke-basic-tf"}

@@ -1,6 +1,8 @@
 # Basic GKE Hello World
 
-> A minimal GKE Standard cluster with a Hello World workload, deployable via Terraform + Helm or Config Connector.
+> A minimal GKE Standard cluster deploying a Hello World web service via Helm (terraform-helm path) and Config Connector (config-connector path).
+
+<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
 
 ## Architecture
 
@@ -16,9 +18,9 @@ This template provisions:
 
 | Resource | Terraform + Helm | Config Connector |
 |---|---|---|
-| GKE Cluster | `gke-basic-<uid>-tf` | `basic-gke-hello-world-<uid>` |
-| VPC Network | `gke-basic-<uid>-tf-vpc` | `basic-gke-hello-world-<uid>-vpc` |
-| Subnet | `gke-basic-<uid>-tf-subnet` | `basic-gke-hello-world-<uid>-subnet` |
+| GKE Cluster | `gke-basic-<uid>-tf` | `gke-basic-<uid>-kcc` |
+| VPC Network | `gke-basic-<uid>-tf-vpc` | `gke-basic-<uid>-kcc-vpc` |
+| Subnet | `gke-basic-<uid>-tf-subnet` | `gke-basic-<uid>-kcc-subnet` |
 
 ### Estimated Cost
 
@@ -35,7 +37,7 @@ This template provisions:
 
 ## Deployment Paths
 
-This template supports two deployment paths that provision equivalent infrastructure.
+This template supports two deployment paths that provide equivalent infrastructure.
 
 ### Path 1: Terraform + Helm
 
@@ -99,10 +101,10 @@ kubectl wait -n forge-management --for=condition=Ready --all \
 
 # Get cluster credentials (once ContainerCluster is Ready)
 CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com \
-  -n forge-management -l "template=basic-gke-hello-world" \
+  -n forge-management -l "template=gke-basic" \
   -o jsonpath='{.items[0].metadata.name}')
 LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com \
-  -n forge-management -l "template=basic-gke-hello-world" \
+  -n forge-management -l "template=gke-basic" \
   -o jsonpath='{.items[0].spec.location}')
 gcloud container clusters get-credentials "${CLUSTER_NAME}" --region "${LOCATION}"
 
@@ -119,6 +121,10 @@ kubectl get pods -A
 kubectl delete -n default -f ../config-connector-workload/
 kubectl delete -n forge-management -f . --wait=true --timeout=900s
 ```
+
+### KCC Limitations
+
+No known limitations for this basic GKE architecture.
 
 ---
 
@@ -139,7 +145,7 @@ Expected output:
 Test 1: Cluster Connectivity... Connectivity passed.
 Test 2: Node Readiness... All nodes are Ready.
 Test 3: Workload Readiness... Workload is available.
-All Validation Tests passed successfully for basic-gke-hello-world!
+All Validation Tests passed successfully for Basic GKE Hello World!
 ```
 
 ---
@@ -153,19 +159,3 @@ All Validation Tests passed successfully for basic-gke-hello-world!
 | `cluster_name` | GKE cluster name | `gke-basic-tf` |
 | `network_name` | VPC network name | `gke-basic-tf-vpc` |
 | `subnet_name` | Subnet name | `gke-basic-tf-subnet` |
-
-<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
-
-## Validation Record
-
-|  | Terraform + Helm | Config Connector |
-| --- | --- | --- |
-| **Status** | success | pending |
-| **Date** | 2026-04-20 | 2026-04-20 |
-| **Duration** | 10m 15s | 15m 20s |
-| **Region** | us-central1 | us-central1 (regional) |
-| **Zones** | us-central1-a,us-central1-b,us-central1-c,us-central1-f | us-central1 (regional) |
-| **Cluster** | gke-basic-tf | basic-gke-hello-world |
-| **Agent tokens** | not recorded | (shared session) |
-| **Estimated cost** | - | -- |
-| **Commit** | multiple | pending |

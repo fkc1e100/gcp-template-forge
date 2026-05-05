@@ -20,7 +20,7 @@ metadata:
     app.kubernetes.io/name: hello-world
     app.kubernetes.io/instance: release
     project: gcp-template-forge
-    template: basic-gke-hello-world
+    template: gke-basic
 spec:
   replicas: 3
   selector:
@@ -33,7 +33,7 @@ spec:
         app.kubernetes.io/name: hello-world
         app.kubernetes.io/instance: release
         project: gcp-template-forge
-        template: basic-gke-hello-world
+        template: gke-basic
     spec:
       containers:
       - name: hello-app
@@ -49,7 +49,7 @@ metadata:
     app.kubernetes.io/name: hello-world
     app.kubernetes.io/instance: release
     project: gcp-template-forge
-    template: basic-gke-hello-world
+    template: gke-basic
 spec:
   type: LoadBalancer
   selector:

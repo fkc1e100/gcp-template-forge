@@ -58,7 +58,7 @@ terraform destroy -auto-approve
 2. **Workload**:
    Wait for cluster readiness, then switch context to the new cluster and apply the workload:
    ```bash
-   gcloud container clusters get-credentials basic-gke-hello-world --region us-central1 --project <PROJECT_ID>
+   gcloud container clusters get-credentials gke-basic --region us-central1 --project <PROJECT_ID>
    kubectl apply -f config-connector-workload/workload.yaml
    ```
 
@@ -66,11 +66,11 @@ terraform destroy -auto-approve
 1. **Resource Readiness:**
    ```bash
    # Check KCC resources in management cluster
-   kubectl wait --for=condition=Ready containercluster/basic-gke-hello-world -n forge-management --timeout=30m
+   kubectl wait --for=condition=Ready containercluster/gke-basic -n forge-management --timeout=30m
    ```
 2. **Workload & Endpoint:**
    ```bash
-   export CLUSTER_NAME=basic-gke-hello-world
+   export CLUSTER_NAME=gke-basic
    ./validate.sh
    ```
 
