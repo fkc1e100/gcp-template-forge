@@ -37,7 +37,7 @@ This template provisions:
 
 ## Deployment Paths
 
-This template supports two deployment paths that provide equivalent infrastructure.
+This template supports two deployment paths that provision equivalent infrastructure.
 
 ### Path 1: Terraform + Helm
 
@@ -122,10 +122,6 @@ kubectl delete -n default -f ../config-connector-workload/
 kubectl delete -n forge-management -f . --wait=true --timeout=900s
 ```
 
-### KCC Limitations
-
-No known limitations for this basic GKE architecture.
-
 ---
 
 ## Verification
@@ -159,3 +155,5 @@ All Validation Tests passed successfully for Basic GKE Hello World!
 | `cluster_name` | GKE cluster name | `gke-basic-tf` |
 | `network_name` | VPC network name | `gke-basic-tf-vpc` |
 | `subnet_name` | Subnet name | `gke-basic-tf-subnet` |
+
+## Validation Record
