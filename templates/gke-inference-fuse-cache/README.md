@@ -1,113 +1,162 @@
-<!--
-Copyright 2026 Google LLC
+# GKE GCS FUSE Inference Cache
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+> High-performance AI inference with GCS FUSE + Local SSD caching for fast model loading on L4 GPUs
 
-     http://www.apache.org/licenses/LICENSE-2.0
+<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
--->
+## Architecture
 
-# Template: High-Performance GCS FUSE with Local SSD Caching
-
-## Overview
 This template demonstrates how to achieve high-performance model loading on GKE using **Cloud Storage FUSE** with **Local SSD caching**. This pattern is ideal for AI inference workloads (like vLLM) that need to load large models (100GB+) quickly while minimizing egress costs and Persistent Disk overhead.
 
-## Key Features
+This template provisions:
+
+- **VPC Network** — Dedicated VPC with a primary subnet in `us-central1`
+- **GKE Cluster** — Standard cluster (`gke-inf-fuse-cache`) with L4 GPU acceleration
+- **Workload** — vLLM/Mock Inference server configured with GCS FUSE CSI driver and Local SSD caching
+
+### Key Features
 - **L4 GPU Acceleration**: Uses G2-standard-4 nodes with NVIDIA L4 GPUs.
 - **Local NVMe SSD Caching**: Specifically configures Local SSDs to back the GCS FUSE file cache.
-- **Advanced GCS FUSE Tuning**: Utilizes `fileCacheCapacity`, `fileCacheForRangeRead`, `metadataCacheTTLSeconds`, `metadataStatCacheCapacity`, and `metadataTypeCacheCapacity` for optimal performance and persistent caching.
+- **Advanced GCS FUSE Tuning**: Utilizes `fileCacheCapacity`, `fileCacheForRangeRead`, and optimized metadata cache settings.
 - **Workload Identity**: Securely access GCS buckets without managing long-lived keys.
-- **vLLM / Mock Inference**: Deploys a lightweight inference server configured for GCS-based model serving (uses a dummy server for CI validation speed).
 
-## Infrastructure Architecture
-- **GKE Standard Cluster**: With GCS FUSE CSI driver enabled.
-- **GPU Node Pool**: `g2-standard-4` machines in a single zone to ensure Local SSD availability.
-- **GCS Bucket**: Stores the model weights.
-- **Local SSD**: Attached as ephemeral storage and used by the GCS FUSE CSI driver as a dedicated cache layer.
-
-## Template Paths
-
-### Terraform + Helm (`terraform-helm/`)
-- Provisions the full infrastructure (VPC, GKE, Bucket, IAM).
-- Deploys the vLLM server via a Helm chart.
-
-### Config Connector (`config-connector/`)
-- Provisions the infrastructure using Kubernetes-native manifests.
-- Includes workload manifests in `config-connector-workload/`.
-
-## Deployment Instructions
-
-### Prerequisites
-- A GCP Project with Billing enabled.
-- GPU Quota for `NVIDIA_L4_GPUS` in `us-central1`.
-- `terraform`, `helm`, `kubectl`, and `gcloud` installed.
-
-### Terraform + Helm Path
-
-1.  **Provision Infrastructure**:
-    ```bash
-    cd terraform-helm
-    terraform init
-    terraform apply -var="project_id=<PROJECT_ID>"
-    ```
-    This will also generate a `workload/values.yaml` file.
-
-2.  **Deploy Workload**:
-    ```bash
-    gcloud container clusters get-credentials gke-inf-fuse-cache --region us-central1
-    helm upgrade --install release ./workload
-    ```
-
-3.  **Verify**:
-    ```bash
-    cd ..
-    ./validate.sh
-    ```
-
-### Config Connector Path
-
-1.  **Apply Infrastructure**:
-    ```bash
-    kubectl apply -f config-connector/
-    ```
-
-2.  **Wait for Readiness**:
-    ```bash
-    kubectl wait --for=condition=Ready containercluster gke-inf-fuse-cache-kcc -n forge-management --timeout=30m
-    ```
-
-3.  **Deploy Workload**:
-    *Edit `config-connector-workload/workload.yaml` and replace `<PROJECT_ID>` and `<BUCKET_NAME>` with your actual values.*
-    ```bash
-    gcloud container clusters get-credentials gke-inf-fuse-cache-kcc --region us-central1
-    kubectl apply -f config-connector-workload/workload.yaml
-    ```
-
-## Performance Benefits
+### Performance Benefits
 By using Local SSDs for the GCS FUSE cache:
 1.  **Reduced TTFT**: Models are loaded at NVMe speeds (GB/s) after the first pull.
 2.  **Cost Savings**: Eliminates the need for massive `pd-ssd` or `pd-extreme` boot disks.
 3.  **Scale-out Speed**: New pods on the same node benefit from the "warm" cache immediately.
 
-## Cleanup
+### Resource Naming
 
-### Terraform
+| Resource | Terraform + Helm | Config Connector |
+|---|---|---|
+| GKE Cluster | `gke-inf-fuse-cache` | `gke-inf-fuse-cache-kcc` |
+| VPC Network | `gke-inf-fuse-cache-vpc` | `gke-inf-fuse-cache-vpc` |
+| Subnet | `gke-inf-fuse-cache-subnet` | `gke-inf-fuse-cache-subnet` |
+
+### Estimated Cost
+
+| Resource | Monthly Estimate |
+|---|---|
+| GKE Cluster (control plane) | ~$75 |
+| G2 Standard Node Pool (1x g2-standard-4 + L4 GPU) | ~$525 |
+| **Total** | **~$600** |
+
+*Estimates based on sustained use in us-central1. GPU templates incur additional on-demand charges.*
+
+---
+
+## Deployment Paths
+
+This template supports two deployment paths that provision equivalent infrastructure.
+
+### Path 1: Terraform + Helm
+
+**Prerequisites:** `terraform` ≥ 1.5, `helm` ≥ 3.10, `kubectl`, `gcloud` with ADC configured. GPU Quota for `NVIDIA_L4_GPUS` in `us-central1`.
+
 ```bash
-cd terraform-helm
-terraform destroy -var="project_id=<PROJECT_ID>"
+cd templates/gke-inference-fuse-cache/terraform-helm
+
+# Initialize with GCS backend (or use local state for testing)
+terraform init \
+  -backend-config="bucket=YOUR_TF_STATE_BUCKET" \
+  -backend-config="prefix=gke-inference-fuse-cache/terraform-helm"
+
+# Review the plan
+terraform plan \
+  -var="project_id=YOUR_PROJECT_ID" \
+  -var="region=us-central1" \
+  -var="service_account=YOUR_NODE_SA"
+
+# Apply (provisions GKE cluster and supporting infrastructure)
+terraform apply \
+  -var="project_id=YOUR_PROJECT_ID" \
+  -var="region=us-central1" \
+  -var="service_account=YOUR_NODE_SA"
+
+# Get cluster credentials
+CLUSTER_NAME=$(terraform output -raw cluster_name)
+REGION=$(terraform output -raw cluster_location)
+gcloud container clusters get-credentials "${CLUSTER_NAME}" --region "${REGION}"
+
+# Deploy the workload via Helm
+helm upgrade --install release ./workload --wait --timeout=30m
+
+# Verify
+kubectl get nodes
+kubectl get pods -A
 ```
 
-### Config Connector
+**Cleanup:**
 ```bash
-kubectl delete -f config-connector-workload/workload.yaml
-kubectl delete job stage-model # If not using workload.yaml for cleanup
-kubectl delete -f config-connector/
+helm uninstall release
+terraform destroy -var="project_id=YOUR_PROJECT_ID" -var="region=us-central1" -var="service_account=YOUR_NODE_SA"
 ```
 
+---
+
+### Path 2: Config Connector (KCC)
+
+**Prerequisites:** A running GKE cluster with Config Connector installed. The `forge-management` namespace must have a `ConfigConnectorContext` pointing to a service account with `roles/container.admin` and `roles/compute.networkAdmin`.
+
+```bash
+cd templates/gke-inference-fuse-cache/config-connector
+
+# Apply the GCP infrastructure manifests
+kubectl apply -n forge-management -f .
+
+# Wait for all resources to be Ready (GKE cluster takes ~10 minutes)
+kubectl wait -n forge-management --for=condition=Ready --all \
+  --timeout=3600s -f .
+
+# Get cluster credentials (once ContainerCluster is Ready)
+CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com \
+  -n forge-management -l "template=gke-inf-fuse-cache" \
+  -o jsonpath='{.items[0].metadata.name}')
+LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com \
+  -n forge-management -l "template=gke-inf-fuse-cache" \
+  -o jsonpath='{.items[0].spec.location}')
+gcloud container clusters get-credentials "${CLUSTER_NAME}" --region "${LOCATION}"
+
+# Deploy the workload
+# Note: Edit ../config-connector-workload/workload.yaml to set your PROJECT_ID and BUCKET_NAME
+kubectl apply -n default -f ../config-connector-workload/
+# Verify
+kubectl get nodes
+kubectl get pods -A
+```
+
+**Cleanup:**
+```bash
+kubectl delete -n default -f ../config-connector-workload/
+kubectl delete -n forge-management -f . --wait=true --timeout=900s
+```
+
+---
+
+## Verification
+
+After deploying with either path, run the validation script to confirm end-to-end functionality:
+
+```bash
+export PROJECT_ID="YOUR_PROJECT_ID"
+export CLUSTER_NAME="gke-inf-fuse-cache"
+export REGION="us-central1"
+chmod +x templates/gke-inference-fuse-cache/validate.sh
+./templates/gke-inference-fuse-cache/validate.sh
+```
+
+---
+
+## Template Inputs
+
+| Variable | Description | Default |
+|---|---|---|
+| `project_id` | GCP project ID | required |
+| `region` | GCP region | `us-central1` |
+| `zone` | Zone for GPU node pool | `us-central1-a` |
+| `cluster_name` | GKE cluster name | `gke-inf-fuse-cache` |
+| `bucket_name` | GCS bucket for model storage | `gke-inf-fuse-cache-bucket` |
+| `network_name` | VPC network name | `gke-inf-fuse-cache-vpc` |
+| `subnet_name` | Subnet name | `gke-inf-fuse-cache-subnet` |
+| `service_account`| Node pool service account | required |
