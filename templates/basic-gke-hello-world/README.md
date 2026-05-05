@@ -2,8 +2,6 @@
 
 > A minimal GKE Standard cluster deploying a Hello World web service via Helm (terraform-helm path) and Config Connector (config-connector path). Exposes the workload via a LoadBalancer Service and validates via HTTP endpoint.
 
-<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
-
 ## Architecture
 
 This template provides a foundational GKE Standard architecture. It includes a VPC with secondary ranges for Pods and Services, a regional GKE Standard cluster with a single Spot node pool for cost-efficiency, and a simple Hello World workload exposed via a LoadBalancer.
@@ -149,10 +147,11 @@ chmod +x templates/basic-gke-hello-world/validate.sh
 
 Expected output:
 ```
+Starting Validation Tests for Basic GKE Hello World...
 Test 1: Cluster Connectivity... Connectivity passed.
-Test 2: Node Readiness... All nodes are Ready.
-Test 3: Workload Readiness... Workload is available.
-All Validation Tests passed successfully for Basic GKE Hello World!
+Test 2: Workload Readiness... Workload is available.
+Test 3: Endpoint Interaction... Endpoint test passed!
+All Validation Tests passed successfully!
 ```
 
 ---
@@ -167,3 +166,5 @@ All Validation Tests passed successfully for Basic GKE Hello World!
 | `network_name` | VPC network name | `gke-basic-tf-vpc` |
 | `subnet_name` | Subnet name | `gke-basic-tf-subnet` |
 | `service_account` | GKE node pool service account | required |
+
+<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
