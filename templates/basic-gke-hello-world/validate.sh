@@ -13,9 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -e
-
-echo "Starting Validation Tests for Basic GKE Hello World..."
+set -euo pipefail
 
 PROJECT_ID=${PROJECT_ID:-"gca-gke-2025"}
 CLUSTER_NAME=${CLUSTER_NAME:-"gke-basic-tf"}
@@ -32,15 +30,20 @@ gcloud container clusters get-credentials ${CLUSTER_NAME} --region ${REGION} --p
 kubectl cluster-info
 echo "Connectivity passed."
 
-# 2. Workload Readiness
-echo "Test 2: Workload Readiness..."
+# 2. Node Readiness
+echo "Test 2: Node Readiness..."
+kubectl wait nodes --all --for=condition=Ready --timeout=10m
+echo "All nodes are Ready."
+
+# 3. Workload Readiness
+echo "Test 3: Workload Readiness..."
 # Use label selector for robustness across deployment paths
 # (Helm uses <release>-<chart>, KCC uses direct name)
 kubectl wait --for=condition=available deployment -l app.kubernetes.io/name=hello-world -n ${NAMESPACE_WORKLOAD} --timeout=30m
 echo "Workload is available."
 
-# 3. Endpoint Interaction
-echo "Test 3: Endpoint Interaction..."
+# 4. Endpoint Interaction
+echo "Test 4: Endpoint Interaction..."
 # Wait for LoadBalancer IP
 SERVICE_IP=""
 for i in {1..20}; do
@@ -73,4 +76,4 @@ for i in {1..12}; do
   fi
 done
 
-echo "All Validation Tests passed successfully!"
+echo "All Validation Tests passed successfully for Basic GKE Hello World!"

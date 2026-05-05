@@ -138,11 +138,11 @@ chmod +x templates/basic-gke-hello-world/validate.sh
 
 Expected output:
 ```
-Starting Validation Tests for Basic GKE Hello World...
 Test 1: Cluster Connectivity... Connectivity passed.
-Test 2: Workload Readiness... Workload is available.
-Test 3: Endpoint Interaction... Endpoint test passed!
-All Validation Tests passed successfully!
+Test 2: Node Readiness... All nodes are Ready.
+Test 3: Workload Readiness... Workload is available.
+Test 4: Endpoint Interaction... Endpoint test passed!
+All Validation Tests passed successfully for Basic GKE Hello World!
 ```
 
 ---
