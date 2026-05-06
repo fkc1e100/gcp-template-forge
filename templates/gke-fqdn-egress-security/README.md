@@ -1,23 +1,159 @@
+# GKE Zero-Trust FQDN Egress
 
-I have
- successfully updated the README for the `gke-fqdn-egress-security` template to align with the repository
-'s standard scaffold.
+> Zero-trust egress security with FQDN network policies for controlling AI API traffic from GKE
 
-### Summary of Actions
-- **Researched Standard**: Analyzed `agent-infra/
-scaffolds/README.template.md` to identify the required structure and placeholders.
-- **Fixed README**: Replaced the non-
-compliant `README.md` (which contained a summary of a previous failed attempt) with a fully rendered version that includes accurate
- architecture details, resource naming, and deployment instructions for both Terraform and Config Connector paths.
-- **Verified Consistency**: Confirmed that resource
- names and labels in `main.tf`, `variables.tf`, and `config-connector/*.yaml` match the
- standards described in the new README.
-- **Validation**: Verified the Terraform configuration using `terraform validate`.
-- **PR Management**:
- Pushed the changes to the `fix/issue-241` branch and enabled auto-merge on PR #249.
+<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
 
+## Architecture
 
-The `gke-fqdn-egress-security` template now correctly follows all repository engineering mandates for documentation.
+This template demonstrates how to implement zero-trust egress security in GKE using **FQDN Network Policies** (part of GKE Enterprise). It configures a regional private GKE cluster with **Dataplane V2** enabled, which is a prerequisite for FQDN-based policies. The architecture includes a dedicated VPC, Cloud NAT for private node egress, and a Fleet registration to enable advanced security features.
 
+This template provisions:
 
-Closes #241.
+- **VPC Network** — Dedicated VPC with a primary subnet in `us-central1`
+- **GKE Cluster** — Regional Private cluster (`gke-fqdn-egress`) with an e2-standard-4 spot node pool
+- **Workload** — a verifier pod and FQDN network policies allowing egress to specific AI provider domains (Anthropic, HuggingFace)
+
+### Resource Naming
+
+| Resource | Terraform + Helm | Config Connector |
+|---|---|---|
+| GKE Cluster | `gke-fqdn-egress-tf` | `gke-fqdn-egress-kcc` |
+| VPC Network | `gke-fqdn-egress-tf-vpc` | `gke-fqdn-egress-kcc-vpc` |
+| Subnet | `gke-fqdn-egress-tf-subnet` | `gke-fqdn-egress-kcc-subnet` |
+
+### Estimated Cost
+
+| Resource | Monthly Estimate |
+|---|---|
+| GKE Cluster (control plane) | ~$75 |
+| e2-standard-4 Node Pool (1x e2-standard-4) | ~$75 |
+| **Total** | **~$150** |
+
+*Estimates based on sustained use in us-central1. Spot VMs are used to keep costs low.*
+
+---
+
+## Deployment Paths
+
+This template supports two deployment paths that provision equivalent infrastructure.
+
+### Path 1: Terraform + Helm
+
+**Prerequisites:** `terraform` ≥ 1.5, `helm` ≥ 3.10, `kubectl`, `gcloud` with ADC configured.
+
+```bash
+cd templates/gke-fqdn-egress-security/terraform-helm
+
+# Initialize with GCS backend (or use local state for testing)
+terraform init \
+  -backend-config="bucket=YOUR_TF_STATE_BUCKET" \
+  -backend-config="prefix=gke-fqdn-egress-security/terraform-helm"
+
+# Review the plan
+terraform plan \
+  -var="project_id=YOUR_PROJECT_ID" \
+  -var="region=us-central1"
+
+# Apply (provisions GKE cluster and supporting infrastructure)
+terraform apply \
+  -var="project_id=YOUR_PROJECT_ID" \
+  -var="region=us-central1"
+
+# Get cluster credentials
+CLUSTER_NAME=$(terraform output -raw cluster_name)
+REGION=$(terraform output -raw cluster_location)
+gcloud container clusters get-credentials "${CLUSTER_NAME}" --region "${REGION}"
+
+# Deploy the workload via Helm
+helm upgrade --install release ./workload --wait --timeout=30m
+
+# Verify
+kubectl get nodes
+kubectl get pods -A
+```
+
+**Cleanup:**
+```bash
+helm uninstall release
+terraform destroy -var="project_id=YOUR_PROJECT_ID" -var="region=us-central1"
+```
+
+---
+
+### Path 2: Config Connector (KCC)
+
+**Prerequisites:** A running GKE cluster with Config Connector installed. See the
+[KCC installation guide](https://cloud.google.com/config-connector/docs/how-to/install-upgrade-uninstall).
+The `forge-management` namespace must have a `ConfigConnectorContext` pointing to a
+service account with `roles/container.admin` and `roles/compute.networkAdmin`.
+
+```bash
+cd templates/gke-fqdn-egress-security/config-connector
+
+# Apply the GCP infrastructure manifests
+kubectl apply -n forge-management -f .
+
+# Wait for all resources to be Ready (GKE cluster takes ~10 minutes)
+kubectl wait -n forge-management --for=condition=Ready --all \
+  --timeout=3600s -f .
+
+# Get cluster credentials (once ContainerCluster is Ready)
+CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com \
+  -n forge-management -l "template=gke-fqdn-egress" \
+  -o jsonpath='{.items[0].metadata.name}')
+LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com \
+  -n forge-management -l "template=gke-fqdn-egress" \
+  -o jsonpath='{.items[0].spec.location}')
+gcloud container clusters get-credentials "${CLUSTER_NAME}" --region "${LOCATION}"
+
+# Deploy the workload
+kubectl apply -n default -f ../config-connector-workload/
+
+# Verify
+kubectl get nodes
+kubectl get pods -A
+```
+
+**Cleanup:**
+```bash
+kubectl delete -n default -f ../config-connector-workload/
+kubectl delete -n forge-management -f . --wait=true --timeout=900s
+```
+
+---
+
+## Verification
+
+After deploying with either path, run the validation script to confirm end-to-end functionality:
+
+```bash
+export PROJECT_ID="YOUR_PROJECT_ID"
+export CLUSTER_NAME="<cluster-name-from-outputs>"
+export REGION="us-central1"
+chmod +x templates/gke-fqdn-egress-security/validate.sh
+./templates/gke-fqdn-egress-security/validate.sh
+```
+
+Expected output:
+```
+Test 1: Cluster Connectivity... Connectivity passed.
+Test 2: Verifying Dataplane V2 and FQDN Policy Enablement... Dataplane V2 and FQDN Policy enablement validated.
+Test 3: Verifying FQDNNetworkPolicy Resource... FQDNNetworkPolicy resource found and verified.
+Test 4: Waiting for Egress Verifier Pod... Pod is available.
+Test 5: Testing FQDN Egress Restrictions... FQDN egress restrictions working as expected.
+All GKE FQDN Network Policy Validation Tests passed successfully!
+```
+
+---
+
+## Template Inputs
+
+| Variable | Description | Default |
+|---|---|---|
+| `project_id` | The GCP project ID | required |
+| `region` | The GCP region | `us-central1` |
+| `cluster_name` | The name of the GKE cluster | `gke-fqdn-egress-tf` |
+| `network_name` | The name of the VPC network | `gke-fqdn-egress-tf-vpc` |
+| `subnet_name` | The name of the subnet | `gke-fqdn-egress-tf-subnet` |
+| `service_account` | The service account to use for the GKE nodes | required |
