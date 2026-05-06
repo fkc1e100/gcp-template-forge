@@ -1,4 +1,4 @@
-shortName: "gke-fuse-cache"
+shortName: "gke-inf-fuse-cache"
 displayName: "GKE GCS FUSE Inference Cache"
 description: "High-performance AI inference with GCS FUSE + Local SSD caching for fast model loading on L4 GPUs"
 gcpServices:

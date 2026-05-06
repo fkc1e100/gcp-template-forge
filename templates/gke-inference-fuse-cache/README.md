@@ -8,23 +8,13 @@
 
 This template demonstrates how to achieve high-performance model loading on GKE using **Cloud Storage FUSE** with **Local SSD caching**. This pattern is ideal for AI inference workloads (like vLLM) that need to load large models (100GB+) quickly while minimizing egress costs and Persistent Disk overhead.
 
+By using Local SSDs for the GCS FUSE cache, you achieve reduced TTFT (Time To First Token) as models are loaded at NVMe speeds (GB/s) after the first pull, significant cost savings by eliminating the need for massive `pd-ssd` boot disks, and improved scale-out speed as new pods on the same node benefit from the "warm" cache immediately.
+
 This template provisions:
 
 - **VPC Network** — Dedicated VPC with a primary subnet in `us-central1`
 - **GKE Cluster** — Standard cluster (`gke-inf-fuse-cache`) with L4 GPU acceleration
 - **Workload** — vLLM/Mock Inference server configured with GCS FUSE CSI driver and Local SSD caching
-
-### Key Features
-- **L4 GPU Acceleration**: Uses G2-standard-4 nodes with NVIDIA L4 GPUs.
-- **Local NVMe SSD Caching**: Specifically configures Local SSDs to back the GCS FUSE file cache.
-- **Advanced GCS FUSE Tuning**: Utilizes `fileCacheCapacity`, `fileCacheForRangeRead`, and optimized metadata cache settings.
-- **Workload Identity**: Securely access GCS buckets without managing long-lived keys.
-
-### Performance Benefits
-By using Local SSDs for the GCS FUSE cache:
-1.  **Reduced TTFT**: Models are loaded at NVMe speeds (GB/s) after the first pull.
-2.  **Cost Savings**: Eliminates the need for massive `pd-ssd` or `pd-extreme` boot disks.
-3.  **Scale-out Speed**: New pods on the same node benefit from the "warm" cache immediately.
 
 ### Resource Naming
 
@@ -132,6 +122,10 @@ kubectl delete -n default -f ../config-connector-workload/
 kubectl delete -n forge-management -f . --wait=true --timeout=900s
 ```
 
+### KCC Limitations
+
+This template is fully supported in Config Connector v1beta1. Note that advanced node pool placement policies (like `COMPACT` placement for colocation) are only available via the Terraform path.
+
 ---
 
 ## Verification
@@ -144,6 +138,19 @@ export CLUSTER_NAME="gke-inf-fuse-cache"
 export REGION="us-central1"
 chmod +x templates/gke-inference-fuse-cache/validate.sh
 ./templates/gke-inference-fuse-cache/validate.sh
+```
+
+Expected output:
+```
+Starting GKE Inference FUSE Cache Validation Tests...
+Test 1: Cluster Connectivity... Connectivity passed.
+Test 2: GCS FUSE CSI Driver Check... GCS FUSE CSI Driver is enabled.
+Test 3: Node Pool Local SSD Check... Node pool has 1 Local SSD(s) for caching.
+Test 4: Workload Readiness... Workload is available.
+Test 5: Sidecar and Mount Verification... GCS FUSE mount point /models verified.
+Test 6: GPU Check... GPU verified: NVIDIA L4
+Test 7: vLLM API Health Check... vLLM API is healthy.
+All GKE Inference FUSE Cache Validation Tests passed successfully!
 ```
 
 ---
