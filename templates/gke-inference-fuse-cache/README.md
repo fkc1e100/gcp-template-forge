@@ -134,7 +134,7 @@ After deploying with either path, run the validation script to confirm end-to-en
 
 ```bash
 export PROJECT_ID="YOUR_PROJECT_ID"
-export CLUSTER_NAME="gke-inf-fuse-cache"
+export CLUSTER_NAME="<cluster-name>"
 export REGION="us-central1"
 chmod +x templates/gke-inference-fuse-cache/validate.sh
 ./templates/gke-inference-fuse-cache/validate.sh
@@ -166,4 +166,5 @@ All GKE Inference FUSE Cache Validation Tests passed successfully!
 | `bucket_name` | GCS bucket for model storage | `gke-inf-fuse-cache-bucket` |
 | `network_name` | VPC network name | `gke-inf-fuse-cache-vpc` |
 | `subnet_name` | Subnet name | `gke-inf-fuse-cache-subnet` |
-| `service_account`| Node pool service account | required |
+| `service_account` | Node pool service account | required |
+| `uid_suffix` | Unique suffix for resource names | `""` |
