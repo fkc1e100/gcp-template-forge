@@ -1,132 +1,159 @@
-# GKE Zero-Trust AI Egress with FQDN Network Policies
+# GKE Zero-Trust FQDN Egress
 
-This template demonstrates how to implement a "Default Deny" egress policy in GKE and selectively allow traffic to specific external AI services using Fully Qualified Domain Name (FQDN) Network Policies.
+> Zero-trust egress security with FQDN network policies for controlling AI API traffic from GKE
 
 <!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
 
-## Overview
-Securing egress traffic is a critical component of a Zero-Trust architecture. In GKE, FQDN Network Policies allow you to define egress rules based on domain names rather than static IP addresses, which is essential for interacting with third-party AI APIs (like Anthropic or HuggingFace) where IP ranges can change frequently.
-
-## Features
-- **Dataplane V2:** High-performance eBPF-based networking (required for FQDN policies).
-- **FQDN Network Policies:** Granular egress control using domain patterns (e.g., `*.anthropic.com`). Promoted to GA in GKE 1.35 (this template uses `v1alpha1` for compatibility).
-- **Zero-Trust Security:** A default-deny egress policy ensures that only explicitly allowed traffic can leave the cluster.
-- **GKE Enterprise Integration:** Automatic fleet registration to enable advanced security features.
-
 ## Architecture
-- **GKE Cluster:** A private cluster with Dataplane V2 and FQDN Network Policy enabled.
-- **NetworkPolicy (`default-deny-egress`):** Denies all egress except for DNS (UDP/TCP 53) to allow FQDN resolution. *Note: This blocks communication with the Kubernetes API server by default, which is acceptable for this validation pod but may require an exception for production workloads.*
-- **FQDNNetworkPolicy (`allow-ai-egress`):** Allows HTTPS (TCP 443) traffic to:
-    - `anthropic.com`, `api.anthropic.com`, `www.anthropic.com`, `*.anthropic.com`
-    - `huggingface.co`, `www.huggingface.co`, `*.huggingface.co`
-    - `hf.co`, `www.hf.co`, `*.hf.co`
-    *Note: The GKE FQDN controller intercepts DNS queries from the pods to learn the IP addresses associated with these domains. The first few requests after a policy is applied may experience slight latency as the eBPF maps are populated.*
-- **Validation Pod:** A `curl`-based pod used to verify connectivity.
 
-## Prerequisites
-- A Google Cloud Project with billing enabled.
-- `gcloud`, `kubectl`, `terraform`, and `helm` installed locally.
-- GKE Enterprise enabled in your project (required for FQDN Network Policies).
-- For Config Connector: KCC installed and configured in a management cluster.
+This template demonstrates how to implement zero-trust egress security in GKE using **FQDN Network Policies**. It provisions a private GKE cluster with Dataplane V2 enabled and registered to a GKE Hub fleet, which are requirements for GKE Enterprise FQDN network policy support. The workload includes a verifier pod and a `FQDNNetworkPolicy` that restricts outbound HTTPS traffic to specific AI-related domains (Anthropic and Hugging Face) while blocking all other egress.
 
-## Deployment
+This template provisions:
 
-### Option 1: Terraform & Helm (Recommended)
-This path uses Terraform to provision the infrastructure and Helm to deploy the security policies and validation workload.
+- **VPC Network** — Dedicated VPC with a primary subnet in `us-central1`
+- **GKE Cluster** — Regional cluster (`gke-fqdn-egress`) with a single node pool using spot e2-standard-4 instances
+- **Workload** — a verifier pod and a `FQDNNetworkPolicy` restricting egress to Anthropic and Hugging Face domains
 
-1.  **Initialize and Apply Infrastructure:**
-    ```bash
-    cd terraform-helm
-    terraform init
-    terraform apply
-    ```
+### Resource Naming
 
-2.  **Deploy Workload:**
-    Terraform generates a `values.yaml` for Helm. After the infrastructure is ready, get credentials and install the chart:
-    ```bash
-    # Get credentials for the new cluster
-    gcloud container clusters get-credentials gke-fqdn-egress-security-cluster --region us-central1
+| Resource | Terraform + Helm | Config Connector |
+|---|---|---|
+| GKE Cluster | `gke-fqdn-egress-tf` | `gke-fqdn-egress-kcc` |
+| VPC Network | `gke-fqdn-egress-tf-vpc` | `gke-fqdn-egress-kcc-vpc` |
+| Subnet | `gke-fqdn-egress-tf-subnet` | `gke-fqdn-egress-kcc-subnet` |
 
-    # Install the workload via Helm
-    helm install fqdn-egress ./workload
+### Estimated Cost
 
-    # Wait for the verifier pod to be ready
-    kubectl wait --for=condition=Ready pod/egress-verifier --timeout=5m
-    ```
+| Resource | Monthly Estimate |
+|---|---|
+| GKE Cluster (control plane) | ~$75 |
+| Spot Node Pool (3x e2-standard-4) | ~$75 |
+| **Total** | **~$150** |
 
-### Option 2: Config Connector
-This path uses Kubernetes manifests to manage both the GCP infrastructure and the GKE workloads.
+*Estimates based on sustained use in us-central1. GPU templates incur additional on-demand charges.*
 
-1.  **Deploy Infrastructure:**
-    Apply the manifests to your KCC management cluster:
-    ```bash
-    kubectl apply -f config-connector/
-    ```
-2.  **Wait for Readiness:**
-    Use the following command to check the status of the cluster:
-    ```bash
-    kubectl wait --for=condition=Ready containercluster/gke-fqdn-egress-security-cluster -n forge-management --timeout=30m
-    ```
-    *Note: After the cluster is ready, it may take an additional 2-3 minutes for GKE Enterprise features (like FQDN Network Policies) to propagate across the fleet.*
+---
 
-3.  **Deploy Workload:**
-    Once the cluster is ready, get credentials and apply the workload manifests (including the `egress-verifier` pod and the FQDN security policies):
-    ```bash
-    # Get credentials for the new cluster
-    gcloud container clusters get-credentials gke-fqdn-egress-security-cluster --region us-central1
+## Deployment Paths
 
-    # Apply the FQDN policies and the verifier pod
-    kubectl apply -f config-connector-workload/
+This template supports two deployment paths that provision equivalent infrastructure.
 
-    # Wait for the verifier pod to be ready
-    kubectl wait --for=condition=Ready pod/egress-verifier --timeout=5m
-    ```
-    *Note: If you receive an error about `FQDNNetworkPolicy` not being found, wait 2-3 minutes for the GKE FQDN controller to initialize the CRDs and try applying again.*
+### Path 1: Terraform + Helm
+
+**Prerequisites:** `terraform` ≥ 1.5, `helm` ≥ 3.10, `kubectl`, `gcloud` with ADC configured.
+
+```bash
+cd templates/gke-fqdn-egress-security/terraform-helm
+
+# Initialize with GCS backend (or use local state for testing)
+terraform init \
+  -backend-config="bucket=YOUR_TF_STATE_BUCKET" \
+  -backend-config="prefix=gke-fqdn-egress-security/terraform-helm"
+
+# Review the plan
+terraform plan \
+  -var="project_id=YOUR_PROJECT_ID" \
+  -var="region=us-central1" \
+  -var="service_account=YOUR_SERVICE_ACCOUNT"
+
+# Apply (provisions GKE cluster and supporting infrastructure)
+terraform apply \
+  -var="project_id=YOUR_PROJECT_ID" \
+  -var="region=us-central1" \
+  -var="service_account=YOUR_SERVICE_ACCOUNT"
+
+# Get cluster credentials
+CLUSTER_NAME=$(terraform output -raw cluster_name)
+REGION=$(terraform output -raw cluster_location)
+gcloud container clusters get-credentials "${CLUSTER_NAME}" --region "${REGION}"
+
+# Deploy the workload via Helm
+helm upgrade --install release ./workload --wait --timeout=30m
+
+# Verify
+kubectl get nodes
+kubectl get pods -A
+```
+
+**Cleanup:**
+```bash
+helm uninstall release
+terraform destroy -var="project_id=YOUR_PROJECT_ID" -var="region=us-central1" -var="service_account=YOUR_SERVICE_ACCOUNT"
+```
+
+---
+
+### Path 2: Config Connector (KCC)
+
+**Prerequisites:** A running GKE cluster with Config Connector installed. See the
+[KCC installation guide](https://cloud.google.com/config-connector/docs/how-to/install-upgrade-uninstall).
+The `forge-management` namespace must have a `ConfigConnectorContext` pointing to a
+service account with `roles/container.admin` and `roles/compute.networkAdmin`.
+
+```bash
+cd templates/gke-fqdn-egress-security/config-connector
+
+# Apply the GCP infrastructure manifests
+kubectl apply -n forge-management -f .
+
+# Wait for all resources to be Ready (GKE cluster takes ~10 minutes)
+kubectl wait -n forge-management --for=condition=Ready --all \
+  --timeout=3600s -f .
+
+# Get cluster credentials (once ContainerCluster is Ready)
+CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com \
+  -n forge-management -l "template=gke-fqdn-egress" \
+  -o jsonpath='{.items[0].metadata.name}')
+LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com \
+  -n forge-management -l "template=gke-fqdn-egress" \
+  -o jsonpath='{.items[0].spec.location}')
+gcloud container clusters get-credentials "${CLUSTER_NAME}" --region "${LOCATION}"
+
+# Deploy the workload
+kubectl apply -n default -f ../config-connector-workload/
+
+# Verify
+kubectl get nodes
+kubectl get pods -A
+```
+
+**Cleanup:**
+```bash
+kubectl delete -n default -f ../config-connector-workload/
+kubectl delete -n forge-management -f . --wait=true --timeout=900s
+```
+
+---
 
 ## Verification
 
-The included `validate.sh` script automates the entire verification process, including waiting for CRDs and testing connectivity to allowed/blocked domains.
+After deploying with either path, run the validation script to confirm end-to-end functionality:
 
 ```bash
-./validate.sh
+export PROJECT_ID="YOUR_PROJECT_ID"
+export CLUSTER_NAME="<cluster-name-from-outputs>"
+export REGION="us-central1"
+chmod +x templates/gke-fqdn-egress-security/validate.sh
+./templates/gke-fqdn-egress-security/validate.sh
 ```
 
-### Manual Verification
-*Note: If you deployed using the default settings, the namespace will be `default`.*
-
-**Important:** Dataplane V2 FQDN policies intercept DNS queries to learn IP addresses. The first few requests after a policy is applied or a DNS record TTL expires may experience slight latency or a "Connection Refused" while the eBPF maps are populated. Always retry the verification commands a few times if they fail initially.
-
-1.  **Test Allowed Egress (Anthropic):**
-    ```bash
-    kubectl exec egress-verifier -- curl -sL -4 --connect-timeout 10 https://anthropic.com
-    kubectl exec egress-verifier -- curl -sL -4 --connect-timeout 10 https://www.anthropic.com
-    kubectl exec egress-verifier -- curl -sL -4 --connect-timeout 10 https://api.anthropic.com
-    ```
-2.  **Test Allowed Egress (HuggingFace):**
-    ```bash
-    kubectl exec egress-verifier -- curl -sL -4 --connect-timeout 10 https://huggingface.co
-    kubectl exec egress-verifier -- curl -sL -4 --connect-timeout 10 https://www.huggingface.co
-    ```
-3.  **Test Allowed Egress (hf.co):**
-    ```bash
-    kubectl exec egress-verifier -- curl -sL -4 --connect-timeout 10 https://hf.co
-    kubectl exec egress-verifier -- curl -sL -4 --connect-timeout 10 https://www.hf.co
-    ```
-4.  **Test Blocked Egress (Google):**
-    ```bash
-    kubectl exec egress-verifier -- curl -sL -4 --connect-timeout 10 https://google.com
-    # This should time out or return an error.
-    ```
-
-## Cleanup
-
-### Terraform Cleanup
-```bash
-cd terraform-helm
-terraform destroy
+Expected output:
+```
+Test 1: Cluster Connectivity... Connectivity passed.
+Test 2: Node Readiness... All nodes are Ready.
+Test 3: Workload Readiness... Workload is available.
+All Validation Tests passed successfully for GKE Zero-Trust FQDN Egress!
 ```
 
-### Config Connector Cleanup
-```bash
-kubectl delete -f config-connector/
-```
+---
+
+## Template Inputs
+
+| Variable | Description | Default |
+|---|---|---|
+| `project_id` | GCP project ID | required |
+| `region` | GCP region | `us-central1` |
+| `cluster_name` | GKE cluster name | `gke-fqdn-egress-tf` |
+| `network_name` | VPC network name | `gke-fqdn-egress-tf-vpc` |
+| `subnet_name` | Subnet name | `gke-fqdn-egress-tf-subnet` |
+| `service_account` | The service account to use for the GKE nodes | required |
