@@ -6,13 +6,18 @@
 
 ## Architecture
 
-This template demonstrates some of the latest and most advanced features of Google Kubernetes Engine (GKE). It showcases both cluster-level infrastructure improvements and modern workload deployment patterns like Gateway API and Node Pool Auto-provisioning.
+This template demonstrates a modern GKE environment leveraging the latest platform capabilities released in 2024, 2025, and 2026.
 
-This template provisions:
-
-- **VPC Network** — VPC-native network configured for private clusters.
-- **GKE Cluster** — GKE Standard cluster (`latest-gke-feat`) with Gateway API and Node Pool Auto-provisioning (NAP) enabled.
-- **Workload** — Modern workload utilizing Native Sidecar Containers and exposed via GKE Gateway.
+The architecture includes:
+- **VPC Network** — A private VPC-native network with dedicated subnets for GKE nodes, pods, and services.
+- **GKE Cluster** — A GKE Standard cluster on the **RAPID** release channel, enabling:
+    - **Gateway API**: Modern, expressive load balancing using `Gateway` and `HTTPRoute` resources.
+    - **Node Pool Auto-provisioning (NAP)**: Automatically creates and manages node pools based on workload requirements (CPU, Memory, Spot).
+    - **Image Streaming (GCFS)**: Significantly reduces container startup times by streaming image data on-demand.
+    - **Enterprise Security Posture**: Advanced vulnerability scanning and security monitoring (Vulnerability Enterprise).
+- **Workload** — A sample application showcasing:
+    - **Native Sidecar Containers**: Leveraging Kubernetes 1.29+ "Sidecar Containers" feature (init containers with `restartPolicy: Always`).
+    - **Pod Topology Spread Constraints**: Modern scheduling to ensure high availability across hostnames and zones.
 
 ### Resource Naming
 
@@ -27,11 +32,10 @@ This template provisions:
 | Resource | Monthly Estimate |
 |---|---|
 | GKE Cluster (control plane) | ~$75 |
-| E2 Standard Node Pool (1x e2-standard-4 Spot) | ~$29 |
-| Load Balancer (Gateway API) | ~$18 |
-| **Total** | **~$122** |
+| Node Pool (e2-standard-4, Spot) | ~$125 |
+| **Total** | **~$200** |
 
-*Estimates based on sustained use in us-central1 with Spot nodes.*
+*Estimates based on sustained use in us-central1. Spot VM pricing varies by region and availability.*
 
 ---
 
@@ -46,19 +50,24 @@ This template supports two deployment paths that provision equivalent infrastruc
 ```bash
 cd templates/latest-gke-features/terraform-helm
 
-# Initialize
+# Initialize with GCS backend
 terraform init \
   -backend-config="bucket=YOUR_TF_STATE_BUCKET" \
-  -backend-config="prefix=templates/latest-gke-features/terraform-helm"
+  -backend-config="prefix=latest-gke-features/terraform-helm"
 
-# Apply
+# Apply (provisions GKE cluster and supporting infrastructure)
 terraform apply -var="project_id=YOUR_PROJECT_ID"
 
-# Get credentials
-gcloud container clusters get-credentials latest-gke-feat-tf --region us-central1
+# Get cluster credentials
+CLUSTER_NAME=$(terraform output -raw cluster_name)
+REGION=$(terraform output -raw cluster_location)
+gcloud container clusters get-credentials "${CLUSTER_NAME}" --region "${REGION}"
 
-# Deploy workload
-helm upgrade --install release ./workload --wait
+# Deploy the workload via Helm
+helm upgrade --install release ./workload --wait --timeout=30m
+
+# Verify
+./../validate.sh
 ```
 
 **Cleanup:**
@@ -76,22 +85,27 @@ terraform destroy -var="project_id=YOUR_PROJECT_ID"
 ```bash
 cd templates/latest-gke-features/config-connector
 
-# Apply infrastructure manifests
+# Apply the GCP infrastructure manifests
 kubectl apply -n forge-management -f .
 
-# Wait for readiness
+# Wait for all resources to be Ready (GKE cluster takes ~10 minutes)
 kubectl wait -n forge-management --for=condition=Ready --all --timeout=3600s -f .
 
-# Get credentials
-gcloud container clusters get-credentials latest-gke-feat-kcc --region us-central1
+# Get cluster credentials
+CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n forge-management -l "template=latest-gke-features" -o jsonpath='{.items[0].metadata.name}')
+LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n forge-management -l "template=latest-gke-features" -o jsonpath='{.items[0].spec.location}')
+gcloud container clusters get-credentials "${CLUSTER_NAME}" --region "${LOCATION}"
 
-# Deploy workload
-kubectl apply -f ../config-connector-workload/
+# Deploy the workload
+kubectl apply -n default -f ../config-connector-workload/
+
+# Verify
+./../validate.sh
 ```
 
 **Cleanup:**
 ```bash
-kubectl delete -f ../config-connector-workload/
+kubectl delete -n default -f ../config-connector-workload/
 kubectl delete -n forge-management -f . --wait=true --timeout=900s
 ```
 
@@ -99,13 +113,12 @@ kubectl delete -n forge-management -f . --wait=true --timeout=900s
 
 ## Verification
 
-After deploying with either path, run the validation script:
+After deploying with either path, run the validation script to confirm end-to-end functionality:
 
 ```bash
 export PROJECT_ID="YOUR_PROJECT_ID"
-export CLUSTER_NAME="latest-gke-feat-tf" # or latest-gke-feat-kcc
+export CLUSTER_NAME="<cluster-name>"
 export REGION="us-central1"
-chmod +x templates/latest-gke-features/validate.sh
 ./templates/latest-gke-features/validate.sh
 ```
 
@@ -117,5 +130,12 @@ chmod +x templates/latest-gke-features/validate.sh
 |---|---|---|
 | `project_id` | GCP project ID | required |
 | `region` | GCP region | `us-central1` |
-| `cluster_name` | GKE cluster name | `latest-gke-feat-tf` |
-| `network_name` | VPC network name | `latest-gke-feat-tf-vpc` |
+| `cluster_name` | GKE cluster name | `latest-gke-features-tf` |
+| `network_name` | VPC network name | `latest-gke-features-tf-vpc` |
+| `subnet_name` | Subnet name | `latest-gke-features-tf-subnet` |
+| `service_account` | Node pool service account | required |
+
+|  | Terraform + Helm | Config Connector |
+| --- | --- | --- |
+| **Status** | success | success |
+| **Date** | 2026-04-19 | 2026-04-19 |

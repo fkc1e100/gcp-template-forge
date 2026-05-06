@@ -4,6 +4,8 @@
 
 <!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
 
+<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
+
 ## Architecture
 
 This template demonstrates how to solve the "Noisy Neighbor" problem for shared GPU clusters using the KubeRay Operator and the Kueue Operator.
