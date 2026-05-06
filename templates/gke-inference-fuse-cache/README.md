@@ -137,7 +137,7 @@ After deploying with either path, run the validation script to confirm end-to-en
 
 ```bash
 export PROJECT_ID="YOUR_PROJECT_ID"
-export CLUSTER_NAME="<cluster-name>"
+export CLUSTER_NAME="<cluster-name-from-outputs>"
 export REGION="us-central1"
 chmod +x templates/gke-inference-fuse-cache/validate.sh
 ./templates/gke-inference-fuse-cache/validate.sh
