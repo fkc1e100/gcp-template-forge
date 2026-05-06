@@ -145,7 +145,7 @@ chmod +x templates/gke-inference-fuse-cache/validate.sh
 
 Expected output:
 ```
-Starting GKE Inference FUSE Cache Validation Tests...
+Starting GKE GCS FUSE Inference Cache Validation Tests...
 Test 1: Cluster Connectivity... Connectivity passed.
 Test 2: GCS FUSE CSI Driver Check... GCS FUSE CSI Driver is enabled.
 Test 3: Node Pool Local SSD Check... Node pool has 1 Local SSD(s) for caching.
@@ -153,7 +153,7 @@ Test 4: Workload Readiness... Workload is available.
 Test 5: Sidecar and Mount Verification... GCS FUSE mount point /models verified.
 Test 6: GPU Check... GPU verified: NVIDIA L4
 Test 7: vLLM API Health Check... vLLM API is healthy.
-All GKE Inference FUSE Cache Validation Tests passed successfully!
+All GKE GCS FUSE Inference Cache Validation Tests passed successfully!
 ```
 
 ---

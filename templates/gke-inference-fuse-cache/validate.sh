@@ -15,7 +15,7 @@
 
 set -e
 
-echo "Starting GKE Inference FUSE Cache Validation Tests..."
+echo "Starting GKE GCS FUSE Inference Cache Validation Tests..."
 
 PROJECT_ID=${PROJECT_ID:-"gca-gke-2025"}
 REGION=${REGION:-"us-central1"}
@@ -227,4 +227,4 @@ if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
 fi
 echo "vLLM API is healthy."
 
-echo "All GKE Inference FUSE Cache Validation Tests passed successfully!"
+echo "All GKE GCS FUSE Inference Cache Validation Tests passed successfully!"
