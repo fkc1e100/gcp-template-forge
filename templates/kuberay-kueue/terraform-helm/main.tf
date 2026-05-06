@@ -95,7 +95,6 @@ provider "google-beta" {
 resource "google_container_node_pool" "system_pool" {
   name           = "system-pool"
   location       = var.region
-  node_locations = [var.zone]
   cluster        = google_container_cluster.primary.name
 
   autoscaling {
@@ -136,7 +135,6 @@ resource "google_container_node_pool" "gpu_pool" {
   provider       = google-beta
   name           = "l4-gpu-pool"
   location       = var.region
-  node_locations = [var.zone]
   cluster        = google_container_cluster.primary.name
 
   queued_provisioning {

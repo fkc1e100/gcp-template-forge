@@ -79,9 +79,6 @@ resource "google_container_cluster" "primary" {
   name     = var.cluster_name
   location = var.region
 
-  # Restrict to a single zone that supports L4 GPUs to save quota and improve reliability
-  node_locations = [var.zone]
-
   deletion_protection = false
 
   resource_labels = {
@@ -130,8 +127,11 @@ resource "google_container_node_pool" "gpu_pool" {
   cluster    = google_container_cluster.primary.name
   node_count = 1
 
-  # Restrict to a single zone that supports L4 GPUs
-  node_locations = [var.zone]
+  node_locations = [
+    "${var.region}-a",
+    "${var.region}-b",
+    "${var.region}-c",
+  ]
 
   node_config {
     # Use on-demand instances for better availability (spot can be harder to find in some zones)
@@ -193,8 +193,11 @@ resource "google_container_node_pool" "system_pool" {
   cluster    = google_container_cluster.primary.name
   node_count = 1
 
-  # Restrict to the same zone as the GPU pool
-  node_locations = [var.zone]
+  node_locations = [
+    "${var.region}-a",
+    "${var.region}-b",
+    "${var.region}-c",
+  ]
 
   node_config {
     machine_type = "e2-standard-2"
