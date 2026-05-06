@@ -13,7 +13,7 @@ The architecture leverages GKE Dataplane V2 and GKE Enterprise features to provi
 This template provisions:
 
 - **VPC Network** — Dedicated VPC with a primary subnet in `us-central1` and Cloud NAT for private internet access.
-- **GKE Cluster** — Private Regional GKE cluster (`gke-fqdn-egress`) with Dataplane V2 and FQDN Network Policy enabled.
+- **GKE Cluster** — Private Regional GKE cluster (`gke-fqdn-egress`) with 1x e2-standard-4 Spot node pool and FQDN Network Policy enabled.
 - **Workload** — A verifier pod and `FQDNNetworkPolicy` manifests that demonstrate allowed access to specific domains while blocking others.
 
 ### Resource Naming
@@ -32,7 +32,7 @@ This template provisions:
 | E2 Standard 4 Node Pool (1x e2-standard-4) | ~$75 |
 | **Total** | **~$150** |
 
-*Estimates based on sustained use in us-central1. Spot instances are used to reduce costs.*
+*Estimates based on sustained use in us-central1. GPU templates incur additional on-demand charges.*
 
 ---
 
@@ -123,6 +123,17 @@ kubectl delete -n default -f ../config-connector-workload/
 kubectl delete -n forge-management -f . --wait=true --timeout=900s
 ```
 
+{{KCC_LIMITATIONS_SECTION}}
+<!--
+If any KCC limitations apply, replace the line above with:
+
+### KCC Limitations
+
+- **{{FEATURE_NAME}}**: Not supported in KCC v1beta1 ContainerNodePool. The Terraform path
+  uses `{{TF_FIELD}}` for this capability. Tracked upstream:
+  https://github.com/GoogleCloudPlatform/k8s-config-connector/issues/TBD
+-->
+
 ---
 
 ## Verification
@@ -140,9 +151,11 @@ chmod +x templates/gke-fqdn-egress-security/validate.sh
 Expected output:
 ```
 Test 1: Cluster Connectivity... Connectivity passed.
-Test 2: Node Readiness... All nodes are Ready.
-Test 3: Workload Readiness... Workload is available.
-All Validation Tests passed successfully for GKE Zero-Trust FQDN Egress!
+Test 2: Verifying Dataplane V2 and FQDN Policy Enablement... Dataplane V2 and FQDN Policy enablement validated.
+Test 3: FQDNNetworkPolicy Resource Verification... FQDNNetworkPolicy resource found and verified.
+Test 4: Waiting for Egress Verifier Pod... Verifier pod is ready.
+Test 5: Running Egress Tests... Testing domain: anthropic.com (Expected: true)... SUCCESS: anthropic.com is reachable.
+All GKE FQDN Network Policy Validation Tests passed successfully!
 ```
 
 ---
@@ -156,3 +169,4 @@ All Validation Tests passed successfully for GKE Zero-Trust FQDN Egress!
 | `cluster_name` | GKE cluster name | `gke-fqdn-egress-tf` |
 | `network_name` | VPC network name | `gke-fqdn-egress-tf-vpc` |
 | `subnet_name` | Subnet name | `gke-fqdn-egress-tf-subnet` |
+| `service_account` | The service account to use for the GKE nodes | required |
