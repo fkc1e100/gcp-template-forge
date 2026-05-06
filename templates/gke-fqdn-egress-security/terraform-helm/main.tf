@@ -88,7 +88,7 @@ resource "google_container_cluster" "cluster" {
 
   resource_labels = {
     project  = "gcp-template-forge"
-    template = "gke-fqdn-egress-security"
+    template = "gke-fqdn-egress"
   }
 
   network         = google_compute_network.vpc.name
@@ -157,7 +157,7 @@ resource "google_gke_hub_membership" "membership" {
 
   labels = {
     project  = "gcp-template-forge"
-    template = "gke-fqdn-egress-security"
+    template = "gke-fqdn-egress"
   }
 }
 
@@ -203,12 +203,12 @@ resource "google_container_node_pool" "primary_nodes" {
 
     labels = {
       project  = "gcp-template-forge"
-      template = "gke-fqdn-egress-security"
+      template = "gke-fqdn-egress"
     }
 
     resource_labels = {
       project  = "gcp-template-forge"
-      template = "gke-fqdn-egress-security"
+      template = "gke-fqdn-egress"
     }
   }
 }

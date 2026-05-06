@@ -15,11 +15,11 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerCluster
 metadata:
-  name: gke-fqdn-egress-security-cluster
+  name: gke-fqdn-egress-kcc-cluster
   namespace: forge-management
   labels:
     project: gcp-template-forge
-    template: gke-fqdn-egress-security
+    template: gke-fqdn-egress
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
     cnrm.cloud.google.com/remove-default-node-pool: "true"
@@ -28,9 +28,9 @@ spec:
   initialNodeCount: 1
   networkingMode: VPC_NATIVE
   networkRef:
-    name: gke-fqdn-egress-security-vpc
+    name: gke-fqdn-egress-kcc-vpc
   subnetworkRef:
-    name: gke-fqdn-egress-security-subnet
+    name: gke-fqdn-egress-kcc-subnet
   ipAllocationPolicy:
     clusterSecondaryRangeName: pods
     servicesSecondaryRangeName: services

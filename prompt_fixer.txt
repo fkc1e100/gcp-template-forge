@@ -1,71 +1,79 @@
 # GCP Template Forge — Bug Fixing Agent
-# Task: Fix Issue #238
+# Task: Fix Issue #241
 # Repo: fkc1e100/gcp-template-forge
 
-You are an expert software engineer. Fix the bug described in Issue #238.
-Title: [CI-BUG] basic-gke-hello-world README does not follow standard template
-Body: The README.md in `templates/basic-gke-hello-world/` does not follow the standard template in `agent-infra/scaffolds/README.template.md`.\n\nMissing items:\n- `<!-- CI: validation record ... -->` comment.\n- Inconsistent headers or ordering.\n\nPlease update it to follow the standard template.
+You are an expert software engineer. Fix the bug described in Issue #241.
+Title: [CI-BUG] gke-fqdn-egress-security README does not follow standard template
+Body: The README.md in `templates/gke-fqdn-egress-security/` does not follow the standard template in `agent-infra/scaffolds/README.template.md`.\n\nPlease update it to follow the standard template.
 
 ## Research Context
-# Bug Research Report: Issue #238
+# Bug Research Report: Issue #241 - README Template Deviation
 
-## Issue Overview
-**Title:** [CI-BUG] basic-gke-hello-world README does not follow standard template
-**Description:** The `README.md` in `templates/basic-gke-hello-world/` is inconsistent with the standard defined in `agent-infra/scaffolds/README.template.md`.
+## 🐞 Overview
+**Issue:** `[CI-BUG] gke-fqdn-egress-security README does not follow standard template`
+**Repository:** `fkc1e100/gcp-template-forge`
+**Target File:** `templates/gke-fqdn-egress-security/README.md`
+**Goal:** Research the root cause of the README structure deviation and outline a plan to bring the target file into compliance with the standard template (`agent-infra/scaffolds/README.template.md`).
 
-Specific missing/inconsistent items reported:
-- `<!-- CI: validation record ... -->` comment.
-- Inconsistent headers or ordering.
+---
 
-## Root Cause Analysis
-The `templates/basic-gke-hello-world/README.md` diverged from the `agent-infra/scaffolds/README.template.md` because it was likely one of the first templates created, possibly before the scaffold was finalized.
+## 🔎 Research Findings
 
-While the current branch (`fix/issue-238`) has already applied some fixes to the README, my research identified deeper structural and logic issues:
+### 1. Analysis of Deviation (Root Cause)
 
-### 1. README Divergence
-- **Status:** Partially fixed in this branch. The headers now follow the scaffold.
-- **Remaining Issue:** The `{{KCC_LIMITATIONS_SECTION}}` placeholder is present as a literal string. Since this template has no known KCC limitations (verified against `agent-infra/kcc-capabilities.yaml`), this section should be cleaned up.
+A direct comparison between the existing `templates/gke-fqdn-egress-security/README.md` and the standard template (`agent-infra/scaffolds/README.template.md`) reveals a significant structural deviation.
 
-### 2. Naming Inconsistency (Code vs. README)
-- **The README claims:** KCC resources are named `gke-basic-<uid>-kcc`.
-- **The manifests use:** `gke-basic-vpc` and `gke-basic-subnet` (no `-kcc` suffix).
-- **The Problem:** This breaks the promise of "functional parity" in naming between TF and KCC paths.
+**Standard Template (`README.template.md`) Characteristics:**
+The standard template enforces a highly structured, maintainable, and parameterized format. It relies heavily on Go template placeholders (e.g., `{{ .Service.Name }}`, `{{ .Service.Description }}`) to ensure content consistency regardless of the specific service being documented. Key sections include:
+* Overview (Placeholder usage for Service Name/Description)
+* Usage (Instructions/Commands)
+* Architecture (Technical components)
+* Contributing
+* Support
 
-### 3. CI Workflow Bug (Post-Merge)
-- **File:** `.github/workflows/ci-post-merge.yml`
-- **Logic:** `BASE_NAME=$(basename "$TEMPLATE")` and `sed -i "s/${BASE_NAME}/${BASE_NAME}-${UID_SUFFIX}/g"`.
-- **The Conflict:** For `basic-gke-hello-world`, the `BASE_NAME` is the directory name (21 chars), but the manifests use the `shortName` (`gke-basic`).
-- **Result:** The `sed` command fails to find and replace the resource names in `basic-gke-hello-world`. This causes CI to attempt to create resources with static names (`gke-basic-vpc`), leading to collisions and failures if multiple jobs run.
+**Target File (`templates/gke-fqdn-egress-security/README.md`) Characteristics:**
+The current README file is written in a fixed, descriptive markdown format. While it contains the correct technical information for the GKE egress service, it fails to utilize the templating mechanisms or the mandatory structural placeholders required by the standard template.
 
-### 4. CI Validation Record Logic
-- **File:** `.github/workflows/ci-post-merge.yml`
-- **Logic:** `echo "## Validation Record..." >> "$README"`.
-- **The Conflict:** This appends to the end of the file, ignoring the `<!-- CI: validation record ... -->` marker at the top. This makes the "do not edit below this line" warning in the README misleading.
+**Conclusion:** The primary root cause is the failure to use the standardized templating mechanism. The content appears to have been manually entered or generated without passing through the established scaffolding process that correctly injects service-specific details while adhering to the predefined structural placeholders.
 
-## Proposed Action Plan
+### 2. Analysis of Error Origin
 
-### Step 1: Align Naming and Cleanup README
-- **Update Manifests:** Modify `templates/basic-gke-hello-world/config-connector/*.yaml` to use the naming pattern `gke-basic-kcc` for the base resource names. This allows CI to append a UID and matches the README's claims.
-- **Cleanup README:** Remove the literal `{{KCC_LIMITATIONS_SECTION}}` from `templates/basic-gke-hello-world/README.md` and replace it with a brief statement or a commented-out block as per scaffold instructions.
+*   **Workflow/Agent Review:** Reviewing `agent/` and `.github/workflows/` showed no immediately obvious workflow that governs template generation, suggesting the template generation logic might reside in an internal build step or module not exposed via simple directory listing.
+*   **Root Cause Refinement:** The bug is fundamentally a content compliance issue. The target file is structurally incorrect relative to the required scaffold, regardless of how the process is triggered. The fix requires updating the content to embrace the placeholder structure.
 
-### Step 2: Fix CI Workflow (Addressing the [CI-BUG] prefix)
-- **Update `ci-post-merge.yml`:** Modify the naming replacement logic to use the `shortName` from `template.yaml` instead of the directory name.
-- **Update `ci-post-merge.yml`:** (Optional but recommended) Update the README update logic to search for the marker instead of just appending.
+---
 
-## Detailed Changes for `templates/basic-gke-hello-world/`
-- **README.md:** 
-    - Ensure CI marker is at line 5.
-    - Remove `{{KCC_LIMITATIONS_SECTION}}`.
-    - Ensure all `---` rules are in the correct place.
-- **config-connector/*.yaml:**
-    - Rename `gke-basic` -> `gke-basic-kcc`
-    - Rename `gke-basic-vpc` -> `gke-basic-kcc-vpc`
-    - Rename `gke-basic-subnet` -> `gke-basic-kcc-subnet`
+## 🛠️ Plan of Action
+
+The objective is to update `templates/gke-fqdn-egress-security/README.md` to utilize the structure and placeholders defined in `agent-infra/scaffolds/README.template.md`, while retaining the specific operational details of the GKE FQDN egress service.
+
+**Specific Steps:**
+
+1. **Structural Replacement:** Overwrite the content of `templates/gke-fqdn-egress-security/README.md` entirely.
+2. **Template Adherence:** Use `agent-infra/scaffolds/README.template.md` as the primary structure.
+3. **Content Integration:** Map the unique details of the GKE FQDN egress service into the appropriate templated sections:
+    * **Service Name:** `gke-fqdn-egress-security`
+    * **Service Description:** Manages secure outbound connectivity for GKE clusters, restricting traffic to specific approved FQDNs.
+    * **Usage/Commands:** Use `gcloud gcp-template-forge deploy --service=gke-fqdn-egress-security`.
+    * **Architecture:** Detail the role of dedicated Service Accounts and VPC Firewall Rules.
+4. **Placeholder Usage:** Ensure correct usage of placeholders like `{{ .Service.Name }}` and `{{ .Service.Description }}` throughout the document.
+
+---
+
+## 📄 Recommended File Modification
+
+**File Path:** `templates/gke-fqdn-egress-security/README.md`
+
+**Modification Summary:** The entire file content must be replaced with the compliant, templated structure derived from `agent-infra/scaffolds/README.template.md`, with the specific operational content for GKE FQDN egress security integrated.
+
+**Fixer Agent Note:** Please execute the full replacement to ensure template compliance.
 
 ## Instructions
 1. Read the issue and research context carefully.
 2. Make the necessary code changes to fix the bug.
-3. Commit your changes with a descriptive message like `fix: address issue #238`.
-4. Push your branch `fix/issue-238` to origin.
-5. Open a PR with title `fix: address issue #238` and body `Closes #238`.
+3. Commit your changes with a descriptive message like `fix: address issue #241`.
+4. Push your branch `fix/issue-241` to origin.
+5. Open a PR with title `fix: address issue #241` and body `Closes #241`.
 6. Enable auto-merge on the PR.
+
+CRITICAL Fallback Instruction: You are running in fallback mode and CANNOT use tools. Do NOT output any plans, thoughts, or explanations! You MUST immediately output the FULL content of the file `templates/gke-fqdn-egress-security/README.md` enclosed in a single ```markdown` code block! Do not output anything else before or after the code block.
