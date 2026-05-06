@@ -6,15 +6,12 @@
 
 ## Architecture
 
-This template provides an enterprise-grade Google Kubernetes Engine (GKE) architecture with security hardening. It demonstrates two deployment paths: Terraform + Helm for traditional infrastructure-as-code and Config Connector (KCC) for a Kubernetes-native approach to managing GCP resources.
-
-> **Warning: Binary Authorization**
-> This template enables Binary Authorization in `PROJECT_SINGLETON_POLICY_ENFORCE` mode. Ensure your GCP project has a Binary Authorization policy configured, otherwise pod deployments may be blocked.
+This template provides an enterprise-grade Google Kubernetes Engine (GKE) architecture with security hardening. It enables Binary Authorization in enforce mode, uses Workload Identity for secure GCP access, and includes advanced security posture monitoring. **Warning:** Binary Authorization requires a project-level policy; otherwise, pod deployments may be blocked.
 
 This template provisions:
 
-- **VPC Network** — Private VPC with dedicated secondary ranges and Cloud NAT for egress in `us-central1`
-- **GKE Cluster** — GKE Standard cluster (`enterprise-gke`) with Binary Authorization, Security Posture, and E2-standard-4 Spot nodes
+- **VPC Network** — Dedicated VPC with a primary subnet in `us-central1`
+- **GKE Cluster** — GKE Standard cluster (`enterprise-gke`) with Binary Authorization and Security Posture enabled
 - **Workload** — Nginx-based production-ready workload with Workload Identity and External Load Balancer
 
 ### Resource Naming
@@ -30,10 +27,8 @@ This template provisions:
 | Resource | Monthly Estimate |
 |---|---|
 | GKE Cluster (control plane) | ~$75 |
-| E2-standard-4 Node Pool (1x node, Spot) | ~$29 |
-| Load Balancer (1x external) | ~$18 |
-| Cloud NAT | ~$3 |
-| **Total** | **~$125** |
+| E2-standard-4 Node Pool (1x e2-standard-4 Spot) | ~$54 |
+| **Total** | **~$150** |
 
 *Estimates based on sustained use in us-central1. GPU templates incur additional on-demand charges.*
 
@@ -58,14 +53,12 @@ terraform init \
 # Review the plan
 terraform plan \
   -var="project_id=YOUR_PROJECT_ID" \
-  -var="region=us-central1" \
-  -var="create_service_accounts=true"
+  -var="region=us-central1"
 
 # Apply (provisions GKE cluster and supporting infrastructure)
 terraform apply \
   -var="project_id=YOUR_PROJECT_ID" \
-  -var="region=us-central1" \
-  -var="create_service_accounts=true"
+  -var="region=us-central1"
 
 # Get cluster credentials
 CLUSTER_NAME=$(terraform output -raw cluster_name)
@@ -79,8 +72,6 @@ helm upgrade --install release ./workload --wait --timeout=30m
 kubectl get nodes
 kubectl get pods -A
 ```
-
-**Note:** `create_service_accounts` defaults to `false` for CI compatibility. Set to `true` for standalone deployments to create dedicated, least-privileged service accounts for nodes and workloads.
 
 **Cleanup:**
 ```bash
@@ -170,4 +161,3 @@ All Validation Tests passed successfully for Enterprise GKE Cluster!
 | `cluster_name` | GKE cluster name | `enterprise-gke-tf` |
 | `network_name` | VPC network name | `enterprise-gke-tf-vpc` |
 | `subnet_name` | Subnet name | `enterprise-gke-tf-subnet` |
-| `create_service_accounts` | Whether to create dedicated IAM SAs | `false` |
