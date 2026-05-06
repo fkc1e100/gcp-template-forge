@@ -27,9 +27,6 @@ spec:
   clusterRef:
     name: gke-inf-fuse-cache-kcc
   nodeCount: 1
-  # Restrict to a single zone that supports L4 GPUs
-  nodeLocations:
-    - us-central1-a
   nodeConfig:
     spot: false
     machineType: g2-standard-4
@@ -69,9 +66,6 @@ spec:
   clusterRef:
     name: gke-inf-fuse-cache-kcc
   nodeCount: 1
-  # Restrict to the same zone as the GPU pool
-  nodeLocations:
-    - us-central1-a
   nodeConfig:
     machineType: e2-standard-2
     diskType: pd-balanced

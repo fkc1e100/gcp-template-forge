@@ -93,6 +93,17 @@ cd terraform-helm && terraform destroy
 kubectl delete -n <KCC_NAMESPACE> -f config-connector/ --wait=true
 ```
 
+## Template Inputs
+
+| Variable | Description | Default |
+|---|---|---|
+| `project_id` | GCP project ID | required |
+| `region` | GCP region | `us-central1` |
+| `cluster_name` | GKE cluster name | `gke-basic-tf` |
+| `network_name` | VPC network name | `gke-basic-tf-vpc` |
+| `subnet_name` | Subnet name | `gke-basic-tf-subnet` |
+| `service_account` | Node pool service account | required |
+
 ## Validation Record
 
 |  | Terraform + Helm | Config Connector |

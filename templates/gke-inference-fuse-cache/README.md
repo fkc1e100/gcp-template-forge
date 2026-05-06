@@ -166,7 +166,6 @@ All Validation Tests passed successfully for GKE GCS FUSE Inference Cache!
 |---|---|---|
 | `project_id` | GCP project ID | required |
 | `region` | GCP region | `us-central1` |
-| `zone` | Zone for GPU node pool | `us-central1-a` |
 | `cluster_name` | GKE cluster name | `gke-inf-fuse-cache-tf` |
 | `bucket_name` | GCS bucket for model storage | `gke-inf-fuse-cache-bucket` |
 | `network_name` | VPC network name | `gke-inf-fuse-cache-tf-vpc` |
