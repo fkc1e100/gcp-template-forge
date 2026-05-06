@@ -2,6 +2,8 @@
 
 This template demonstrates how to implement a "Default Deny" egress policy in GKE and selectively allow traffic to specific external AI services using Fully Qualified Domain Name (FQDN) Network Policies.
 
+<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
+
 ## Overview
 Securing egress traffic is a critical component of a Zero-Trust architecture. In GKE, FQDN Network Policies allow you to define egress rules based on domain names rather than static IP addresses, which is essential for interacting with third-party AI APIs (like Anthropic or HuggingFace) where IP ranges can change frequently.
 

@@ -1,6 +1,11 @@
 # Test KCC Skip
 This template is used to verify the KCC skip mechanism.
 
+<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
+
+## Architecture
+This is a minimal test template designed to verify that the CI pipeline correctly identifies and skips the Config Connector path when a `.kcc-unsupported` file is present.
+
 ## KCC Status: Unsupported
 This template uses features that are not yet available in Config Connector. 
 KCC CI jobs are skipped for this template.

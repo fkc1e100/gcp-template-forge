@@ -2,6 +2,8 @@
 
 A GKE template demonstrating how to solve the "Noisy Neighbor" problem for shared GPU clusters using the KubeRay Operator and the Kueue Operator. 
 
+<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
+
 ## Architecture
 
 - **VPC + Subnet** — VPC with secondary CIDR ranges for pods and services.
