@@ -19,6 +19,8 @@ limitations under the License.
 ## Overview
 This template demonstrates how to achieve high-performance model loading on GKE using **Cloud Storage FUSE** with **Local SSD caching**. This pattern is ideal for AI inference workloads (like vLLM) that need to load large models (100GB+) quickly while minimizing egress costs and Persistent Disk overhead.
 
+<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
+
 ## Key Features
 - **L4 GPU Acceleration**: Uses G2-standard-4 nodes with NVIDIA L4 GPUs.
 - **Local NVMe SSD Caching**: Specifically configures Local SSDs to back the GCS FUSE file cache.
@@ -26,7 +28,7 @@ This template demonstrates how to achieve high-performance model loading on GKE 
 - **Workload Identity**: Securely access GCS buckets without managing long-lived keys.
 - **vLLM / Mock Inference**: Deploys a lightweight inference server configured for GCS-based model serving (uses a dummy server for CI validation speed).
 
-## Infrastructure Architecture
+## Architecture
 - **GKE Standard Cluster**: With GCS FUSE CSI driver enabled.
 - **GPU Node Pool**: `g2-standard-4` machines in a single zone to ensure Local SSD availability.
 - **GCS Bucket**: Stores the model weights.

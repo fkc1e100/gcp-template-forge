@@ -3,6 +3,8 @@
 ## Overview
 This template provides an enterprise-grade Google Kubernetes Engine (GKE) architecture. It demonstrates two deployment paths: Terraform + Helm for traditional infrastructure-as-code and Config Connector (KCC) for a Kubernetes-native approach to managing GCP resources.
 
+<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
+
 
 > **Warning: Binary Authorization**
 > This template enables Binary Authorization in `PROJECT_SINGLETON_POLICY_ENFORCE` mode. Ensure your GCP project has a Binary Authorization policy configured, otherwise pod deployments may be blocked.
