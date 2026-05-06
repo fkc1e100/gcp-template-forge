@@ -20,9 +20,9 @@ This template provisions:
 
 | Resource | Terraform + Helm | Config Connector |
 |---|---|---|
-| GKE Cluster | `gke-topology-aware-routing-tf` | `gke-topology-aware-routing-kcc` |
-| VPC Network | `gke-topology-aware-routing-vpc` | `gke-topology-aware-routing-kcc-vpc` |
-| Subnet | `gke-topology-aware-routing-subnet` | `gke-topology-aware-routing-kcc-subnet` |
+| GKE Cluster | `gke-topology-aware-routing-<uid>-tf` | `gke-topology-aware-routing-<uid>-kcc` |
+| VPC Network | `gke-topology-aware-routing-<uid>-tf-vpc` | `gke-topology-aware-routing-<uid>-kcc-vpc` |
+| Subnet | `gke-topology-aware-routing-<uid>-tf-subnet` | `gke-topology-aware-routing-<uid>-kcc-subnet` |
 
 ### Estimated Cost
 
@@ -142,7 +142,7 @@ Expected output:
 Test 1: Cluster Connectivity... Connectivity passed.
 Test 2: Node Readiness... All nodes are Ready.
 Test 3: Workload Readiness... Workload is available.
-All GKE Topology-Aware Routing Validation Tests passed successfully!
+All Validation Tests passed successfully for GKE Topology-Aware Routing!
 ```
 
 ---
