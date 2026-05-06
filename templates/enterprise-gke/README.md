@@ -1,146 +1,172 @@
-# Template: Enterprise GKE Cluster and Workload
+# Enterprise GKE Cluster
 
-## Overview
-This template provides an enterprise-grade Google Kubernetes Engine (GKE) architecture. It demonstrates two deployment paths: Terraform + Helm for traditional infrastructure-as-code and Config Connector (KCC) for a Kubernetes-native approach to managing GCP resources.
-
-<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
-
-
-> **Warning: Binary Authorization**
-> This template enables Binary Authorization in `PROJECT_SINGLETON_POLICY_ENFORCE` mode. Ensure your GCP project has a Binary Authorization policy configured, otherwise pod deployments may be blocked.
+> Enterprise-grade GKE with Binary Authorization, Workload Identity, and hardened security controls
 
 ## Architecture
-- **VPC Network** — Private VPC with dedicated secondary ranges for pods and services.
-- **GKE Standard Cluster** — VPC-native, private cluster with security hardening (Binary Authorization, Security Posture).
-- **Node Pool** — E2-standard-4 instances (Spot) with Secure Boot and Integrity Monitoring.
-- **Cloud NAT** — Enables egress for private nodes without public IP addresses.
-- **Master Authorized Networks** — Restricts access to the GKE control plane to specified IP ranges.
-- **Workload Identity** — Seamless IAM integration for Kubernetes workloads.
+
+This template provides an enterprise-grade Google Kubernetes Engine (GKE) architecture with security hardening. It enables Binary Authorization in enforce mode, uses Workload Identity for secure GCP access, and includes advanced security posture monitoring.
+
+Note: Binary Authorization requires a project-level policy; otherwise, pod deployments may be blocked.
+
+This template provisions:
+
+- **VPC Network** — Dedicated VPC with a primary subnet in `us-central1`
+- **GKE Cluster** — Standard cluster (`enterprise-gke`) with 1x e2-standard-4 spot node pool and advanced security features
+- **Workload** — Nginx-based production-ready workload with Workload Identity and External Load Balancer
+
+### Resource Naming
+
+| Resource | Terraform + Helm | Config Connector |
+|---|---|---|
+| GKE Cluster | `enterprise-gke-<uid>-tf` | `enterprise-gke-<uid>-kcc` |
+| VPC Network | `enterprise-gke-<uid>-tf-vpc` | `enterprise-gke-<uid>-kcc-vpc` |
+| Subnet | `enterprise-gke-<uid>-tf-subnet` | `enterprise-gke-<uid>-kcc-subnet` |
+
+### Estimated Cost
+
+| Resource | Monthly Estimate |
+|---|---|
+| GKE Cluster (control plane) | ~$75 |
+| e2-standard-4 Node Pool (1x e2-standard-4) | ~$55 |
+| **Total** | **~$130** |
+
+*Estimates based on sustained use in us-central1. GPU templates incur additional on-demand charges.*
+
+---
 
 ## Deployment Paths
 
-### Terraform + Helm (`terraform-helm/`)
-- Provisions a dedicated VPC with specific secondary CIDRs for pods and services.
-- Deploys a private, VPC-native GKE Standard cluster with Workload Identity and Security Posture monitoring.
-- Deploys the application workload using a production-ready Helm chart.
+This template supports two deployment paths that provision equivalent infrastructure.
 
-### Config Connector (`config-connector/`)
-- Uses KCC resources (`ContainerCluster`, `ContainerNodePool`, `ComputeNetwork`, `ComputeSubnetwork`) to provision the same infrastructure.
-- Manages IAM roles and Service Accounts via KCC for seamless Workload Identity integration.
-- Deploys the workload using Kubernetes-native manifests (Deployment, Service, HPA, etc.) located in the `config-connector-workload/` directory.
+### Path 1: Terraform + Helm
 
-## Deployment Instructions
-
-### Terraform + Helm
+**Prerequisites:** `terraform` ≥ 1.5, `helm` ≥ 3.10, `kubectl`, `gcloud` with ADC configured.
 
 ```bash
-cd terraform-helm
+cd templates/enterprise-gke/terraform-helm
+
+# Initialize with GCS backend (or use local state for testing)
 terraform init \
-  -backend-config="bucket=<TF_STATE_BUCKET>" \
-  -backend-config="prefix=templates/enterprise-gke/terraform-helm"
-terraform apply -var="project_id=<PROJECT_ID>" -var="service_account=<NODE_SA_EMAIL>" -var="create_service_accounts=true"
+  -backend-config="bucket=YOUR_TF_STATE_BUCKET" \
+  -backend-config="prefix=enterprise-gke/terraform-helm"
 
-# 2. Deploy the application workload using Helm
-gcloud container clusters get-credentials enterprise-gke-tf --region us-central1
-helm upgrade --install release ./workload -f ./workload/values.generated.yaml --namespace gke-workload --create-namespace
+# Review the plan
+terraform plan \
+  -var="project_id=YOUR_PROJECT_ID" \
+  -var="region=us-central1" \
+  -var="create_service_accounts=true"
+
+# Apply (provisions GKE cluster and supporting infrastructure)
+terraform apply \
+  -var="project_id=YOUR_PROJECT_ID" \
+  -var="region=us-central1" \
+  -var="create_service_accounts=true"
+
+# Get cluster credentials
+CLUSTER_NAME=$(terraform output -raw cluster_name)
+REGION=$(terraform output -raw cluster_location)
+gcloud container clusters get-credentials "${CLUSTER_NAME}" --region "${REGION}"
+
+# Deploy the workload via Helm
+helm upgrade --install release ./workload --wait --timeout=30m
+
+# Verify
+kubectl get nodes
+kubectl get pods -A
 ```
 
-*Note: `create_service_accounts` defaults to `false` to ensure compatibility with restricted environments like CI. For production deployments, set it to `true` to create dedicated, least-privileged service accounts for nodes and workloads.*
+**Cleanup:**
+```bash
+helm uninstall release
+terraform destroy -var="project_id=YOUR_PROJECT_ID" -var="region=us-central1"
+```
 
-### Config Connector
+---
+
+### Path 2: Config Connector (KCC)
+
+**Prerequisites:** A running GKE cluster with Config Connector installed. See the
+[KCC installation guide](https://cloud.google.com/config-connector/docs/how-to/install-upgrade-uninstall).
+The `forge-management` namespace must have a `ConfigConnectorContext` pointing to a
+service account with `roles/container.admin` and `roles/compute.networkAdmin`.
 
 ```bash
-# 1. Apply the infrastructure manifests to the KCC management cluster
-kubectl apply -n <KCC_NAMESPACE> -f config-connector/
+cd templates/enterprise-gke/config-connector
 
-# 2. Once the cluster is READY, apply the workload manifests to the target cluster
-# Get credentials for the new cluster first
-gcloud container clusters get-credentials enterprise-gke-kcc --region us-central1
-kubectl apply -f config-connector-workload/
+# Apply the GCP infrastructure manifests
+kubectl apply -n forge-management -f .
+
+# Wait for all resources to be Ready (GKE cluster takes ~10 minutes)
+kubectl wait -n forge-management --for=condition=Ready --all \
+  --timeout=3600s -f .
+
+# Get cluster credentials (once ContainerCluster is Ready)
+CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com \
+  -n forge-management -l "template=enterprise-gke" \
+  -o jsonpath='{.items[0].metadata.name}')
+LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com \
+  -n forge-management -l "template=enterprise-gke" \
+  -o jsonpath='{.items[0].spec.location}')
+gcloud container clusters get-credentials "${CLUSTER_NAME}" --region "${LOCATION}"
+
+# Deploy the workload
+kubectl apply -n default -f ../config-connector-workload/
+
+# Verify
+kubectl get nodes
+kubectl get pods -A
 ```
+
+**Cleanup:**
+```bash
+kubectl delete -n default -f ../config-connector-workload/
+kubectl delete -n forge-management -f . --wait=true --timeout=900s
+```
+
+### KCC Limitations
+
+- **Network Policy Provider**: Not supported in KCC v1beta1 ContainerCluster. The Terraform path
+  uses `network_policy.provider = "CALICO"`. This template uses `spec.datapathProvider: ADVANCED_DATAPATH`
+  in KCC to enable equivalent GKE Dataplane V2 network policy enforcement. Tracked upstream:
+  https://github.com/GoogleCloudPlatform/k8s-config-connector/issues/TBD
+
+---
 
 ## Verification
 
-To verify the deployment:
+After deploying with either path, run the validation script to confirm end-to-end functionality:
 
-1. **Check Infrastructure Readiness** (KCC path):
-   Monitor the KCC resources in the management cluster until all report `READY=True`:
-   ```bash
-   kubectl get gcp -n <KCC_NAMESPACE>
-   ```
+```bash
+export PROJECT_ID="YOUR_PROJECT_ID"
+export CLUSTER_NAME="<cluster-name-from-outputs>"
+export REGION="us-central1"
+chmod +x templates/enterprise-gke/validate.sh
+./templates/enterprise-gke/validate.sh
+```
 
-2. **Run Validation Script**:
-   Use the `validate.sh` script to verify cluster connectivity and workload health:
-   ```bash
-   export PROJECT_ID=<PROJECT_ID>
-   export CLUSTER_NAME=enterprise-gke-tf # or enterprise-gke-kcc for KCC path
-   export REGION=us-central1
-   ./validate.sh
-   ```
+Expected output:
+```
+Test 1: Cluster Connectivity... Connectivity passed.
+Test 2: Node Readiness... All nodes are Ready.
+Test 3: Workload Readiness... Workload is available.
+Test 4: Workload Identity Integration... Workload Identity validated.
+Test 5: Endpoint Interaction... Endpoint test passed.
+All Validation Tests passed successfully for Enterprise GKE Cluster!
+```
 
-## Cluster Details
-- **Type**: GKE Standard
-- **Release channel**: REGULAR
-- **Node pools**: enterprise-gke-pool (e2-standard-4, spot nodes)
-- **Networking**: VPC-native, Private nodes, dedicated VPC per issue
+---
 
-## Workload Details
-- **Application**: Nginx-based production-ready workload
-- **Access**: LoadBalancer
-- **Dependencies**: IAM Workload Identity
+## Template Inputs
 
-## Enabled Features
-- [x] Workload Identity
-- [x] VPC-native networking
-- [x] Private cluster + Cloud NAT
-- [x] Master Authorized Networks
-- [x] Binary Authorization
-- [x] Network Policy (Calico)
-- [x] Security Posture Monitoring
-- [x] Vertical / Horizontal Pod Autoscaler
-- [x] Config Connector resources: ContainerCluster, ContainerNodePool, ComputeNetwork, ComputeSubnetwork, IAMServiceAccount, IAMPolicyMember, ComputeRouter, ComputeRouterNAT, Deployment, Service
-- [ ] Confidential GKE Nodes
-- [ ] Cluster Autoscaler / Node Auto-provisioning
-- [ ] DWS + Kueue (accelerator templates)
-- [ ] GPU node pool with driver auto-install
-
-## Performance & Cost Estimates
-
-*Estimated from GCP pricing (us-central1, spot pricing where applicable)*
-
-| Resource | Config | Estimated cost |
+| Variable | Description | Default |
 |---|---|---|
-| Node pool | e2-standard-4 × 1 node, spot | ~$0.04/hr (~$29/mo) |
-| Boot disk | 50 GB pd-standard per node | ~$0.004/hr (~$3/mo) |
-| Load balancer | 1× regional external LB | ~$0.025/hr (~$18/mo) |
-| Cloud NAT | per-gateway fee + data processing | ~$0.004/hr (~$3/mo) |
-| **Total (idle cluster, spot)** | | **~$0.07/hr (~$53/mo)** |
-| **Total (on-demand nodes)** | e2-standard-4 on-demand | ~$0.14/hr (~$100/mo) |
+| `project_id` | GCP project ID | required |
+| `region` | GCP region | `us-central1` |
+| `cluster_name` | GKE cluster name | `enterprise-gke-tf` |
+| `network_name` | VPC network name | `enterprise-gke-tf-vpc` |
+| `subnet_name` | Subnet name | `enterprise-gke-tf-subnet` |
+| `create_service_accounts` | Whether to create dedicated SAs | `false` |
+| `service_account` | Node SA (required if create_service_accounts=false) | required |
+| `workload_service_account` | Workload Identity SA | optional |
 
-Spot node interruptions are expected during validation; the workload is stateless (Nginx) so restarts are safe. Use on-demand nodes for production.
-
-## Cleanup
-
-### Terraform Path
-```bash
-cd terraform-helm && terraform destroy
-```
-
-### KCC Path
-```bash
-kubectl delete -n <KCC_NAMESPACE> -f config-connector/ --wait=true
-```
-
-## Validation Record
-
-|  | Terraform + Helm | Config Connector |
-| --- | --- | --- |
-| **Status** | success | success |
-| **Date** | 2026-04-22 | 2026-04-22 |
-| **Duration** | 21m 59s | 21m 57s |
-| **Region** | us-central1 | us-central1 (KCC cluster) |
-| **Zones** | us-central1-a,us-central1-b,us-central1-c,us-central1-f | us-central1 (regional) |
-| **Cluster** | enterprise-gke-tf | enterprise-gke-kcc |
-| **Agent tokens** | 495,000 in / 70,000 out (multi-session) | (shared session) |
-| **Estimated cost** | $0.55 | -- |
-| **Commit** | dde1b73 | dde1b73 |
+<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
