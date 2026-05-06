@@ -29,9 +29,9 @@ spec:
   nodeLocations:
     - us-central1-a
   networkRef:
-    name: gke-inf-fuse-cache-vpc
+    name: gke-inf-fuse-cache-kcc-vpc
   subnetworkRef:
-    name: gke-inf-fuse-cache-subnet
+    name: gke-inf-fuse-cache-kcc-subnet
   initialNodeCount: 1
   ipAllocationPolicy:
     clusterSecondaryRangeName: pods

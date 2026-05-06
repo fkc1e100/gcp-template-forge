@@ -20,9 +20,9 @@ This template provisions:
 
 | Resource | Terraform + Helm | Config Connector |
 |---|---|---|
-| GKE Cluster | `gke-inf-fuse-cache` | `gke-inf-fuse-cache-kcc` |
-| VPC Network | `gke-inf-fuse-cache-vpc` | `gke-inf-fuse-cache-vpc` |
-| Subnet | `gke-inf-fuse-cache-subnet` | `gke-inf-fuse-cache-subnet` |
+| GKE Cluster | `gke-inf-fuse-cache-<uid>-tf` | `gke-inf-fuse-cache-<uid>-kcc` |
+| VPC Network | `gke-inf-fuse-cache-<uid>-tf-vpc` | `gke-inf-fuse-cache-<uid>-kcc-vpc` |
+| Subnet | `gke-inf-fuse-cache-<uid>-tf-subnet` | `gke-inf-fuse-cache-<uid>-kcc-subnet` |
 
 ### Estimated Cost
 
@@ -87,7 +87,10 @@ terraform destroy -var="project_id=YOUR_PROJECT_ID" -var="region=us-central1" -v
 
 ### Path 2: Config Connector (KCC)
 
-**Prerequisites:** A running GKE cluster with Config Connector installed. The `forge-management` namespace must have a `ConfigConnectorContext` pointing to a service account with `roles/container.admin` and `roles/compute.networkAdmin`.
+**Prerequisites:** A running GKE cluster with Config Connector installed. See the
+[KCC installation guide](https://cloud.google.com/config-connector/docs/how-to/install-upgrade-uninstall).
+The `forge-management` namespace must have a `ConfigConnectorContext` pointing to a
+service account with `roles/container.admin` and `roles/compute.networkAdmin`.
 
 ```bash
 cd templates/gke-inference-fuse-cache/config-connector
@@ -162,9 +165,9 @@ All GKE Inference FUSE Cache Validation Tests passed successfully!
 | `project_id` | GCP project ID | required |
 | `region` | GCP region | `us-central1` |
 | `zone` | Zone for GPU node pool | `us-central1-a` |
-| `cluster_name` | GKE cluster name | `gke-inf-fuse-cache` |
+| `cluster_name` | GKE cluster name | `gke-inf-fuse-cache-tf` |
 | `bucket_name` | GCS bucket for model storage | `gke-inf-fuse-cache-bucket` |
-| `network_name` | VPC network name | `gke-inf-fuse-cache-vpc` |
-| `subnet_name` | Subnet name | `gke-inf-fuse-cache-subnet` |
+| `network_name` | VPC network name | `gke-inf-fuse-cache-tf-vpc` |
+| `subnet_name` | Subnet name | `gke-inf-fuse-cache-tf-subnet` |
 | `service_account` | Node pool service account | required |
 | `uid_suffix` | Unique suffix for resource names | `""` |
