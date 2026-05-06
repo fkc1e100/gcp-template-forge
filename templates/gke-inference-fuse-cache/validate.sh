@@ -15,7 +15,7 @@
 
 set -e
 
-echo "Starting GKE GCS FUSE Inference Cache Validation Tests..."
+echo "=== Validation: GKE GCS FUSE Inference Cache ==="
 
 PROJECT_ID=${PROJECT_ID:-"gca-gke-2025"}
 REGION=${REGION:-"us-central1"}
@@ -101,8 +101,13 @@ gcloud container clusters get-credentials ${CLUSTER_NAME} --region ${REGION} --p
 kubectl cluster-info
 echo "Connectivity passed."
 
-# 2. GCS FUSE CSI Driver Check
-echo "Test 2: GCS FUSE CSI Driver Check..."
+# 2. Node Readiness
+echo "Test 2: Node Readiness..."
+kubectl wait nodes --all --for=condition=Ready --timeout=10m
+echo "All nodes are Ready."
+
+# 3. GCS FUSE CSI Driver Check
+echo "Test 3: GCS FUSE CSI Driver Check..."
 GCS_FUSE_ENABLED=$(gcloud container clusters describe ${CLUSTER_NAME} --region ${REGION} --project ${PROJECT_ID} --format="value(addonsConfig.gcsFuseCsiDriverConfig.enabled)")
 if [ "$GCS_FUSE_ENABLED" != "True" ]; then
   echo "GCS FUSE CSI Driver is not enabled!"
@@ -110,8 +115,8 @@ if [ "$GCS_FUSE_ENABLED" != "True" ]; then
 fi
 echo "GCS FUSE CSI Driver is enabled."
 
-# 3. Node Pool Local SSD Check
-echo "Test 3: Node Pool Local SSD Check..."
+# 4. Node Pool Local SSD Check
+echo "Test 4: Node Pool Local SSD Check..."
 # Detect pool name (prefer GPU pool)
 POOL_NAME=$(gcloud container node-pools list --cluster ${CLUSTER_NAME} --region ${REGION} --project ${PROJECT_ID} --format="value(name)" | grep "gpu" | head -n 1)
 if [ -z "$POOL_NAME" ]; then
@@ -124,8 +129,8 @@ if [ "$SSD_COUNT" -lt 1 ]; then
 fi
 echo "Node pool has $SSD_COUNT Local SSD(s) for caching."
 
-# 4. Workload Readiness
-echo "Test 4: Workload Readiness..."
+# 5. Workload Readiness
+echo "Test 5: Workload Readiness..."
 DEPLOY_NAME="vllm-inference"
 
 # Detect Job name using label
@@ -154,8 +159,8 @@ echo "Waiting for deployment ${DEPLOY_NAME}..."
 kubectl wait --for=condition=available deployment/${DEPLOY_NAME} -n ${NAMESPACE} --timeout=30m
 echo "Workload is available."
 
-# 5. Sidecar and Mount Verification
-echo "Test 5: Sidecar and Mount Verification..."
+# 6. Sidecar and Mount Verification
+echo "Test 6: Sidecar and Mount Verification..."
 # Target the pod from the deployment, avoiding staging jobs
 POD_NAME=$(kubectl get pods -n ${NAMESPACE} -l app=vllm,template=${TEMPLATE_LABEL} -o jsonpath='{.items[?(@.status.phase=="Running")].metadata.name}' | awk '{print $1}')
 
@@ -191,8 +196,8 @@ if [ -z "$MOUNT_CHECK" ]; then
 fi
 echo "GCS FUSE mount point /models verified."
 
-# 6. GPU Check
-echo "Test 6: GPU Check..."
+# 7. GPU Check
+echo "Test 7: GPU Check..."
 # Try nvidia-smi first, fallback to checking device file for dummy images (which don't have nvidia-smi in PATH)
 # We use sh -c to avoid kubectl exec failing if the binary is missing, and 2>&1 to capture all output.
 GPU_CHECK=$(kubectl exec ${POD_NAME} -n ${NAMESPACE} -- sh -c "nvidia-smi -L 2>/dev/null || ls /dev/nvidia0 2>/dev/null" || true)
@@ -205,8 +210,8 @@ if [ -z "$GPU_CHECK" ]; then
 fi
 echo "GPU verified: $GPU_CHECK"
 
-# 7. vLLM API Health Check
-echo "Test 7: vLLM API Health Check..."
+# 8. vLLM API Health Check
+echo "Test 8: vLLM API Health Check..."
 # Wait a bit for vLLM to initialize (it might be slow even after pod is available)
 MAX_RETRIES=12
 RETRY_COUNT=0
@@ -227,4 +232,4 @@ if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
 fi
 echo "vLLM API is healthy."
 
-echo "All GKE GCS FUSE Inference Cache Validation Tests passed successfully!"
+echo "All Validation Tests passed successfully for GKE GCS FUSE Inference Cache!"
