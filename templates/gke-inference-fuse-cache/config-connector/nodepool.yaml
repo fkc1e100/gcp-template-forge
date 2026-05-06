@@ -27,6 +27,10 @@ spec:
   clusterRef:
     name: gke-inf-fuse-cache-kcc
   nodeCount: 1
+  locations:
+    - us-central1-a
+    - us-central1-b
+    - us-central1-c
   nodeConfig:
     spot: false
     machineType: g2-standard-4
@@ -66,6 +70,10 @@ spec:
   clusterRef:
     name: gke-inf-fuse-cache-kcc
   nodeCount: 1
+  locations:
+    - us-central1-a
+    - us-central1-b
+    - us-central1-c
   nodeConfig:
     machineType: e2-standard-2
     diskType: pd-balanced

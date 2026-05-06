@@ -127,6 +127,12 @@ resource "google_container_node_pool" "gpu_pool" {
   cluster    = google_container_cluster.primary.name
   node_count = 1
 
+  node_locations = [
+    "${var.region}-a",
+    "${var.region}-b",
+    "${var.region}-c",
+  ]
+
   node_config {
     # Use on-demand instances for better availability (spot can be harder to find in some zones)
     spot = false
@@ -186,6 +192,12 @@ resource "google_container_node_pool" "system_pool" {
   location   = var.region
   cluster    = google_container_cluster.primary.name
   node_count = 1
+
+  node_locations = [
+    "${var.region}-a",
+    "${var.region}-b",
+    "${var.region}-c",
+  ]
 
   node_config {
     machine_type = "e2-standard-2"
