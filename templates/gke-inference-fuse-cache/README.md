@@ -30,7 +30,8 @@ This template provisions:
 |---|---|
 | GKE Cluster (control plane) | ~$75 |
 | G2 Standard Node Pool (1x g2-standard-4 + L4 GPU) | ~$525 |
-| **Total** | **~$600** |
+| E2 Standard Node Pool (1x e2-standard-2) | ~$50 |
+| **Total** | **~$650** |
 
 *Estimates based on sustained use in us-central1. GPU templates incur additional on-demand charges.*
 
