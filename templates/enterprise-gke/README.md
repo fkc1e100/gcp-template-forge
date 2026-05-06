@@ -13,11 +13,9 @@ This template provides an enterprise-grade Google Kubernetes Engine (GKE) archit
 
 This template provisions:
 
-- **VPC Network** — Private VPC with dedicated secondary ranges for pods and services.
-- **GKE Cluster** — GKE Standard cluster (`enterprise-gke`) with security hardening (Binary Authorization, Security Posture).
-- **Node Pool** — E2-standard-4 instances (Spot) with Secure Boot and Integrity Monitoring.
-- **Cloud NAT** — Enables egress for private nodes without public IP addresses.
-- **Workload** — Nginx-based production-ready workload with Workload Identity.
+- **VPC Network** — Private VPC with dedicated secondary ranges and Cloud NAT for egress in `us-central1`
+- **GKE Cluster** — GKE Standard cluster (`enterprise-gke`) with Binary Authorization, Security Posture, and E2-standard-4 Spot nodes
+- **Workload** — Nginx-based production-ready workload with Workload Identity and External Load Balancer
 
 ### Resource Naming
 
@@ -37,7 +35,7 @@ This template provisions:
 | Cloud NAT | ~$3 |
 | **Total** | **~$125** |
 
-*Estimates based on sustained use in us-central1 with spot pricing for nodes. On-demand nodes increase total cost to ~$200/mo.*
+*Estimates based on sustained use in us-central1. GPU templates incur additional on-demand charges.*
 
 ---
 
@@ -134,7 +132,10 @@ kubectl delete -n forge-management -f . --wait=true --timeout=900s
 
 ### KCC Limitations
 
-- **Network Policy Provider**: KCC ContainerCluster does not support the `network_policy.provider = "CALICO"` field. This template uses `spec.datapathProvider: ADVANCED_DATAPATH` in KCC to enable equivalent GKE Dataplane V2 network policy enforcement.
+- **Network Policy Provider**: Not supported in KCC v1beta1 ContainerCluster. The Terraform path
+  uses `network_policy.provider = "CALICO"`. This template uses `spec.datapathProvider: ADVANCED_DATAPATH` 
+  in KCC to enable equivalent GKE Dataplane V2 network policy enforcement.
+  Tracked upstream: https://github.com/GoogleCloudPlatform/k8s-config-connector/issues/TBD
 
 ---
 
@@ -155,7 +156,7 @@ Expected output:
 Test 1: Cluster Connectivity... Connectivity passed.
 Test 2: Node Readiness... All nodes are Ready.
 Test 3: Workload Readiness... Workload is available.
-All Validation Tests passed successfully for enterprise-gke!
+All Validation Tests passed successfully for Enterprise GKE Cluster!
 ```
 
 ---
