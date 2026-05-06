@@ -19,7 +19,7 @@ metadata:
   labels:
     {{- include "hello-world.labels" . | nindent 4 }}
     project: gcp-template-forge
-    template: basic-gke-hello-world
+    template: gke-basic
 spec:
   type: {{ .Values.service.type }}
   selector:

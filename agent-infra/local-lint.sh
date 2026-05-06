@@ -118,6 +118,20 @@ KCCPY
       exit 1
     fi
   done
+
+  # Mandate: README.md must exist and contain Architecture header and CI marker
+  if [ ! -f "${template}/README.md" ]; then
+    echo "ERROR: Template '${template_name}' is missing README.md"
+    exit 1
+  fi
+  if ! grep -q "## Architecture" "${template}/README.md"; then
+    echo "ERROR: Template '${template_name}' README.md is missing '## Architecture' header"
+    exit 1
+  fi
+  if ! grep -q "<!-- CI: validation record" "${template}/README.md"; then
+    echo "ERROR: Template '${template_name}' README.md is missing CI validation record marker"
+    exit 1
+  fi
 done
 
 # 1. Terraform fmt and validate + Mandates

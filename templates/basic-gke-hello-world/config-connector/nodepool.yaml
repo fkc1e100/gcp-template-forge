@@ -15,17 +15,17 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
 metadata:
-  name: basic-gke-hello-world-pool
+  name: gke-basic-pool
   namespace: forge-management
   labels:
     project: gcp-template-forge
-    template: basic-gke-hello-world
+    template: gke-basic
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   location: us-central1
   clusterRef:
-    name: basic-gke-hello-world
+    name: gke-basic-kcc
   nodeCount: 1
   nodeConfig:
     spot: true
@@ -38,4 +38,4 @@ spec:
       mode: GKE_METADATA
     labels:
       project: gcp-template-forge
-      template: basic-gke-hello-world
+      template: gke-basic

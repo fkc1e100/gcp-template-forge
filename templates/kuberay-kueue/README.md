@@ -1,8 +1,16 @@
 # Multi-Tenant Ray on GKE with Equitable Queuing
 
-A GKE template demonstrating how to solve the "Noisy Neighbor" problem for shared GPU clusters using the KubeRay Operator and the Kueue Operator. 
+> solve the "Noisy Neighbor" problem for shared GPU clusters using KubeRay and Kueue
+
+<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
+
+<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
 
 ## Architecture
+
+This template demonstrates how to solve the "Noisy Neighbor" problem for shared GPU clusters using the KubeRay Operator and the Kueue Operator.
+
+This template provisions:
 
 - **VPC + Subnet** — VPC with secondary CIDR ranges for pods and services.
 - **GKE Standard** — A cluster featuring an autoscaled GPU node pool (using L4 GPUs via `g2-standard-4` spot instances) and a standard system node pool.
@@ -10,28 +18,31 @@ A GKE template demonstrating how to solve the "Noisy Neighbor" problem for share
 - **Kueue Operator** — Cloud-native job queueing and equitable resource sharing.
 - **Workloads** — Two namespaces (`team-a` and `team-b`), each with a Kueue `LocalQueue` linked to a `ClusterQueue` sharing a single GPU `Cohort`. Kueue ensures that if Team A requests excess GPUs, their pods remain in a pending state until Team B finishes their work.
 
-## Prerequisites
+### Resource Naming
 
-- **Google Cloud Project**: You must have a GCP project with billing enabled.
-- **APIs Enabled**: Ensure `compute.googleapis.com` and `container.googleapis.com` are enabled.
-- **IAM Permissions**: You need permissions to create VPCs, Subnets, GKE clusters, and Service Accounts.
-- **Tools**:
-  - `gcloud` CLI installed and authenticated.
-  - `kubectl` installed.
-  - For Terraform: `terraform` CLI installed.
-  - For Config Connector: A management cluster with Config Connector installed and configured to manage resources in your GCP project.
+| Resource | Terraform + Helm | Config Connector |
+|---|---|---|
+| GKE Cluster | `gke-kuberay-kueue-<uid>-tf` | `gke-kuberay-kueue-<uid>-kcc` |
+| VPC Network | `gke-kuberay-kueue-<uid>-tf-vpc` | `gke-kuberay-kueue-<uid>-kcc-vpc` |
+| Subnet | `gke-kuberay-kueue-<uid>-tf-subnet` | `gke-kuberay-kueue-<uid>-kcc-subnet` |
+
+---
 
 ## Deployment Paths
 
-### Terraform + Helm (`terraform-helm/`)
+### Path 1: Terraform + Helm
+
+**Prerequisites:** `terraform` ≥ 1.5, `helm` ≥ 3.10, `kubectl`, `gcloud` with ADC configured.
 
 ```bash
-cd terraform-helm
+cd templates/kuberay-kueue/terraform-helm
 terraform init
-terraform apply -var="project_id=my-project-id" -var="service_account=my-service-account@my-project-id.iam.gserviceaccount.com"
+terraform apply -var="project_id=YOUR_PROJECT_ID" -var="service_account=YOUR_NODE_SA"
 ```
 
-### Config Connector (`config-connector/`)
+### Path 2: Config Connector (KCC)
+
+**Prerequisites:** A running GKE cluster with Config Connector installed.
 
 1.  Navigate to the directory:
     ```bash
@@ -39,7 +50,7 @@ terraform apply -var="project_id=my-project-id" -var="service_account=my-service
     ```
 2.  Apply the infrastructure manifests:
     ```bash
-    kubectl apply -f .
+    kubectl apply -n forge-management -f .
     ```
 3.  Wait for the cluster to be ready:
     ```bash
@@ -58,6 +69,8 @@ terraform apply -var="project_id=my-project-id" -var="service_account=my-service
     kubectl apply -f workload.yaml
     ```
 
+---
+
 ## Verification
 
 After deploying, verify the Kueue setup:
@@ -66,3 +79,17 @@ kubectl get clusterqueues
 kubectl get localqueues -A
 kubectl get rayclusters -A
 ```
+
+---
+
+## Template Inputs
+
+| Variable | Description | Default |
+|---|---|---|
+| `project_id` | GCP project ID | required |
+| `region` | GCP region | `us-central1` |
+| `cluster_name` | GKE cluster name | `gke-kuberay-kueue` |
+| `network_name` | VPC network name | `gke-kuberay-kueue-vpc` |
+| `subnet_name` | Subnet name | `gke-kuberay-kueue-subnet` |
+| `service_account` | Node pool service account | required |
+| `uid_suffix` | Unique suffix for resource names | `""` |

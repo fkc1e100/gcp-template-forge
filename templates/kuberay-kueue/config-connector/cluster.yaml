@@ -25,9 +25,6 @@ metadata:
     cnrm.cloud.google.com/remove-default-node-pool: "true"
 spec:
   location: us-central1
-  # Use a single zone for GPU availability
-  nodeLocations:
-    - us-central1-a
   initialNodeCount: 1
   networkRef:
     name: gke-kuberay-kueue-multitenant-vpc-kcc

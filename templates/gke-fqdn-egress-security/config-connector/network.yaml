@@ -15,11 +15,11 @@
 apiVersion: compute.cnrm.cloud.google.com/v1beta1
 kind: ComputeNetwork
 metadata:
-  name: gke-fqdn-egress-security-vpc
+  name: gke-fqdn-egress-kcc-vpc
   namespace: forge-management
   labels:
     project: gcp-template-forge
-    template: gke-fqdn-egress-security
+    template: gke-fqdn-egress
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
@@ -29,17 +29,17 @@ spec:
 apiVersion: compute.cnrm.cloud.google.com/v1beta1
 kind: ComputeSubnetwork
 metadata:
-  name: gke-fqdn-egress-security-subnet
+  name: gke-fqdn-egress-kcc-subnet
   namespace: forge-management
   labels:
     project: gcp-template-forge
-    template: gke-fqdn-egress-security
+    template: gke-fqdn-egress
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   region: us-central1
   networkRef:
-    name: gke-fqdn-egress-security-vpc
+    name: gke-fqdn-egress-kcc-vpc
   ipCidrRange: 10.0.0.0/20
   secondaryIpRange:
     - rangeName: pods
@@ -51,32 +51,32 @@ spec:
 apiVersion: compute.cnrm.cloud.google.com/v1beta1
 kind: ComputeRouter
 metadata:
-  name: gke-fqdn-egress-security-router
+  name: gke-fqdn-egress-kcc-router
   namespace: forge-management
   labels:
     project: gcp-template-forge
-    template: gke-fqdn-egress-security
+    template: gke-fqdn-egress
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   region: us-central1
   networkRef:
-    name: gke-fqdn-egress-security-vpc
+    name: gke-fqdn-egress-kcc-vpc
 ---
 apiVersion: compute.cnrm.cloud.google.com/v1beta1
 kind: ComputeRouterNAT
 metadata:
-  name: gke-fqdn-egress-security-nat
+  name: gke-fqdn-egress-kcc-nat
   namespace: forge-management
   labels:
     project: gcp-template-forge
-    template: gke-fqdn-egress-security
+    template: gke-fqdn-egress
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   region: us-central1
   routerRef:
-    name: gke-fqdn-egress-security-router
+    name: gke-fqdn-egress-kcc-router
   natIpAllocateOption: AUTO_ONLY
   sourceSubnetworkIpRangesToNat: ALL_SUBNETWORKS_ALL_IP_RANGES
   logConfig:
@@ -86,20 +86,20 @@ spec:
 apiVersion: compute.cnrm.cloud.google.com/v1beta1
 kind: ComputeFirewall
 metadata:
-  name: gke-fqdn-egress-security-master-to-node
+  name: gke-fqdn-egress-kcc-master-to-node
   namespace: forge-management
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
   labels:
     project: gcp-template-forge
-    template: gke-fqdn-egress-security
+    template: gke-fqdn-egress
 spec:
   networkRef:
-    name: gke-fqdn-egress-security-vpc
+    name: gke-fqdn-egress-kcc-vpc
   sourceRanges:
     - "172.16.0.32/28"
   targetTags:
-    - "gke-fqdn-egress-security-node"
+    - "gke-fqdn-egress-kcc-node"
   allow:
     - protocol: tcp
       ports:
