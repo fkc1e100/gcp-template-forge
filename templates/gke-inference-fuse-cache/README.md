@@ -128,7 +128,7 @@ kubectl delete -n forge-management -f . --wait=true --timeout=900s
 
 ### KCC Limitations
 
-This template is fully supported in Config Connector v1beta1. Note that advanced node pool placement policies (like `COMPACT` placement for colocation) are only available via the Terraform path.
+- **Advanced Node Pool Placement**: Not supported in KCC v1beta1 ContainerNodePool. Advanced placement policies (like `COMPACT` placement for colocation) are only available via the Terraform path. Tracked upstream: https://github.com/GoogleCloudPlatform/k8s-config-connector/issues/TBD
 
 ---
 

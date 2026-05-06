@@ -2,6 +2,8 @@
 
 A minimal GKE Standard cluster with a Hello World workload, deployable via Terraform + Helm or Config Connector.
 
+<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
+
 ## Architecture
 
 - **VPC + Subnet** — isolated VPC with secondary CIDR ranges for pods and services (`gke-basic-tf-vpc` or `basic-gke-hello-world-vpc`)
