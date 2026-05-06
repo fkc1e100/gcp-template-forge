@@ -13,7 +13,7 @@ The architecture includes a private GKE cluster with Dataplane V2 enabled, which
 This template provisions:
 
 - **VPC Network** — Dedicated VPC with a primary subnet in `us-central1`
-- **GKE Cluster** — Standard (Private) cluster (`gke-fqdn-egress`) with Dataplane V2 and FQDN Network Policies enabled
+- **GKE Cluster** — Standard cluster (`gke-fqdn-egress`) with 1x e2-standard-4 Spot node pool
 - **Workload** — A test pod using `curl` to verify FQDN-based egress restrictions.
 
 ### Resource Naming
@@ -139,10 +139,17 @@ chmod +x templates/gke-fqdn-egress-security/validate.sh
 
 Expected output:
 ```
+Starting GKE FQDN Network Policy Validation Tests...
 Test 1: Cluster Connectivity... Connectivity passed.
-Test 2: Node Readiness... All nodes are Ready.
-Test 3: Workload Readiness... Workload is available.
-All Validation Tests passed successfully for GKE Zero-Trust FQDN Egress!
+Test 2: Verifying Dataplane V2 and FQDN Policy Enablement... Dataplane V2 and FQDN Policy enablement validated.
+Test 3: Verifying FQDNNetworkPolicy Resource... FQDNNetworkPolicy resource found and verified.
+Test 4: Waiting for Egress Verifier Pod... Verifier pod is ready.
+Test 5: Running Egress Tests...
+Testing domain: anthropic.com (Expected: true)...
+SUCCESS: anthropic.com is reachable (attempt 1).
+...
+Test 5: Running Egress Tests... SUCCESS: google.com is blocked as expected (attempt 1).
+All GKE FQDN Network Policy Validation Tests passed successfully!
 ```
 
 ---
@@ -156,3 +163,4 @@ All Validation Tests passed successfully for GKE Zero-Trust FQDN Egress!
 | `cluster_name` | GKE cluster name | `gke-fqdn-egress-tf` |
 | `network_name` | VPC network name | `gke-fqdn-egress-tf-vpc` |
 | `subnet_name` | Subnet name | `gke-fqdn-egress-tf-subnet` |
+| `service_account` | The service account to use for the GKE nodes | required |
