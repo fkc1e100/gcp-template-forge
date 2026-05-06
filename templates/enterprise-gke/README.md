@@ -6,7 +6,7 @@
 
 ## Architecture
 
-This template provides an enterprise-grade Google Kubernetes Engine (GKE) architecture. It demonstrates two deployment paths: Terraform + Helm for traditional infrastructure-as-code and Config Connector (KCC) for a Kubernetes-native approach to managing GCP resources.
+This template provides an enterprise-grade Google Kubernetes Engine (GKE) architecture with security hardening. It demonstrates two deployment paths: Terraform + Helm for traditional infrastructure-as-code and Config Connector (KCC) for a Kubernetes-native approach to managing GCP resources.
 
 > **Warning: Binary Authorization**
 > This template enables Binary Authorization in `PROJECT_SINGLETON_POLICY_ENFORCE` mode. Ensure your GCP project has a Binary Authorization policy configured, otherwise pod deployments may be blocked.
@@ -144,7 +144,7 @@ After deploying with either path, run the validation script to confirm end-to-en
 
 ```bash
 export PROJECT_ID="YOUR_PROJECT_ID"
-export CLUSTER_NAME="enterprise-gke-tf" # or enterprise-gke-kcc
+export CLUSTER_NAME="<cluster-name-from-outputs>"
 export REGION="us-central1"
 chmod +x templates/enterprise-gke/validate.sh
 ./templates/enterprise-gke/validate.sh
@@ -170,19 +170,3 @@ All Validation Tests passed successfully for enterprise-gke!
 | `network_name` | VPC network name | `enterprise-gke-tf-vpc` |
 | `subnet_name` | Subnet name | `enterprise-gke-tf-subnet` |
 | `create_service_accounts` | Whether to create dedicated IAM SAs | `false` |
-
----
-
-## Validation Record
-
-|  | Terraform + Helm | Config Connector |
-| --- | --- | --- |
-| **Status** | success | success |
-| **Date** | 2026-04-22 | 2026-04-22 |
-| **Duration** | 21m 59s | 21m 57s |
-| **Region** | us-central1 | us-central1 (KCC cluster) |
-| **Zones** | us-central1-a,us-central1-b,us-central1-c,us-central1-f | us-central1 (regional) |
-| **Cluster** | enterprise-gke-tf | enterprise-gke-kcc |
-| **Agent tokens** | 495,000 in / 70,000 out (multi-session) | (shared session) |
-| **Estimated cost** | $0.55 | -- |
-| **Commit** | dde1b73 | dde1b73 |
