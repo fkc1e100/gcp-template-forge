@@ -11,7 +11,7 @@ This template provides an enterprise-grade Google Kubernetes Engine (GKE) archit
 This template provisions:
 
 - **VPC Network** — Dedicated VPC with a primary subnet in `us-central1`
-- **GKE Cluster** — GKE Standard cluster (`enterprise-gke`) with Binary Authorization and Security Posture enabled
+- **GKE Cluster** — GKE Standard cluster (`enterprise-gke`) with e2-standard-4 spot node pool and advanced security features
 - **Workload** — Nginx-based production-ready workload with Workload Identity and External Load Balancer
 
 ### Resource Naming
@@ -28,7 +28,8 @@ This template provisions:
 |---|---|
 | GKE Cluster (control plane) | ~$75 |
 | E2-standard-4 Node Pool (1x e2-standard-4 Spot) | ~$54 |
-| **Total** | **~$150** |
+| External Load Balancer | Forwarding Rule + traffic | ~$18 |
+| **Total** | **~$147** |
 
 *Estimates based on sustained use in us-central1. GPU templates incur additional on-demand charges.*
 
@@ -124,9 +125,9 @@ kubectl delete -n forge-management -f . --wait=true --timeout=900s
 ### KCC Limitations
 
 - **Network Policy Provider**: Not supported in KCC v1beta1 ContainerCluster. The Terraform path
-  uses `network_policy.provider = "CALICO"`. This template uses `spec.datapathProvider: ADVANCED_DATAPATH` 
-  in KCC to enable equivalent GKE Dataplane V2 network policy enforcement.
-  Tracked upstream: https://github.com/GoogleCloudPlatform/k8s-config-connector/issues/TBD
+  uses `network_policy.provider = "CALICO"`. This template uses `spec.datapathProvider: ADVANCED_DATAPATH`
+  in KCC to enable equivalent GKE Dataplane V2 network policy enforcement. Tracked upstream:
+  https://github.com/GoogleCloudPlatform/k8s-config-connector/issues/TBD
 
 ---
 
@@ -144,10 +145,12 @@ chmod +x templates/enterprise-gke/validate.sh
 
 Expected output:
 ```
-Test 1: Cluster Connectivity... Connectivity passed.
-Test 2: Node Readiness... All nodes are Ready.
-Test 3: Workload Readiness... Workload is available.
-All Validation Tests passed successfully for Enterprise GKE Cluster!
+Test 1: Cluster Connectivity... PASS: Cluster is reachable.
+Test 2: Node Readiness... PASS: All nodes are Ready.
+Test 3: Workload Readiness... PASS: Workload is Available.
+Test 4: Workload Identity Integration... PASS: Workload Identity validated.
+Test 5: Endpoint Interaction... PASS: Endpoint test passed!
+=== All Validation Tests PASSED for Enterprise GKE Cluster ===
 ```
 
 ---
