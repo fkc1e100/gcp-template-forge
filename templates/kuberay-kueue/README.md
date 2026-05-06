@@ -11,7 +11,7 @@ This template demonstrates how to solve the "Noisy Neighbor" problem for shared 
 This template provisions:
 
 - **VPC Network** — Dedicated VPC with a primary subnet in `us-central1`
-- **GKE Cluster** — Standard cluster (`kuberay-kueue`) with autoscaled GPU node pool (L4 GPUs via g2-standard-4 spot)
+- **GKE Cluster** — Standard cluster (`gke-kuberay-kueue`) with autoscaled GPU node pool (L4 GPUs via g2-standard-4 spot)
 - **Workload** — Multi-tenant Ray clusters managed by KubeRay and Kueue for equitable resource sharing across two namespaces (`team-a` and `team-b`).
 
 ### Resource Naming
@@ -110,7 +110,7 @@ LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com \
 gcloud container clusters get-credentials "${CLUSTER_NAME}" --region "${LOCATION}"
 
 # Deploy the workload
-kubectl apply --server-side -f ../config-connector-workload/
+kubectl apply -n default --server-side -f ../config-connector-workload/
 
 # Verify
 kubectl get nodes
@@ -119,7 +119,7 @@ kubectl get pods -A
 
 **Cleanup:**
 ```bash
-kubectl delete -f ../config-connector-workload/
+kubectl delete -n default -f ../config-connector-workload/
 kubectl delete -n forge-management -f . --wait=true --timeout=900s
 ```
 
@@ -137,7 +137,7 @@ After deploying with either path, run the validation script to confirm end-to-en
 
 ```bash
 export PROJECT_ID="YOUR_PROJECT_ID"
-export CLUSTER_NAME="gke-kuberay-kueue"
+export CLUSTER_NAME="<cluster-name-from-outputs>"
 export REGION="us-central1"
 chmod +x templates/kuberay-kueue/validate.sh
 ./templates/kuberay-kueue/validate.sh
