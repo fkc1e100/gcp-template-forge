@@ -1,6 +1,6 @@
 # Latest GKE Features
 
-> Showcase of latest GKE features: Gateway API, Node Auto-Provisioning, and modern workload patterns
+> Showcase of latest GKE features: Gateway API, Node Auto-Provisioning, and modern workloads.
 
 <!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
 
@@ -21,6 +21,8 @@ The architecture includes:
 
 ### Resource Naming
 
+### Resource Naming
+
 | Resource | Terraform + Helm | Config Connector |
 |---|---|---|
 | GKE Cluster | `latest-gke-feat-<uid>-tf` | `latest-gke-feat-<uid>-kcc` |
@@ -32,10 +34,11 @@ The architecture includes:
 | Resource | Monthly Estimate |
 |---|---|
 | GKE Cluster (control plane) | ~$75 |
-| Node Pool (e2-standard-4, Spot) | ~$125 |
-| **Total** | **~$200** |
+| Spot VM Node Pool (3x e2-standard-4) | ~$90 |
+| GKE Gateway (L7 Load Balancer) | ~$18 |
+| **Total** | **~$183** |
 
-*Estimates based on sustained use in us-central1. Spot VM pricing varies by region and availability.*
+*Estimates based on sustained use in us-central1. Spot VMs and Gateway usage may vary.*
 
 ---
 
@@ -50,13 +53,22 @@ This template supports two deployment paths that provision equivalent infrastruc
 ```bash
 cd templates/latest-gke-features/terraform-helm
 
-# Initialize with GCS backend
+# Initialize with GCS backend (or use local state for testing)
 terraform init \
   -backend-config="bucket=YOUR_TF_STATE_BUCKET" \
   -backend-config="prefix=latest-gke-features/terraform-helm"
 
+# Review the plan
+terraform plan \
+  -var="project_id=YOUR_PROJECT_ID" \
+  -var="region=us-central1" \
+  -var="service_account=YOUR_SERVICE_ACCOUNT"
+
 # Apply (provisions GKE cluster and supporting infrastructure)
-terraform apply -var="project_id=YOUR_PROJECT_ID"
+terraform apply \
+  -var="project_id=YOUR_PROJECT_ID" \
+  -var="region=us-central1" \
+  -var="service_account=YOUR_SERVICE_ACCOUNT"
 
 # Get cluster credentials
 CLUSTER_NAME=$(terraform output -raw cluster_name)
@@ -73,14 +85,20 @@ helm upgrade --install release ./workload --wait --timeout=30m
 **Cleanup:**
 ```bash
 helm uninstall release
-terraform destroy -var="project_id=YOUR_PROJECT_ID"
+terraform destroy \
+  -var="project_id=YOUR_PROJECT_ID" \
+  -var="region=us-central1" \
+  -var="service_account=YOUR_SERVICE_ACCOUNT"
 ```
 
 ---
 
 ### Path 2: Config Connector (KCC)
 
-**Prerequisites:** A running GKE cluster with Config Connector installed.
+**Prerequisites:** A running GKE cluster with Config Connector installed. See the
+[KCC installation guide](https://cloud.google.com/config-connector/docs/how-to/install-upgrade-uninstall).
+The `forge-management` namespace must have a `ConfigConnectorContext` pointing to a
+service account with `roles/container.admin` and `roles/compute.networkAdmin`.
 
 ```bash
 cd templates/latest-gke-features/config-connector
@@ -117,9 +135,22 @@ After deploying with either path, run the validation script to confirm end-to-en
 
 ```bash
 export PROJECT_ID="YOUR_PROJECT_ID"
-export CLUSTER_NAME="<cluster-name>"
+export CLUSTER_NAME="<cluster-name-from-outputs>"
 export REGION="us-central1"
+chmod +x templates/latest-gke-features/validate.sh
 ./templates/latest-gke-features/validate.sh
+```
+
+Expected output:
+```
+Test 1: Cluster Connectivity... Connectivity passed.
+Test 2: Workload Readiness... Workload is available.
+Test 3: Native Sidecar Validation... Native Sidecar validated (restartPolicy: Always found).
+Test 4: Gateway API Validation... Gateway endpoint test passed!
+Test 5: Image Streaming Check... Image Streaming (GCFS) validated.
+Test 6: Node Pool Auto-provisioning (NAP) Check... Node Pool Auto-provisioning (NAP) validated.
+Test 7: Security Posture Check... Security Posture validated (Enterprise Vulnerability scanning enabled).
+All Latest GKE Features Validation Tests passed successfully!
 ```
 
 ---
@@ -134,8 +165,4 @@ export REGION="us-central1"
 | `network_name` | VPC network name | `latest-gke-features-tf-vpc` |
 | `subnet_name` | Subnet name | `latest-gke-features-tf-subnet` |
 | `service_account` | Node pool service account | required |
-
-|  | Terraform + Helm | Config Connector |
-| --- | --- | --- |
-| **Status** | success | success |
-| **Date** | 2026-04-19 | 2026-04-19 |
+| `uid_suffix` | Unique suffix for resource names | `""` |
