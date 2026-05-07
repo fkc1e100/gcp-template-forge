@@ -136,8 +136,13 @@ KCCPY
     exit 1
   fi
   
-  # Note: We no longer enforce the marker being on the last line because ci-post-merge.yml
-  # appends a validation table below it, which would cause immediate linter failures.
+  # Ensure the marker is within the last 20 lines to prevent destructive truncation by CI scripts
+  MARKER_LINE=$(grep -n "<!-- CI: validation record" "${template}/README.md" | cut -d: -f1 | tail -n1)
+  TOTAL_LINES=$(wc -l < "${template}/README.md")
+  if [ "$MARKER_LINE" -lt $((TOTAL_LINES - 20)) ]; then
+    echo "ERROR: Template '${template_name}' README.md CI marker is too high (line $MARKER_LINE/$TOTAL_LINES). It must be within the last 20 lines."
+    exit 1
+  fi
 done
 
 # 1. Terraform fmt and validate + Mandates
