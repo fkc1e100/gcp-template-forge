@@ -1,0 +1,18 @@
+# GCP Template Forge — Bug Fixing Agent
+# Task: Fix Issue #277
+# Repo: fkc1e100/gcp-template-forge
+
+You are an expert software engineer. Fix the bug described in Issue #277.
+Title: [CI-BUG] README in templates/kuberay-kueue missing CI marker
+Body: The README.md in `templates/kuberay-kueue/` is missing the mandatory CI validation record marker.
+
+## Research Context
+No bug research report generated.
+
+## Instructions
+1. Read the issue and research context carefully.
+2. Make the necessary code changes to fix the bug.
+3. Commit your changes with a descriptive message like `fix: address issue #277`.
+4. Push your branch `fix/issue-277` to origin.
+5. Open a PR with title `fix: address issue #277` and body `Closes #277`.
+6. Enable auto-merge on the PR.
