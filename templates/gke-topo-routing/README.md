@@ -1,34 +1,34 @@
-# Latest GKE Features
+# GKE Topology-Aware Routing
 
-> Showcase of latest GKE features: Gateway API, Node Auto-Provisioning, and modern workload patterns
+> Optimize cross-zone egress costs in GKE using Topology-Aware Routing.
 
 ## Architecture
 
-This template showcases modern GKE capabilities. It includes a regional GKE cluster running on the RAPID release channel, with Gateway API enabled for modern traffic management, Node Auto-Provisioning (NAP) for dynamic scaling, and Security Posture (Enterprise) for enhanced vulnerability scanning. The primary node pool uses Spot VMs and has GCFS (Image Streaming) enabled to reduce container startup times.
+Topology-Aware Routing optimizes cross-zone egress costs by preferring same-zone traffic. In multi-zonal GKE clusters, network traffic between pods in different zones incurs egress charges. This template uses Topology-Aware Hints to keep traffic local to the zone where possible.
+
+Key features include Gateway API enablement, Topology Spread Constraints for even workload distribution, and Service Topology hints (`service.kubernetes.io/topology-mode: Auto`).
 
 This template provisions:
 
 - **VPC Network** — Dedicated VPC with a primary subnet in `us-central1`
-- **GKE Cluster** — Regional cluster (`latest-gke-feat`) with Gateway API and NAP enabled
-- **Workload** — Sample application demonstrating modern GKE features
+- **GKE Cluster** — Regional cluster (`gke-topo-routing`) with Gateway API enabled.
+- **Workload** — Frontend and Backend microservices with Topology-Aware Hints enabled.
 
 ### Resource Naming
 
 | Resource | Terraform + Helm | Config Connector |
 |---|---|---|
-| GKE Cluster | `latest-gke-feat-<uid>-tf` | `latest-gke-feat-<uid>-kcc` |
-| VPC Network | `latest-gke-feat-<uid>-tf-vpc` | `latest-gke-feat-<uid>-kcc-vpc` |
-| Subnet | `latest-gke-feat-<uid>-tf-subnet` | `latest-gke-feat-<uid>-kcc-subnet` |
+| GKE Cluster | `gke-topo-routing-<uid>-tf` | `gke-topo-routing-<uid>-kcc` |
+| VPC Network | `gke-topo-routing-<uid>-tf-vpc` | `gke-topo-routing-<uid>-kcc-vpc` |
+| Subnet | `gke-topo-routing-<uid>-tf-subnet` | `gke-topo-routing-<uid>-kcc-subnet` |
 
 ### Estimated Cost
 
 | Resource | Monthly Estimate |
 |---|---|
 | GKE Cluster (control plane) | ~$75 |
-| Primary Spot Node Pool (1x e2-standard-4) | ~$30 |
-| LoadBalancer (Gateway API) & Networking | ~$25 |
-| GKE Security Posture (Enterprise) | ~$70 |
-| **Total** | **~$200** |
+| Spot Node Pool (3x e2-standard-4) | ~$90 |
+| **Total** | **~$165** |
 
 *Estimates based on sustained use in us-central1. GPU templates incur additional on-demand charges.*
 
@@ -43,12 +43,12 @@ This template supports two deployment paths that provision equivalent infrastruc
 **Prerequisites:** `terraform` ≥ 1.5, `helm` ≥ 3.10, `kubectl`, `gcloud` with ADC configured.
 
 ```bash
-cd templates/latest-gke-features/terraform-helm
+cd templates/gke-topo-routing/terraform-helm
 
 # Initialize with GCS backend (or use local state for testing)
 terraform init \
   -backend-config="bucket=YOUR_TF_STATE_BUCKET" \
-  -backend-config="prefix=latest-gke-features/terraform-helm"
+  -backend-config="prefix=gke-topo-routing/terraform-helm"
 
 # Review the plan
 terraform plan \
@@ -89,7 +89,7 @@ The `forge-management` namespace must have a `ConfigConnectorContext` pointing t
 service account with `roles/container.admin` and `roles/compute.networkAdmin`.
 
 ```bash
-cd templates/latest-gke-features/config-connector
+cd templates/gke-topo-routing/config-connector
 
 # Apply the GCP infrastructure manifests
 kubectl apply -n forge-management -f .
@@ -100,10 +100,10 @@ kubectl wait -n forge-management --for=condition=Ready --all \
 
 # Get cluster credentials (once ContainerCluster is Ready)
 CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com \
-  -n forge-management -l "template=latest-gke-feat" \
+  -n forge-management -l "template=gke-topo-routing" \
   -o jsonpath='{.items[0].metadata.name}')
 LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com \
-  -n forge-management -l "template=latest-gke-feat" \
+  -n forge-management -l "template=gke-topo-routing" \
   -o jsonpath='{.items[0].spec.location}')
 gcloud container clusters get-credentials "${CLUSTER_NAME}" --region "${LOCATION}"
 
@@ -131,21 +131,16 @@ After deploying with either path, run the validation script to confirm end-to-en
 export PROJECT_ID="YOUR_PROJECT_ID"
 export CLUSTER_NAME="<cluster-name-from-outputs>"
 export REGION="us-central1"
-chmod +x templates/latest-gke-features/validate.sh
-./templates/latest-gke-features/validate.sh
+chmod +x templates/gke-topo-routing/validate.sh
+./templates/gke-topo-routing/validate.sh
 ```
 
 Expected output:
 ```
-Starting Latest GKE Features Validation Tests...
 Test 1: Cluster Connectivity... Connectivity passed.
-Test 2: Workload Readiness... Workload is available.
-Test 3: Native Sidecar Validation... Native Sidecar validated.
-Test 4: Gateway API Validation... Gateway endpoint test passed!
-Test 5: Image Streaming Check... Image Streaming (GCFS) validated.
-Test 6: Node Pool Auto-provisioning (NAP) Check... Node Pool Auto-provisioning (NAP) validated.
-Test 7: Security Posture Check... Security Posture validated.
-All Validation Tests passed successfully!
+Test 2: Node Readiness... All nodes are Ready.
+Test 3: Workload Readiness... Workload is available.
+All Validation Tests passed successfully for GKE Topology-Aware Routing!
 ```
 
 ---
@@ -156,8 +151,8 @@ All Validation Tests passed successfully!
 |---|---|---|
 | `project_id` | GCP project ID | required |
 | `region` | GCP region | `us-central1` |
-| `cluster_name` | GKE cluster name | `latest-gke-feat-tf` |
-| `network_name` | VPC network name | `latest-gke-feat-tf-vpc` |
-| `subnet_name` | Subnet name | `latest-gke-feat-tf-subnet` |
+| `cluster_name` | GKE cluster name | `gke-topo-routing-tf` |
+| `network_name` | VPC network name | `gke-topo-routing-vpc` |
+| `subnet_name` | Subnet name | `gke-topo-routing-subnet` |
 
 <!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->

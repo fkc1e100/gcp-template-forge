@@ -15,14 +15,8 @@
 name: Lint Workflows
 
 on:
-  push:
-    paths:
-      - '.github/workflows/**'
-      - 'agent-infra/**'
   pull_request:
-    paths:
-      - '.github/workflows/**'
-      - 'agent-infra/**'
+    branches: [ main ]
 
 jobs:
   actionlint:

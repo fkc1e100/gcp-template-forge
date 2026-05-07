@@ -205,7 +205,7 @@ jobs:
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
           TEMPLATE="${{ matrix.template }}"
-          SHORT_NAME=$(yq e '.shortName' "${TEMPLATE}/template.yaml")
+          SHORT_NAME=$(grep "^shortName:" "${TEMPLATE}/template.yaml" | sed -E 's/^shortName:[[:space:]]*//' | sed -E 's/^["'\'']//;s/["'\'']$//')
           find "${TEMPLATE}"/config-connector* -type f -name "*.yaml" -exec sed -i "s/${SHORT_NAME}/${SHORT_NAME}-${UID_SUFFIX}/g" {} +
           kubectl apply -n "$KCC_NAMESPACE" -f "${TEMPLATE}/config-connector/"
           kubectl wait -n "$KCC_NAMESPACE" --for=condition=Ready --all --timeout=5400s -f "${TEMPLATE}/config-connector/"
@@ -292,15 +292,55 @@ jobs:
             # Update README
             README="${TEMPLATE}/README.md"
             if [ -f "$README" ]; then
-              # Truncate after the CI marker and add the new record
-              sed -i '/<!-- CI: validation record/q' "$README"
-              echo -e "\n## Validation Record\n| Path | Status | Date | Duration |\n| --- | --- | --- | --- |\n| Terraform+Helm | $TF_STATUS | $DATE | $TF_DUR |\n| Config Connector | $KCC_STATUS | $DATE | $KCC_DUR |" >> "$README"
+              # Robust truncation and standardized table generation using Python
+              python3 - "$README" "$DATE" "$TF_STATUS" "$KCC_STATUS" "$TF_DUR" "$KCC_DUR" \
+                "${TF_LOCATION:-us-central1}" "${TF_CLUSTER:---}" "${COMMIT:0:8}" << 'PYEOF'
+import sys, os
+readme, date, tf_s, kcc_s, tf_d, kcc_d, region, cluster, commit = sys.argv[1:]
+
+# Standardized vertical table format
+rows = [
+    ("**Status**",         tf_s,      kcc_s),
+    ("**Date**",           date,      date),
+    ("**Duration**",       tf_d,      kcc_d),
+    ("**Region**",         region,    "us-central1 (KCC cluster)"),
+    ("**Zones**",          "-",       "forge-management namespace"),
+    ("**Cluster**",        cluster,   "krmapihost-kcc-instance"),
+    ("**Agent tokens**",   "-",       "(shared session)"),
+    ("**Estimated cost**", "-",       "--"),
+    ("**Commit**",         commit,    commit),
+]
+
+sep = " | "
+header = sep.join(["", "", "Terraform + Helm", "Config Connector", ""]).strip()
+divider = sep.join(["", "---", "---", "---", ""]).strip()
+lines = ["\n## Validation Record\n", header, divider]
+for label, tf_val, kcc_val in rows:
+    lines.append(sep.join(["", label, tf_val, kcc_val, ""]).strip())
+
+# Truncate after the CI marker (defensive check)
+content = []
+found = False
+with open(readme, 'r') as f:
+    for i, line in enumerate(f):
+        content.append(line)
+        if '<!-- CI: validation record' in line:
+            if i < 10:
+                print(f"WARNING: Marker found on line {i+1} in {readme}. Ignoring to prevent truncation.")
+                continue
+            found = True
+            break
+
+with open(readme, 'w') as f:
+    f.writelines(content)
+    f.write("\n".join(lines) + "\n")
+PYEOF
             fi
           done
           
           git config user.name "codebot-sfle"
           git config user.email "codebot-sfle@sfle.ca"
-          git add templates/**/.validated templates/**/README.md
+          git add templates/
+          git status
           git commit -m "ci: bulk validate templates [skip ci]" || true
           git push origin main || (git pull --rebase origin main && git push origin main)
-ush origin main)

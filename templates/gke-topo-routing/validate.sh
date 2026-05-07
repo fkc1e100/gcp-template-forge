@@ -18,7 +18,7 @@ set -e
 echo "Starting GKE Topology-Aware Routing Validation Tests..."
 
 PROJECT_ID=${PROJECT_ID:-"gca-gke-2025"}
-CLUSTER_NAME=${CLUSTER_NAME:-"gke-topology-aware-routing-tf"}
+CLUSTER_NAME=${CLUSTER_NAME:-"gke-topo-routing-tf"}
 REGION=${REGION:-"us-central1"}
 NAMESPACE=${NAMESPACE:-"default"}
 

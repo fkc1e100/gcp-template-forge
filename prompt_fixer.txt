@@ -1,79 +1,18 @@
 # GCP Template Forge — Bug Fixing Agent
-# Task: Fix Issue #241
+# Task: Fix Issue #277
 # Repo: fkc1e100/gcp-template-forge
 
-You are an expert software engineer. Fix the bug described in Issue #241.
-Title: [CI-BUG] gke-fqdn-egress-security README does not follow standard template
-Body: The README.md in `templates/gke-fqdn-egress-security/` does not follow the standard template in `agent-infra/scaffolds/README.template.md`.\n\nPlease update it to follow the standard template.
+You are an expert software engineer. Fix the bug described in Issue #277.
+Title: [CI-BUG] README in templates/kuberay-kueue missing CI marker
+Body: The README.md in `templates/kuberay-kueue/` is missing the mandatory CI validation record marker.
 
 ## Research Context
-# Bug Research Report: Issue #241 - README Template Deviation
-
-## 🐞 Overview
-**Issue:** `[CI-BUG] gke-fqdn-egress-security README does not follow standard template`
-**Repository:** `fkc1e100/gcp-template-forge`
-**Target File:** `templates/gke-fqdn-egress-security/README.md`
-**Goal:** Research the root cause of the README structure deviation and outline a plan to bring the target file into compliance with the standard template (`agent-infra/scaffolds/README.template.md`).
-
----
-
-## 🔎 Research Findings
-
-### 1. Analysis of Deviation (Root Cause)
-
-A direct comparison between the existing `templates/gke-fqdn-egress-security/README.md` and the standard template (`agent-infra/scaffolds/README.template.md`) reveals a significant structural deviation.
-
-**Standard Template (`README.template.md`) Characteristics:**
-The standard template enforces a highly structured, maintainable, and parameterized format. It relies heavily on Go template placeholders (e.g., `{{ .Service.Name }}`, `{{ .Service.Description }}`) to ensure content consistency regardless of the specific service being documented. Key sections include:
-* Overview (Placeholder usage for Service Name/Description)
-* Usage (Instructions/Commands)
-* Architecture (Technical components)
-* Contributing
-* Support
-
-**Target File (`templates/gke-fqdn-egress-security/README.md`) Characteristics:**
-The current README file is written in a fixed, descriptive markdown format. While it contains the correct technical information for the GKE egress service, it fails to utilize the templating mechanisms or the mandatory structural placeholders required by the standard template.
-
-**Conclusion:** The primary root cause is the failure to use the standardized templating mechanism. The content appears to have been manually entered or generated without passing through the established scaffolding process that correctly injects service-specific details while adhering to the predefined structural placeholders.
-
-### 2. Analysis of Error Origin
-
-*   **Workflow/Agent Review:** Reviewing `agent/` and `.github/workflows/` showed no immediately obvious workflow that governs template generation, suggesting the template generation logic might reside in an internal build step or module not exposed via simple directory listing.
-*   **Root Cause Refinement:** The bug is fundamentally a content compliance issue. The target file is structurally incorrect relative to the required scaffold, regardless of how the process is triggered. The fix requires updating the content to embrace the placeholder structure.
-
----
-
-## 🛠️ Plan of Action
-
-The objective is to update `templates/gke-fqdn-egress-security/README.md` to utilize the structure and placeholders defined in `agent-infra/scaffolds/README.template.md`, while retaining the specific operational details of the GKE FQDN egress service.
-
-**Specific Steps:**
-
-1. **Structural Replacement:** Overwrite the content of `templates/gke-fqdn-egress-security/README.md` entirely.
-2. **Template Adherence:** Use `agent-infra/scaffolds/README.template.md` as the primary structure.
-3. **Content Integration:** Map the unique details of the GKE FQDN egress service into the appropriate templated sections:
-    * **Service Name:** `gke-fqdn-egress-security`
-    * **Service Description:** Manages secure outbound connectivity for GKE clusters, restricting traffic to specific approved FQDNs.
-    * **Usage/Commands:** Use `gcloud gcp-template-forge deploy --service=gke-fqdn-egress-security`.
-    * **Architecture:** Detail the role of dedicated Service Accounts and VPC Firewall Rules.
-4. **Placeholder Usage:** Ensure correct usage of placeholders like `{{ .Service.Name }}` and `{{ .Service.Description }}` throughout the document.
-
----
-
-## 📄 Recommended File Modification
-
-**File Path:** `templates/gke-fqdn-egress-security/README.md`
-
-**Modification Summary:** The entire file content must be replaced with the compliant, templated structure derived from `agent-infra/scaffolds/README.template.md`, with the specific operational content for GKE FQDN egress security integrated.
-
-**Fixer Agent Note:** Please execute the full replacement to ensure template compliance.
+No bug research report generated.
 
 ## Instructions
 1. Read the issue and research context carefully.
 2. Make the necessary code changes to fix the bug.
-3. Commit your changes with a descriptive message like `fix: address issue #241`.
-4. Push your branch `fix/issue-241` to origin.
-5. Open a PR with title `fix: address issue #241` and body `Closes #241`.
+3. Commit your changes with a descriptive message like `fix: address issue #277`.
+4. Push your branch `fix/issue-277` to origin.
+5. Open a PR with title `fix: address issue #277` and body `Closes #277`.
 6. Enable auto-merge on the PR.
-
-CRITICAL Fallback Instruction: You are running in fallback mode and CANNOT use tools. Do NOT output any plans, thoughts, or explanations! You MUST immediately output the FULL content of the file `templates/gke-fqdn-egress-security/README.md` enclosed in a single ```markdown` code block! Do not output anything else before or after the code block.
