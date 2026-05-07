@@ -1,15 +1,6 @@
 # Test KCC Skip
 
-<<<<<<< HEAD
-## Architecture
-- **No-op Infrastructure** — This template does not provision any real resources. It is used to test CI filtering logic.
-
-## KCC Status: Unsupported
-This template uses features that are not yet available in Config Connector. 
-KCC CI jobs are skipped for this template.
-=======
 > Test template verifying the KCC-unsupported skip mechanism in CI validation
->>>>>>> origin/main
 
 ## Architecture
 

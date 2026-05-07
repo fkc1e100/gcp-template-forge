@@ -61,14 +61,10 @@ for template in $TEMPLATES; do
     echo "ERROR: Template '${template_name}' is missing template.yaml (required for resource naming and index)"
     exit 1
   fi
-<<<<<<< HEAD
-  SHORT_NAME=$(grep "^shortName:" "${template}/template.yaml" | head -n 1 | sed -E 's/^shortName:[[:space:]]*["'\'']?([^"'\'']+)["'\'']?/\1/' | tr -d '\r')
-=======
   
   # Use grep/sed to extract shortName to avoid dependency on PyYAML
   SHORT_NAME=$(grep "^shortName:" "${template}/template.yaml" | sed -E 's/^shortName:[[:space:]]*//' | sed -E 's/^["'\'']//;s/["'\'']$//')
   
->>>>>>> origin/main
   if [ -z "$SHORT_NAME" ]; then
     echo "ERROR: ${template}/template.yaml is missing or has empty 'shortName' field"
     exit 1
@@ -92,14 +88,9 @@ for template in $TEMPLATES; do
   if [ -d "${template}/config-connector" ] && [ ! -f "${template}/.kcc-unsupported" ]; then
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     KCC_CAP="${SCRIPT_DIR}/kcc-capabilities.yaml"
-<<<<<<< HEAD
-    if [ -f "$KCC_CAP" ] && python3 -c "import yaml" 2>/dev/null; then
-      python3 - "${template}/config-connector" "$KCC_CAP" "${template}" << 'KCCPY'
-=======
     if [ -f "$KCC_CAP" ]; then
       if [ "$HAS_YAML" == "true" ]; then
         python3 - "${template}/config-connector" "$KCC_CAP" "${template}" << 'KCCPY'
->>>>>>> origin/main
 import yaml, sys, pathlib
 cc_dir, cap_file, template_dir = sys.argv[1], sys.argv[2], sys.argv[3]
 caps = yaml.safe_load(open(cap_file))
@@ -216,11 +207,7 @@ done
 
 # 3. YAML syntax check (KCC and other plain YAML)
 echo "Checking YAML syntax (excluding Helm templates)..."
-<<<<<<< HEAD
-if python3 -c "import yaml" 2>/dev/null; then
-=======
 if [ "$HAS_YAML" == "true" ]; then
->>>>>>> origin/main
   TARGET_DIR="$TARGET_DIR" python3 -c "
 import yaml, sys, pathlib, os
 errors = []
@@ -240,11 +227,7 @@ if errors:
     sys.exit(1)
 "
 else
-<<<<<<< HEAD
-  echo "Skipping YAML syntax check (PyYAML not installed)"
-=======
   echo "Warning: PyYAML missing, skipping YAML syntax check"
->>>>>>> origin/main
 fi
 
 # 4. Actionlint for workflows
