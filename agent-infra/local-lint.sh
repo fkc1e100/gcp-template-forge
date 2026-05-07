@@ -74,6 +74,26 @@ for template in $TEMPLATES; do
     exit 1
   fi
 
+  # Check ContainerCluster name length in KCC manifests
+  if [ -d "${template}/config-connector" ] && [ "$HAS_YAML" == "true" ]; then
+    python3 - "${template}/config-connector" << 'NAMELINT'
+import yaml, sys, pathlib
+cc_dir = sys.argv[1]
+for p in pathlib.Path(cc_dir).rglob('*.yaml'):
+    try:
+        with open(p, 'r') as f:
+            docs = yaml.safe_load_all(f)
+            for doc in docs:
+                if not doc: continue
+                if doc.get('kind') == 'ContainerCluster':
+                    name = doc.get('metadata', {}).get('name', '')
+                    if len(name) > 28:
+                        print(f"WARNING: ContainerCluster name '{name}' in {p} is {len(name)} chars. Names > 28 chars will be truncated in CI.")
+    except Exception:
+        pass
+NAMELINT
+  fi
+
   # KCC capability check: warn if KCC manifests use known-unsupported fields without .kcc-unsupported
   if [ -d "${template}/config-connector" ] && [ ! -f "${template}/.kcc-unsupported" ]; then
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -127,7 +147,7 @@ KCCPY
     echo "ERROR: Template '${template_name}' is missing README.md"
     exit 1
   fi
-  if ! grep -q "## Architecture" "${template}/README.md"; then
+  if ! grep -q "^## Architecture" "${template}/README.md"; then
     echo "ERROR: Template '${template_name}' README.md is missing '## Architecture' header"
     exit 1
   fi
@@ -136,9 +156,11 @@ KCCPY
     exit 1
   fi
   
-  # Mandate: CI marker must be within the last 20 lines of the file (to allow for validation records)
-  if ! tail -n 20 "${template}/README.md" | grep -q "<!-- CI: validation record"; then
-    echo "ERROR: Template '${template_name}' README.md CI marker is not within the last 20 lines"
+  # Ensure the marker is within the last 20 lines to prevent destructive truncation by CI scripts
+  MARKER_LINE=$(grep -n "<!-- CI: validation record" "${template}/README.md" | cut -d: -f1 | tail -n1)
+  TOTAL_LINES=$(wc -l < "${template}/README.md")
+  if [ "$MARKER_LINE" -lt $((TOTAL_LINES - 20)) ]; then
+    echo "ERROR: Template '${template_name}' README.md CI marker is too high (line $MARKER_LINE/$TOTAL_LINES). It must be within the last 20 lines."
     exit 1
   fi
 done

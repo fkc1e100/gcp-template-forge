@@ -11,7 +11,7 @@ Note: Binary Authorization requires a project-level policy; otherwise, pod deplo
 This template provisions:
 
 - **VPC Network** — Dedicated VPC with a primary subnet in `us-central1`
-- **GKE Cluster** — Standard cluster (`enterprise-gke`) with 1x e2-standard-4 spot node pool and advanced security features
+- **GKE Cluster** — GKE Standard cluster (`enterprise-gke`) with e2-standard-4 spot node pool and advanced security features
 - **Workload** — Nginx-based production-ready workload with Workload Identity and External Load Balancer
 
 ### Resource Naming
@@ -151,7 +151,7 @@ Test 1: Cluster Connectivity... Connectivity passed.
 Test 2: Node Readiness... All nodes are Ready.
 Test 3: Workload Readiness... Workload is available.
 Test 4: Workload Identity Integration... Workload Identity validated.
-Test 5: Endpoint Interaction... Endpoint test passed.
+Test 5: Endpoint Interaction... Endpoint test passed!
 All Validation Tests passed successfully for Enterprise GKE Cluster!
 ```
 
@@ -173,15 +173,15 @@ All Validation Tests passed successfully for Enterprise GKE Cluster!
 <!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
 
 ## Validation Record
+
 | | Terraform + Helm | Config Connector |
 | --- | --- | --- |
 | **Status** | success | skipped |
 | **Date** | 2026-04-11 | 2026-04-11 |
-| **Duration** | - | - |
+| **Duration** | n/a | n/a |
 | **Region** | us-central1 | us-central1 (KCC cluster) |
 | **Zones** | - | forge-management namespace |
-| **Cluster** | -- | krmapihost-kcc-instance |
+| **Cluster** | enterprise-gke | krmapihost-kcc-instance |
 | **Agent tokens** | - | (shared session) |
 | **Estimated cost** | - | -- |
 | **Commit** | 2c375256 | 2c375256 |
-

@@ -1,63 +1,18 @@
 # GCP Template Forge — Bug Fixing Agent
-# Task: Fix Issue #259
+# Task: Fix Issue #277
 # Repo: fkc1e100/gcp-template-forge
 
-You are an expert software engineer. Fix the bug described in Issue #259.
-Title: [CI-BUG] README in templates/gke-topology-aware-routing missing CI marker
-Body: The README.md in `templates/gke-topology-aware-routing/` is missing the mandatory CI validation record marker.
+You are an expert software engineer. Fix the bug described in Issue #277.
+Title: [CI-BUG] README in templates/kuberay-kueue missing CI marker
+Body: The README.md in `templates/kuberay-kueue/` is missing the mandatory CI validation record marker.
 
 ## Research Context
-# GCP Template Forge — Bug Researcher Agent
-# Task: Research Issue #259
-# Repo: fkc1e100/gcp-template-forge
-
-You are a Bug Researcher Agent. Your task is to research the bug described in Issue #259.
-Title: [CI-BUG] README in templates/gke-topology-aware-routing missing CI marker
-Body: The README.md in `templates/gke-topology-aware-routing/` is missing the mandatory CI validation record marker.
-
-Specific Research Directives:
-1. Locate where the error originates by searching repository files (especially in `.github/workflows/` or `agent/`).
-2. Analyze the error message and issue description to understand the root cause.
-3. Search for similar errors and solutions on the web or in the repository's issue history.
-4. Outline a specific plan of action to fix the bug (e.g., which lines to change in which file).
-5. Output a detailed report in markdown to `/workspace/bug_research_259.md`.
-6. **CRITICAL:** Do NOT attempt to modify any files or apply the fix yourself! Your role is ONLY to research and plan. The Fixer Agent will apply the changes based on your report.
-
-I have completed the
- research into **Issue #259** regarding the missing CI marker in the `gke-topology-aware-routing` template README
-.
-
-### Summary of Findings
-1.  **Root Cause:** The reported "missing" marker was primarily a **
-location violation**. The linter (`agent-infra/local-lint.sh`) requires the CI marker to be within the last
- 5 lines of the `README.md`. In previous versions, the marker was located at the top of the file
- (around line 5), causing the linter to fail and the CI pipeline to incorrectly truncate or skip the file.
-2.  **
-Naming Inconsistency:** The template's directory name (`gke-topology-aware-routing`) did not match its defined
- `shortName` (`gke-topo-routing`), leading to inconsistent resource names in the documentation and potential failures in automated CI naming
- replacements.
-3.  **Current State:** Recent commits on the `fix/issue-259` branch have already moved
- the marker to the bottom and started standardizing the resource names. However, the README currently contains unnecessary trailing newlines that
- should be cleaned up for consistency with other core templates.
-
-### Proposed Fix Plan
-1.  **Standardize README:** Update
- `templates/gke-topology-aware-routing/README.md` to ensure the CI marker is on the absolute
- last line with no trailing whitespace or extra newlines.
-2.  **Finalize Naming:** Ensure all resource
- references in the README consistently use the `gke-topo-routing` prefix.
-3.  **Validation:** Execute
- `./agent-infra/local-lint.sh` to verify that the template now fully satisfies all structural mandates.
-
-Detailed findings
- and the action plan have been documented in **`bug_research_259.md`** at the project root.
+No bug research report generated.
 
 ## Instructions
 1. Read the issue and research context carefully.
 2. Make the necessary code changes to fix the bug.
-3. Commit your changes with a descriptive message like `fix: address issue #259`.
-4. Push your branch `fix/issue-259` to origin.
-5. Open a PR with title `fix: address issue #259` and body `Closes #259`.
+3. Commit your changes with a descriptive message like `fix: address issue #277`.
+4. Push your branch `fix/issue-277` to origin.
+5. Open a PR with title `fix: address issue #277` and body `Closes #277`.
 6. Enable auto-merge on the PR.
-
-CRITICAL Fallback Instruction: You are running in fallback mode and CANNOT use tools. Do NOT output any plans, thoughts, or explanations! You MUST immediately output the FULL content of the file `templates/gke-topology-aware-routing/README.md` enclosed in a single ```markdown` code block! Do not output anything else before or after the code block.

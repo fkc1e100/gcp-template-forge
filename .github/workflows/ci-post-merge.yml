@@ -205,7 +205,7 @@ jobs:
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
           TEMPLATE="${{ matrix.template }}"
-          SHORT_NAME=$(yq e '.shortName' "${TEMPLATE}/template.yaml")
+          SHORT_NAME=$(grep "^shortName:" "${TEMPLATE}/template.yaml" | sed -E 's/^shortName:[[:space:]]*//' | sed -E 's/^["'\'']//;s/["'\'']$//')
           find "${TEMPLATE}"/config-connector* -type f -name "*.yaml" -exec sed -i "s/${SHORT_NAME}/${SHORT_NAME}-${UID_SUFFIX}/g" {} +
           kubectl apply -n "$KCC_NAMESPACE" -f "${TEMPLATE}/config-connector/"
           kubectl wait -n "$KCC_NAMESPACE" --for=condition=Ready --all --timeout=5400s -f "${TEMPLATE}/config-connector/"

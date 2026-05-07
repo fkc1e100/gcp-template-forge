@@ -2,7 +2,6 @@
 
 > Zero-trust egress security with FQDN network policies for controlling AI API traffic from GKE
 
-
 ## Architecture
 
 This template demonstrates how to implement zero-trust egress security in GKE using **FQDN Network Policies**. It restricts outbound traffic from your workloads to only specific, approved Fully Qualified Domain Names (e.g., `openai.com`, `github.com`), preventing data exfiltration and unauthorized communication.
@@ -139,9 +138,11 @@ chmod +x templates/gke-fqdn-egress-security/validate.sh
 Expected output:
 ```
 Test 1: Cluster Connectivity... Connectivity passed.
-Test 2: Node Readiness... All nodes are Ready.
-Test 3: Workload Readiness... Workload is available.
-All Validation Tests passed successfully for GKE Zero-Trust FQDN Egress!
+Test 2: Verifying Dataplane V2 and FQDN Policy Enablement... Dataplane V2 and FQDN Policy enablement validated.
+Test 3: Verifying FQDNNetworkPolicy Resource... CRD found! FQDNNetworkPolicy resource found and verified.
+Test 4: Waiting for Egress Verifier Pod... Verifier pod is ready.
+Test 5: Running Egress Tests... Testing domain: anthropic.com (Expected: true)... SUCCESS: anthropic.com is reachable. ... SUCCESS: google.com is blocked as expected.
+All GKE FQDN Network Policy Validation Tests passed successfully!
 ```
 
 ---
