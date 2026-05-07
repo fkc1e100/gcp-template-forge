@@ -31,7 +31,7 @@ This template provisions:
 | Cloud Armor + Security Command Center | ~$45 |
 | **Total** | **~$300** |
 
-*Estimates based on sustained use in us-central1. Enterprise features and GPUs incur additional charges.*
+*Estimates based on sustained use in us-central1. GPU templates incur additional on-demand charges.*
 
 ---
 

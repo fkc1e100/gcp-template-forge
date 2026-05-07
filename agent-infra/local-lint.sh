@@ -37,8 +37,7 @@ else
   fi
 fi
 
-echo "$TEMPLATES" | while read -r template; do
-  [ -z "$template" ] && continue
+for template in $TEMPLATES; do
   template_name=$(basename "$template")
   [ "$template_name" == "README.md" ] && continue
 
@@ -116,8 +115,7 @@ KCCPY
   fi
 
   # Check for non-standard directories
-  echo "Terraform_HELM terraform_helm terraform-HELM helm Helm terraform manifests" | tr ' ' '\n' | while read -r bad; do
-    [ -z "$bad" ] && continue
+  for bad in Terraform_HELM terraform_helm terraform-HELM helm Helm terraform manifests; do
     if [ -d "${template}/${bad}" ]; then
       echo "ERROR: Found non-standard directory '${template_name}/${bad}/' -- use 'terraform-helm/' and 'config-connector/'"
       exit 1
@@ -147,7 +145,8 @@ done
 
 # 1. Terraform fmt and validate + Mandates
 echo "Checking Terraform and Mandates..."
-find "$TARGET_DIR" -name "*.tf" -not -path "*/.*" -exec dirname {} \; | sort -u | while read -r dir; do
+TF_DIRS=$(find "$TARGET_DIR" -name "*.tf" -not -path "*/.*" -exec dirname {} \; | sort -u)
+for dir in $TF_DIRS; do
   echo "--- Linting TF in $dir ---"
   (
     cd "$dir"
@@ -184,7 +183,8 @@ done
 
 # 2. Helm lint
 echo "Checking Helm..."
-find "$TARGET_DIR" -name "Chart.yaml" -not -path "*/.*" -exec dirname {} \; | sort -u | while read -r chart; do
+HELM_DIRS=$(find "$TARGET_DIR" -name "Chart.yaml" -not -path "*/.*" -exec dirname {} \; | sort -u)
+for chart in $HELM_DIRS; do
   echo "--- Linting Helm chart in $chart ---"
   helm lint "$chart"
   CHART_NAME=$(basename "$chart")
