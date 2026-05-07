@@ -1,7 +1,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "gke-topology-aware-routing.name" -}}
+{{- define "gke-topo-routing.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -10,7 +10,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "gke-topology-aware-routing.fullname" -}}
+{{- define "gke-topo-routing.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,16 +26,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "gke-topology-aware-routing.chart" -}}
+{{- define "gke-topo-routing.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "gke-topology-aware-routing.labels" -}}
-helm.sh/chart: {{ include "gke-topology-aware-routing.chart" . }}
-{{ include "gke-topology-aware-routing.selectorLabels" . }}
+{{- define "gke-topo-routing.labels" -}}
+helm.sh/chart: {{ include "gke-topo-routing.chart" . }}
+{{ include "gke-topo-routing.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -45,7 +45,7 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "gke-topology-aware-routing.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "gke-topology-aware-routing.name" . }}
+{{- define "gke-topo-routing.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "gke-topo-routing.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}

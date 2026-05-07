@@ -19,12 +19,12 @@ metadata:
   namespace: forge-management
   labels:
     project: gcp-template-forge
-    template: gke-topology-aware-routing
+    template: gke-topo-routing
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   clusterRef:
-    name: gke-topology-aware-routing-kcc
+    name: gke-topo-routing-kcc
   location: us-central1
   nodeCount: 1
   nodeConfig:
@@ -44,4 +44,4 @@ spec:
       mode: GKE_METADATA
     labels:
       project: gcp-template-forge
-      template: gke-topology-aware-routing
+      template: gke-topo-routing
