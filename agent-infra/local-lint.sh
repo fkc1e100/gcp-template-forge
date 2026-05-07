@@ -138,9 +138,9 @@ KCCPY
     exit 1
   fi
   
-  # Mandate: CI marker must be the last line of the file (ignoring trailing whitespace)
-  if ! tail -n 1 "${template}/README.md" | grep -q "<!-- CI: validation record"; then
-    echo "ERROR: Template '${template_name}' README.md CI marker is not on the last line"
+  # Mandate: CI marker must be within the last 20 lines of the file (to allow for validation records)
+  if ! tail -n 20 "${template}/README.md" | grep -q "<!-- CI: validation record"; then
+    echo "ERROR: Template '${template_name}' README.md CI marker is not within the last 20 lines"
     exit 1
   fi
 done
