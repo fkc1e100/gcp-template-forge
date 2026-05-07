@@ -2,7 +2,6 @@
 
 > Optimize cross-zone egress costs in GKE using Topology-Aware Routing.
 
-<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
 
 ## Architecture
 
@@ -156,3 +155,5 @@ All Validation Tests passed successfully for GKE Topology-Aware Routing!
 | `cluster_name` | GKE cluster name | `gke-topology-aware-routing-tf` |
 | `network_name` | VPC network name | `gke-topology-aware-routing-vpc` |
 | `subnet_name` | Subnet name | `gke-topology-aware-routing-subnet` |
+
+<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->

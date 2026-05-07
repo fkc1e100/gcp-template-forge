@@ -2,7 +2,6 @@
 
 > High-performance AI inference with GCS FUSE + Local SSD caching for fast model loading on L4 GPUs
 
-<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
 
 ## Architecture
 
@@ -173,3 +172,5 @@ All Validation Tests passed successfully for GKE GCS FUSE Inference Cache!
 | `bucket_name` | GCS bucket for model storage | `gke-inf-fuse-cache-bucket` |
 | `service_account` | Node pool service account | required |
 | `uid_suffix` | Unique suffix for resource names | `""` |
+
+<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->

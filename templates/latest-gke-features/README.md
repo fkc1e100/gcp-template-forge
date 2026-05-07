@@ -2,7 +2,6 @@
 
 > Showcase of latest GKE features: Gateway API, Node Auto-Provisioning, and modern workloads.
 
-<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
 
 ## Architecture
 
@@ -166,3 +165,5 @@ All Latest GKE Features Validation Tests passed successfully!
 | `subnet_name` | Subnet name | `latest-gke-features-tf-subnet` |
 | `service_account` | Node pool service account | required |
 | `uid_suffix` | Unique suffix for resource names | `""` |
+
+<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
