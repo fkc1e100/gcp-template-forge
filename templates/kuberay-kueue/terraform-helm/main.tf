@@ -93,10 +93,9 @@ provider "google-beta" {
 
 # Node pool â€” system pool for operators
 resource "google_container_node_pool" "system_pool" {
-  name           = "system-pool"
-  location       = var.region
-  node_locations = [var.zone]
-  cluster        = google_container_cluster.primary.name
+  name     = "system-pool"
+  location = var.region
+  cluster  = google_container_cluster.primary.name
 
   autoscaling {
     min_node_count = 1
@@ -133,11 +132,10 @@ resource "google_container_node_pool" "system_pool" {
 
 # GPU Node Pool with Autoscaling
 resource "google_container_node_pool" "gpu_pool" {
-  provider       = google-beta
-  name           = "l4-gpu-pool"
-  location       = var.region
-  node_locations = [var.zone]
-  cluster        = google_container_cluster.primary.name
+  provider = google-beta
+  name     = "l4-gpu-pool"
+  location = var.region
+  cluster  = google_container_cluster.primary.name
 
   queued_provisioning {
     enabled = true

@@ -18,7 +18,7 @@ variable "cluster_name" {
 variable "network_name" {
   description = "The name of the VPC network"
   type        = string
-  default     = "enterprise-gke-tf-net"
+  default     = "enterprise-gke-tf-vpc"
 }
 
 variable "subnet_name" {

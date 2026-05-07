@@ -4,7 +4,7 @@ This plan outlines how to verify that Topology-Aware Routing is correctly config
 
 ## Prerequisites
 
-- GKE cluster deployed with the `gke-topology-aware-routing` template.
+- GKE cluster deployed with the `gke-topo-routing` template.
 - Workloads (frontend and backend) deployed.
 - `kubectl` configured to access the cluster.
 
