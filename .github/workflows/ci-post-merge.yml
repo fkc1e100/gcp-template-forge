@@ -276,12 +276,16 @@ jobs:
             if [ -f "$TF_RES" ]; then
               TF_STATUS=$(jq -r .status "$TF_RES")
               TF_DUR=$(jq -r .duration "$TF_RES")
+            elif [ -f "${TEMPLATE}/.validated" ]; then
+              TF_STATUS=$(grep '^tf_helm:' "${TEMPLATE}/.validated" | awk '{print $2}' || echo "skipped")
             fi
             
             KCC_STATUS="skipped"; KCC_DUR="n/a"
             if [ -f "$KCC_RES" ]; then
               KCC_STATUS=$(jq -r .status "$KCC_RES")
               KCC_DUR=$(jq -r .duration "$KCC_RES")
+            elif [ -f "${TEMPLATE}/.validated" ]; then
+              KCC_STATUS=$(grep '^kcc:' "${TEMPLATE}/.validated" | awk '{print $2}' || echo "skipped")
             fi
             
             # Write .validated file
