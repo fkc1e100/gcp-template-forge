@@ -300,7 +300,7 @@ jobs:
           
           git config user.name "codebot-sfle"
           git config user.email "codebot-sfle@sfle.ca"
-          git add templates/**/.validated templates/**/README.md
+          git add templates/
+          git status
           git commit -m "ci: bulk validate templates [skip ci]" || true
           git push origin main || (git pull --rebase origin main && git push origin main)
-ush origin main)
