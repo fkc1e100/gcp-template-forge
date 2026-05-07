@@ -160,6 +160,11 @@ KCCPY
     echo "ERROR: Template '${template_name}' README.md CI marker is missing from the last 25 lines. It must be at the end of the file to prevent destructive truncation."
     exit 1
   fi
+  # Ensure the marker is not at the very top (first 10 lines) to prevent destructive truncation
+  if head -n 10 "${template}/README.md" | grep -q "<!-- CI: validation record"; then
+    echo "ERROR: Template '${template_name}' README.md CI marker is too high in the file (found in first 10 lines). It must be at the end of the file."
+    exit 1
+  fi
 
   # Mandate: No unreplaced placeholders
   if grep -q "{{" "${template}/README.md"; then
