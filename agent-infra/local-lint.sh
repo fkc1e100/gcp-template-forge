@@ -127,7 +127,7 @@ KCCPY
     echo "ERROR: Template '${template_name}' is missing README.md"
     exit 1
   fi
-  if ! grep -q "## Architecture" "${template}/README.md"; then
+  if ! grep -q "^## Architecture" "${template}/README.md"; then
     echo "ERROR: Template '${template_name}' README.md is missing '## Architecture' header"
     exit 1
   fi
