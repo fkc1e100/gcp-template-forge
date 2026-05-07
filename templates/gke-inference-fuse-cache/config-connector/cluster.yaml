@@ -25,13 +25,10 @@ metadata:
     template: gke-inf-fuse-cache
 spec:
   location: us-central1
-  # Restrict to a single zone that supports L4 GPUs to save quota and improve reliability
-  nodeLocations:
-    - us-central1-a
   networkRef:
-    name: gke-inf-fuse-cache-vpc
+    name: gke-inf-fuse-cache-kcc-vpc
   subnetworkRef:
-    name: gke-inf-fuse-cache-subnet
+    name: gke-inf-fuse-cache-kcc-subnet
   initialNodeCount: 1
   ipAllocationPolicy:
     clusterSecondaryRangeName: pods

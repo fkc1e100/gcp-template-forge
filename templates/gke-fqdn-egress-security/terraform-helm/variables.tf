@@ -26,19 +26,19 @@ variable "region" {
 variable "cluster_name" {
   description = "The name of the GKE cluster"
   type        = string
-  default     = "gke-fqdn-egress-security-cluster"
+  default     = "gke-fqdn-egress-tf"
 }
 
 variable "network_name" {
   description = "The name of the VPC network"
   type        = string
-  default     = "gke-fqdn-egress-security-vpc"
+  default     = "gke-fqdn-egress-tf-vpc"
 }
 
 variable "subnet_name" {
   description = "The name of the subnet"
   type        = string
-  default     = "gke-fqdn-egress-security-subnet"
+  default     = "gke-fqdn-egress-tf-subnet"
 }
 
 variable "service_account" {

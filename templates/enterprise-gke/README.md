@@ -2,8 +2,6 @@
 
 > Enterprise-grade GKE with Binary Authorization, Workload Identity, and hardened security controls
 
-<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
-
 ## Architecture
 
 This template provides an enterprise-grade Google Kubernetes Engine (GKE) architecture with security hardening. It enables Binary Authorization in enforce mode, uses Workload Identity for secure GCP access, and includes advanced security posture monitoring. **Warning:** Binary Authorization requires a project-level policy; otherwise, pod deployments may be blocked.
@@ -54,12 +52,14 @@ terraform init \
 # Review the plan
 terraform plan \
   -var="project_id=YOUR_PROJECT_ID" \
-  -var="region=us-central1"
+  -var="region=us-central1" \
+  -var="create_service_accounts=true"
 
 # Apply (provisions GKE cluster and supporting infrastructure)
 terraform apply \
   -var="project_id=YOUR_PROJECT_ID" \
-  -var="region=us-central1"
+  -var="region=us-central1" \
+  -var="create_service_accounts=true"
 
 # Get cluster credentials
 CLUSTER_NAME=$(terraform output -raw cluster_name)
@@ -164,3 +164,23 @@ All Validation Tests passed successfully for Enterprise GKE Cluster!
 | `cluster_name` | GKE cluster name | `enterprise-gke-tf` |
 | `network_name` | VPC network name | `enterprise-gke-tf-vpc` |
 | `subnet_name` | Subnet name | `enterprise-gke-tf-subnet` |
+| `create_service_accounts` | Whether to create dedicated SAs | `false` |
+| `service_account` | Node SA (required if create_service_accounts=false) | required |
+| `workload_service_account` | Workload Identity SA | optional |
+
+<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
+
+## Validation Record
+
+| | Terraform + Helm | Config Connector |
+| --- | --- | --- |
+| **Status** | success | skipped |
+| **Date** | 2026-04-11 | 2026-04-11 |
+| **Duration** | n/a | n/a |
+| **Region** | us-central1 | us-central1 (KCC cluster) |
+| **Zones** | - | forge-management namespace |
+| **Cluster** | enterprise-gke | krmapihost-kcc-instance |
+| **Agent tokens** | - | (shared session) |
+| **Estimated cost** | - | -- |
+| **Commit** | 2c375256 | 2c375256 |
+

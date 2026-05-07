@@ -103,11 +103,10 @@ jobs:
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
           TEMPLATE="${{ matrix.template }}"
-          BASE_NAME=$(basename "$TEMPLATE")
-          if [[ "$TEMPLATE" == *"gke-inference-fuse-cache"* ]]; then BASE_NAME="gke-inf-fuse-cache"; fi
-          export TF_VAR_cluster_name="${BASE_NAME}-${UID_SUFFIX}-tf"
-          export TF_VAR_network_name="${BASE_NAME}-${UID_SUFFIX}-tf-vpc"
-          export TF_VAR_subnet_name="${BASE_NAME}-${UID_SUFFIX}-tf-subnet"
+          SHORT_NAME=$(yq e '.shortName' "../template.yaml")
+          export TF_VAR_cluster_name="${SHORT_NAME}-${UID_SUFFIX}-tf"
+          export TF_VAR_network_name="${SHORT_NAME}-${UID_SUFFIX}-tf-vpc"
+          export TF_VAR_subnet_name="${SHORT_NAME}-${UID_SUFFIX}-tf-subnet"
           export TF_VAR_uid_suffix="${UID_SUFFIX}"
           terraform init -backend-config="bucket=${TF_STATE_BUCKET}" -backend-config="prefix=${TEMPLATE}-post-merge/terraform-helm"
           
@@ -206,8 +205,8 @@ jobs:
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
           TEMPLATE="${{ matrix.template }}"
-          BASE_NAME=$(basename "$TEMPLATE")
-          find "${TEMPLATE}"/config-connector* -type f -name "*.yaml" -exec sed -i "s/${BASE_NAME}/${BASE_NAME}-${UID_SUFFIX}/g" {} +
+          SHORT_NAME=$(yq e '.shortName' "${TEMPLATE}/template.yaml")
+          find "${TEMPLATE}"/config-connector* -type f -name "*.yaml" -exec sed -i "s/${SHORT_NAME}/${SHORT_NAME}-${UID_SUFFIX}/g" {} +
           kubectl apply -n "$KCC_NAMESPACE" -f "${TEMPLATE}/config-connector/"
           kubectl wait -n "$KCC_NAMESPACE" --for=condition=Ready --all --timeout=5400s -f "${TEMPLATE}/config-connector/"
           KCC_DURATION=$(( $(date -u +%s) - KCC_START ))
@@ -290,16 +289,53 @@ jobs:
               "$TIMESTAMP" "$COMMIT" "$TF_STATUS" "$KCC_STATUS" \
               > "${TEMPLATE}/.validated"
               
-            # Update README (Simplified table update)
+            # Update README
             README="${TEMPLATE}/README.md"
             if [ -f "$README" ]; then
-              # Just append for now, in reality would use the python logic to replace section
-              echo -e "\n## Validation Record\n| Path | Status | Date | Duration |\n| --- | --- | --- | --- |\n| Terraform+Helm | $TF_STATUS | $DATE | $TF_DUR |\n| Config Connector | $KCC_STATUS | $DATE | $KCC_DUR |" >> "$README"
+              # Robust truncation and standardized table generation using Python
+              python3 - "$README" "$DATE" "$TF_STATUS" "$KCC_STATUS" "$TF_DUR" "$KCC_DUR" \
+                "${TF_LOCATION:-us-central1}" "${TF_CLUSTER:---}" "${COMMIT:0:8}" << 'PYEOF'
+import sys, os
+readme, date, tf_s, kcc_s, tf_d, kcc_d, region, cluster, commit = sys.argv[1:]
+
+# Standardized vertical table format
+rows = [
+    ("**Status**",         tf_s,      kcc_s),
+    ("**Date**",           date,      date),
+    ("**Duration**",       tf_d,      kcc_d),
+    ("**Region**",         region,    "us-central1 (KCC cluster)"),
+    ("**Zones**",          "-",       "forge-management namespace"),
+    ("**Cluster**",        cluster,   "krmapihost-kcc-instance"),
+    ("**Agent tokens**",   "-",       "(shared session)"),
+    ("**Estimated cost**", "-",       "--"),
+    ("**Commit**",         commit,    commit),
+]
+
+sep = " | "
+header = sep.join(["", "", "Terraform + Helm", "Config Connector", ""]).strip()
+divider = sep.join(["", "---", "---", "---", ""]).strip()
+lines = ["\n## Validation Record\n", header, divider]
+for label, tf_val, kcc_val in rows:
+    lines.append(sep.join(["", label, tf_val, kcc_val, ""]).strip())
+
+# Truncate after the CI marker
+content = []
+with open(readme, 'r') as f:
+    for line in f:
+        content.append(line)
+        if '<!-- CI: validation record' in line:
+            break
+
+with open(readme, 'w') as f:
+    f.writelines(content)
+    f.write("\n".join(lines) + "\n")
+PYEOF
             fi
           done
           
           git config user.name "codebot-sfle"
           git config user.email "codebot-sfle@sfle.ca"
-          git add templates/**/.validated templates/**/README.md
+          git add templates/
+          git status
           git commit -m "ci: bulk validate templates [skip ci]" || true
           git push origin main || (git pull --rebase origin main && git push origin main)

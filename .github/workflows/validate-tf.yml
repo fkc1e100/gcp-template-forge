@@ -19,10 +19,6 @@ on:
     branches: [ main ]
     types: [opened, synchronize, reopened, closed]
 
-    paths:
-      - 'templates/**/terraform-helm/**'
-      - '.github/workflows/validate-tf.yml'
-      - '.github/actions/**'
 
 concurrency:
   # Per-PR group prevents parallel TF runs on the same PR; cancel-in-progress
