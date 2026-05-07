@@ -56,15 +56,7 @@ echo "$TEMPLATES" | while read -r template; do
     echo "ERROR: Template '${template_name}' is missing template.yaml (required for resource naming and index)"
     exit 1
   fi
-  SHORT_NAME=$(python3 -c "
-import yaml, sys
-try:
-    d = yaml.safe_load(open('${template}/template.yaml'))
-    print(d.get('shortName',''))
-except Exception as e:
-    print('', file=sys.stderr)
-    sys.exit(1)
-" 2>/dev/null || true)
+  SHORT_NAME=$(grep "^shortName:" "${template}/template.yaml" | head -n 1 | sed -E 's/^shortName:[[:space:]]*["'\'']?([^"'\'']+)["'\'']?/\1/' | tr -d '\r')
   if [ -z "$SHORT_NAME" ]; then
     echo "ERROR: ${template}/template.yaml is missing or has empty 'shortName' field"
     exit 1
@@ -74,11 +66,21 @@ except Exception as e:
     exit 1
   fi
 
+  # Mandate: README.md must exist and contain ## Architecture header
+  if [ ! -f "${template}/README.md" ]; then
+    echo "ERROR: Template '${template_name}' is missing README.md"
+    exit 1
+  fi
+  if ! grep -q "## Architecture" "${template}/README.md"; then
+    echo "ERROR: Template '${template_name}' README.md is missing '## Architecture' header (Standard requirement)"
+    exit 1
+  fi
+
   # KCC capability check: warn if KCC manifests use known-unsupported fields without .kcc-unsupported
   if [ -d "${template}/config-connector" ] && [ ! -f "${template}/.kcc-unsupported" ]; then
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     KCC_CAP="${SCRIPT_DIR}/kcc-capabilities.yaml"
-    if [ -f "$KCC_CAP" ]; then
+    if [ -f "$KCC_CAP" ] && python3 -c "import yaml" 2>/dev/null; then
       python3 - "${template}/config-connector" "$KCC_CAP" "${template}" << 'KCCPY'
 import yaml, sys, pathlib
 cc_dir, cap_file, template_dir = sys.argv[1], sys.argv[2], sys.argv[3]
@@ -170,7 +172,8 @@ done
 
 # 3. YAML syntax check (KCC and other plain YAML)
 echo "Checking YAML syntax (excluding Helm templates)..."
-TARGET_DIR="$TARGET_DIR" python3 -c "
+if python3 -c "import yaml" 2>/dev/null; then
+  TARGET_DIR="$TARGET_DIR" python3 -c "
 import yaml, sys, pathlib, os
 errors = []
 target = os.environ.get('TARGET_DIR', '.')
@@ -188,6 +191,9 @@ if errors:
     for e in errors: print(e)
     sys.exit(1)
 "
+else
+  echo "Skipping YAML syntax check (PyYAML not installed)"
+fi
 
 # 4. Actionlint for workflows
 if [ "$TARGET_DIR" == "." ] && [ -f "./actionlint" ]; then
