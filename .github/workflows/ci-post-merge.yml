@@ -292,11 +292,14 @@ jobs:
             # Update README
             README="${TEMPLATE}/README.md"
             if [ -f "$README" ]; then
-              if grep -q "<!-- CI: validation record" "$README"; then
-                # Truncate after the CI marker
+              # Defensive check: ensure marker isn't at the very top (common failure mode)
+              MARKER_LINE=$(grep -n "<!-- CI: validation record" "$README" | head -n1 | cut -d: -f1)
+              if [ -n "$MARKER_LINE" ] && [ "$MARKER_LINE" -gt 10 ]; then
+                # Safe to truncate
                 sed -i '/<!-- CI: validation record/q' "$README"
               else
-                # Marker missing? Append it so we don't lose the whole file next time
+                # Missing or misplaced (top of file)? Remove all old markers and append fresh at end
+                sed -i '/<!-- CI: validation record/d' "$README"
                 echo -e "\n<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->" >> "$README"
               fi
               echo -e "\n## Validation Record\n| Path | Status | Date | Duration |\n| --- | --- | --- | --- |\n| Terraform+Helm | $TF_STATUS | $DATE | $TF_DUR |\n| Config Connector | $KCC_STATUS | $DATE | $KCC_DUR |" >> "$README"
