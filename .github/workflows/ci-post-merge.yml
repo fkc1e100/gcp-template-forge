@@ -292,8 +292,13 @@ jobs:
             # Update README
             README="${TEMPLATE}/README.md"
             if [ -f "$README" ]; then
-              # Truncate after the CI marker and add the new record
-              sed -i '/<!-- CI: validation record/q' "$README"
+              if grep -q "<!-- CI: validation record" "$README"; then
+                # Truncate after the CI marker
+                sed -i '/<!-- CI: validation record/q' "$README"
+              else
+                # Marker missing? Append it so we don't lose the whole file next time
+                echo -e "\n<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->" >> "$README"
+              fi
               echo -e "\n## Validation Record\n| Path | Status | Date | Duration |\n| --- | --- | --- | --- |\n| Terraform+Helm | $TF_STATUS | $DATE | $TF_DUR |\n| Config Connector | $KCC_STATUS | $DATE | $KCC_DUR |" >> "$README"
             fi
           done
