@@ -173,10 +173,14 @@ All Validation Tests passed successfully!
 
 ## Validation Record
 
-| Metric | Status |
-|---|---|
-| **Last Validated** | 2026-04-11T23:02:31Z |
-| **Commit** | `2c375256b7c1ade287fd8d95c92e2e32f1e4169a` |
-| **Terraform + Helm** | SUCCESS |
-| **Config Connector** | SKIPPED |
-
+| | Terraform + Helm | Config Connector |
+| --- | --- | --- |
+| **Status** | success | skipped |
+| **Date** | 2026-04-11 | 2026-04-11 |
+| **Duration** | n/a | n/a |
+| **Region** | us-central1 | us-central1 (KCC cluster) |
+| **Zones** | - | forge-management namespace |
+| **Cluster** | enterprise-gke-tf | krmapihost-kcc-instance |
+| **Agent tokens** | - | (shared session) |
+| **Estimated cost** | - | -- |
+| **Commit** | 2c375256 | 2c375256 |
