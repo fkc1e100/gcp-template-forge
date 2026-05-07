@@ -1,137 +1,139 @@
-# Template: Latest GKE Features Template
+# Latest GKE Features
 
-## Overview
-This template demonstrates some of the latest and most advanced features of Google Kubernetes Engine (GKE), released in 2024, 2025, and 2026. It showcases both cluster-level infrastructure improvements and modern workload deployment patterns.
+> Showcase of latest GKE features: Gateway API, Node Auto-Provisioning, and modern workload patterns
 
-## Latest Features Included
+<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
 
-### Cluster Features
-- **GKE Gateway API**: Enabled by default (`CHANNEL_STANDARD`), providing a modern, expressive way to manage load balancing.
-- **Node Pool Auto-provisioning (NAP)**: Automatically creates and manages node pools based on workload requirements.
-- **Image Streaming (GCFS)**: Significantly reduces container startup times by streaming image data on-demand.
-- **Enterprise Security Posture**: Advanced vulnerability scanning and security monitoring (Vulnerability Enterprise).
-- **Spot VMs**: Cost-optimized compute for fault-tolerant workloads (supported via NAP and standard pools).
+## Architecture
 
-### Workload Features
-- **Native Sidecar Containers**: Leveraging Kubernetes 1.29+ "Sidecar Containers" feature (init containers with `restartPolicy: Always`).
-- **GKE Gateway Controller**: Using `Gateway` and `HTTPRoute` resources instead of legacy Ingress.
-- **Pod Topology Spread Constraints**: Modern scheduling to ensure high availability across hostnames and zones.
+This template demonstrates a modern GKE environment leveraging the latest platform capabilities released in 2024, 2025, and 2026.
 
-## Template Paths
+The architecture includes:
+- **VPC Network** — A private VPC-native network with dedicated subnets for GKE nodes, pods, and services.
+- **GKE Cluster** — A GKE Standard cluster on the **RAPID** release channel, enabling:
+    - **Gateway API**: Modern, expressive load balancing using `Gateway` and `HTTPRoute` resources.
+    - **Node Pool Auto-provisioning (NAP)**: Automatically creates and manages node pools based on workload requirements (CPU, Memory, Spot).
+    - **Image Streaming (GCFS)**: Significantly reduces container startup times by streaming image data on-demand.
+    - **Enterprise Security Posture**: Advanced vulnerability scanning and security monitoring (Vulnerability Enterprise).
+- **Workload** — A sample application showcasing:
+    - **Native Sidecar Containers**: Leveraging Kubernetes 1.29+ "Sidecar Containers" feature (init containers with `restartPolicy: Always`).
+    - **Pod Topology Spread Constraints**: Modern scheduling to ensure high availability across hostnames and zones.
 
-### Terraform + Helm (`terraform-helm/`)
-- Provisions a VPC-native, private GKE Standard cluster with NAP and Gateway API enabled.
-- Deploys a workload using a Helm chart that utilizes native sidecars and is exposed via GKE Gateway.
+### Resource Naming
 
-### Config Connector (`config-connector/`)
-- Demonstrates a Kubernetes-native way to provision the core infrastructure (VPC, Cluster, NodePool).
-- Includes Kubernetes manifests for the workload (`config-connector-workload/workload.yaml`) to demonstrate functional parity for users who prefer not to use Helm.
+| Resource | Terraform + Helm | Config Connector |
+|---|---|---|
+| GKE Cluster | `latest-gke-feat-<uid>-tf` | `latest-gke-feat-<uid>-kcc` |
+| VPC Network | `latest-gke-feat-<uid>-tf-vpc` | `latest-gke-feat-<uid>-kcc-vpc` |
+| Subnet | `latest-gke-feat-<uid>-tf-subnet` | `latest-gke-feat-<uid>-kcc-subnet` |
+
+### Estimated Cost
+
+| Resource | Monthly Estimate |
+|---|---|
+| GKE Cluster (control plane) | ~$75 |
+| Node Pool (e2-standard-4, Spot) | ~$125 |
+| **Total** | **~$200** |
+
+*Estimates based on sustained use in us-central1. Spot VM pricing varies by region and availability.*
+
+---
 
 ## Deployment Paths
 
-### Terraform + Helm (`terraform-helm/`)
+This template supports two deployment paths that provision equivalent infrastructure.
 
-1.  **Provision Infrastructure & Workload**:
-    ```bash
-    cd terraform-helm
-    terraform init -backend-config="bucket=<TF_STATE_BUCKET>" -backend-config="prefix=templates/latest-gke-features/terraform-helm"
-    terraform apply -var="project_id=<PROJECT_ID>"
-    ```
+### Path 1: Terraform + Helm
 
-2.  **Verify Deployment**:
-    Run the automated validation script:
-    ```bash
-    ./validate.sh
-    ```
+**Prerequisites:** `terraform` ≥ 1.5, `helm` ≥ 3.10, `kubectl`, `gcloud` with ADC configured.
 
-### Config Connector (`config-connector/`)
+```bash
+cd templates/latest-gke-features/terraform-helm
 
-1.  **Apply Infrastructure Manifests**:
-    Apply the core infrastructure manifests to your Config Connector management namespace:
-    ```bash
-    kubectl apply -f config-connector/network.yaml
-    kubectl apply -f config-connector/nat.yaml
-    kubectl apply -f config-connector/cluster.yaml
-    kubectl apply -f config-connector/nodepool.yaml
-    ```
+# Initialize with GCS backend
+terraform init \
+  -backend-config="bucket=YOUR_TF_STATE_BUCKET" \
+  -backend-config="prefix=latest-gke-features/terraform-helm"
 
-2.  **Wait for Infrastructure**:
-    Monitor the status of the cluster and node pool until they are `Ready`:
-    ```bash
-    kubectl wait --for=condition=Ready containercluster latest-gke-features-kcc -n forge-management --timeout=30m
-    kubectl wait --for=condition=Ready containernodepool latest-gke-features-kcc-pool -n forge-management --timeout=30m
-    ```
+# Apply (provisions GKE cluster and supporting infrastructure)
+terraform apply -var="project_id=YOUR_PROJECT_ID"
 
-3.  **Deploy Workload**:
-    Once the cluster is ready, get credentials and apply the workload manifests directly to the **workload cluster**. This will create the `latest-features` namespace and all required resources:
-    ```bash
-    gcloud container clusters get-credentials latest-gke-features-kcc --region us-central1 --project <PROJECT_ID>
-    kubectl apply -f config-connector-workload/workload.yaml
-    ```
+# Get cluster credentials
+CLUSTER_NAME=$(terraform output -raw cluster_name)
+REGION=$(terraform output -raw cluster_location)
+gcloud container clusters get-credentials "${CLUSTER_NAME}" --region "${REGION}"
 
-4.  **Verify Deployment**:
-    Run the automated validation script:
-    ```bash
-    ./validate.sh
-    ```
+# Deploy the workload via Helm
+helm upgrade --install release ./workload --wait --timeout=30m
 
-    Alternatively, you can verify features manually:
+# Verify
+./../validate.sh
+```
 
-    **Sidecar Verification**:
-    Verify that the `logger-sidecar` is running as a native sidecar in the `latest-features` namespace:
-    ```bash
-    POD_NAME=$(kubectl get pods -n latest-features -l app.kubernetes.io/name=latest-features-workload -o jsonpath='{.items[0].metadata.name}')
-    kubectl get pod $POD_NAME -n latest-features -o jsonpath='{.spec.initContainers[0].restartPolicy}'
-    # Expected output: Always
-    ```
+**Cleanup:**
+```bash
+helm uninstall release
+terraform destroy -var="project_id=YOUR_PROJECT_ID"
+```
 
+---
 
-    **Gateway API Verification**:
-    Verify the Gateway is `Programmed` and reachable via its external IP:
-    ```bash
-    kubectl wait --for=condition=Programmed gateway/latest-features-gateway -n latest-features --timeout=30m
-    GATEWAY_IP=$(kubectl get gateway latest-features-gateway -n latest-features -o jsonpath='{.status.addresses[0].value}')
-    curl -I http://$GATEWAY_IP/
-    ```
+### Path 2: Config Connector (KCC)
 
-    **Image Streaming (GCFS) Verification**:
-    Verify GCFS is enabled on the node pool:
-    ```bash
-    gcloud container node-pools describe latest-gke-features-kcc-pool \
-      --cluster latest-gke-features-kcc \
-      --region us-central1 \
-      --format="value(config.gcfsConfig.enabled)"
-    # Expected output: True
-    ```
+**Prerequisites:** A running GKE cluster with Config Connector installed.
 
-## Performance & Cost Estimates
+```bash
+cd templates/latest-gke-features/config-connector
 
-| Resource | Config | Estimated cost |
+# Apply the GCP infrastructure manifests
+kubectl apply -n forge-management -f .
+
+# Wait for all resources to be Ready (GKE cluster takes ~10 minutes)
+kubectl wait -n forge-management --for=condition=Ready --all --timeout=3600s -f .
+
+# Get cluster credentials
+CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n forge-management -l "template=latest-gke-features" -o jsonpath='{.items[0].metadata.name}')
+LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n forge-management -l "template=latest-gke-features" -o jsonpath='{.items[0].spec.location}')
+gcloud container clusters get-credentials "${CLUSTER_NAME}" --region "${LOCATION}"
+
+# Deploy the workload
+kubectl apply -n default -f ../config-connector-workload/
+
+# Verify
+./../validate.sh
+```
+
+**Cleanup:**
+```bash
+kubectl delete -n default -f ../config-connector-workload/
+kubectl delete -n forge-management -f . --wait=true --timeout=900s
+```
+
+---
+
+## Verification
+
+After deploying with either path, run the validation script to confirm end-to-end functionality:
+
+```bash
+export PROJECT_ID="YOUR_PROJECT_ID"
+export CLUSTER_NAME="<cluster-name>"
+export REGION="us-central1"
+./templates/latest-gke-features/validate.sh
+```
+
+---
+
+## Template Inputs
+
+| Variable | Description | Default |
 |---|---|---|
-| Node pool | e2-standard-4 (1 node), spot | ~$0.04/hr |
-| Load balancer | GKE Gateway (L7 GCLB) | ~$0.025/hr |
-| **Total (estimated)** | | **~$0.07/hr** |
-
-## Cleanup
-
-### Terraform Path
-```bash
-cd terraform-helm && terraform destroy -var="project_id=<PROJECT_ID>"
-```
-
-### Config Connector Path
-```bash
-# Delete workload from workload cluster
-kubectl delete -f config-connector-workload/workload.yaml
-
-# Delete infrastructure from management cluster
-kubectl delete -f config-connector/nodepool.yaml -n forge-management
-kubectl delete -f config-connector/cluster.yaml -n forge-management
-kubectl delete -f config-connector/nat.yaml -n forge-management
-kubectl delete -f config-connector/network.yaml -n forge-management
-```
-
-## Validation Record
+| `project_id` | GCP project ID | required |
+| `region` | GCP region | `us-central1` |
+| `cluster_name` | GKE cluster name | `latest-gke-features-tf` |
+| `network_name` | VPC network name | `latest-gke-features-tf-vpc` |
+| `subnet_name` | Subnet name | `latest-gke-features-tf-subnet` |
+| `service_account` | Node pool service account | required |
 
 |  | Terraform + Helm | Config Connector |
 | --- | --- | --- |

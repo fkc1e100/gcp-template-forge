@@ -23,28 +23,22 @@ variable "region" {
   default     = "us-central1"
 }
 
-variable "zone" {
-  description = "The zone to deploy the node pool in"
-  type        = string
-  default     = "us-central1-a"
-}
-
 variable "cluster_name" {
   description = "The name of the GKE cluster"
   type        = string
-  default     = "gke-inf-fuse-cache"
+  default     = "gke-inf-fuse-cache-tf"
 }
 
 variable "network_name" {
   description = "The name of the VPC network"
   type        = string
-  default     = "gke-inf-fuse-cache-vpc"
+  default     = "gke-inf-fuse-cache-tf-vpc"
 }
 
 variable "subnet_name" {
   description = "The name of the subnet"
   type        = string
-  default     = "gke-inf-fuse-cache-subnet"
+  default     = "gke-inf-fuse-cache-tf-subnet"
 }
 
 variable "bucket_name" {

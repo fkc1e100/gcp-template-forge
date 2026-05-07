@@ -6,21 +6,23 @@
 
 ## Architecture
 
-This template demonstrates how to solve the "Noisy Neighbor" problem for shared GPU clusters using the KubeRay Operator and the Kueue Operator. It provisions a GKE cluster with a dedicated GPU node pool and sets up multi-tenant job queuing.
+This template demonstrates how to solve the "Noisy Neighbor" problem for shared GPU clusters using the KubeRay Operator and the Kueue Operator.
 
 This template provisions:
 
-- **VPC Network** — Dedicated VPC with a primary subnet in `us-central1`
-- **GKE Cluster** — Standard cluster (`gke-kuberay-kueue`) with autoscaled GPU node pool (L4 GPUs via g2-standard-4 spot)
-- **Workload** — Multi-tenant Ray clusters managed by KubeRay and Kueue for equitable resource sharing across two namespaces (`team-a` and `team-b`).
+- **VPC + Subnet** — VPC with secondary CIDR ranges for pods and services.
+- **GKE Standard** — A cluster featuring an autoscaled GPU node pool (using L4 GPUs via `g2-standard-4` spot instances) and a standard system node pool.
+- **KubeRay Operator** — Manages the lifecycle of Ray clusters on Kubernetes.
+- **Kueue Operator** — Cloud-native job queueing and equitable resource sharing.
+- **Workloads** — Two namespaces (`team-a` and `team-b`), each with a Kueue `LocalQueue` linked to a `ClusterQueue` sharing a single GPU `Cohort`. Kueue ensures that if Team A requests excess GPUs, their pods remain in a pending state until Team B finishes their work.
 
 ### Resource Naming
 
 | Resource | Terraform + Helm | Config Connector |
 |---|---|---|
-| GKE Cluster | `gke-kuberay-kueue` | `gke-kuberay-kueue-multitenant-cluster-kcc` |
-| VPC Network | `gke-kuberay-kueue-vpc` | `gke-kuberay-kueue-multitenant-vpc-kcc` |
-| Subnet | `gke-kuberay-kueue-subnet` | `gke-kuberay-kueue-multitenant-sub-kcc` |
+| GKE Cluster | `gke-kuberay-kueue-<uid>-tf` | `gke-kuberay-kueue-<uid>-kcc` |
+| VPC Network | `gke-kuberay-kueue-<uid>-tf-vpc` | `gke-kuberay-kueue-<uid>-kcc-vpc` |
+| Subnet | `gke-kuberay-kueue-<uid>-tf-subnet` | `gke-kuberay-kueue-<uid>-kcc-subnet` |
 
 ### Estimated Cost
 
@@ -164,3 +166,4 @@ All Validation Tests passed successfully for Multi-Tenant Ray on GKE!
 | `network_name` | VPC network name | `gke-kuberay-kueue-vpc` |
 | `subnet_name` | Subnet name | `gke-kuberay-kueue-subnet` |
 | `service_account` | Node service account | required |
+| `uid_suffix` | Unique suffix for resource names | `""` |
