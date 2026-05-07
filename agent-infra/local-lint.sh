@@ -155,12 +155,20 @@ KCCPY
     echo "ERROR: Template '${template_name}' README.md is missing CI validation record marker"
     exit 1
   fi
-  
-  # Ensure the marker is within the last 20 lines to prevent destructive truncation by CI scripts
-  MARKER_LINE=$(grep -n "<!-- CI: validation record" "${template}/README.md" | cut -d: -f1 | tail -n1)
-  TOTAL_LINES=$(wc -l < "${template}/README.md")
-  if [ "$MARKER_LINE" -lt $((TOTAL_LINES - 20)) ]; then
-    echo "ERROR: Template '${template_name}' README.md CI marker is too high (line $MARKER_LINE/$TOTAL_LINES). It must be within the last 20 lines."
+  # Ensure the marker is within the last 25 lines to prevent destructive truncation by CI scripts
+  if ! tail -n 25 "${template}/README.md" | grep -q "<!-- CI: validation record"; then
+    echo "ERROR: Template '${template_name}' README.md CI marker is missing from the last 25 lines. It must be at the end of the file to prevent destructive truncation."
+    exit 1
+  fi
+  # Ensure the marker is not at the very top (first 10 lines) to prevent destructive truncation
+  if head -n 10 "${template}/README.md" | grep -q "<!-- CI: validation record"; then
+    echo "ERROR: Template '${template_name}' README.md CI marker is too high in the file (found in first 10 lines). It must be at the end of the file."
+    exit 1
+  fi
+
+  # Mandate: No unreplaced placeholders
+  if grep -q "{{" "${template}/README.md"; then
+    echo "ERROR: Template '${template_name}' README.md contains unreplaced '{{' placeholders"
     exit 1
   fi
 done

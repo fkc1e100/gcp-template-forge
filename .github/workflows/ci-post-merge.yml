@@ -318,12 +318,17 @@ lines = ["\n## Validation Record\n", header, divider]
 for label, tf_val, kcc_val in rows:
     lines.append(sep.join(["", label, tf_val, kcc_val, ""]).strip())
 
-# Truncate after the CI marker
+# Truncate after the CI marker (defensive check)
 content = []
+found = False
 with open(readme, 'r') as f:
-    for line in f:
+    for i, line in enumerate(f):
         content.append(line)
         if '<!-- CI: validation record' in line:
+            if i < 10:
+                print(f"WARNING: Marker found on line {i+1} in {readme}. Ignoring to prevent truncation.")
+                continue
+            found = True
             break
 
 with open(readme, 'w') as f:
