@@ -151,18 +151,15 @@ KCCPY
     echo "ERROR: Template '${template_name}' README.md is missing '## Architecture' header"
     exit 1
   fi
-  if ! grep -q "<!-- CI: validation record" "${template}/README.md"; then
+  CI_MARKER="<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->"
+  if ! grep -q "$CI_MARKER" "${template}/README.md"; then
     echo "ERROR: Template '${template_name}' README.md is missing CI validation record marker"
     exit 1
   fi
-  # Ensure the marker is within the last 25 lines to prevent destructive truncation by CI scripts
-  if ! tail -n 25 "${template}/README.md" | grep -q "<!-- CI: validation record"; then
-    echo "ERROR: Template '${template_name}' README.md CI marker is missing from the last 25 lines. It must be at the end of the file to prevent destructive truncation."
-    exit 1
-  fi
-  # Ensure the marker is not at the very top (first 10 lines) to prevent destructive truncation
-  if head -n 10 "${template}/README.md" | grep -q "<!-- CI: validation record"; then
-    echo "ERROR: Template '${template_name}' README.md CI marker is too high in the file (found in first 10 lines). It must be at the end of the file."
+  # Mandate: CI marker must be near the end of the file (within last 50 lines)
+  # This accommodates the appended validation record table and prevents destructive truncation.
+  if ! tail -n 50 "${template}/README.md" | grep -q "$CI_MARKER"; then
+    echo "ERROR: Template '${template_name}' README.md CI marker is too high or missing from the end. It must be within the last 50 lines."
     exit 1
   fi
 
@@ -173,7 +170,7 @@ KCCPY
   fi
 
   # Mandate: Validation Record header must follow the marker
-  MARKER_LINE=$(grep -n "<!-- CI: validation record" "${template}/README.md" | cut -d: -f1 || echo "0")
+  MARKER_LINE=$(grep -n "$CI_MARKER" "${template}/README.md" | cut -d: -f1 || echo "0")
   if [ "$MARKER_LINE" -gt 0 ]; then
     if ! tail -n +$MARKER_LINE "${template}/README.md" | grep -q "^## Validation Record"; then
       echo "ERROR: Template '${template_name}' README.md is missing '## Validation Record' header after the CI marker"
