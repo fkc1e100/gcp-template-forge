@@ -173,9 +173,12 @@ KCCPY
   fi
 
   # Mandate: Validation Record header must follow the marker
-  if ! tail -n +$MARKER_LINE "${template}/README.md" | grep -q "^## Validation Record"; then
-    echo "ERROR: Template '${template_name}' README.md is missing '## Validation Record' header after the CI marker"
-    exit 1
+  MARKER_LINE=$(grep -n "<!-- CI: validation record" "${template}/README.md" | cut -d: -f1 || echo "0")
+  if [ "$MARKER_LINE" -gt 0 ]; then
+    if ! tail -n +$MARKER_LINE "${template}/README.md" | grep -q "^## Validation Record"; then
+      echo "ERROR: Template '${template_name}' README.md is missing '## Validation Record' header after the CI marker"
+      exit 1
+    fi
   fi
 done
 
