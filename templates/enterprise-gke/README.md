@@ -148,11 +148,10 @@ chmod +x templates/enterprise-gke/validate.sh
 Expected output:
 ```
 Test 1: Cluster Connectivity... Connectivity passed.
-Test 2: Node Readiness... All nodes are Ready.
-Test 3: Workload Readiness... Workload is available.
-Test 4: Workload Identity Integration... Workload Identity validated.
-Test 5: Endpoint Interaction... Endpoint test passed.
-All Validation Tests passed successfully for Enterprise GKE Cluster!
+Test 2: Workload Readiness... Workload is available.
+Test 3: Workload Identity Integration... Workload Identity validated.
+Test 4: Endpoint Interaction... Endpoint test passed!
+All Validation Tests passed successfully!
 ```
 
 ---
@@ -171,4 +170,13 @@ All Validation Tests passed successfully for Enterprise GKE Cluster!
 | `workload_service_account` | Workload Identity SA | optional |
 
 <!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
+
+## Validation Record
+
+| Metric | Status |
+|---|---|
+| **Last Validated** | 2026-04-11T23:02:31Z |
+| **Commit** | `2c375256b7c1ade287fd8d95c92e2e32f1e4169a` |
+| **Terraform + Helm** | SUCCESS |
+| **Config Connector** | SKIPPED |
 
