@@ -1,7 +1,6 @@
-# GKE Zero-Trust FQDN Egress
+# GKE FQDN Egress Security
 
-> Zero-trust egress security with FQDN network policies for controlling AI API traffic from GKE
-
+> Implement zero-trust egress security in GKE using FQDN Network Policies to restrict outbound traffic to approved domains.
 
 ## Architecture
 

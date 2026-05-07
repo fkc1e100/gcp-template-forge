@@ -2,7 +2,6 @@
 
 > Optimize cross-zone egress costs in GKE using Topology-Aware Routing.
 
-
 ## Architecture
 
 Topology-Aware Routing optimizes cross-zone egress costs by preferring same-zone traffic. In multi-zonal GKE clusters, network traffic between pods in different zones incurs egress charges. This template uses Topology-Aware Hints to keep traffic local to the zone where possible.
