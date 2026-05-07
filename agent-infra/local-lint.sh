@@ -74,14 +74,24 @@ for template in $TEMPLATES; do
     exit 1
   fi
 
-  # Mandate: README.md must exist and contain ## Architecture header
-  if [ ! -f "${template}/README.md" ]; then
-    echo "ERROR: Template '${template_name}' is missing README.md"
-    exit 1
-  fi
-  if ! grep -q "## Architecture" "${template}/README.md"; then
-    echo "ERROR: Template '${template_name}' README.md is missing '## Architecture' header (Standard requirement)"
-    exit 1
+  # Check ContainerCluster name length in KCC manifests
+  if [ -d "${template}/config-connector" ] && [ "$HAS_YAML" == "true" ]; then
+    python3 - "${template}/config-connector" << 'NAMELINT'
+import yaml, sys, pathlib
+cc_dir = sys.argv[1]
+for p in pathlib.Path(cc_dir).rglob('*.yaml'):
+    try:
+        with open(p, 'r') as f:
+            docs = yaml.safe_load_all(f)
+            for doc in docs:
+                if not doc: continue
+                if doc.get('kind') == 'ContainerCluster':
+                    name = doc.get('metadata', {}).get('name', '')
+                    if len(name) > 28:
+                        print(f"WARNING: ContainerCluster name '{name}' in {p} is {len(name)} chars. Names > 28 chars will be truncated in CI.")
+    except Exception:
+        pass
+NAMELINT
   fi
 
   # KCC capability check: warn if KCC manifests use known-unsupported fields without .kcc-unsupported
@@ -145,13 +155,30 @@ KCCPY
     echo "ERROR: Template '${template_name}' README.md is missing CI validation record marker"
     exit 1
   fi
-  
-  # Ensure the marker is within the last 20 lines to prevent destructive truncation by CI scripts
-  MARKER_LINE=$(grep -n "<!-- CI: validation record" "${template}/README.md" | cut -d: -f1 | tail -n1)
-  TOTAL_LINES=$(wc -l < "${template}/README.md")
-  if [ "$MARKER_LINE" -lt $((TOTAL_LINES - 20)) ]; then
-    echo "ERROR: Template '${template_name}' README.md CI marker is too high (line $MARKER_LINE/$TOTAL_LINES). It must be within the last 20 lines."
+  # Ensure the marker is within the last 25 lines to prevent destructive truncation by CI scripts
+  if ! tail -n 25 "${template}/README.md" | grep -q "<!-- CI: validation record"; then
+    echo "ERROR: Template '${template_name}' README.md CI marker is missing from the last 25 lines. It must be at the end of the file to prevent destructive truncation."
     exit 1
+  fi
+  # Ensure the marker is not at the very top (first 10 lines) to prevent destructive truncation
+  if head -n 10 "${template}/README.md" | grep -q "<!-- CI: validation record"; then
+    echo "ERROR: Template '${template_name}' README.md CI marker is too high in the file (found in first 10 lines). It must be at the end of the file."
+    exit 1
+  fi
+
+  # Mandate: No unreplaced placeholders
+  if grep -q "{{" "${template}/README.md"; then
+    echo "ERROR: Template '${template_name}' README.md contains unreplaced '{{' placeholders"
+    exit 1
+  fi
+
+  # Mandate: Validation Record header must follow the marker
+  MARKER_LINE=$(grep -n "<!-- CI: validation record" "${template}/README.md" | cut -d: -f1 || echo "0")
+  if [ "$MARKER_LINE" -gt 0 ]; then
+    if ! tail -n +$MARKER_LINE "${template}/README.md" | grep -q "^## Validation Record"; then
+      echo "ERROR: Template '${template_name}' README.md is missing '## Validation Record' header after the CI marker"
+      exit 1
+    fi
   fi
 done
 

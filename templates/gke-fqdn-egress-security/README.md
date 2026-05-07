@@ -1,6 +1,6 @@
-# GKE Zero-Trust FQDN Egress
+# GKE FQDN Egress Security
 
-> Zero-trust egress security with FQDN network policies for controlling AI API traffic from GKE
+> Implement zero-trust egress security in GKE using FQDN Network Policies to restrict outbound traffic to approved domains.
 
 ## Architecture
 
@@ -158,3 +158,17 @@ All GKE FQDN Network Policy Validation Tests passed successfully!
 | `subnet_name` | Subnet name | `gke-fqdn-egress-tf-subnet` |
 
 <!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
+
+## Validation Record
+
+|  | Terraform + Helm | Config Connector |
+| --- | --- | --- |
+| **Status** | skipped | skipped |
+| **Date** | 2026-05-07 | 2026-05-07 |
+| **Duration** | n/a | n/a |
+| **Region** | us-central1 | us-central1 (KCC cluster) |
+| **Zones** | - | forge-management namespace |
+| **Cluster** | -- | krmapihost-kcc-instance |
+| **Agent tokens** | - | (shared session) |
+| **Estimated cost** | - | -- |
+| **Commit** | n/a | n/a |

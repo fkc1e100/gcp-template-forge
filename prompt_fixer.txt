@@ -1,57 +1,123 @@
 # GCP Template Forge — Bug Fixing Agent
-# Task: Fix Issue #284
+# Task: Fix Issue #255
 # Repo: fkc1e100/gcp-template-forge
 
-You are an expert software engineer. Fix the bug described in Issue #284.
-Title: [CI-BUG] README in templates/enterprise-gke missing Architecture header
-Body: The README.md in `templates/enterprise-gke/` is missing the ## Architecture header.
+You are an expert software engineer. Fix the bug described in Issue #255.
+Title: [CI-BUG] README in templates/enterprise-gke missing CI marker
+Body: The README.md in `templates/enterprise-gke/` is missing the mandatory CI validation record marker.
 
 ## Research Context
-# Bug Research Report: Issue #284
-## [CI-BUG] README in templates/enterprise-gke missing Architecture header
+# GCP Template Forge — Bug Researcher Agent
+# Task: Research Issue #255
+# Repo: fkc1e100/gcp-template-forge
 
-### 1. Root Cause Analysis
-The issue was caused by a combination of a systemic flaw in the project's linter and an accidental file corruption by an automated agent.
+You are a Bug Researcher Agent. Your task is to research the bug described in Issue #255.
+Title: [CI-BUG] README in templates/enterprise-gke missing CI marker
+Body: The README.md in `templates/enterprise-gke/` is missing the mandatory CI validation record marker.
 
-- **Systemic Linter Flaw:** The script `agent-infra/local-lint.sh` was using piped `while read` loops (e.g., `find ... | while read ...`). In Bash, this construct creates a subshell for the `while` loop. Any `exit 1` called within this loop would only terminate the subshell, allowing the main script to continue and ultimately exit with code 0 (success). This meant that linting failures (such as missing mandatory headers or misplaced CI markers) were not blocking merges.
-- **Agent Corruption:** An automated agent working on a previous issue (likely #255 or an early attempt at #284) accidentally overwrote the entire content of `templates/enterprise-gke/README.md` with its own completion report ("I have completed the fix..."). 
-- **Consequence:** Because the linter failed to block the corrupted file, it was merged into the repository. The missing `## Architecture` header was a direct result of the entire file being replaced by non-documentation text.
+Specific Research Directives:
+1. Locate where the error originates by searching repository files (especially in `.github/workflows/` or `agent/`).
+2. Analyze the error message and issue description to understand the root cause.
+3. Search for similar errors and solutions on the web or in the repository's issue history.
+4. Outline a specific plan of action to fix the bug (e.g., which lines to change in which file).
+5. Output a detailed report in markdown to `/workspace/bug_research_255.md`.
+6. **CRITICAL:** Do NOT attempt to modify any files or apply the fix yourself! Your role is ONLY to research and plan. The Fixer Agent will apply the changes based on your report.
 
-### 2. Affected Files
-- `templates/enterprise-gke/README.md`: Corrupted with agent status text, missing all standard sections.
-- `agent-infra/local-lint.sh`: Contained the subshell bug that prevented linter enforcement.
-- `templates/basic-gke-hello-world/README.md`: Contained a manual "Validation Record" section after the CI marker, which violated the mandate that the CI marker must be on the last line.
+The bug research for Issue #255
+: `[CI-BUG] README in templates/enterprise-gke missing CI marker` is complete.
 
-### 3. Similar Errors and Solutions
-- **Issue #255:** Also reported corruption in the same README, but the fix attempt was itself corrupted or blocked by the linter bug.
-- **Solution:** The standard solution for the "exit in subshell" problem is to avoid pipes to `while read` and instead use `for` loops or process substitution.
+###
+ Problem Statement
+The `README.md` in `templates/enterprise-gke/` is reported to be missing the mandatory CI validation
+ record marker. This marker is a specific HTML comment used by the `ci-post-merge.yml` workflow to identify the
+ location for appending validation results (e.g., build status and duration) after successful CI runs.
 
-### 4. Verified Plan of Action
-The fix has already been implemented and verified in the `fix/issue-284` branch. The steps taken were:
+### Research Findings
+1.  **
+Marker Presence:** My investigation confirms that the CI marker `<!-- CI: validation record appended here by ci-post-merge.yml —
+ do not edit below this line manually -->` **is present** at the end of `templates/enterprise-gke
+/README.md`.
+2.  **Linting Pass:** Running the project's official linter (`./agent-infra
+/local-lint.sh`) on the `enterprise-gke` template **passed successfully**, confirming that the linter
+ correctly identifies the marker and its position within the last 20 lines of the file.
+3.  **Missing Validation Record
+:** Although the marker itself is present, the **actual validation record table** (e.g., `## Validation Record` followed
+ by a markdown table) is **missing** from `templates/enterprise-gke/README.md`.
+4
+.  **Widespread Issue:** Further analysis reveals that **none** of the templates currently have the `## Validation Record
+` table in their `README.md`, even though some have corresponding `.validated` files.
+5.  **CI Script
+ Logic:** The `publish-validated` job in `.github/workflows/ci-post-merge.yml` uses `sed -i '/
+<!-- CI: validation record/q' "$README"` to truncate the file at the marker before appending the new record. If
+ this job hasn't run successfully on the current `main` branch for these templates, the table will be missing.
+6.  
+**Potential Root Cause:** The issue report might be using the term "CI marker" to refer to the **Validation Record table itself**, rather than
+ the HTML comment "marker". Since the table is indeed missing and the template has a `.validated` file, the user
+ likely expects to see the results in the README.
 
-1.  **Refactor `agent-infra/local-lint.sh`**:
-    - Converted all piped `while read` loops to `for` loops using variable expansion (e.g., `for template in $TEMPLATES; do`).
-    - This ensures that `exit 1` correctly terminates the entire script, blocking CI on any mandate violation.
-2.  **Restore `templates/enterprise-gke/README.md`**:
-    - Reverted the file to its last known good state.
-    - Updated the `### Estimated Cost` section to reflect realistic enterprise values (Total: ~$300).
-    - Ensured the `## Architecture` header is present (Line 5).
-    - Moved the `<!-- CI: validation record ... -->` marker to the absolute last line of the file.
-3.  **Cleanup Other Templates**:
-    - Removed manual "Validation Record" tables from `templates/basic-gke-hello-world/README.md` that appeared after the CI marker, ensuring linter compliance.
-4.  **Verification**:
-    - Ran `./agent-infra/local-lint.sh templates/enterprise-gke` and confirmed it passes.
-    - Verified that introducing an intentional error (e.g., removing the header) now correctly causes the linter to exit with code 1.
+### Action Plan
+To resolve this issue and standardize the validation record display
+:
+1.  **Verify CI Execution:** Check the GitHub Actions logs for the latest `Post-Merge Validation` run to
+ see why it didn't update the `enterprise-gke` README.
+2.  **Manually Trigger
+/Simulate Update:** If necessary, a Fixer Agent can manually append a placeholder validation record table after the marker in `templates
+/enterprise-gke/README.md` to satisfy the immediate requirement, or better, ensure the CI pipeline is
+ capable of performing this task.
+3.  **Improve CI Robustness:** Review `ci-post-merge.
+yml` to ensure it correctly identifies all templates and has the necessary permissions to push updates to `main`.
 
-### 5. Final Recommendation
-Merge the changes from the `fix/issue-284` branch. No further manual changes are required as the fix is complete and correctly addresses both the immediate symptom (missing header) and the root cause (linter bug).
+A detailed research
+ report has been generated at `/workspace/bug_research_255.md`.
+
+
+I have completed the research for Issue #255: `[CI-BUG] README in templates/
+enterprise-gke missing CI marker`.
+
+### Research Summary
+My investigation reveals that the CI marker (the HTML comment `<!-- CI: validation record ...
+ -->`) **is already present** at the bottom of `templates/enterprise-gke/README.md`. Furthermore
+, the template **passes the local linter** (`local-lint.sh`), which specifically checks for the presence and position of this marker
+.
+
+The root cause of the bug report appears to be a terminology confusion: the user likely refers to the **Validation Record table
+** (which is indeed missing) as the "CI marker". Although the marker comment exists to guide the `ci-post-merge
+.yml` workflow, the actual table results have not yet been appended to the README, despite the presence of a `.validated` file
+ in the same directory.
+
+### Findings
+- **Marker Present:** Line 172 of `templates/enterprise-gke/
+README.md` contains the correct marker.
+- **Linter Status:** Passed. The marker is within the required
+ 20-line range.
+- **Table Missing:** The markdown table `## Validation Record` is absent from the README
+.
+- **Data Source:** The file `templates/enterprise-gke/.validated` exists and contains the necessary
+ success data.
+
+### Proposed Fix
+Manually append the missing `## Validation Record` table to `templates/enterprise-g
+ke/README.md` using the data from the `.validated` file. This will satisfy the requirement and ensure parity
+ between the validation status and the README documentation.
+
+A detailed report has been saved to `/workspace/gcp-template
+-forge/bug_research_255.md`.
+
+
+I have completed my investigation into Issue #255.
+ My research confirmed that while the CI marker comment itself is correctly placed at the end of `templates/enterprise-gke/README
+.md`, the actual **Validation Record table** is missing. This likely led to the bug report. I have documented
+ the root cause and a specific plan to manually append the missing table based on existing validation data in `bug_research_255.
+md`.
+
+Final research report available at: `/workspace/gcp-template-forge/bug_research_255.md`.
 
 ## Instructions
 1. Read the issue and research context carefully.
 2. Make the necessary code changes to fix the bug.
-3. Commit your changes with a descriptive message like `fix: address issue #284`.
-4. Push your branch `fix/issue-284` to origin.
-5. Open a PR with title `fix: address issue #284` and body `Closes #284`.
+3. Commit your changes with a descriptive message like `fix: address issue #255`.
+4. Push your branch `fix/issue-255` to origin.
+5. Open a PR with title `fix: address issue #255` and body `Closes #255`.
 6. Enable auto-merge on the PR.
 
 CRITICAL Fallback Instruction: You are running in fallback mode and CANNOT use tools. Do NOT output any plans, thoughts, or explanations! You MUST immediately output the FULL content of the file `templates/enterprise-gke/README.md` enclosed in a single ```markdown` code block! Do not output anything else before or after the code block.
