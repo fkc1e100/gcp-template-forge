@@ -292,9 +292,44 @@ jobs:
             # Update README
             README="${TEMPLATE}/README.md"
             if [ -f "$README" ]; then
-              # Truncate after the CI marker and add the new record
-              sed -i '/<!-- CI: validation record/q' "$README"
-              echo -e "\n## Validation Record\n| Path | Status | Date | Duration |\n| --- | --- | --- | --- |\n| Terraform+Helm | $TF_STATUS | $DATE | $TF_DUR |\n| Config Connector | $KCC_STATUS | $DATE | $KCC_DUR |" >> "$README"
+              # Robust truncation and standardized table generation using Python
+              python3 - "$README" "$DATE" "$TF_STATUS" "$KCC_STATUS" "$TF_DUR" "$KCC_DUR" \
+                "${TF_LOCATION:-us-central1}" "${TF_CLUSTER:---}" "${COMMIT:0:8}" << 'PYEOF'
+import sys, os
+readme, date, tf_s, kcc_s, tf_d, kcc_d, region, cluster, commit = sys.argv[1:]
+
+# Standardized vertical table format
+rows = [
+    ("**Status**",         tf_s,      kcc_s),
+    ("**Date**",           date,      date),
+    ("**Duration**",       tf_d,      kcc_d),
+    ("**Region**",         region,    "us-central1 (KCC cluster)"),
+    ("**Zones**",          "-",       "forge-management namespace"),
+    ("**Cluster**",        cluster,   "krmapihost-kcc-instance"),
+    ("**Agent tokens**",   "-",       "(shared session)"),
+    ("**Estimated cost**", "-",       "--"),
+    ("**Commit**",         commit,    commit),
+]
+
+sep = " | "
+header = sep.join(["", "", "Terraform + Helm", "Config Connector", ""]).strip()
+divider = sep.join(["", "---", "---", "---", ""]).strip()
+lines = ["\n## Validation Record\n", header, divider]
+for label, tf_val, kcc_val in rows:
+    lines.append(sep.join(["", label, tf_val, kcc_val, ""]).strip())
+
+# Truncate after the CI marker
+content = []
+with open(readme, 'r') as f:
+    for line in f:
+        content.append(line)
+        if '<!-- CI: validation record' in line:
+            break
+
+with open(readme, 'w') as f:
+    f.writelines(content)
+    f.write("\n".join(lines) + "\n")
+PYEOF
             fi
           done
           
