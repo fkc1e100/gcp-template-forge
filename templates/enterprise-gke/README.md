@@ -4,9 +4,7 @@
 
 ## Architecture
 
-This template provides an enterprise-grade Google Kubernetes Engine (GKE) architecture with security hardening. It enables [Binary Authorization](https://cloud.google.com/binary-authorization/docs/overview) in enforce mode, uses Workload Identity for secure GCP access, and includes advanced security posture monitoring.
-
-Note: Binary Authorization requires a project-level policy; otherwise, pod deployments may be blocked.
+This template provides an enterprise-grade Google Kubernetes Engine (GKE) architecture with security hardening. It enables Binary Authorization in enforce mode, uses Workload Identity for secure GCP access, and includes advanced security posture monitoring. **Warning:** Binary Authorization requires a project-level policy; otherwise, pod deployments may be blocked.
 
 This template provisions:
 
@@ -27,9 +25,9 @@ This template provisions:
 | Resource | Monthly Estimate |
 |---|---|
 | GKE Cluster (control plane) | ~$75 |
-| e2-standard-4 Node Pool (1x e2-standard-4) | ~$180 |
-| Cloud Armor + Security Command Center | ~$45 |
-| **Total** | **~$300** |
+| E2-standard-4 Node Pool (1x e2-standard-4 Spot) | ~$54 |
+| External Load Balancer | Forwarding Rule + traffic | ~$18 |
+| **Total** | **~$147** |
 
 *Estimates based on sustained use in us-central1. GPU templates incur additional on-demand charges.*
 
@@ -174,15 +172,14 @@ All Validation Tests passed successfully for Enterprise GKE Cluster!
 
 ## Validation Record
 
-|  | Terraform + Helm | Config Connector |
+| | Terraform + Helm | Config Connector |
 | --- | --- | --- |
 | **Status** | success | skipped |
 | **Date** | 2026-04-11 | 2026-04-11 |
 | **Duration** | n/a | n/a |
 | **Region** | us-central1 | us-central1 (KCC cluster) |
 | **Zones** | - | forge-management namespace |
-| **Cluster** | -- | krmapihost-kcc-instance |
+| **Cluster** | enterprise-gke | krmapihost-kcc-instance |
 | **Agent tokens** | - | (shared session) |
 | **Estimated cost** | - | -- |
 | **Commit** | 2c375256 | 2c375256 |
-
