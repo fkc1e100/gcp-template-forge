@@ -171,6 +171,12 @@ KCCPY
     echo "ERROR: Template '${template_name}' README.md contains unreplaced '{{' placeholders"
     exit 1
   fi
+
+  # Mandate: Validation Record header must follow the marker
+  if ! tail -n +$MARKER_LINE "${template}/README.md" | grep -q "^## Validation Record"; then
+    echo "ERROR: Template '${template_name}' README.md is missing '## Validation Record' header after the CI marker"
+    exit 1
+  fi
 done
 
 # 1. Terraform fmt and validate + Mandates

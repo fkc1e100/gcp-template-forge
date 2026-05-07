@@ -272,31 +272,86 @@ jobs:
             TF_RES="/tmp/artifacts/tf-results-${SLUG}/result.json"
             KCC_RES="/tmp/artifacts/kcc-results-${SLUG}/result.json"
             
-            TF_STATUS="skipped"; TF_DUR="n/a"
+            TF_STATUS="skipped"; TF_DUR="n/a"; TF_LOCATION="us-central1"; TF_CLUSTER="--"
             if [ -f "$TF_RES" ]; then
               TF_STATUS=$(jq -r .status "$TF_RES")
-              TF_DUR=$(jq -r .duration "$TF_RES")
+              TF_DUR_SEC=$(jq -r .duration "$TF_RES")
+              if [ -n "$TF_DUR_SEC" ] && [ "$TF_DUR_SEC" != "null" ]; then
+                TF_DUR="$((TF_DUR_SEC/60))m $((TF_DUR_SEC%60))s"
+              fi
+              TF_LOCATION=$(jq -r .location "$TF_RES" | grep -v null || echo "us-central1")
+              TF_CLUSTER=$(jq -r .cluster "$TF_RES" | grep -v null || echo "--")
+            elif [ -f "${TEMPLATE}/.validated" ]; then
+              TF_STATUS=$(grep '^tf_helm:' "${TEMPLATE}/.validated" | awk '{print $2}' || echo "skipped")
             fi
             
             KCC_STATUS="skipped"; KCC_DUR="n/a"
             if [ -f "$KCC_RES" ]; then
               KCC_STATUS=$(jq -r .status "$KCC_RES")
-              KCC_DUR=$(jq -r .duration "$KCC_RES")
+              KCC_DUR_SEC=$(jq -r .duration "$KCC_RES")
+              if [ -n "$KCC_DUR_SEC" ] && [ "$KCC_DUR_SEC" != "null" ]; then
+                KCC_DUR="$((KCC_DUR_SEC/60))m $((KCC_DUR_SEC%60))s"
+              fi
+            elif [ -f "${TEMPLATE}/.validated" ]; then
+              KCC_STATUS=$(grep '^kcc:' "${TEMPLATE}/.validated" | awk '{print $2}' || echo "skipped")
             fi
             
             # Write .validated file
             printf "validated_at: %s\ncommit: %s\ntf_helm: %s\nkcc: %s\n" \
               "$TIMESTAMP" "$COMMIT" "$TF_STATUS" "$KCC_STATUS" \
               > "${TEMPLATE}/.validated"
+
+            # Accumulate metrics
+            python3 - "$TEMPLATE" << 'ACCUMPY'
+import json, os, sys, datetime
+template = sys.argv[1]
+metrics_file      = f'{template}/.agent-metrics'
+cumulative_file   = f'{template}/.agent-metrics-cumulative'
+current = {}
+if os.path.exists(metrics_file):
+    try:    current = json.load(open(metrics_file))
+    except: pass
+cumulative = {'total_input_tokens': 0, 'total_output_tokens': 0, 'total_cost_usd': 0.0, 'sessions': []}
+if os.path.exists(cumulative_file):
+    try:    cumulative = json.load(open(cumulative_file))
+    except: pass
+session_start    = current.get('session_start', '')
+already_counted  = session_start and any(s.get('session_start') == session_start for s in cumulative.get('sessions', []))
+if session_start and not already_counted:
+    in_tok, out_tok = current.get('input_tokens'), current.get('output_tokens')
+    cost = float(current.get('estimated_cost_usd') or 0)
+    if isinstance(in_tok, (int, float)) and in_tok:
+        cumulative['total_input_tokens']  += int(in_tok)
+        cumulative['total_output_tokens'] += int(out_tok or 0)
+        cumulative['total_cost_usd']       = round(cumulative['total_cost_usd'] + cost, 4)
+        cumulative.setdefault('sessions', []).append({'session_start': session_start, 'input_tokens': int(in_tok), 'output_tokens': int(out_tok or 0), 'estimated_cost_usd': str(cost), 'model': current.get('model', ''), 'counted_at': datetime.datetime.now(datetime.timezone.utc).isoformat()})
+        json.dump(cumulative, open(cumulative_file, 'w'), indent=2)
+ACCUMPY
+
+            # Read cumulative totals
+            eval "$(python3 - "$TEMPLATE" << 'READPY'
+import json, os, sys
+template = sys.argv[1]
+f = f'{template}/.agent-metrics-cumulative'
+d = json.load(open(f)) if os.path.exists(f) else {}
+n, in_t, out_t, cost = len(d.get('sessions', [])), d.get('total_input_tokens', 0), d.get('total_output_tokens', 0), d.get('total_cost_usd', 0.0)
+if n > 0 and in_t > 0:
+    print(f'INPUT_TOKENS="{in_t:,}"'); print(f'OUTPUT_TOKENS="{out_t:,}"'); print(f'AGENT_COST="{cost}"'); print(f'SESSION_SUFFIX=" ({n} session{"s" if n != 1 else ""})"')
+else:
+    print('INPUT_TOKENS=""'); print('OUTPUT_TOKENS=""'); print('AGENT_COST=""'); print('SESSION_SUFFIX=""')
+READPY
+            )"
+            TOKEN_STR="${INPUT_TOKENS:+${INPUT_TOKENS} in / ${OUTPUT_TOKENS} out${SESSION_SUFFIX}}"
+            COST_STR="${AGENT_COST:+\$${AGENT_COST}}"
               
             # Update README
             README="${TEMPLATE}/README.md"
             if [ -f "$README" ]; then
               # Robust truncation and standardized table generation using Python
               python3 - "$README" "$DATE" "$TF_STATUS" "$KCC_STATUS" "$TF_DUR" "$KCC_DUR" \
-                "${TF_LOCATION:-us-central1}" "${TF_CLUSTER:---}" "${COMMIT:0:8}" << 'PYEOF'
+                "$TF_LOCATION" "$TF_CLUSTER" "${COMMIT:0:8}" "${TOKEN_STR:-not recorded}" "${COST_STR:--}" << 'PYEOF'
 import sys, os
-readme, date, tf_s, kcc_s, tf_d, kcc_d, region, cluster, commit = sys.argv[1:]
+readme, date, tf_s, kcc_s, tf_d, kcc_d, region, cluster, commit, tokens, cost = sys.argv[1:]
 
 # Standardized vertical table format
 rows = [
@@ -306,8 +361,8 @@ rows = [
     ("**Region**",         region,    "us-central1 (KCC cluster)"),
     ("**Zones**",          "-",       "forge-management namespace"),
     ("**Cluster**",        cluster,   "krmapihost-kcc-instance"),
-    ("**Agent tokens**",   "-",       "(shared session)"),
-    ("**Estimated cost**", "-",       "--"),
+    ("**Agent tokens**",   tokens,    "(shared session)"),
+    ("**Estimated cost**", cost,      "--"),
     ("**Commit**",         commit,    commit),
 ]
 

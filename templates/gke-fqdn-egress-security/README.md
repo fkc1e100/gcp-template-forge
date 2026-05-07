@@ -1,14 +1,7 @@
+# GKE FQDN Egress Security
 
-I have updated `templates/gke-fqdn-egress-security
-/README.md` to fully comply with the `agent-infra/scaffolds/README.template.md` standard. The changes
- include adding the missing `service_account` input, updating the architecture and cost sections, inserting the KCC limitations placeholder,
- and aligning the expected validation output with the actual `validate.sh` script.
+> Implement zero-trust egress security in GKE using FQDN Network Policies to restrict outbound traffic to approved domains.
 
-<<<<<<< HEAD
-PR #267 has been created and auto
--merge is enabled.
-
-=======
 ## Architecture
 
 This template demonstrates how to implement zero-trust egress security in GKE using **FQDN Network Policies**. It restricts outbound traffic from your workloads to only specific, approved Fully Qualified Domain Names (e.g., `openai.com`, `github.com`), preventing data exfiltration and unauthorized communication.
@@ -165,4 +158,17 @@ All GKE FQDN Network Policy Validation Tests passed successfully!
 | `subnet_name` | Subnet name | `gke-fqdn-egress-tf-subnet` |
 
 <!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
->>>>>>> origin/main
+
+## Validation Record
+
+|  | Terraform + Helm | Config Connector |
+| --- | --- | --- |
+| **Status** | skipped | skipped |
+| **Date** | 2026-05-07 | 2026-05-07 |
+| **Duration** | n/a | n/a |
+| **Region** | us-central1 | us-central1 (KCC cluster) |
+| **Zones** | - | forge-management namespace |
+| **Cluster** | -- | krmapihost-kcc-instance |
+| **Agent tokens** | - | (shared session) |
+| **Estimated cost** | - | -- |
+| **Commit** | n/a | n/a |

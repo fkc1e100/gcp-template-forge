@@ -159,15 +159,15 @@ All Validation Tests passed successfully for Basic GKE Hello World!
 <!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
 
 ## Validation Record
-| | Terraform + Helm | Config Connector |
+
+|  | Terraform + Helm | Config Connector |
 | --- | --- | --- |
 | **Status** | success | pending |
 | **Date** | 2026-04-20 | 2026-04-20 |
-| **Duration** | - | - |
+| **Duration** | n/a | n/a |
 | **Region** | us-central1 | us-central1 (KCC cluster) |
 | **Zones** | - | forge-management namespace |
-| **Cluster** | - | krmapihost-kcc-instance |
+| **Cluster** | -- | krmapihost-kcc-instance |
 | **Agent tokens** | - | (shared session) |
 | **Estimated cost** | - | -- |
 | **Commit** | 3a471e34 | 3a471e34 |
-
