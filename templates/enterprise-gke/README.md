@@ -145,12 +145,12 @@ chmod +x templates/enterprise-gke/validate.sh
 
 Expected output:
 ```
-Test 1: Cluster Connectivity... PASS: Cluster is reachable.
-Test 2: Node Readiness... PASS: All nodes are Ready.
-Test 3: Workload Readiness... PASS: Workload is Available.
-Test 4: Workload Identity Integration... PASS: Workload Identity validated.
-Test 5: Endpoint Interaction... PASS: Endpoint test passed!
-=== All Validation Tests PASSED for Enterprise GKE Cluster ===
+Test 1: Cluster Connectivity... Connectivity passed.
+Test 2: Node Readiness... All nodes are Ready.
+Test 3: Workload Readiness... Workload is available.
+Test 4: Workload Identity Integration... Workload Identity validated.
+Test 5: Endpoint Interaction... Endpoint test passed!
+All Validation Tests passed successfully for Enterprise GKE Cluster!
 ```
 
 ---
