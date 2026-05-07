@@ -19,16 +19,16 @@ Key features included:
 This template provisions:
 
 - **VPC Network** — Dedicated VPC with a primary subnet in `us-central1`
-- **GKE Cluster** — Standard regional cluster (`latest-gke-feat`) with Spot VM Node Pool
+- **GKE Cluster** — Standard regional cluster (`latest-gke-features`) with Spot VM Node Pool
 - **Workload** — Nginx deployment with native sidecar and GKE Gateway exposure
 
 ### Resource Naming
 
 | Resource | Terraform + Helm | Config Connector |
 |---|---|---|
-| GKE Cluster | `latest-gke-feat-<uid>-tf` | `latest-gke-feat-<uid>-kcc` |
-| VPC Network | `latest-gke-feat-<uid>-tf-vpc` | `latest-gke-feat-<uid>-kcc-vpc` |
-| Subnet | `latest-gke-feat-<uid>-tf-subnet` | `latest-gke-feat-<uid>-kcc-subnet` |
+| GKE Cluster | `latest-gke-features-<uid>-tf` | `latest-gke-features-<uid>-kcc` |
+| VPC Network | `latest-gke-features-<uid>-tf-vpc` | `latest-gke-features-<uid>-kcc-vpc` |
+| Subnet | `latest-gke-features-<uid>-tf-subnet` | `latest-gke-features-<uid>-kcc-subnet` |
 
 ### Estimated Cost
 
@@ -54,7 +54,7 @@ This template supports two deployment paths that provision equivalent infrastruc
 ```bash
 cd templates/latest-gke-features/terraform-helm
 
-# Initialize with GCS backend
+# Initialize with GCS backend (or use local state for testing)
 terraform init \
   -backend-config="bucket=YOUR_TF_STATE_BUCKET" \
   -backend-config="prefix=latest-gke-features/terraform-helm"
@@ -62,11 +62,13 @@ terraform init \
 # Review the plan
 terraform plan \
   -var="project_id=YOUR_PROJECT_ID" \
+  -var="region=us-central1" \
   -var="service_account=YOUR_SERVICE_ACCOUNT"
 
-# Apply
+# Apply (provisions GKE cluster and supporting infrastructure)
 terraform apply \
   -var="project_id=YOUR_PROJECT_ID" \
+  -var="region=us-central1" \
   -var="service_account=YOUR_SERVICE_ACCOUNT"
 
 # Get cluster credentials
@@ -85,7 +87,10 @@ kubectl get pods -A
 **Cleanup:**
 ```bash
 helm uninstall release
-terraform destroy -var="project_id=YOUR_PROJECT_ID" -var="service_account=YOUR_SERVICE_ACCOUNT"
+terraform destroy \
+  -var="project_id=YOUR_PROJECT_ID" \
+  -var="region=us-central1" \
+  -var="service_account=YOUR_SERVICE_ACCOUNT"
 ```
 
 ---
