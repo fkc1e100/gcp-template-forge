@@ -37,8 +37,7 @@ else
   fi
 fi
 
-echo "$TEMPLATES" | while read -r template; do
-  [ -z "$template" ] && continue
+for template in $TEMPLATES; do
   template_name=$(basename "$template")
   [ "$template_name" == "README.md" ] && continue
 
@@ -62,18 +61,10 @@ echo "$TEMPLATES" | while read -r template; do
     echo "ERROR: Template '${template_name}' is missing template.yaml (required for resource naming and index)"
     exit 1
   fi
-  SHORT_NAME=$(python3 -c "
-import re, sys
-try:
-    content = open('${template}/template.yaml').read()
-    match = re.search(r'shortName:\s*[\"\'\']?([^\"\'\'\s]+)[\"\'\']?', content)
-    if match:
-        print(match.group(1))
-    else:
-        sys.exit(1)
-except Exception as e:
-    sys.exit(1)
-" 2>/dev/null || true)
+  
+  # Use grep/sed to extract shortName to avoid dependency on PyYAML
+  SHORT_NAME=$(grep "^shortName:" "${template}/template.yaml" | sed -E 's/^shortName:[[:space:]]*//' | sed -E 's/^["'\'']//;s/["'\'']$//')
+  
   if [ -z "$SHORT_NAME" ]; then
     echo "ERROR: ${template}/template.yaml is missing or has empty 'shortName' field"
     exit 1
@@ -83,12 +74,33 @@ except Exception as e:
     exit 1
   fi
 
+  # Check ContainerCluster name length in KCC manifests
+  if [ -d "${template}/config-connector" ] && [ "$HAS_YAML" == "true" ]; then
+    python3 - "${template}/config-connector" << 'NAMELINT'
+import yaml, sys, pathlib
+cc_dir = sys.argv[1]
+for p in pathlib.Path(cc_dir).rglob('*.yaml'):
+    try:
+        with open(p, 'r') as f:
+            docs = yaml.safe_load_all(f)
+            for doc in docs:
+                if not doc: continue
+                if doc.get('kind') == 'ContainerCluster':
+                    name = doc.get('metadata', {}).get('name', '')
+                    if len(name) > 28:
+                        print(f"WARNING: ContainerCluster name '{name}' in {p} is {len(name)} chars. Names > 28 chars will be truncated in CI.")
+    except Exception:
+        pass
+NAMELINT
+  fi
+
   # KCC capability check: warn if KCC manifests use known-unsupported fields without .kcc-unsupported
-  if [ -d "${template}/config-connector" ] && [ ! -f "${template}/.kcc-unsupported" ] && [ "$HAS_YAML" == "true" ]; then
+  if [ -d "${template}/config-connector" ] && [ ! -f "${template}/.kcc-unsupported" ]; then
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     KCC_CAP="${SCRIPT_DIR}/kcc-capabilities.yaml"
     if [ -f "$KCC_CAP" ]; then
-      python3 - "${template}/config-connector" "$KCC_CAP" "${template}" << 'KCCPY'
+      if [ "$HAS_YAML" == "true" ]; then
+        python3 - "${template}/config-connector" "$KCC_CAP" "${template}" << 'KCCPY'
 import yaml, sys, pathlib
 cc_dir, cap_file, template_dir = sys.argv[1], sys.argv[2], sys.argv[3]
 caps = yaml.safe_load(open(cap_file))
@@ -116,12 +128,14 @@ if errors:
     print(f"  Fix: create '{template_dir}/.kcc-unsupported' or remove the unsupported field.")
     sys.exit(1)
 KCCPY
+      else
+        echo "Warning: PyYAML missing, skipping deep KCC capability check for $template_name"
+      fi
     fi
   fi
 
   # Check for non-standard directories
-  echo "Terraform_HELM terraform_helm terraform-HELM helm Helm terraform manifests" | tr ' ' '\n' | while read -r bad; do
-    [ -z "$bad" ] && continue
+  for bad in Terraform_HELM terraform_helm terraform-HELM helm Helm terraform manifests; do
     if [ -d "${template}/${bad}" ]; then
       echo "ERROR: Found non-standard directory '${template_name}/${bad}/' -- use 'terraform-helm/' and 'config-connector/'"
       exit 1
@@ -133,7 +147,7 @@ KCCPY
     echo "ERROR: Template '${template_name}' is missing README.md"
     exit 1
   fi
-  if ! grep -q "## Architecture" "${template}/README.md"; then
+  if ! grep -q "^## Architecture" "${template}/README.md"; then
     echo "ERROR: Template '${template_name}' README.md is missing '## Architecture' header"
     exit 1
   fi
@@ -141,10 +155,11 @@ KCCPY
     echo "ERROR: Template '${template_name}' README.md is missing CI validation record marker"
     exit 1
   fi
-  # Mandate: CI marker must be near the end of the file (within last 25 lines)
-  # This accommodates the appended validation record table and prevents accidental truncation.
-  if ! tail -n 25 "${template}/README.md" | grep -q "<!-- CI: validation record"; then
-    echo "ERROR: Template '${template_name}' README.md has CI marker but it's not near the end of the file (must be within last 25 lines)"
+  # Ensure the marker is within the last 20 lines to prevent destructive truncation by CI scripts
+  MARKER_LINE=$(grep -n "<!-- CI: validation record" "${template}/README.md" | cut -d: -f1 | tail -n1)
+  TOTAL_LINES=$(wc -l < "${template}/README.md")
+  if [ "$MARKER_LINE" -lt $((TOTAL_LINES - 20)) ]; then
+    echo "ERROR: Template '${template_name}' README.md CI marker is too high (line $MARKER_LINE/$TOTAL_LINES). It must be within the last 20 lines."
     exit 1
   fi
   # Mandate: No unreplaced placeholders
@@ -152,11 +167,14 @@ KCCPY
     echo "ERROR: Template '${template_name}' README.md contains unreplaced '{{' placeholders"
     exit 1
   fi
+    exit 1
+  fi
 done
 
 # 1. Terraform fmt and validate + Mandates
 echo "Checking Terraform and Mandates..."
-find "$TARGET_DIR" -name "*.tf" -not -path "*/.*" -exec dirname {} \; | sort -u | while read -r dir; do
+TF_DIRS=$(find "$TARGET_DIR" -name "*.tf" -not -path "*/.*" -exec dirname {} \; | sort -u)
+for dir in $TF_DIRS; do
   echo "--- Linting TF in $dir ---"
   (
     cd "$dir"
@@ -193,7 +211,8 @@ done
 
 # 2. Helm lint
 echo "Checking Helm..."
-find "$TARGET_DIR" -name "Chart.yaml" -not -path "*/.*" -exec dirname {} \; | sort -u | while read -r chart; do
+HELM_DIRS=$(find "$TARGET_DIR" -name "Chart.yaml" -not -path "*/.*" -exec dirname {} \; | sort -u)
+for chart in $HELM_DIRS; do
   echo "--- Linting Helm chart in $chart ---"
   helm lint "$chart"
   CHART_NAME=$(basename "$chart")
@@ -203,8 +222,8 @@ find "$TARGET_DIR" -name "Chart.yaml" -not -path "*/.*" -exec dirname {} \; | so
 done
 
 # 3. YAML syntax check (KCC and other plain YAML)
+echo "Checking YAML syntax (excluding Helm templates)..."
 if [ "$HAS_YAML" == "true" ]; then
-  echo "Checking YAML syntax (excluding Helm templates)..."
   TARGET_DIR="$TARGET_DIR" python3 -c "
 import yaml, sys, pathlib, os
 errors = []
@@ -224,7 +243,7 @@ if errors:
     sys.exit(1)
 "
 else
-  echo "Skipping YAML syntax check (PyYAML missing)."
+  echo "Warning: PyYAML missing, skipping YAML syntax check"
 fi
 
 # 4. Actionlint for workflows

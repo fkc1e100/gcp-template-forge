@@ -47,9 +47,7 @@ spec:
   addonsConfig:
     networkPolicyConfig:
       disabled: false
-  networkPolicy:
-    enabled: true
-    provider: CALICO
+  datapathProvider: ADVANCED_DATAPATH
   binaryAuthorization:
     evaluationMode: PROJECT_SINGLETON_POLICY_ENFORCE
   loggingConfig:
