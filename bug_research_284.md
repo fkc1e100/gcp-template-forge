@@ -1,40 +1,60 @@
-# Bug Research Report: Issue #284
+# Bug Research Report: Issue #284 - Missing Architecture header in templates/enterprise-gke/README.md
 
-## Description
-The `README.md` in `templates/enterprise-gke/` is missing the `## Architecture` header. This is a recurring issue where the file becomes corrupted or wiped entirely.
+## 1. Description
+The `README.md` file in `templates/enterprise-gke/` was reported as missing its `## Architecture` header. This was caused by the file being wiped or corrupted during an automated "standardization" process triggered by a linter failure.
 
-## Root Cause Analysis
-1.  **Linter Conflict**: The `agent-infra/local-lint.sh` script enforces a mandate that the CI marker (`<!-- CI: validation record ... -->`) must be the **absolute last line** of the `README.md` file.
-2.  **CI Append Behavior**: The `.github/workflows/ci-post-merge.yml` workflow is designed to **append** a `## Validation Record` table **below** this marker after a successful template validation.
-3.  **Resulting Failure**: As soon as CI validates a template and updates its README, the marker is no longer on the last line, causing the linter to fail with `ERROR: Template 'enterprise-gke' README.md CI marker is not on the last line`.
-4.  **Agent-Induced Corruption**: Automated agents (specifically `agentdev-agent`) detect these linter failures and attempt to "fix" the README. These agents appear to use a flawed "standardization" process that sometimes overwrites the file with a status report or wipes it to a single newline. This destructive action removes the `## Architecture` header, triggering the specific error reported in Issue #284.
+## 2. Root Cause Analysis
 
-## Evidence
-- **Linter Failure on Main**: Running the linter on the current `main` version of `templates/enterprise-gke/README.md` fails due to the marker position, even though the header is present.
-- **Wiped File on Branch**: The `fix/issue-284` branch has a 1-byte `README.md` (just a newline) at commit `8e7c7bf`, which was created by `agentdev-agent`.
-- **History of Overwrites**: Git logs show multiple commits where `agentdev-agent` replaced the README content with text describing its own actions (e.g., commit `41bc06d` on `main`).
+### A. Linter-CI Conflict
+The `agent-infra/local-lint.sh` script previously enforced a strict mandate that the CI validation marker (`<!-- CI: validation record ... -->`) must be the **absolute last line** of the `README.md` file.
 
-## Proposed Fix Plan
-1.  **Relax Linter Constraints**: Modify `agent-infra/local-lint.sh` to remove the requirement that the CI marker be the absolute last line. It only needs to verify the marker exists.
-2.  **Restore Enterprise GKE README**: Overwrite the corrupted `templates/enterprise-gke/README.md` with a clean version from a known good state (e.g., from `main` or previous successful commits).
-3.  **Standardize and Verify**: Ensure all template READMEs have the marker and header, and verify they pass the updated linter.
+However, the `.github/workflows/ci-post-merge.yml` workflow is designed to **append** a `## Validation Record` table **below** this marker after a successful template validation. This creates a state where the README is technically "invalid" according to the linter as soon as it has been validated once.
 
-## Recommended Changes
+### B. Automated Corruption
+When the linter failed in CI/CD, an automated agent (`agentdev-agent`) attempted to "fix" the template by running a standardization routine. This routine appears to have a bug where, upon failing to find or correctly position the required headers/markers, it overwrites the file with a single newline (or a very short status report), effectively wiping the original content.
+
+This destructive action removed the `## Architecture` header, leading to the error reported in Issue #284.
+
+## 3. Evidence
+- **Linter Logic (Pre-fix)**: In commit `8e7c7bf`, `agent-infra/local-lint.sh` contained:
+  ```bash
+  if ! tail -n 1 "${template}/README.md" | grep -q "<!-- CI: validation record"; then
+    echo "ERROR: Template '${template_name}' README.md CI marker is not on the last line"
+    exit 1
+  fi
+  ```
+- **Corrupted README**: In commit `8e7c7bf`, the file `templates/enterprise-gke/README.md` was reduced to a single newline character.
+- **Header Check Failure**: The linter subsequently failed with `ERROR: Template 'enterprise-gke' README.md is missing '## Architecture' header` because the file was empty.
+
+## 4. Similar Errors
+Similar patterns of README corruption have been observed in other templates when linter rules are too rigid or conflict with automated append operations. Issue #241 and #259 also touched upon README standardization issues.
+
+## 5. Plan of Action (Fixed)
+The fix has already been implemented in the latest commit (`74e9e06`) of the `fix/issue-284` branch:
+
+1.  **Relax Linter Constraints**: Modified `agent-infra/local-lint.sh` to remove the `tail -n 1` check. The script now only verifies that the marker exists anywhere in the file.
+2.  **Restore Content**: Restored the full, correct content of `templates/enterprise-gke/README.md` from a known good state.
+3.  **Validation**: Verified that the restored README now passes the updated linter even with a validation record appended at the end.
+
+## 6. Recommended Changes (for record)
 
 ### File: `agent-infra/local-lint.sh`
-Remove or comment out the strict `tail -n 1` check:
 ```bash
+<<<<
   # Mandate: CI marker must be the last line of the file (ignoring trailing whitespace)
-  # REMOVE THIS CHECK AS IT CONFLICTS WITH ci-post-merge.yml
-  # if ! tail -n 1 "${template}/README.md" | grep -q "<!-- CI: validation record"; then
-  #   echo "ERROR: Template '${template_name}' README.md CI marker is not on the last line"
-  #   exit 1
-  # fi
+  if ! tail -n 1 "${template}/README.md" | grep -q "<!-- CI: validation record"; then
+    echo "ERROR: Template '${template_name}' README.md CI marker is not on the last line"
+    exit 1
+  fi
+====
+  # Note: We no longer enforce the marker being on the last line because ci-post-merge.yml
+  # appends a validation table below it, which would cause immediate linter failures.
+>>>>
 ```
 
 ### File: `templates/enterprise-gke/README.md`
-Restore full content, ensuring it includes:
+Restore full content including:
 - `# Enterprise GKE Cluster`
 - `## Architecture`
-- Deployment paths and verification steps.
-- The CI marker `<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->` at the end of the manual content.
+- `## Deployment Paths`
+- `<!-- CI: validation record ... -->` marker.
