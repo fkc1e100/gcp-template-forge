@@ -136,11 +136,8 @@ KCCPY
     exit 1
   fi
   
-  # Mandate: CI marker must be the last line of the file (ignoring trailing whitespace)
-  if ! tail -n 1 "${template}/README.md" | grep -q "<!-- CI: validation record"; then
-    echo "ERROR: Template '${template_name}' README.md CI marker is not on the last line"
-    exit 1
-  fi
+  # Note: We no longer enforce the marker being on the last line because ci-post-merge.yml
+  # appends a validation table below it, which would cause immediate linter failures.
 done
 
 # 1. Terraform fmt and validate + Mandates
