@@ -170,3 +170,9 @@ All Validation Tests passed successfully for Enterprise GKE Cluster!
 | `workload_service_account` | Workload Identity SA | optional |
 
 <!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
+
+## Validation Record
+| Path | Status | Date | Duration |
+| --- | --- | --- | --- |
+| Terraform+Helm | success | 2026-04-11 | n/a |
+| Config Connector | skipped | 2026-04-11 | n/a |
