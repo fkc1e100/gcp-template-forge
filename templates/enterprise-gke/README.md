@@ -27,10 +27,11 @@ This template provisions:
 | Resource | Monthly Estimate |
 |---|---|
 | GKE Cluster (control plane) | ~$75 |
-| e2-standard-4 Node Pool (1x e2-standard-4) | ~$55 |
-| **Total** | **~$130** |
+| e2-standard-4 Node Pool (1x e2-standard-4) | ~$180 |
+| Cloud Armor + Security Command Center | ~$45 |
+| **Total** | **~$300** |
 
-*Estimates based on sustained use in us-central1. GPU templates incur additional on-demand charges.*
+*Estimates based on sustained use in us-central1. Enterprise features and GPUs incur additional charges.*
 
 ---
 
