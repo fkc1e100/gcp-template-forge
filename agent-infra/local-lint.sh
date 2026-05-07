@@ -19,6 +19,12 @@ TARGET_DIR=${1:-"."}
 
 echo "=== Running Local Linting on ${TARGET_DIR} ==="
 
+HAS_YAML=$(python3 -c "import yaml; print('true')" 2>/dev/null || echo "false")
+if [ "$HAS_YAML" == "false" ]; then
+  echo "WARNING: Python 'yaml' module not found. Some deep linting checks (KCC capabilities, YAML syntax) will be skipped."
+  echo "Install it with: pip install PyYAML"
+fi
+
 # 0. Template structure check
 if [ "$TARGET_DIR" == "." ]; then
   echo "Checking all template structures..."
@@ -57,12 +63,15 @@ echo "$TEMPLATES" | while read -r template; do
     exit 1
   fi
   SHORT_NAME=$(python3 -c "
-import yaml, sys
+import re, sys
 try:
-    d = yaml.safe_load(open('${template}/template.yaml'))
-    print(d.get('shortName',''))
+    content = open('${template}/template.yaml').read()
+    match = re.search(r'shortName:\s*[\"\'\']?([^\"\'\'\s]+)[\"\'\']?', content)
+    if match:
+        print(match.group(1))
+    else:
+        sys.exit(1)
 except Exception as e:
-    print('', file=sys.stderr)
     sys.exit(1)
 " 2>/dev/null || true)
   if [ -z "$SHORT_NAME" ]; then
@@ -75,7 +84,7 @@ except Exception as e:
   fi
 
   # KCC capability check: warn if KCC manifests use known-unsupported fields without .kcc-unsupported
-  if [ -d "${template}/config-connector" ] && [ ! -f "${template}/.kcc-unsupported" ]; then
+  if [ -d "${template}/config-connector" ] && [ ! -f "${template}/.kcc-unsupported" ] && [ "$HAS_YAML" == "true" ]; then
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     KCC_CAP="${SCRIPT_DIR}/kcc-capabilities.yaml"
     if [ -f "$KCC_CAP" ]; then
@@ -183,8 +192,9 @@ find "$TARGET_DIR" -name "Chart.yaml" -not -path "*/.*" -exec dirname {} \; | so
 done
 
 # 3. YAML syntax check (KCC and other plain YAML)
-echo "Checking YAML syntax (excluding Helm templates)..."
-TARGET_DIR="$TARGET_DIR" python3 -c "
+if [ "$HAS_YAML" == "true" ]; then
+  echo "Checking YAML syntax (excluding Helm templates)..."
+  TARGET_DIR="$TARGET_DIR" python3 -c "
 import yaml, sys, pathlib, os
 errors = []
 target = os.environ.get('TARGET_DIR', '.')
@@ -202,6 +212,9 @@ if errors:
     for e in errors: print(e)
     sys.exit(1)
 "
+else
+  echo "Skipping YAML syntax check (PyYAML missing)."
+fi
 
 # 4. Actionlint for workflows
 if [ "$TARGET_DIR" == "." ] && [ -f "./actionlint" ]; then

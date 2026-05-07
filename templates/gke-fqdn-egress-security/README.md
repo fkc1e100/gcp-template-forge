@@ -2,7 +2,6 @@
 
 > Zero-trust egress security with FQDN network policies for controlling AI API traffic from GKE
 
-<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
 
 ## Architecture
 
@@ -156,3 +155,5 @@ All Validation Tests passed successfully for GKE Zero-Trust FQDN Egress!
 | `cluster_name` | GKE cluster name | `gke-fqdn-egress-tf` |
 | `network_name` | VPC network name | `gke-fqdn-egress-tf-vpc` |
 | `subnet_name` | Subnet name | `gke-fqdn-egress-tf-subnet` |
+
+<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->

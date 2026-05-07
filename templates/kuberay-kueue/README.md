@@ -2,7 +2,6 @@
 
 > Multi-Tenant Ray on GKE with Equitable Queuing using KubeRay and Kueue
 
-<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
 
 ## Architecture
 
@@ -167,3 +166,5 @@ All Validation Tests passed successfully for Multi-Tenant Ray on GKE!
 | `subnet_name` | Subnet name | `gke-kuberay-kueue-subnet` |
 | `service_account` | Node service account | required |
 | `uid_suffix` | Unique suffix for resource names | `""` |
+
+<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
