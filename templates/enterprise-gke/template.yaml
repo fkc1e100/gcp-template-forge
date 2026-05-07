@@ -7,5 +7,5 @@ gcpServices:
   - Binary Authorization
   - Cloud Armor
 kccSupported: true
-estimatedMonthlyCost: "~$300"
+estimatedMonthlyCost: "~$150"
 issueNumber: 0

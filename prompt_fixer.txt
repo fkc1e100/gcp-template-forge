@@ -1,57 +1,18 @@
 # GCP Template Forge — Bug Fixing Agent
-# Task: Fix Issue #284
+# Task: Fix Issue #277
 # Repo: fkc1e100/gcp-template-forge
 
-You are an expert software engineer. Fix the bug described in Issue #284.
-Title: [CI-BUG] README in templates/enterprise-gke missing Architecture header
-Body: The README.md in `templates/enterprise-gke/` is missing the ## Architecture header.
+You are an expert software engineer. Fix the bug described in Issue #277.
+Title: [CI-BUG] README in templates/kuberay-kueue missing CI marker
+Body: The README.md in `templates/kuberay-kueue/` is missing the mandatory CI validation record marker.
 
 ## Research Context
-# Bug Research Report: Issue #284
-## [CI-BUG] README in templates/enterprise-gke missing Architecture header
-
-### 1. Root Cause Analysis
-The issue was caused by a combination of a systemic flaw in the project's linter and an accidental file corruption by an automated agent.
-
-- **Systemic Linter Flaw:** The script `agent-infra/local-lint.sh` was using piped `while read` loops (e.g., `find ... | while read ...`). In Bash, this construct creates a subshell for the `while` loop. Any `exit 1` called within this loop would only terminate the subshell, allowing the main script to continue and ultimately exit with code 0 (success). This meant that linting failures (such as missing mandatory headers or misplaced CI markers) were not blocking merges.
-- **Agent Corruption:** An automated agent working on a previous issue (likely #255 or an early attempt at #284) accidentally overwrote the entire content of `templates/enterprise-gke/README.md` with its own completion report ("I have completed the fix..."). 
-- **Consequence:** Because the linter failed to block the corrupted file, it was merged into the repository. The missing `## Architecture` header was a direct result of the entire file being replaced by non-documentation text.
-
-### 2. Affected Files
-- `templates/enterprise-gke/README.md`: Corrupted with agent status text, missing all standard sections.
-- `agent-infra/local-lint.sh`: Contained the subshell bug that prevented linter enforcement.
-- `templates/basic-gke-hello-world/README.md`: Contained a manual "Validation Record" section after the CI marker, which violated the mandate that the CI marker must be on the last line.
-
-### 3. Similar Errors and Solutions
-- **Issue #255:** Also reported corruption in the same README, but the fix attempt was itself corrupted or blocked by the linter bug.
-- **Solution:** The standard solution for the "exit in subshell" problem is to avoid pipes to `while read` and instead use `for` loops or process substitution.
-
-### 4. Verified Plan of Action
-The fix has already been implemented and verified in the `fix/issue-284` branch. The steps taken were:
-
-1.  **Refactor `agent-infra/local-lint.sh`**:
-    - Converted all piped `while read` loops to `for` loops using variable expansion (e.g., `for template in $TEMPLATES; do`).
-    - This ensures that `exit 1` correctly terminates the entire script, blocking CI on any mandate violation.
-2.  **Restore `templates/enterprise-gke/README.md`**:
-    - Reverted the file to its last known good state.
-    - Updated the `### Estimated Cost` section to reflect realistic enterprise values (Total: ~$300).
-    - Ensured the `## Architecture` header is present (Line 5).
-    - Moved the `<!-- CI: validation record ... -->` marker to the absolute last line of the file.
-3.  **Cleanup Other Templates**:
-    - Removed manual "Validation Record" tables from `templates/basic-gke-hello-world/README.md` that appeared after the CI marker, ensuring linter compliance.
-4.  **Verification**:
-    - Ran `./agent-infra/local-lint.sh templates/enterprise-gke` and confirmed it passes.
-    - Verified that introducing an intentional error (e.g., removing the header) now correctly causes the linter to exit with code 1.
-
-### 5. Final Recommendation
-Merge the changes from the `fix/issue-284` branch. No further manual changes are required as the fix is complete and correctly addresses both the immediate symptom (missing header) and the root cause (linter bug).
+No bug research report generated.
 
 ## Instructions
 1. Read the issue and research context carefully.
 2. Make the necessary code changes to fix the bug.
-3. Commit your changes with a descriptive message like `fix: address issue #284`.
-4. Push your branch `fix/issue-284` to origin.
-5. Open a PR with title `fix: address issue #284` and body `Closes #284`.
+3. Commit your changes with a descriptive message like `fix: address issue #277`.
+4. Push your branch `fix/issue-277` to origin.
+5. Open a PR with title `fix: address issue #277` and body `Closes #277`.
 6. Enable auto-merge on the PR.
-
-CRITICAL Fallback Instruction: You are running in fallback mode and CANNOT use tools. Do NOT output any plans, thoughts, or explanations! You MUST immediately output the FULL content of the file `templates/enterprise-gke/README.md` enclosed in a single ```markdown` code block! Do not output anything else before or after the code block.

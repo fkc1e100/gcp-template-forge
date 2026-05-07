@@ -2,8 +2,6 @@
 
 > Test template verifying the KCC-unsupported skip mechanism in CI validation
 
-<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
-
 ## Architecture
 
 This template is designed to verify the CI pipeline's ability to skip Config Connector (KCC) validation when a template is explicitly marked as unsupported. It contains minimal infrastructure definitions.
@@ -158,3 +156,5 @@ All Validation Tests passed successfully for Test KCC Skip!
 | `cluster_name` | GKE cluster name | `test-kcc-skip-tf` |
 | `network_name` | VPC network name | `test-kcc-skip-tf-vpc` |
 | `subnet_name` | Subnet name | `test-kcc-skip-tf-subnet` |
+
+<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->

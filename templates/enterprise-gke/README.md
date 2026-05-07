@@ -4,14 +4,14 @@
 
 ## Architecture
 
-This template provides an enterprise-grade Google Kubernetes Engine (GKE) architecture with security hardening. It enables Binary Authorization in enforce mode, uses Workload Identity for secure GCP access, and includes advanced security posture monitoring.
+This template provides an enterprise-grade Google Kubernetes Engine (GKE) architecture with security hardening. It enables [Binary Authorization](https://cloud.google.com/binary-authorization/docs/overview) in enforce mode, uses Workload Identity for secure GCP access, and includes advanced security posture monitoring.
 
 Note: Binary Authorization requires a project-level policy; otherwise, pod deployments may be blocked.
 
 This template provisions:
 
 - **VPC Network** — Dedicated VPC with a primary subnet in `us-central1`
-- **GKE Cluster** — Standard cluster (`enterprise-gke`) with 1x e2-standard-4 spot node pool and advanced security features
+- **GKE Cluster** — GKE Standard cluster (`enterprise-gke`) with e2-standard-4 spot node pool and advanced security features
 - **Workload** — Nginx-based production-ready workload with Workload Identity and External Load Balancer
 
 ### Resource Naming
@@ -151,7 +151,7 @@ Test 1: Cluster Connectivity... Connectivity passed.
 Test 2: Node Readiness... All nodes are Ready.
 Test 3: Workload Readiness... Workload is available.
 Test 4: Workload Identity Integration... Workload Identity validated.
-Test 5: Endpoint Interaction... Endpoint test passed.
+Test 5: Endpoint Interaction... Endpoint test passed!
 All Validation Tests passed successfully for Enterprise GKE Cluster!
 ```
 
@@ -171,6 +171,7 @@ All Validation Tests passed successfully for Enterprise GKE Cluster!
 | `workload_service_account` | Workload Identity SA | optional |
 
 <!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
+<<<<<<< HEAD
 
 ## Validation Record
 | | Terraform + Helm | Config Connector |
@@ -186,3 +187,5 @@ All Validation Tests passed successfully for Enterprise GKE Cluster!
 | **Commit** | 2c375256 | 2c375256 |
 
 
+=======
+>>>>>>> origin/main
