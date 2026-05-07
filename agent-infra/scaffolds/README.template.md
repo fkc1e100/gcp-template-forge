@@ -2,8 +2,6 @@
 
 > {{ONE_LINE_DESCRIPTION}}
 
-<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
-
 ## Architecture
 
 {{DESCRIBE_THE_ARCHITECTURE_HERE}}
@@ -165,3 +163,5 @@ All Validation Tests passed successfully for {{TEMPLATE_NAME}}!
 | `cluster_name` | GKE cluster name | `{{SHORT_NAME}}-tf` |
 | `network_name` | VPC network name | `{{SHORT_NAME}}-tf-vpc` |
 | `subnet_name` | Subnet name | `{{SHORT_NAME}}-tf-subnet` |
+
+<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->

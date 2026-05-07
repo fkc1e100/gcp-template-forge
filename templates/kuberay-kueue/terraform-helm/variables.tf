@@ -23,12 +23,6 @@ variable "region" {
   default     = "us-central1"
 }
 
-variable "zone" {
-  description = "The zone to deploy the node pools"
-  type        = string
-  default     = "us-central1-c"
-}
-
 variable "cluster_name" {
   description = "The name of the GKE cluster"
   type        = string

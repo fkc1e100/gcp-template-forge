@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Experiments Log - basic-gke-hello-world
+# Experiments Log - Basic GKE Hello World
 
 | Attempt | Change | CI Result | Hypothesis | Next step |
 |---|---|---|---|---|

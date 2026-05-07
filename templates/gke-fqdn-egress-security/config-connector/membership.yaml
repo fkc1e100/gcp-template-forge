@@ -15,11 +15,11 @@
 apiVersion: gkehub.cnrm.cloud.google.com/v1beta1
 kind: GKEHubMembership
 metadata:
-  name: gke-fqdn-egress-security-cluster
+  name: gke-fqdn-egress-kcc
   namespace: forge-management
   labels:
     project: gcp-template-forge
-    template: gke-fqdn-egress-security
+    template: gke-fqdn-egress
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
@@ -27,4 +27,4 @@ spec:
   endpoint:
     gkeCluster:
       resourceRef:
-        name: gke-fqdn-egress-security-cluster
+        name: gke-fqdn-egress-kcc

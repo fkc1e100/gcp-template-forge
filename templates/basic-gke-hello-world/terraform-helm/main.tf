@@ -51,7 +51,7 @@ resource "google_container_cluster" "primary" {
 
   resource_labels = {
     project  = "gcp-template-forge"
-    template = "basic-gke-hello-world"
+    template = "gke-basic"
   }
 
   # Remove default node pool; managed separately below
@@ -115,7 +115,7 @@ resource "google_container_node_pool" "primary_nodes" {
 
     resource_labels = {
       project  = "gcp-template-forge"
-      template = "basic-gke-hello-world"
+      template = "gke-basic"
     }
   }
 }

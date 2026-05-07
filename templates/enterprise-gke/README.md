@@ -1,17 +1,30 @@
 # Enterprise GKE Cluster
 
 > Enterprise-grade GKE with Binary Authorization, Workload Identity, and hardened security controls
+<<<<<<< HEAD
 
 <!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
 
 ## Architecture
 
 This template provides an enterprise-grade Google Kubernetes Engine (GKE) architecture with security hardening. It enables Binary Authorization in enforce mode, uses Workload Identity for secure GCP access, and includes advanced security posture monitoring. **Warning:** Binary Authorization requires a project-level policy; otherwise, pod deployments may be blocked.
+=======
+
+## Architecture
+
+This template provides an enterprise-grade Google Kubernetes Engine (GKE) architecture with security hardening. It enables Binary Authorization in enforce mode, uses Workload Identity for secure GCP access, and includes advanced security posture monitoring.
+
+Note: Binary Authorization requires a project-level policy; otherwise, pod deployments may be blocked.
+>>>>>>> origin/main
 
 This template provisions:
 
 - **VPC Network** — Dedicated VPC with a primary subnet in `us-central1`
+<<<<<<< HEAD
 - **GKE Cluster** — GKE Standard cluster (`enterprise-gke`) with e2-standard-4 spot node pool and advanced security features
+=======
+- **GKE Cluster** — Standard cluster (`enterprise-gke`) with 1x e2-standard-4 spot node pool and advanced security features
+>>>>>>> origin/main
 - **Workload** — Nginx-based production-ready workload with Workload Identity and External Load Balancer
 
 ### Resource Naming
@@ -27,9 +40,15 @@ This template provisions:
 | Resource | Monthly Estimate |
 |---|---|
 | GKE Cluster (control plane) | ~$75 |
+<<<<<<< HEAD
 | E2-standard-4 Node Pool (1x e2-standard-4 Spot) | ~$54 |
 | External Load Balancer | Forwarding Rule + traffic | ~$18 |
 | **Total** | **~$147** |
+=======
+| e2-standard-4 Node Pool (1x e2-standard-4) | ~$180 |
+| Cloud Armor + Security Command Center | ~$45 |
+| **Total** | **~$300** |
+>>>>>>> origin/main
 
 *Estimates based on sustained use in us-central1. GPU templates incur additional on-demand charges.*
 
@@ -54,12 +73,22 @@ terraform init \
 # Review the plan
 terraform plan \
   -var="project_id=YOUR_PROJECT_ID" \
+<<<<<<< HEAD
   -var="region=us-central1"
+=======
+  -var="region=us-central1" \
+  -var="create_service_accounts=true"
+>>>>>>> origin/main
 
 # Apply (provisions GKE cluster and supporting infrastructure)
 terraform apply \
   -var="project_id=YOUR_PROJECT_ID" \
+<<<<<<< HEAD
   -var="region=us-central1"
+=======
+  -var="region=us-central1" \
+  -var="create_service_accounts=true"
+>>>>>>> origin/main
 
 # Get cluster credentials
 CLUSTER_NAME=$(terraform output -raw cluster_name)
@@ -146,11 +175,18 @@ chmod +x templates/enterprise-gke/validate.sh
 Expected output:
 ```
 Test 1: Cluster Connectivity... Connectivity passed.
+<<<<<<< HEAD
 Test 2: Node Readiness... All nodes are Ready.
 Test 3: Workload Readiness... Workload is available.
 Test 4: Workload Identity Integration... Workload Identity validated.
 Test 5: Endpoint Interaction... Endpoint test passed!
 All Validation Tests passed successfully for Enterprise GKE Cluster!
+=======
+Test 2: Workload Readiness... Workload is available.
+Test 3: Workload Identity Integration... Workload Identity validated.
+Test 4: Endpoint Interaction... Endpoint test passed!
+All Validation Tests passed successfully!
+>>>>>>> origin/main
 ```
 
 ---
@@ -164,3 +200,25 @@ All Validation Tests passed successfully for Enterprise GKE Cluster!
 | `cluster_name` | GKE cluster name | `enterprise-gke-tf` |
 | `network_name` | VPC network name | `enterprise-gke-tf-vpc` |
 | `subnet_name` | Subnet name | `enterprise-gke-tf-subnet` |
+<<<<<<< HEAD
+=======
+| `create_service_accounts` | Whether to create dedicated SAs | `false` |
+| `service_account` | Node SA (required if create_service_accounts=false) | required |
+| `workload_service_account` | Workload Identity SA | optional |
+
+<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
+
+## Validation Record
+
+| | Terraform + Helm | Config Connector |
+| --- | --- | --- |
+| **Status** | success | skipped |
+| **Date** | 2026-04-11 | 2026-04-11 |
+| **Duration** | n/a | n/a |
+| **Region** | us-central1 | us-central1 (KCC cluster) |
+| **Zones** | - | forge-management namespace |
+| **Cluster** | enterprise-gke-tf | krmapihost-kcc-instance |
+| **Agent tokens** | - | (shared session) |
+| **Estimated cost** | - | -- |
+| **Commit** | 2c375256 | 2c375256 |
+>>>>>>> origin/main

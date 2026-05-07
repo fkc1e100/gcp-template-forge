@@ -53,7 +53,6 @@ runs:
         CHANGED_FILES=$(git diff --name-only "$BASE" "$DIFF_HEAD")
         DIRS=$(echo "$CHANGED_FILES" \
           | grep '^templates/' \
-          | grep -v '\.md$' \
           | awk -F/ '{print $1"/"$2}' \
           | sort -u || true)
         
