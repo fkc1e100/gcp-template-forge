@@ -2,18 +2,20 @@
 
 > High-performance AI inference with GCS FUSE + Local SSD caching for fast model loading on L4 GPUs
 
-
 ## Architecture
 
 This template demonstrates how to achieve high-performance model loading on GKE using **Cloud Storage FUSE** with **Local SSD caching**. This pattern is ideal for AI inference workloads (like vLLM) that need to load large models (100GB+) quickly while minimizing egress costs and Persistent Disk overhead.
 
 By using Local SSDs for the GCS FUSE cache, you achieve reduced TTFT (Time To First Token) as models are loaded at NVMe speeds (GB/s) after the first pull, significant cost savings by eliminating the need for massive `pd-ssd` boot disks, and improved scale-out speed as new pods on the same node benefit from the "warm" cache immediately.
 
-This template provisions:
+The template provisions:
 
-- **VPC Network** — Dedicated VPC with a primary subnet in `us-central1`
-- **GKE Cluster** — Standard cluster (`gke-inf-fuse-cache`) with L4 GPU acceleration
-- **Workload** — vLLM/Mock Inference server configured with GCS FUSE CSI driver and Local SSD caching
+- **GKE Standard Cluster**: With GCS FUSE CSI driver enabled.
+- **GPU Node Pool**: `g2-standard-4` machines in a single zone to ensure Local SSD availability.
+- **GCS Bucket**: Stores the model weights.
+- **Local SSD**: Attached as ephemeral storage and used by the GCS FUSE CSI driver as a dedicated cache layer.
+- **VPC Network**: Dedicated VPC with a primary subnet in `us-central1`.
+- **Workload**: vLLM/Mock Inference server configured with GCS FUSE CSI driver and Local SSD caching.
 
 ### Resource Naming
 
@@ -176,8 +178,7 @@ All Validation Tests passed successfully for GKE GCS FUSE Inference Cache!
 <!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
 
 ## Validation Record
-
-|  | Terraform + Helm | Config Connector |
+| | Terraform + Helm | Config Connector |
 | --- | --- | --- |
 | **Status** | skipped | skipped |
 | **Date** | 2026-05-07 | 2026-05-07 |
