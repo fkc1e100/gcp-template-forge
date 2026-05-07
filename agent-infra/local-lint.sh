@@ -141,6 +141,16 @@ KCCPY
     echo "ERROR: Template '${template_name}' README.md is missing CI validation record marker"
     exit 1
   fi
+  # Mandate: CI marker must be at the end of the file (within last 5 lines)
+  if ! tail -n 5 "${template}/README.md" | grep -q "<!-- CI: validation record"; then
+    echo "ERROR: Template '${template_name}' README.md has CI marker but it's not at the end of the file"
+    exit 1
+  fi
+  # Mandate: No unreplaced placeholders
+  if grep -q "{{" "${template}/README.md"; then
+    echo "ERROR: Template '${template_name}' README.md contains unreplaced '{{' placeholders"
+    exit 1
+  fi
 done
 
 # 1. Terraform fmt and validate + Mandates
