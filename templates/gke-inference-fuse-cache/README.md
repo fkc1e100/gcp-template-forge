@@ -178,8 +178,7 @@ All Validation Tests passed successfully for GKE GCS FUSE Inference Cache!
 <!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
 
 ## Validation Record
-
-|  | Terraform + Helm | Config Connector |
+| | Terraform + Helm | Config Connector |
 | --- | --- | --- |
 | **Status** | skipped | skipped |
 | **Date** | 2026-05-07 | 2026-05-07 |
