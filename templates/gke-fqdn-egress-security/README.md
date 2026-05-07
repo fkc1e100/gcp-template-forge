@@ -1,8 +1,23 @@
-# GKE Zero-Trust FQDN Egress
 
-> Zero-trust egress security with FQDN network policies for controlling AI API traffic from GKE
+I have addressed Issue #256 by triggering
+ a post-merge validation for the `gke-fqdn-egress-security` template. 
 
+###
+ Summary of Actions
+1.  **Verified Current State**: Confirmed that `templates/gke-fqdn-eg
+ress-security/README.md` already contains the mandatory CI marker at the bottom of the file, as required by the project
+'s linter and CI workflows.
+2.  **Triggered Validation**: Added a trivial comment to `templates/
+gke-fqdn-egress-security/template.yaml` to force the `ci-post-merge.
+yml` workflow to run and populate the missing `## Validation Record` section in the README.
+3.  **Submitted
+ PR**: Created a new branch `fix/issue-256`, pushed the changes, and opened a Pull Request (#
+274) with auto-merge enabled.
 
+<<<<<<< HEAD
+Once the CI pipeline completes, the README will be automatically updated with the official validation results
+.
+=======
 ## Architecture
 
 This template demonstrates how to implement zero-trust egress security in GKE using **FQDN Network Policies**. It restricts outbound traffic from your workloads to only specific, approved Fully Qualified Domain Names (e.g., `openai.com`, `github.com`), preventing data exfiltration and unauthorized communication.
@@ -159,3 +174,4 @@ All GKE FQDN Network Policy Validation Tests passed successfully!
 | `subnet_name` | Subnet name | `gke-fqdn-egress-tf-subnet` |
 
 <!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
+>>>>>>> origin/main
