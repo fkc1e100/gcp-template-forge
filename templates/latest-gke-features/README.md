@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-
-=======
 # Latest GKE Features
 
 > Showcase of latest GKE features: Gateway API, Node Auto-Provisioning, and modern workload patterns
@@ -164,4 +161,3 @@ All Validation Tests passed successfully!
 | `subnet_name` | Subnet name | `latest-gke-feat-tf-subnet` |
 
 <!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
->>>>>>> origin/main
