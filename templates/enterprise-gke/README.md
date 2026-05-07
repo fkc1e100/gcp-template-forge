@@ -148,11 +148,10 @@ chmod +x templates/enterprise-gke/validate.sh
 Expected output:
 ```
 Test 1: Cluster Connectivity... Connectivity passed.
-Test 2: Node Readiness... All nodes are Ready.
-Test 3: Workload Readiness... Workload is available.
-Test 4: Workload Identity Integration... Workload Identity validated.
-Test 5: Endpoint Interaction... Endpoint test passed.
-All Validation Tests passed successfully for Enterprise GKE Cluster!
+Test 2: Workload Readiness... Workload is available.
+Test 3: Workload Identity Integration... Workload Identity validated.
+Test 4: Endpoint Interaction... Endpoint test passed!
+All Validation Tests passed successfully!
 ```
 
 ---
@@ -171,3 +170,17 @@ All Validation Tests passed successfully for Enterprise GKE Cluster!
 | `workload_service_account` | Workload Identity SA | optional |
 
 <!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
+
+## Validation Record
+
+| | Terraform + Helm | Config Connector |
+| --- | --- | --- |
+| **Status** | success | skipped |
+| **Date** | 2026-04-11 | 2026-04-11 |
+| **Duration** | - | - |
+| **Region** | us-central1 | us-central1 (KCC cluster) |
+| **Zones** | - | forge-management namespace |
+| **Cluster** | -- | krmapihost-kcc-instance |
+| **Agent tokens** | - | (shared session) |
+| **Estimated cost** | - | -- |
+| **Commit** | 2c375256 | 2c375256 |
