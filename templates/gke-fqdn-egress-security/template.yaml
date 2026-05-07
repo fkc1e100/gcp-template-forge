@@ -8,3 +8,4 @@ gcpServices:
 kccSupported: true
 estimatedMonthlyCost: "~$150"
 issueNumber: 0
+# Triggering post-marker-fix validation for Issue #256
