@@ -1,34 +1,33 @@
 # Latest GKE Features
 
-> Showcase of latest GKE features: Gateway API, Node Auto-Provisioning, and modern workload patterns
+> Showcase of latest GKE features: Gateway API, Node Auto-Provisioning, and modern workloads.
 
 <!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
 
 ## Architecture
 
-This template demonstrates some of the latest and most advanced features of Google Kubernetes Engine (GKE). It showcases both cluster-level infrastructure improvements and modern workload deployment patterns.
+This template demonstrates a modern GKE environment leveraging the latest platform capabilities released in 2024, 2025, and 2026.
 
-Key features included:
-- **GKE Gateway API**: Enabled by default (`CHANNEL_STANDARD`), providing a modern, expressive way to manage load balancing.
-- **Node Pool Auto-provisioning (NAP)**: Automatically creates and manages node pools based on workload requirements.
-- **Image Streaming (GCFS)**: Significantly reduces container startup times by streaming image data on-demand.
-- **Enterprise Security Posture**: Advanced vulnerability scanning and security monitoring (Vulnerability Enterprise).
-- **Native Sidecar Containers**: Leveraging Kubernetes 1.29+ "Sidecar Containers" feature (init containers with `restartPolicy: Always`).
-- **Pod Topology Spread Constraints**: Modern scheduling to ensure high availability across hostnames and zones.
+The architecture includes:
+- **VPC Network** — A private VPC-native network with dedicated subnets for GKE nodes, pods, and services.
+- **GKE Cluster** — A GKE Standard cluster on the **RAPID** release channel, enabling:
+    - **Gateway API**: Modern, expressive load balancing using `Gateway` and `HTTPRoute` resources.
+    - **Node Pool Auto-provisioning (NAP)**: Automatically creates and manages node pools based on workload requirements (CPU, Memory, Spot).
+    - **Image Streaming (GCFS)**: Significantly reduces container startup times by streaming image data on-demand.
+    - **Enterprise Security Posture**: Advanced vulnerability scanning and security monitoring (Vulnerability Enterprise).
+- **Workload** — A sample application showcasing:
+    - **Native Sidecar Containers**: Leveraging Kubernetes 1.29+ "Sidecar Containers" feature (init containers with `restartPolicy: Always`).
+    - **Pod Topology Spread Constraints**: Modern scheduling to ensure high availability across hostnames and zones.
 
-This template provisions:
-
-- **VPC Network** — Dedicated VPC with a primary subnet in `us-central1`
-- **GKE Cluster** — Standard regional cluster (`latest-gke-features`) with Spot VM Node Pool
-- **Workload** — Nginx deployment with native sidecar and GKE Gateway exposure
+### Resource Naming
 
 ### Resource Naming
 
 | Resource | Terraform + Helm | Config Connector |
 |---|---|---|
-| GKE Cluster | `latest-gke-features-<uid>-tf` | `latest-gke-features-<uid>-kcc` |
-| VPC Network | `latest-gke-features-<uid>-tf-vpc` | `latest-gke-features-<uid>-kcc-vpc` |
-| Subnet | `latest-gke-features-<uid>-tf-subnet` | `latest-gke-features-<uid>-kcc-subnet` |
+| GKE Cluster | `latest-gke-feat-<uid>-tf` | `latest-gke-feat-<uid>-kcc` |
+| VPC Network | `latest-gke-feat-<uid>-tf-vpc` | `latest-gke-feat-<uid>-kcc-vpc` |
+| Subnet | `latest-gke-feat-<uid>-tf-subnet` | `latest-gke-feat-<uid>-kcc-subnet` |
 
 ### Estimated Cost
 
@@ -80,8 +79,7 @@ gcloud container clusters get-credentials "${CLUSTER_NAME}" --region "${REGION}"
 helm upgrade --install release ./workload --wait --timeout=30m
 
 # Verify
-kubectl get nodes
-kubectl get pods -A
+./../validate.sh
 ```
 
 **Cleanup:**
@@ -109,24 +107,18 @@ cd templates/latest-gke-features/config-connector
 kubectl apply -n forge-management -f .
 
 # Wait for all resources to be Ready (GKE cluster takes ~10 minutes)
-kubectl wait -n forge-management --for=condition=Ready --all \
-  --timeout=3600s -f .
+kubectl wait -n forge-management --for=condition=Ready --all --timeout=3600s -f .
 
-# Get cluster credentials (once ContainerCluster is Ready)
-CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com \
-  -n forge-management -l "template=latest-gke-features" \
-  -o jsonpath='{.items[0].metadata.name}')
-LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com \
-  -n forge-management -l "template=latest-gke-features" \
-  -o jsonpath='{.items[0].spec.location}')
+# Get cluster credentials
+CLUSTER_NAME=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n forge-management -l "template=latest-gke-features" -o jsonpath='{.items[0].metadata.name}')
+LOCATION=$(kubectl get containerclusters.container.cnrm.cloud.google.com -n forge-management -l "template=latest-gke-features" -o jsonpath='{.items[0].spec.location}')
 gcloud container clusters get-credentials "${CLUSTER_NAME}" --region "${LOCATION}"
 
 # Deploy the workload
 kubectl apply -n default -f ../config-connector-workload/
 
 # Verify
-kubectl get nodes
-kubectl get pods -A
+./../validate.sh
 ```
 
 **Cleanup:**
@@ -172,4 +164,5 @@ All Latest GKE Features Validation Tests passed successfully!
 | `cluster_name` | GKE cluster name | `latest-gke-features-tf` |
 | `network_name` | VPC network name | `latest-gke-features-tf-vpc` |
 | `subnet_name` | Subnet name | `latest-gke-features-tf-subnet` |
-| `service_account`| Node service account | required |
+| `service_account` | Node pool service account | required |
+| `uid_suffix` | Unique suffix for resource names | `""` |

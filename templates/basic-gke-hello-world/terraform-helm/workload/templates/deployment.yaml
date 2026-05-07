@@ -19,7 +19,7 @@ metadata:
   labels:
     {{- include "hello-world.labels" . | nindent 4 }}
     project: gcp-template-forge
-    template: basic-gke-hello-world
+    template: gke-basic
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
@@ -30,7 +30,7 @@ spec:
       labels:
         {{- include "hello-world.selectorLabels" . | nindent 8 }}
         project: gcp-template-forge
-        template: basic-gke-hello-world
+        template: gke-basic
     spec:
       containers:
       - name: hello-app

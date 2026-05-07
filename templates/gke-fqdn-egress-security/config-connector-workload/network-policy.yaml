@@ -18,7 +18,7 @@ metadata:
   name: default-deny-egress
   labels:
     project: gcp-template-forge
-    template: gke-fqdn-egress-security
+    template: gke-fqdn-egress
 spec:
   podSelector: {}
   policyTypes:
