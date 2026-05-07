@@ -4,61 +4,63 @@
 [CI-BUG] README in templates/enterprise-gke missing CI marker (Validation Record)
 
 ## Description
-The `README.md` in `templates/enterprise-gke/` is missing the mandatory CI validation record table. While the marker comment `<!-- CI: validation record ... -->` is present at the end of the file, the actual results table is missing. This issue appears to affect multiple templates and is caused by conflicting and flawed logic across several CI workflows.
+The `README.md` in `templates/enterprise-gke/` was reported as missing the mandatory CI validation record marker. Research shows that while the comment marker `<!-- CI: validation record ... -->` is present in all templates, the actual **Validation Record table** following it is missing in almost all templates (except `enterprise-gke` which was recently fixed in this branch). 
+
+This is a systemic issue causing widespread failures in `./agent-infra/local-lint.sh`, which enforces that a `## Validation Record` header must follow the CI marker.
 
 ## Root Cause Analysis
 
-1.  **Workflow Contention**: Three separate GitHub workflows attempt to update the same files (`README.md` and `.validated`) on push to `main`:
+1.  **Workflow Race Conditions**: Three separate GitHub workflows attempt to update the same `README.md` and `.validated` files on push to `main`:
     - `.github/workflows/ci-post-merge.yml`
     - `.github/workflows/sandbox-validation-tf.yml`
     - `.github/workflows/sandbox-validation-kcc.yml`
     
-    This creates race conditions where one workflow's changes may be overwritten or lost during the `git push` retry loops of others.
+    When a PR is merged, all three trigger simultaneously. They all use `git reset --hard origin/main` and `git push`, but their logic for preserving state between them is inconsistent, leading to lost updates.
 
-2.  **Destructive Truncation Logic**: Both `sandbox-validation-tf.yml` and `sandbox-validation-kcc.yml` use `sed -i '/<!-- CI: validation record/q' "$README"` to truncate the file at the marker line before attempting to append the new record. If the subsequent update step fails (e.g., due to a Python script error or artifact absence), the file is left in a truncated state with no record.
+2.  **Destructive Truncation Logic**: Both `sandbox-validation-tf.yml` and `sandbox-validation-kcc.yml` use `sed -i '/<!-- CI: validation record/q' "$README"` to truncate the file at the marker line. If the subsequent Python script fails or if the workflow is interrupted before the table is appended and pushed, the file is left in a truncated state (marker but no table).
 
-3.  **Loss of Validation State in `ci-post-merge.yml`**: The `ci-post-merge.yml` workflow has a flaw where it defaults `TF_STATUS` to "skipped" if the specific template was not validated in the current run (which happens if only documentation or unrelated files changed). It does NOT preserve the previous "success" status from the `.validated` file, leading it to overwrite valid records with "skipped" status or empty tables.
+3.  **Linter-Driven Deletions**: Previously, `agent-infra/local-lint.sh` required the CI marker to be the absolute last line of the file. To satisfy this linter, agents (and potentially automated cleanup scripts) manually removed the validation tables, assuming CI would replace them. However, if CI didn't run or failed, the tables remained missing.
 
-4.  **Manual "Cleanup" Errors**: Recent commits (e.g., `830730c`) shows agents attempting to "restore README to a clean state" by manually removing the validation record, assuming CI will immediately replace it. However, if the template code hasn't changed, the CI workflows might skip the update or fail to find fresh artifacts, leaving the README without a record indefinitely.
+4.  **Incomplete State Preservation**: `sandbox-validation-tf.yml` does not preserve the previous "success" status from `.validated` if the current run skips validation (e.g., if only docs changed). It defaults to "skipped", which can overwrite a valid "success" record.
 
-5.  **Marker-only Linter**: The `agent-infra/local-lint.sh` only checks for the *existence* of the marker and its proximity to the end of the file. It does not verify that a valid `## Validation Record` table actually follows the marker.
+## Current State of Templates
 
-## Similar Errors Identified
-This is a systemic issue affecting most templates, including:
-- `templates/basic-gke-hello-world/README.md`
-- `templates/latest-gke-features/README.md`
-- `templates/gke-fqdn-egress-security/README.md`
+| Template | Marker Present | Table Present | Linter Status |
+|---|---|---|---|
+| `enterprise-gke` | Yes | Yes | **PASS** |
+| `basic-gke-hello-world` | Yes | No | **FAIL** |
+| `gke-fqdn-egress-security` | Yes | No | **FAIL** |
+| `gke-inference-fuse-cache` | Yes | No | **FAIL** |
+| `gke-topo-routing` | Yes | No | **FAIL** |
+| `kuberay-kueue` | Yes | No | **FAIL** |
+| `latest-gke-features` | Yes | No | **FAIL** |
+| `test-kcc-skip` | Yes | No | **FAIL** |
 
 ## Proposed Plan of Action (for Fixer Agent)
 
-### 1. Consolidate and Robustify README Updates
-The update logic should be unified into a single script or action that:
-- Loads existing status from `.validated` if a new validation was skipped.
-- Only truncates and appends if it has a valid record to write.
-- Is used consistently across all three workflows.
+### 1. Restore Missing Tables
+Restore the `## Validation Record` section to all affected templates. The data can be reconstructed from the existing `${TEMPLATE}/.validated` files.
 
-### 2. Fix `ci-post-merge.yml` Status Handling
-Modify the `publish-validated` job in `ci-post-merge.yml` to read the existing status from `${TEMPLATE}/.validated` when a template's artifact is missing, ensuring "success" is preserved.
+### 2. Consolidate README Update Logic
+- Modify `.github/workflows/ci-post-merge.yml` to be the **canonical** source for README updates.
+- Remove the redundant (and destructive) `sed -i` and Python-based README updates from `sandbox-validation-tf.yml` and `sandbox-validation-kcc.yml`. These workflows should focus on updating the `.validated` file and let `ci-post-merge.yml` handle the README presentation.
+- Ensure `ci-post-merge.yml` properly reads the existing state from `.validated` to avoid overwriting "success" with "skipped".
 
-### 3. Restore `enterprise-gke/README.md`
-Manually (or via script) restore the validation record for `enterprise-gke` using the data from its current `.validated` file:
-- **Status**: success
-- **Date**: 2026-04-11
-- **Commit**: 2c375256
-- **TF_Helm**: success
-- **KCC**: skipped
+### 3. Robustify `publish-validated` in `ci-post-merge.yml`
+Update the Python script in `ci-post-merge.yml` to:
+- Handle potential missing artifacts gracefully.
+- Ensure it always appends a valid table if the marker is found.
+- (Optional) Add a check to ensure the marker is indeed near the end of the file before truncating.
 
-### 4. Improve Linter
-Update `agent-infra/local-lint.sh` to ensure that a `## Validation Record` header exists if the marker is present, or at least warn if it's missing.
+### 4. Update Linter to be Informative
+Ensure `agent-infra/local-lint.sh` provides clear instructions on how to restore a missing table (e.g., "Run CI or manually restore from .validated").
 
-## Actionable Steps for Fixer
-1.  **Read** `${TEMPLATE}/.validated` to get the last known good status.
-2.  **Append** a standardized table to `templates/enterprise-gke/README.md` following the marker.
-3.  **Update** `.github/workflows/ci-post-merge.yml` to preserve state:
-    ```bash
-    # Proposed logic for ci-post-merge.yml
-    if [ ! -f "$TF_RES" ]; then
-      TF_STATUS=$(grep '^tf_helm:' "${TEMPLATE}/.validated" | awk '{print $2}' || echo "skipped")
-    fi
-    ```
-4.  **Verify** the fix by running `./agent-infra/local-lint.sh`.
+## Specific Steps for Fixer
+1.  **For each template** (except `enterprise-gke`):
+    - Read `.validated` to get `validated_at`, `commit`, `tf_helm`, and `kcc`.
+    - Append the `## Validation Record` header and the table to `README.md` following the marker.
+2.  **Edit `.github/workflows/ci-post-merge.yml`**:
+    - Ensure it uses the logic to preserve `TF_STATUS` and `KCC_STATUS` from `.validated` if artifacts are missing.
+3.  **Edit `.github/workflows/sandbox-validation-tf.yml` and `kcc.yml`**:
+    - Remove the `Update README and mark validated` steps, or simplify them to only update the `.validated` file and avoid touching the `README.md`.
+4.  **Run `./agent-infra/local-lint.sh`** to verify all templates now pass.
