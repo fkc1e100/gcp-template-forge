@@ -75,7 +75,7 @@ for template in $TEMPLATES; do
   fi
 
   # Check ContainerCluster name length in KCC manifests
-  if [ -d "${template}/config-connector" ]; then
+  if [ -d "${template}/config-connector" ] && [ "$HAS_YAML" == "true" ]; then
     python3 - "${template}/config-connector" << 'NAMELINT'
 import yaml, sys, pathlib
 cc_dir = sys.argv[1]
