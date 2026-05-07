@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-
-=======
 # Latest GKE Features
 
 > Showcase of latest GKE features: Gateway API, Node Auto-Provisioning, and modern workload patterns
