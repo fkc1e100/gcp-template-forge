@@ -207,7 +207,28 @@ jobs:
           UID_SUFFIX="${RUN_ID: -6}"
           TEMPLATE="${{ matrix.template }}"
           BASE_NAME=$(basename "$TEMPLATE")
-          find "${TEMPLATE}"/config-connector* -type f -name "*.yaml" -exec sed -i "s/${BASE_NAME}/${BASE_NAME}-${UID_SUFFIX}/g" {} +
+          python3 -c "
+          import os, re
+          template_dir = '${TEMPLATE}'
+          base_name = '${BASE_NAME}'
+          uid = '${UID_SUFFIX}'
+          suffix = f'-{uid}-kcc'
+          def replace_func(match):
+              old_word = match.group(0)
+              new_word = old_word.replace(base_name, base_name + suffix)
+              if len(new_word) > 40:
+                  new_word = new_word[:29] + new_word[-11:]
+              return new_word
+          for root, _, files in os.walk(template_dir):
+              for f in files:
+                  if f.endswith('.yaml') or f == 'validate.sh':
+                      path = os.path.join(root, f)
+                      with open(path, 'r') as file:
+                          content = file.read()
+                      new_content = re.sub(r'[a-zA-Z0-9\-_]*' + re.escape(base_name) + r'[a-zA-Z0-9\-_]*', replace_func, content)
+                      with open(path, 'w') as file:
+                          file.write(new_content)
+          "
           kubectl apply -n "$KCC_NAMESPACE" -f "${TEMPLATE}/config-connector/"
           kubectl wait -n "$KCC_NAMESPACE" --for=condition=Ready --all --timeout=5400s -f "${TEMPLATE}/config-connector/"
           KCC_DURATION=$(( $(date -u +%s) - KCC_START ))

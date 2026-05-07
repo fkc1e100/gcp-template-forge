@@ -74,6 +74,26 @@ except Exception as e:
     exit 1
   fi
 
+  # Check ContainerCluster name length in KCC manifests
+  if [ -d "${template}/config-connector" ]; then
+    python3 - "${template}/config-connector" << 'NAMELINT'
+import yaml, sys, pathlib
+cc_dir = sys.argv[1]
+for p in pathlib.Path(cc_dir).rglob('*.yaml'):
+    try:
+        with open(p, 'r') as f:
+            docs = yaml.safe_load_all(f)
+            for doc in docs:
+                if not doc: continue
+                if doc.get('kind') == 'ContainerCluster':
+                    name = doc.get('metadata', {}).get('name', '')
+                    if len(name) > 28:
+                        print(f"WARNING: ContainerCluster name '{name}' in {p} is {len(name)} chars. Names > 28 chars will be truncated in CI.")
+    except Exception:
+        pass
+NAMELINT
+  fi
+
   # KCC capability check: warn if KCC manifests use known-unsupported fields without .kcc-unsupported
   if [ -d "${template}/config-connector" ] && [ ! -f "${template}/.kcc-unsupported" ]; then
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
