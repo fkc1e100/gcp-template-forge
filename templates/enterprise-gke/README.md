@@ -4,7 +4,7 @@
 
 ## Architecture
 
-This template provides an enterprise-grade Google Kubernetes Engine (GKE) architecture with security hardening. It enables Binary Authorization in enforce mode, uses Workload Identity for secure GCP access, and includes advanced security posture monitoring.
+This template provides an enterprise-grade Google Kubernetes Engine (GKE) architecture with security hardening. It enables [Binary Authorization](https://cloud.google.com/binary-authorization/docs/overview) in enforce mode, uses Workload Identity for secure GCP access, and includes advanced security posture monitoring.
 
 Note: Binary Authorization requires a project-level policy; otherwise, pod deployments may be blocked.
 
