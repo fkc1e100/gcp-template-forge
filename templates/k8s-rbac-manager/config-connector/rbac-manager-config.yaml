@@ -1,0 +1,7 @@
+apiVersion: example.com/v1
+kind: Cluster
+metadata:
+  name: rbac-config
+  namespace: default
+spec:
+  clusterName: "k8s-rbac-managed-cluster"

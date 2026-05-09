@@ -1,0 +1,2 @@
+name: k8s-deployer
+description: A template to deploy a Kubernetes workload via KCC (Kubernetes Config Connector)

@@ -1,0 +1,7 @@
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeNetwork
+metadata:
+  name: k8s-deployer-vpc-resource
+spec:
+  name: k8s-deployer-vpc
+  autoCreateSubnetworks: false
