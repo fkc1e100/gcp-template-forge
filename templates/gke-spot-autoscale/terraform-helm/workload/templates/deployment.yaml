@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "workload.fullname" . }}
+  labels:
+    {{- include "workload.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: spot-app
+      {{- include "workload.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: spot-app
+        {{- include "workload.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          ports:
+            - name: http
+              containerPort: 80
+      nodeSelector:
+        {{- toYaml .Values.nodeSelector | nindent 8 }}

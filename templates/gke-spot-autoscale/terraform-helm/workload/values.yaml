@@ -1,0 +1,10 @@
+replicaCount: 1
+image:
+  repository: nginx
+  pullPolicy: IfNotPresent
+  tag: "alpine"
+service:
+  type: ClusterIP
+  port: 80
+nodeSelector:
+  cloud.google.com/gke-spot: "true"
