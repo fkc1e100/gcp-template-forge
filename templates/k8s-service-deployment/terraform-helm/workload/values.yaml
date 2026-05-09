@@ -1,0 +1,6 @@
+# Default values for workload.
+replicaCount: 2
+image: nginx:alpine
+service:
+  type: LoadBalancer
+  port: 80
