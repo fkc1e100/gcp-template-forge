@@ -1,0 +1,8 @@
+shortName: "online-boutique-gke"
+displayName: "Online Boutique - Microservices Demo"
+description: "Deploy 11 microservices on a GKE Standard Cluster"
+gcpServices:
+  - GKE
+kccSupported: true
+estimatedMonthlyCost: "~$100"
+issueNumber: 318
