@@ -1,2 +1,9 @@
-name: k8s-deployer
+shortName: k8s-deployer
+displayName: K8s Deployer
 description: A template to deploy a Kubernetes workload via KCC (Kubernetes Config Connector)
+gcpServices:
+  - GKE
+  - VPC
+kccSupported: true
+estimatedMonthlyCost: "~$75"
+issueNumber: "327"
