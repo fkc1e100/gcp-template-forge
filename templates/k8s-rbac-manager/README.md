@@ -1,33 +1,90 @@
+# K8s RBAC Manager
 
-I have fixed Issue #330 by addressing
- the missing CI markers and scaffold non-compliance in the template READMEs.
+> Kubernetes RBAC management using Config Connector and Terraform.
 
-### Summary of Changes
-1.  **k
-8s-rbac-manager README Update**: Rewrote `templates/k8s-rbac-manager/README.md
-` to follow the mandatory project scaffold. This included:
-    *   Adding the `### Estimated Cost` section.
-    *   Adding
- the `## Template Inputs` section.
-    *   Completing the `Resource Naming` table with VPC and
- Subnet entries.
-    *   Updating deployment instructions to reflect the correct workload manifest location.
-2.  **Workload Manifest Rel
-ocation**: Moved raw Kubernetes manifests (`cluster.yaml` and `rbac-manager-config.yaml`) from `templates
-/k8s-rbac-manager/config-connector/` to `templates/k8s-rbac-
-manager/config-connector-workload/`. This ensures compliance with the mandate that raw workloads must not be placed in the `config-connector
-/` directory (which is reserved for KCC resources applied to the management cluster).
-3.  **kuber
-ay-operator CI Marker**: Added the mandatory HTML comment marker `<!-- CI: validation record ... -->` to `templates/
-kuberay-operator/README.md` to prevent linting failures and enable CI record appending.
+## Architecture
 
-### Verification
- Results
-*   Checked all templates for the CI marker; all 14 now possess it.
-*   Verified
- `k8s-rbac-manager/validate.sh` output matches the updated README.
-*   Confirmed that `kuber
-ay-operator` already used the correct `config-connector-workload` pattern.
+This template provides a framework for managing Kubernetes Role-Based Access Control (RBAC) using infrastructure-as-code. It demonstrates how to define RBAC roles, role bindings, and service accounts.
 
-A Pull Request has been opened at **fk
-c1e100/gcp-template-forge#340** and auto-merge has been enabled.
+This template provisions:
+
+- **VPC Network** — Dedicated VPC for the RBAC management cluster
+- **GKE Cluster** — Standard cluster (`k8s-rbac-mgr`)
+- **Workload** — RBAC custom resources and policies
+
+### Resource Naming
+
+| Resource | Terraform + Helm | Config Connector |
+|---|---|---|
+| GKE Cluster | `k8s-rbac-mgr-<uid>-tf` | `k8s-rbac-mgr-<uid>-kcc` |
+| VPC Network | `k8s-rbac-mgr-<uid>-tf-vpc` | `k8s-rbac-mgr-<uid>-kcc-vpc` |
+| Subnet | `k8s-rbac-mgr-<uid>-tf-subnet` | `k8s-rbac-mgr-<uid>-kcc-subnet` |
+
+### Estimated Cost
+
+| Resource | Monthly Estimate |
+|---|---|
+| GKE Cluster (control plane) | ~$75 |
+| Node Pool (1x e2-standard-2) | ~$50 |
+| **Total** | **~$125** |
+
+*Estimates based on sustained use in us-central1.*
+
+---
+
+## Deployment Paths
+
+This template supports two deployment paths that provision equivalent infrastructure.
+
+### Path 1: Terraform + Helm
+
+**Prerequisites:** `terraform` ≥ 1.5, `helm` ≥ 3.10, `kubectl`, `gcloud` with ADC configured.
+
+```bash
+cd templates/k8s-rbac-manager/terraform-helm
+
+# Initialize
+terraform init
+
+# Apply
+terraform apply -var="project_id=YOUR_PROJECT_ID"
+```
+
+---
+
+### Path 2: Config Connector (KCC)
+
+**Prerequisites:** A running GKE cluster with Config Connector installed.
+
+```bash
+cd templates/k8s-rbac-manager/config-connector
+
+# Apply the manifests
+kubectl apply -f .
+```
+
+---
+
+## Verification
+
+Run the validation script:
+
+```bash
+./templates/k8s-rbac-manager/validate.sh
+```
+
+<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
+
+## Validation Record
+
+| | Terraform + Helm | Config Connector |
+| --- | --- | --- |
+| **Status** | pending | pending |
+| **Date** | n/a | n/a |
+| **Duration** | n/a | n/a |
+| **Region** | us-central1 | us-central1 (KCC cluster) |
+| **Zones** | - | forge-management namespace |
+| **Cluster** | -- | krmapihost-kcc-instance |
+| **Agent tokens** | - | (shared session) |
+| **Estimated cost** | - | -- |
+| **Commit** | n/a | n/a |

@@ -9,6 +9,12 @@ variable "region" {
   default     = "us-central1"
 }
 
+variable "cluster_name" {
+  type        = string
+  description = "The name of the GKE cluster"
+  default     = "k8s-deployer-tf"
+}
+
 variable "vpc_name" {
   type        = string
   description = "The name of the VPC network"
