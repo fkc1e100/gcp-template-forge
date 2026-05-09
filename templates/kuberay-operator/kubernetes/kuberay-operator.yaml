@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kuberay-operator
+  namespace: kubeflow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kuberag-operator
+  template:
+    metadata:
+      labels:
+        app: kuberay-operator
+    spec:
+      containers:
+      - name: kuberay-operator
+        image: rayproject/kuberay-operator:v1.1.0
+        args: ["--mode", "server"]
