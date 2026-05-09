@@ -9,11 +9,16 @@ variable "region" {
 }
 
 variable "zone" {
-  type        # Used for node pool location
+  type        = string
   description = "GCP Zone"
 }
 
 variable "cluster_name" {
   type    = string
   default = "gke-spot-cluster"
+}
+
+variable "service_account" {
+  type        = string
+  description = "Service account to use for the node pool"
 }

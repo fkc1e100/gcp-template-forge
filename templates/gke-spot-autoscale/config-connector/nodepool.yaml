@@ -1,0 +1,49 @@
+apiVersion: container.cnrm.cloud.google.com/v1beta1
+kind: ContainerNodePool
+metadata:
+  name: gke-spot-pool
+  namespace: forge-management
+  labels:
+    project: gcp-template-forge
+    template: gke-spot
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
+spec:
+  location: us-central1
+  clusterRef:
+    name: gke-spot-kcc
+  nodeCount: 1
+  autoscaling:
+    minNodeCount: 1
+    maxNodeCount: 3
+  nodeConfig:
+    spot: true
+    machineType: e2-medium
+    oauthScopes:
+      - https://www.googleapis.com/auth/cloud-platform
+    labels:
+      project: gcp-template-forge
+      template: gke-spot
+---
+apiVersion: container.cnrm.cloud.google.com/v1beta1
+kind: ContainerNodePool
+metadata:
+  name: gke-standard-pool
+  namespace: forge-management
+  labels:
+    project: gcp-template-forge
+    template: gke-spot
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
+spec:
+  location: us-central1
+  clusterRef:
+    name: gke-spot-kcc
+  nodeCount: 1
+  nodeConfig:
+    machineType: e2-medium
+    oauthScopes:
+      - https://www.googleapis.com/auth/cloud-platform
+    labels:
+      project: gcp-template-forge
+      template: gke-spot

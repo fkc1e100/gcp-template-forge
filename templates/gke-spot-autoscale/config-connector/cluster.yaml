@@ -1,0 +1,22 @@
+apiVersion: container.cnrm.cloud.google.com/v1beta1
+kind: ContainerCluster
+metadata:
+  name: gke-spot-kcc
+  namespace: forge-management
+  labels:
+    project: gcp-template-forge
+    template: gke-spot
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
+    cnrm.cloud.google.com/remove-default-node-pool: "true"
+spec:
+  location: us-central1
+  initialNodeCount: 1
+  networkRef:
+    external: default
+  subnetworkRef:
+    external: default
+  ipAllocationPolicy:
+    useIpMasqueradeAsNat: true
+  releaseChannel:
+    channel: REGULAR
