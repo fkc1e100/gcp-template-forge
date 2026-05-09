@@ -1,2 +1,11 @@
 name: k8s-service-deployment
-description: A template for deploying a simple web service on GKE with a LoadBalancer.
+shortName: k8s-svc-lb
+displayName: "K8s Service Deployment"
+description: >
+  A template for deploying a simple web service on GKE with a LoadBalancer.
+  Includes a custom VPC, GKE cluster, and an Nginx workload.
+gcpServices:
+  - GKE
+  - VPC
+kccSupported: true
+estimatedMonthlyCost: "~00 (e2-medium)"

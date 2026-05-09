@@ -1,0 +1,23 @@
+apiVersion: container.cnrm.cloud.google.com/v1beta1
+kind: ContainerCluster
+metadata:
+  name: k8s-svc-lb-kcc
+  namespace: forge-management
+  labels:
+    project: gcp-template-forge
+    template: k8s-svc-lb
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
+    cnrm.cloud.google.com/remove-default-node-pool: "true"
+spec:
+  location: us-central1
+  initialNodeCount: 1
+  networkRef:
+    name: k8s-svc-lb-kcc-vpc
+  subnetworkRef:
+    name: k8s-svc-lb-kcc-subnet
+  ipAllocationPolicy:
+    clusterSecondaryRangeName: pod-range
+    servicesSecondaryRangeName: services-range
+  releaseChannel:
+    channel: REGULAR

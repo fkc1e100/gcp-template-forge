@@ -1,0 +1,31 @@
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRouter
+metadata:
+  name: k8s-svc-lb-router
+  namespace: forge-management
+  labels:
+    project: gcp-template-forge
+    template: k8s-svc-lb
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
+spec:
+  networkRef:
+    name: k8s-svc-lb-kcc-vpc
+  region: us-central1
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRouterNAT
+metadata:
+  name: k8s-svc-lb-nat
+  namespace: forge-management
+  labels:
+    project: gcp-template-forge
+    template: k8s-svc-lb
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
+spec:
+  routerRef:
+    name: k8s-svc-lb-router
+  region: us-central1
+  natIpAllocateOption: AUTO_ONLY
+  sourceSubnetworkIpRangesToNat: ALL_SUBNETWORKS_ALL_IP_RANGES
