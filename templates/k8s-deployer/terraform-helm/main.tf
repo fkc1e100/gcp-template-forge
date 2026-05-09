@@ -5,7 +5,7 @@ provider "google" {
 
 # VPC Network
 resource "google_compute_network" "vpc" {
-  name                    = var.vpc_name
+  name                    = var.network_name
   auto_create_subnetworks = false
 }
 
@@ -73,6 +73,13 @@ resource "google_container_node_pool" "primary_nodes" {
   location   = var.region
   cluster    = google_container_cluster.primary.name
   node_count = 1
+
+  # Regional clusters require explicit node_locations
+  node_locations = [
+    "${var.region}-a",
+    "${var.region}-b",
+    "${var.region}-c"
+  ]
 
   node_config {
     spot         = true

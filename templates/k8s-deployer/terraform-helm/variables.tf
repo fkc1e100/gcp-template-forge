@@ -15,7 +15,7 @@ variable "cluster_name" {
   default     = "k8s-deployer-tf"
 }
 
-variable "vpc_name" {
+variable "network_name" {
   type        = string
   description = "The name of the VPC network"
   default     = "k8s-deployer-tf-vpc"

@@ -5,5 +5,5 @@ gcpServices:
   - GKE
   - VPC
 kccSupported: true
-estimatedMonthlyCost: "~$75"
-issueNumber: "327"
+estimatedMonthlyCost: "~$123"
+issueNumber: "326"
