@@ -19,30 +19,43 @@ resource "google_container_cluster" "primary" {
   remove_default_node_pool = true
   initial_node_count       = 1
   network                  = "default"
-  subnetwork              = "default"
+  subnetwork               = "default"
 
   deletion_protection = false
 
+  resource_labels = {
+    project = "gcp-template-forge"
+  }
+
   ip_allocation_policy {
-    use_ip_aliases = true
   }
 
   vertical_pod_autoscaling {
     enabled = true
   }
 
-  time_to_live = 1
+  timeouts {
+    create = "30m"
+    update = "30m"
+    delete = "30m"
+  }
 }
 
-resource "google_container_node_pool" {
+resource "google_container_node_pool" "gpu_pool" {
   name       = "${var.cluster_name}-gpu-pool"
   location   = var.region
   cluster    = google_container_cluster.primary.name
   node_count = 1
 
+  node_locations = [
+    "${var.region}-a",
+    "${var.region}-b",
+    "${var.region}-c",
+  ]
+
   node_config {
     machine_type = "n1-standard-4"
-    guest_accelerators {
+    guest_accelerator {
       type  = "nvidia-tesla-t4"
       count = 1
     }
@@ -53,15 +66,14 @@ resource "google_container_node_pool" {
 
     labels = {
       nvidia-t4 = "true"
+      project   = "gcp-template-forge"
     }
 
-    machine_type = "n1-standard-4"
-    
+    resource_labels = {
+      project = "gcp-template-forge"
+    }
+
     # Add GPU driver installation via daemonset or similar is handled by GKE
     # but we ensure the node config supports it.
   }
 }
-
-variable "project_id" {}
-variable "region" {}
-variable "cluster_name" {}
