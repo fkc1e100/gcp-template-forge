@@ -1,0 +1,2 @@
+name: k8s-gpu-cluster
+description: GKE cluster with GPU node pools for AI workloads
