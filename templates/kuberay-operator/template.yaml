@@ -1,2 +1,3 @@
 name: kuberay-operator
+shortName: kuberay-operator
 description: Deployment of KubeRay Operator on GKE for managing Ray clusters.
