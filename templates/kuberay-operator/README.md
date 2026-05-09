@@ -32,6 +32,8 @@ kubectl get pods -n kuberay-operator
 | `project_id` | GCP project ID | required |
 | `region` | GCP region | `us-central1` |
 
+<!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
+
 ## Validation Record
 | | Terraform + Helm | Config Connector |
 | --- | --- | --- |
