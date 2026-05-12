@@ -180,6 +180,7 @@ jobs:
           for REGION in us-central1 us-east1 us-west1; do
             if gcloud container clusters get-credentials "${BASE_NAME}-${UID_SUFFIX}-tf" --region "$REGION" --project "${{ env.PROJECT_ID }}" 2>/dev/null; then
               echo "REGION=$REGION" >> "$GITHUB_ENV"
+              echo "CLUSTER_NAME=${BASE_NAME}-${UID_SUFFIX}-tf" >> "$GITHUB_ENV"
               break
             fi
           done
