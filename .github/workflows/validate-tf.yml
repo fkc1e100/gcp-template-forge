@@ -270,3 +270,28 @@ jobs:
   # Cleanup is handled by the openclaw-cleanup K3s CronJob (every 5 min).
   # Removed from CI to consolidate into a single cleanup path with proper
   # PROTECTED_CLUSTERS enforcement.
+
+  validate-all:
+    name: Validate All Templates (Gate)
+    needs: [detect-changes, lint, tf-provision, tf-test]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Job Results
+        run: |
+          results='${{ toJSON(needs) }}'
+          echo "Job results: $results"
+          
+          # Check if any of the needed jobs failed
+          if echo "$results" | grep -q '"result": "failure"'; then
+            echo "One or more required jobs failed."
+            exit 1
+          fi
+          
+          # Check if detect-changes was skipped or failed (it should always run)
+          if echo "$results" | grep -q '"detect-changes": {.*"result": "skipped"'; then
+            echo "detect-changes was skipped, which is unexpected."
+            exit 1
+          fi
+          
+          echo "All required jobs succeeded or were skipped."
