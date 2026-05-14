@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: watcher-config
+data:
+  watcher.sh: |
+    #!/bin/bash
+    while true; do
+      echo "Checking for changes..."
+      # Example: Check for changes in the /data directory
+      if find /data -type f -mmin -1; then
+        echo "Changes detected!"
+        # Attempt to resolve conflicts using the conflict_resolver.py script
+        if [ -f /app/scripts/conflict_resolver.py ]; then
+          echo "Running conflict resolver..."
+          python3 /app/scripts/conflict_resolver.py /data/template.yaml # Replace with the actual file
+          echo "Conflict resolution complete."
+        else
+          echo "Conflict resolver script not found."
+        fi
+        # Trigger your IaC application here (e.g., re-apply Terraform)
+        echo "Triggering IaC application..."
+        # Replace with your actual IaC application command
+        # For example: terraform apply -auto-approve
+        echo "IaC application triggered."
+      else
+        echo "No changes detected."
+      fi
+      sleep 60 # Check every 60 seconds
+    done
