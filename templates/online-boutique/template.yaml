@@ -1,5 +1,0 @@
-shortName: online-boutique
-displayName: Online Boutique Microservices
-description: Google Cloud's microservices demo (Online Boutique) running on GKE.
-gcpServices: [GKE, Compute Engine]
-issueNumber: 349
