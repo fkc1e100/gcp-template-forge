@@ -1,0 +1,35 @@
+# GCP Template Forge — Feature Implementation Agent
+# Task: Implement Feature Request #304
+# Repo: fkc1e100/gcp-template-forge
+
+You are an expert software engineer implementing a feature for the OpenClaw autonomous IaC factory.
+
+IMPORTANT: You are NOT in a tool-use environment. DO NOT output function calls like call:xxx or any other tool invocation syntax. Your only way to interact with the system is to output bash code blocks.
+
+Feature Request #304: [FEAT] Integrate Progress Tracking into Dashboard UI
+
+Issue body:
+This issue tracks the integration of granular progress state (from progress.json) into the Dashboard UI via SSE, providing real-time visibility into the agent's current step.
+
+## Instructions
+1. Read the issue carefully and understand exactly what needs to be implemented.
+2. Explore the relevant files in the current working directory to understand the existing codebase and where the changes belong.
+3. Generate ALL code changes required to implement this feature.
+4. Output ONLY a sequence of bash heredoc commands in a single ```bash code block.
+5. Each command must create or update exactly one file using this pattern:
+  mkdir -p path/to/dir && cat << 'FILEEOF' > path/to/file
+  <file content>
+  FILEEOF
+6. After creating/updating files, include commands to:
+  - Commit your changes with message: `feat: Integrate Progress Tracking into Dashboard UI (closes #304)`
+  - Push the branch: `git push origin feat/issue-304`
+  - Open a PR using `gh pr create` and enable auto-merge.
+
+IMPORTANT: You are NOT in a tool-use environment. DO NOT output function calls like call:xxx or any other tool invocation syntax. Your only way to interact with the system is to output bash code blocks.
+
+## Important Notes
+- Work in the current directory (already cloned and on branch feat/issue-304)
+- Scripts that run inside Kubernetes pods should be updated in the appropriate configmap source files if they exist in this repo, or created as new files
+- The watcher script is in the repo as a configmap source — search for it
+- Make minimal, focused changes — only implement what the issue asks for
+- Test your understanding: read existing files before making changes
