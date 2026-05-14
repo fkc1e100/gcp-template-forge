@@ -1,56 +1,47 @@
 # Kubernetes Autoscaler Example
 
-This example demonstrates how to deploy a simple application with autoscaling enabled on Kubernetes.
+This template demonstrates how to deploy a Kubernetes application with autoscaling enabled.
 
 ## Prerequisites
 
+*   A Google Cloud project
 *   A Kubernetes cluster
-*   kubectl configured to connect to your cluster
-*   Helm (optional, for easier deployment)
+*   kubectl installed and configured to connect to your cluster
+*   gcloud CLI installed and configured to connect to your project
 
 ## Deployment
 
-1.  **Deploy the application:**
+1.  Clone this repository.
+2.  Navigate to the `templates/k8s-autoscaler-example` directory.
+3.  Run `gcloud container clusters get-credentials <cluster-name> --zone <cluster-zone> --project <project-id>` to configure kubectl to connect to your cluster.
+4.  Run `terraform init` to initialize the Terraform working directory.
+5.  Run `terraform apply` to deploy the application.
 
-    You can deploy the application using kubectl or Helm.
+## Architecture
 
-    **Using kubectl:**
+The application consists of the following components:
 
-    ```bash
-    kubectl apply -f deployment.yaml
-    kubectl apply -f service.yaml
-    kubectl apply -f hpa.yaml
-    ```
+*   A Deployment that runs the application pods.
+*   A Service that exposes the application to the outside world.
+*   A Horizontal Pod Autoscaler (HPA) that automatically scales the number of pods based on CPU utilization.
 
-    **Using Helm:**
+## Configuration
 
-    ```bash
-    helm install my-app .
-    ```
+The following variables can be configured in the `terraform.tfvars` file:
 
-2.  **Configure the Horizontal Pod Autoscaler (HPA):**
+*   `project_id`: The ID of your Google Cloud project.
+*   `cluster_name`: The name of your Kubernetes cluster.
+*   `cluster_zone`: The zone where your Kubernetes cluster is located.
+*   `image`: The Docker image to use for the application pods.
+*   `min_replicas`: The minimum number of replicas to run.
+*   `max_replicas`: The maximum number of replicas to run.
+*   `target_cpu_utilization`: The target CPU utilization percentage.
 
-    The `hpa.yaml` file defines the HPA configuration.  Adjust the `minReplicas`, `maxReplicas`, and target CPU utilization as needed.
+## Testing
 
-3.  **Test the autoscaling:**
+1.  Send traffic to the application.
+2.  Observe the HPA scaling the number of pods up and down based on CPU utilization.
 
-    Generate load on the application to trigger the autoscaling.  You can use a tool like `hey` or `loadtest`.
+## Cleanup
 
-    ```bash
-    hey -n 10000 -c 100 http://<your-service-ip>
-    ```
-
-4.  **Monitor the autoscaling:**
-
-    Use `kubectl get hpa` to monitor the HPA status.  You should see the number of replicas increase as the load increases.
-
-## Files
-
-*   `deployment.yaml`:  Defines the application deployment.
-*   `service.yaml`:  Defines the application service.
-*   `hpa.yaml`:  Defines the Horizontal Pod Autoscaler.
-
-## Notes
-
-*   This is a simple example and may need to be adjusted for your specific application.
-*   Consider using more sophisticated autoscaling metrics, such as memory utilization or custom metrics.
+Run `terraform destroy` to destroy the application.
