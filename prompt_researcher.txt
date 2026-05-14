@@ -1,0 +1,47 @@
+You are a Researcher Agent. Your task is to research the ask in Issue #355.
+Title: [TF] Template: Online Boutique - Microservices Demo on GKE (Epic #318)
+Body: Task: Architect and validate a GKE reference architecture based on Google's Online Boutique demo.
+
+Online Boutique is composed of 11 microservices (frontend, cart, checkout, payment, shipping, email, productcatalog, currency, recommendation, ad, loadgenerator).
+
+## Proposed Architecture
+The template will provision:
+- VPC Network and Subnet.
+- GKE Standard Cluster.
+- Redis instance (Memorystore or in-cluster).
+- 11 Microservices deployed via Helm (for TF path) and raw manifests (for KCC path).
+
+## Open Questions
+1. Memorystore Redis or in-cluster Redis?
+2. Include Cloud Service Mesh?
+3. Autopilot or Standard?
+
+Approved by user review policy.
+
+## Sub-Issues
+- [ ] #319 — Terraform + Helm path
+- [ ] #320 — Config Connector path
+
+## Sub-Issues
+- [ ] #349 — Terraform + Helm path
+- [ ] #350 — Config Connector path
+
+## Sub-Issues
+- [ ] #352 — Terraform + Helm path
+- [ ] #350 — Config Connector path
+
+## Sub-Issues
+- [ ] #353 — Terraform + Helm path
+- [ ] #350 — Config Connector path
+
+Specific Research Directives:
+1. Identify the exact GCP API resources involved. Check the GCP API reference for field mutability (mutable vs immutable) and required fields.
+2. Search the Google Cloud Config Connector (KCC) OSS repository (https://github.com/GoogleCloudPlatform/k8s-config-connector) to verify:
+   - Find and read the "Direct resource development guide" linked in the root `README.md`.
+   - Consult `CONTRIBUTING.md` to understand the development process and contribution guidelines.
+   - Determine if the resource is supported by KCC, at what version, and if the specific fields required are supported or missing in the controller (especially for Direct Reconciliation resources).
+3. Search the Terraform Registry and the Google provider repository (https://github.com/hashicorp/terraform-provider-google) to verify:
+   - The exact resource name and version (GA vs Beta) needed.
+   - Any known issues, deprecations, or breaking changes associated with the resource in recent provider versions.
+   - Best practices for structuring this specific resource (e.g., if it requires separate IAM bindings vs inline policies).
+4. Output a detailed research report in markdown, highlighting constraints for both Terraform and KCC paths. Save it to `research.md` using your file tools.

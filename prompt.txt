@@ -1,0 +1,587 @@
+# GCP Template Forge — Autonomous Implementation Agent
+# Task: Sub-Issue #355  |  Parent Epic: #318
+# Repo: fkc1e100/gcp-template-forge
+
+You are an autonomous GCP infrastructure engineer. Implement the IaC template described
+
+IMPORTANT: You are NOT in a tool-use environment. DO NOT output function calls like call:xxx or any other tool invocation syntax. Your only way to interact with the system is to output bash code blocks.
+in Sub-Issue #355.
+
+## Research Context
+No research report generated.
+
+---
+
+## MANDATORY FIRST READS (do this BEFORE writing any code)
+
+Read ALL of these files. They define every hard rule you must follow:
+
+1. `.gemini/SUCCESS.md` — **read this first** — the complete definition of done
+2. `GEMINI.md` — all engineering mandates, naming rules, and guardrails
+3. `agent-infra/kcc-capabilities.yaml` — known KCC unsupported features
+4. `.gemini/user-instructions.json` — per-workload correctness rules
+5. `agent-infra/scaffolds/README.template.md` — README scaffold
+6. `agent-infra/scaffolds/validate.template.sh` — validate.sh scaffold
+7. `agent-infra/scaffolds/template.template.yaml` — template.yaml schema
+8. `templates/basic-gke-hello-world/` — working reference example
+
+---
+
+## ISSUE CONTEXT
+
+# ISSUE #355: [TF] Template: Online Boutique - Microservices Demo on GKE (Epic #318)
+
+## ISSUE BODY
+Implement the **Terraform + Helm** path for Epic #318.
+
+Parent Epic: #318
+
+### Scope
+Create `terraform-helm/` and `config-connector-workload/` directories.
+The KCC path is handled in the separate #[KCC] issue.
+
+## PARENT EPIC
+#318: [EPIC] Template: Online Boutique - Microservices Demo on GKE
+
+
+## PATH TO IMPLEMENT
+terraform-helm
+
+## DEFINITION OF SUCCESS
+=== .gemini/SUCCESS.md ===
+# Definition of Success for gcp-template-forge
+
+This file defines exactly what "done" means for every template implementation task.
+An agent completing a sub-issue MUST be able to check every item on this list before
+declaring success. Merging a PR that cannot pass this checklist is a failure.
+
+---
+
+## The Success Checklist
+
+A template implementation is **successful** when ALL of the following are true:
+
+### 1. Template Structure is Complete
+
+- [ ] `templates/<shortName>/template.yaml` exists with:
+  - `shortName` present, ≤ 20 characters, lowercase, hyphens only (no spaces, no underscores)
+  - `displayName`, `description`, `gcpServices`, `issueNumber` all populated
+- [ ] `templates/<shortName>/README.md` exists and documents BOTH deployment paths
+- [ ] `templates/<shortName>/validate.sh` exists and is executable
+
+### 2. Dual-Path Implementation is Present
+
+**Terraform + Helm path (`terraform-helm/`):**
+- [ ] `main.tf` provisions all required GCP infrastructure
+- [ ] `variables.tf` exposes `project_id`, `region`, `zone` (and any template-specific vars)
+- [ ] `outputs.tf` exports cluster name and relevant endpoints
+- [ ] `terraform fmt -check` passes with zero diff
+- [ ] `terraform validate` passes (after `terraform init`)
+- [ ] No `local-exec`, no `helm` provider, no hardcoded project IDs
+- [ ] Every `google_container_cluster` has `deletion_protection = false`
+- [ ] Every `google_container_node_pool` has `node_locations` explicitly set
+
+**Config Connector path (`config-connector/`):**
+- [ ] KCC manifests exist for all GCP resources — OR —
+- [ ] `.kcc-unsupported` file exists explaining which features are missing and why
+  (citing specific entries from `agent-infra/kcc-capabilities.yaml`)
+- [ ] No raw K8s workload manifests (Deployments, Services, etc.) in `config-connector/`
+
+**Workload manifests (`config-connector-workload/`):**
+- [ ] All raw K8s manifests (Deployments, Services, ConfigMaps, etc.) are here
+- [ ] Valid YAML: `python3 -c "import yaml; list(yaml.safe_load_all(open('file.yaml')))"` passes
+
+### 3. The Workload Actually Works (Most Important)
+
+This is the difference between "infrastructure provisioned" and "success."
+
+- [ ] **`validate.sh` passes all 5 tests**, including Test 5 (Functional Verification):
+  - The workload is **Running** (Deployment Available, pods in Running state)
+  - The workload is **serving or processing** — proven by ONE of:
+    - `curl http://<endpoint>` returns HTTP 2xx
+    - `kubectl exec` into pod + client command succeeds (psql, redis-cli PING, grpcurl, etc.)
+    - Custom resource reaches Ready/Active condition AND a test job/request completes
+  - **Reference:** `templates/basic-gke-hello-world/validate.sh` is the canonical example —
+    it curls the LoadBalancer IP and fails hard if the endpoint does not respond.
+    Every template must have an equivalent check for its own workload type.
+
+### 4. CI is Green
+
+- [ ] `TF PR Validation` check passes (lint + `terraform validate`)
+- [ ] `Sandbox Validation (TF)` check passes (deploy + validate.sh + destroy)
+- [ ] `Sandbox Validation (KCC)` check passes — OR — `.kcc-unsupported` is present
+- [ ] No stale TF state lock in `gs://gke-gca-2025-forge-tf-state/templates/<name>/`
+
+### 5. PR is Correct
+
+- [ ] PR title format: `feat: implement <shortName> template (closes #<issueNum>)`
+- [ ] PR body contains `Closes #<issueNum>` on its own line (required for circuit-breaker)
+- [ ] `gh pr merge --auto --merge <PR_NUM> --repo fkc1e100/gcp-template-forge` was run immediately after PR creation
+- [ ] Only files under `templates/<shortName>/` are changed — no workflow files, no other templates
+
+### 6. Published
+
+- [ ] PR is merged to `main` (auto-merge triggered and all checks passed)
+- [ ] `.validated` file committed by CI with `tf_helm: success` (and `kcc: success` or `kcc: skipped`)
+- [ ] Root `README.md` Published Templates table updated by `ci-post-merge.yml`
+
+### 7. Epic Closure (final step, after BOTH TF + KCC sub-issues succeed)
+
+- [ ] Both `[TF]` and `[KCC]` sub-issues are closed (or one is closed with `.kcc-unsupported`)
+- [ ] Parent EPIC issue is closed with a comment linking the merged PRs
+- [ ] `status:ai-agent-active` label removed from the EPIC
+
+---
+
+## What is NOT Success
+
+The following do NOT count as success even if CI appears green:
+
+- A `validate.sh` that only runs `kubectl wait --for=condition=available` without any
+  functional verification (Test 5 not implemented)
+- A PR where `terraform validate` was never run locally
+- A KCC path with broken manifests hidden behind `|| true`
+- A template that hardcodes `project_id = "gca-gke-2025"` instead of using `var.project_id`
+- A PR opened against a fork instead of `fkc1e100/gcp-template-forge` (WIF auth will fail)
+- Auto-merge NOT triggered (the PR will sit idle and never merge)
+
+---
+
+## Self-Assessment
+
+Before declaring your sub-issue complete, run this self-check:
+
+```bash
+# From the template directory:
+cd templates/<shortName>
+
+# 1. TF syntax
+terraform -chdir=terraform-helm fmt -check && echo "TF fmt: PASS"
+
+# 2. YAML validity
+for f in config-connector/*.yaml config-connector-workload/*.yaml; do
+  [ -f "$f" ] && python3 -c "import yaml; list(yaml.safe_load_all(open('$f')))" && echo "$f: PASS"
+done
+
+# 3. shortName length
+python3 -c "import yaml; d=yaml.safe_load(open('template.yaml')); n=d.get('shortName',''); assert len(n)<=20 and n==n.replace(' ','').replace('_',''), f'shortName FAIL: {n!r}'; print('shortName:', n, 'PASS')"
+
+# 4. validate.sh has Test 5 implemented (not the placeholder exit 1)
+grep -q "exit 1" validate.sh && echo "WARNING: validate.sh may still have placeholder exit 1" || echo "validate.sh Test 5: looks implemented"
+
+# 5. PR exists with auto-merge
+gh pr list --repo fkc1e100/gcp-template-forge --head "feature/issue-<NUM>" --json number,autoMergeRequest
+```
+
+## HARD RULES (from GEMINI.md — violations FAIL CI)
+1. shortName: ≤ 20 chars, hyphens only (no spaces, no underscores)
+2. node_locations: REQUIRED in every node pool
+3. deletion_protection = false on ALL clusters
+4. NO local-exec in Terraform
+5. NO helm provider in Terraform
+6. GPU workloads: pin to SINGLE zone (quota is per-zone)
+7. Subnetwork labels: do NOT set them (unsupported in KCC)
+8. config-connector/ = GCP infra only; K8s workloads → config-connector-workload/
+9. KCC unsupported features → create .kcc-unsupported file with explanation
+10. validate.sh MUST prove the workload works — NOT just that pods are Running:
+    - Implement Test 5 in the scaffold (the section that currently exits 1 by default)
+    - Choose the verification pattern that fits YOUR workload type:
+        Web/API service  → curl endpoint, assert HTTP 2xx
+        DB/cache/broker  → kubectl exec into pod, run client command (psql, redis-cli, etc.)
+        Operator CRD     → kubectl wait <resource-kind> --for=condition=Ready
+        Batch workload   → submit a test job, wait for condition=Complete
+    - Reference: templates/basic-gke-hello-world/validate.sh — curls LoadBalancer IP,
+      asserts HTTP success. Every template needs an equivalent for its own workload type.
+
+## KCC CAPABILITIES REGISTRY
+=== agent-infra/kcc-capabilities.yaml ===
+# KCC Capability Registry
+#
+# Lists known unsupported Config Connector features as of 2026-Q2.
+# KCC is typically 6-12 months behind the Terraform provider in feature parity.
+#
+# AGENT USAGE: Read this file BEFORE generating any config-connector/ manifests.
+# - If a feature your template requires is listed under `unsupported`, follow
+#   the `action` field: either create a .kcc-unsupported marker file or use
+#   the listed workaround.
+# - If a feature is listed under `workarounds`, use the kcc_equivalent pattern
+#   instead of the terraform field.
+# - If you discover a new unsupported feature during CI, add it here and
+#   create a separate [CI-BUG] issue documenting the gap.
+#
+# LINT: local-lint.sh checks that any template using a field listed here
+# under action: kcc-unsupported-marker has a .kcc-unsupported file present.
+
+unsupported:
+  - feature: queuedProvisioning
+    resource: ContainerNodePool
+    tf_resource: google_container_node_pool
+    tf_field: node_pool.queued_provisioning.enabled
+    kcc_resource: ContainerNodePool
+    kcc_search_key: "queuedProvisioning"
+    action: use-workaround
+    reason: >
+      KCC v1beta1 ContainerNodePool lacks the queuedProvisioning field.
+      DO NOT create .kcc-unsupported — use standard autoscaling instead.
+    upstream_issue: https://github.com/GoogleCloudPlatform/k8s-config-connector/issues/TBD
+    workaround: >
+      Use standard autoscaling (minNodeCount/maxNodeCount) in the KCC path
+      instead of queuedProvisioning. The KCC template is still fully functional
+      — it just uses the standard autoscaler instead of Kueue-driven provisioning.
+      Document the difference in README.md under a "KCC Limitations" section.
+      DO NOT create .kcc-unsupported for this — generate the full KCC template.
+
+  - feature: subnetwork_labels
+    resource: ComputeSubnetwork
+    tf_resource: google_compute_subnetwork
+    tf_field: labels
+    kcc_resource: ComputeSubnetwork
+    action: omit
+    reason: >
+      KCC ComputeSubnetwork does not support resource labels. The field is
+      silently ignored in some versions and causes failures in others.
+      Labels on subnets provide no functional value for these templates.
+    workaround: >
+      Simply omit the labels block from ComputeSubnetwork KCC manifests.
+      Labels can be applied to ContainerCluster and ContainerNodePool instead.
+
+  - feature: network_policy_config_provider_calico
+    resource: ContainerCluster
+    tf_resource: google_container_cluster
+    tf_field: network_policy.provider = "CALICO"
+    kcc_resource: ContainerCluster
+    action: omit
+    reason: >
+      KCC ContainerCluster does not support the network_policy.provider field.
+      DataplaneV2 (the modern equivalent) is configured via datapathProvider instead.
+    workaround: >
+      Use `spec.datapathProvider: ADVANCED_DATAPATH` in KCC to enable network
+      policy enforcement without specifying Calico explicitly.
+
+  - feature: node_pool_placement_policy
+    resource: ContainerNodePool
+    tf_resource: google_container_node_pool
+    tf_field: node_pool.placement_policy
+    kcc_resource: ContainerNodePool
+    action: omit
+    reason: >
+      Node pool placement policies (COMPACT for GPU colocation) are not
+      supported in KCC ContainerNodePool v1beta1.
+    workaround: >
+      Omit placement_policy from the KCC path. Document in README.md that
+      compact placement is only available via the Terraform path.
+
+  - feature: confidential_nodes
+    resource: ContainerNodePool
+    tf_resource: google_container_node_pool
+    tf_field: node_pool.node_config.confidential_nodes
+    kcc_resource: ContainerNodePool
+    kcc_search_key: "confidentialNodes"
+    action: kcc-unsupported-marker
+    reason: >
+      Confidential node configuration is not available in KCC ContainerNodePool.
+    workaround: >
+      Create a .kcc-unsupported marker. The Terraform path fully supports
+      confidential nodes. Document the limitation in README.md.
+
+workarounds:
+  - feature: regional_cluster_node_locations
+    tf_resource: google_container_node_pool
+    tf_field: node_locations
+    kcc_resource: ContainerNodePool
+    kcc_field: spec.locations
+    note: >
+      KCC uses spec.locations (array of zone strings) on ContainerNodePool,
+      equivalent to Terraform's node_locations. Always specify this explicitly
+      for regional clusters to avoid API validation errors.
+    example: |
+      spec:
+        locations:
+          - us-central1-a
+          - us-central1-b
+          - us-central1-c
+
+  - feature: workload_identity_config
+    tf_resource: google_container_cluster
+    tf_field: workload_identity_config.workload_pool
+    kcc_resource: ContainerCluster
+    kcc_field: spec.workloadIdentityConfig.workloadPool
+    note: >
+      KCC uses spec.workloadIdentityConfig.workloadPool. Set to
+      "${PROJECT_ID}.svc.id.goog" to enable Workload Identity.
+    example: |
+      spec:
+        workloadIdentityConfig:
+          workloadPool: PROJECT_ID.svc.id.goog
+
+  - feature: dataplane_v2
+    tf_resource: google_container_cluster
+    tf_field: datapath_provider = "ADVANCED_DATAPATH"
+    kcc_resource: ContainerCluster
+    kcc_field: spec.datapathProvider
+    note: >
+      KCC uses spec.datapathProvider: ADVANCED_DATAPATH to enable GKE
+      Dataplane V2 (eBPF-based network policy enforcement).
+    example: |
+      spec:
+        datapathProvider: ADVANCED_DATAPATH
+
+  - feature: release_channel
+    tf_resource: google_container_cluster
+    tf_field: release_channel.channel
+    kcc_resource: ContainerCluster
+    kcc_field: spec.releaseChannel.channel
+    note: >
+      KCC uses spec.releaseChannel.channel. Valid values: RAPID, REGULAR, STABLE.
+    example: |
+      spec:
+        releaseChannel:
+          channel: REGULAR
+
+  - feature: gateway_api_config
+    tf_resource: google_container_cluster
+    tf_field: gateway_api_config.channel
+    kcc_resource: ContainerCluster
+    kcc_field: spec.gatewayApiConfig.channel
+    note: >
+      KCC ContainerCluster supports Gateway API config via spec.gatewayApiConfig.
+    example: |
+      spec:
+        gatewayApiConfig:
+          channel: CHANNEL_STANDARD
+
+## USER INSTRUCTIONS (correctness rules)
+=== .gemini/user-instructions.json ===
+{
+  "project_name": "gcp-template-forge",
+  "guidelines": {
+    "correctness": [
+      {
+        "title": "GKE Queued Provisioning — Standard Workloads",
+        "description": "Do NOT enable `queuedProvisioning` (or `queued_provisioning` in Terraform) on GKE node pools that serve standard long-running workloads like `Deployment`, `DaemonSet`, or `StatefulSet`. Queued Provisioning bypasses the standard cluster autoscaler and only triggers node creation for Kueue batch `Job` workloads. Standard pods will remain stuck `Pending` indefinitely.",
+        "example": "A vLLM inference server uses a standard Deployment — ensure the GPU node pool does NOT include `queued_provisioning { enabled = true }`."
+      },
+      {
+        "title": "Regional GKE Clusters — node_locations Required",
+        "description": "ALWAYS specify `node_locations` explicitly on `google_container_node_pool` when the cluster is regional (not zonal). Omitting `node_locations` causes a GKE API validation error. The list must contain zones within the cluster's region.",
+        "example": "node_locations = [\"us-central1-a\", \"us-central1-b\", \"us-central1-c\"]"
+      },
+      {
+        "title": "google_compute_subnetwork — No labels block",
+        "description": "The Terraform `google_compute_subnetwork` resource does NOT support a `labels` argument. Adding `labels = {}` causes `terraform apply` to fail immediately with an unsupported argument error. Never add labels to subnet resources.",
+        "example": "Remove any `labels` block from `google_compute_subnetwork` resources."
+      },
+      {
+        "title": "GPU Node Pools — No Zone Pinning",
+        "description": "Never hard-code a specific zone for GPU node pools (e.g., `node_locations = [\"us-central1-f\"]`). L4, A100, and H100 GPUs are frequently zone-exhausted. Templates MUST accept a `var.region` variable. The CI pipeline's three-region fallback (us-central1 → us-east1 → us-west1) handles zone selection. Add `variable \"region\" {}` to `variables.tf`.",
+        "example": "Use `var.region` throughout and let CI set `TF_VAR_region` per region attempt."
+      },
+      {
+        "title": "KubeRay + Kueue — CRD Install Order",
+        "description": "Kueue CRDs and the ClusterQueue/LocalQueue resources MUST be applied and Ready BEFORE any RayCluster or RayJob is created. Use `initContainers` in any workload that depends on Kueue CRDs to wait for their existence. Install Kueue via Helm (separate release) before the KubeRay operator release.",
+        "example": "Add `helm upgrade --install kueue kueue/kueue --wait` before `helm upgrade --install kuberay kuberay/kuberay-operator --wait`."
+      },
+      {
+        "title": "AI Model Staging — Large Weight Downloads",
+        "description": "For AI workloads (vLLM, Triton, etc.) that download model weights >1GB from Hugging Face or GCS: (1) deploy a Kubernetes `Job` FIRST to stage weights to a GCS bucket, (2) the serving `Deployment` MUST use an `initContainer` that waits for the Job to complete before starting the server, (3) set `progressDeadlineSeconds: 3600` on the Deployment. Helm's default --wait timeout will fail if the model download runs inside the Deployment readiness probe.",
+        "example": "Stage weights Job → initContainer waits → vLLM Deployment starts. Never download >1GB inside a Deployment's main container startup."
+      },
+      {
+        "title": "Cloud SQL — Private IP Requires Private Service Access",
+        "description": "When provisioning Cloud SQL with private IP, the VPC must have Private Service Access configured (`google_service_networking_connection` + `google_compute_global_address`). KCC `SQLInstance` takes 10-15 minutes to provision — set `kubectl wait --timeout=900s`. Always deploy Cloud SQL Auth Proxy as a sidecar for workload connectivity.",
+        "example": "Add `google_service_networking_connection` to main.tf before `google_sql_database_instance` with `ip_configuration { ipv4_enabled = false, private_network = ... }`."
+      },
+      {
+        "title": "GCS FUSE — Addon Required on Node Pool",
+        "description": "GKE node pools using GCS FUSE (CSI driver) must have the addon explicitly enabled on the cluster: `addons_config { gcs_fuse_csi_driver_config { enabled = true } }`. The CSI driver is not enabled by default on Standard clusters. Without this, PVCs using the `gcsfuse.csi.storage.gke.io` driver will remain `Pending`.",
+        "example": "Add to `google_container_cluster`: `addons_config { gcs_fuse_csi_driver_config { enabled = true } }`."
+      },
+      {
+        "title": "Gateway API — GKE Gateway Controller",
+        "description": "The GKE Gateway API controller (Envoy-based) must be enabled on the cluster: `gateway_api_config { channel = \"CHANNEL_STANDARD\" }` in the `google_container_cluster` resource. The `GatewayClass` name is `gke-l7-global-external-managed`. Gateway provisioning takes 3-5 minutes — validate.sh must poll for Gateway address, not assume immediate availability.",
+        "example": "Add `gateway_api_config { channel = \"CHANNEL_STANDARD\" }` to the cluster resource and poll with `kubectl get gateway -o jsonpath='{.status.addresses[0].value}'`."
+      },
+      {
+        "title": "Multi-Tenant Quota — Kueue ResourceFlavor Naming",
+        "description": "Kueue `ResourceFlavor` names must be unique cluster-wide and should include the template UID suffix to avoid collisions when multiple CI runs execute concurrently. Use `${BASE_NAME}-${UID_SUFFIX}` as the naming pattern, consistent with cluster and network naming.",
+        "example": "Name ResourceFlavor as `gpu-flavor-${UID_SUFFIX}` not just `gpu-flavor`."
+      },
+      {
+        "title": "KCC Feature Parity — Check Registry Before Generating",
+        "description": "Before generating any `config-connector/` manifests, read `agent-infra/kcc-capabilities.yaml` to check for unsupported features. If the template requires a feature listed as `action: kcc-unsupported-marker`, create a `.kcc-unsupported` file in the template root and document the limitation in README.md. Do NOT generate broken KCC manifests that will fail CI.",
+        "example": "If template needs `queuedProvisioning`, check kcc-capabilities.yaml → `action: kcc-unsupported-marker` → create `.kcc-unsupported`, skip KCC path."
+      },
+      {
+        "title": "Template Metadata — template.yaml Required",
+        "description": "Every template directory MUST contain a `template.yaml` file with at minimum: `shortName` (≤20 chars), `displayName`, `description`, `gcpServices` (list), and `issueNumber`. The `shortName` is used for GCP resource naming — CI will fail if it exceeds 20 characters or is missing.",
+        "example": "shortName: gke-ray-kueue\ndisplayName: Multi-Tenant Ray on GKE\ndescription: KubeRay + Kueue multi-tenant batch ML\ngcpServices: [GKE, GPU]\nissueNumber: 122"
+      },
+      {
+        "title": "Agent Plan Step — Post Before Coding",
+        "description": "Before creating any sub-issues or writing code for an EPIC, post a structured plan comment on the EPIC issue listing: (1) template directory name and shortName, (2) GCP resources TF path will create, (3) GCP resources KCC path will create, (4) known KCC limitations requiring .kcc-unsupported, (5) estimated validation time. Wait 30 minutes for a thumbs-down reaction before proceeding. Auto-proceed if no negative reaction.",
+        "example": "gh issue comment $EPIC_NUM --body '## Implementation Plan\\n**Template:** gke-ray-kueue\\n**TF path:** GKE cluster, GPU node pool, VPC\\n**KCC path:** ContainerCluster, ContainerNodePool (queuedProvisioning unsupported → .kcc-unsupported)\\n**Est. validation:** 25 min\\n\\nProceeding in 30 min unless thumbs-down reaction received.'"
+      },
+      {
+        "title": "Epic Sub-Issue Retry Limit",
+        "description": "Before creating a new sub-issue pair (TF + KCC) for a parent EPIC, count how many sub-issue pairs have already been created and closed without a successful merge. If 3 or more pairs have been attempted, do NOT create another. Post a comment on the EPIC with label `needs-human` explaining what was tried and what the specific blocker is. Stop work until a human responds.",
+        "example": "Search EPIC comments and linked issues. Count closed-without-merge sub-issue pairs. If >= 3: gh issue comment $EPIC --body 'needs-human: ...' && gh issue edit $EPIC --add-label needs-human && exit 0"
+      },
+      {
+        "title": "Carry Forward Failure Context into New Sub-Issues",
+        "description": "When creating a new sub-issue after a previous one failed, ALWAYS include the specific failure message from the previous PR's circuit-breaker comment in the new sub-issue body under a '## Previous Failure Context' section. Never start a new attempt without knowing what the last error was.",
+        "example": "gh pr view $PREV_PR --json comments -q '.comments[-1].body' → include in new issue body under '## Previous Failure Context'"
+      },
+      {
+        "title": "validate.sh MUST prove the workload works — not just that pods are Running",
+        "description": "A validate.sh that only checks 'kubectl wait --for=condition=available' is INCOMPLETE and will be treated as a CI failure. Every template's validate.sh MUST include at least one functional verification step that proves the workload is actually serving or processing: (A) curl/wget to an HTTP/HTTPS endpoint and verify a non-error HTTP response, OR (B) kubectl exec into a running pod and run a meaningful command (psql SELECT 1, redis-cli PING, grpcurl, etc.), OR (C) for batch/ML workloads: submit a test job or inference request and verify it completes successfully. Use the basic-gke-hello-world validate.sh as the reference — it curls the LoadBalancer IP and fails if the endpoint doesn't respond. The validate.sh scaffold's Test 5 section must be implemented; leaving it with 'exit 1' is not acceptable.",
+        "example": "Web service or API: curl http://${SERVICE_IP}/healthz or similar and assert HTTP 2xx. Database/cache: kubectl exec into app pod and run psql 'SELECT 1', redis-cli PING, or equivalent. Operator-managed CRD: kubectl wait <resource-kind> --for=condition=Ready. Batch/job workload: submit a minimal test job and wait for condition=Complete. Choose the pattern that fits the template's workload type — the basic-gke-hello-world curl pattern is the canonical reference."
+      },
+      {
+        "title": "GKE Cluster Timeouts — 30m Required",
+        "description": "Every google_container_cluster resource MUST include a timeouts block with create = \"30m\", update = \"30m\", delete = \"30m\". The CI lint check enforces this — omitting it causes immediate lint failure. GKE cluster creation routinely takes 10-20 minutes.",
+        "example": "timeouts {\n  create = \"30m\"\n  update = \"30m\"\n  delete = \"30m\"\n}"
+      },
+      {
+        "title": "Template shortName — Use DERIVED_SHORT from Bootstrap",
+        "description": "The template directory name and shortName in template.yaml MUST match the DERIVED_SHORT value provided in the bootstrap prompt. Do NOT invent your own name or truncate the epic title differently. The shortName must be ≤20 characters, lowercase, hyphens only. If the bootstrap prompt says 'shortName: kuberay-kueue', use exactly that — not 'tf-template-multi-te' or 'gke-kuberay-kueue-multitenant'.",
+        "example": "If DERIVED_SHORT=kuberay-kueue, then: directory=templates/kuberay-kueue/, template.yaml shortName=kuberay-kueue"
+      },
+      {
+        "title": "Helm Subchart Packaging — Use .tgz Not Extracted Directories",
+        "description": "Helm subchart dependencies in terraform-helm/workload/charts/ MUST be packaged as .tgz files, NOT extracted directories. The CI test step runs 'find Chart.yaml' to discover charts — an extracted subchart directory contains its own Chart.yaml, causing CI to install it separately (breaking the parent chart). Package with 'helm package' and reference the .tgz in Chart.yaml dependencies.",
+        "example": "workload/charts/kuberay-operator-1.6.1.tgz (NOT workload/charts/kuberay-operator/Chart.yaml)"
+      },
+      {
+        "title": "Spot VMs and Queued Provisioning Are Mutually Exclusive",
+        "description": "GKE does not allow spot=true and queued_provisioning on the same node pool. If using spot VMs, add reservation_affinity { consume_reservation_type = \"NO_RESERVATION\" } and do NOT enable queued_provisioning. If using queued_provisioning, do NOT set spot=true.",
+        "example": "node_config {\n  spot = true\n  reservation_affinity {\n    consume_reservation_type = \"NO_RESERVATION\"\n  }\n}"
+      },
+      {
+        "title": "KCC ContainerNodePool — Use spec.nodeLocations Not spec.locations",
+        "description": "The KCC ContainerNodePool CRD uses spec.nodeLocations (NOT spec.locations) for specifying which zones a node pool runs in. Using spec.locations causes a strict decoding error. Check the CRD schema if unsure.",
+        "example": "spec:\n  nodeLocations:\n    - us-central1-a\n    - us-central1-b"
+      },
+      {
+        "title": "KCC workloadIdentityConfig — Use Actual Project ID",
+        "description": "In KCC ContainerCluster manifests, spec.workloadIdentityConfig.workloadPool MUST use the actual GCP project ID, not a placeholder like 'PROJECT_ID.svc.id.goog'. The CI does NOT substitute PROJECT_ID — it only substitutes the template shortName. Use 'gca-gke-2025.svc.id.goog' for this project.",
+        "example": "spec:\n  workloadIdentityConfig:\n    workloadPool: gca-gke-2025.svc.id.goog"
+      },
+      {
+        "title": "Template Directory Structure — Follow basic-gke-hello-world",
+        "description": "Every template MUST follow the exact directory structure of templates/basic-gke-hello-world/. The TF path needs: terraform-helm/main.tf, variables.tf, outputs.tf, versions.tf, workload/Chart.yaml, workload/values.yaml, workload/templates/. The KCC path needs: config-connector/cluster.yaml, config-connector/network.yaml, config-connector/nodepool.yaml. KCC workloads go in config-connector-workload/. TF workloads go in terraform-helm/workload/ (Helm chart). Read templates/basic-gke-hello-world/ FIRST before generating any files.",
+        "example": "ls templates/basic-gke-hello-world/ to see the complete required structure"
+      },
+      {
+        "title": "Terraform Resource Naming — Use CI Variables, Not Hardcoded Names",
+        "description": "NEVER hardcode GCP resource names or use random_string in main.tf. CI controls all resource naming via TF_VAR_* environment variables. main.tf MUST declare these variables: cluster_name, network_name, subnet_name, uid_suffix, project_id, region, zone, service_account. The cluster uses var.cluster_name (CI sets it to '{shortName}-{UID}-tf'), the VPC uses var.network_name ('{shortName}-{UID}-tf-vpc'), the subnet uses var.subnet_name. This ensures CI can track and destroy resources after tests.",
+        "example": "resource \"google_container_cluster\" \"primary\" {\n  name = var.cluster_name\n}\nresource \"google_compute_network\" \"vpc\" {\n  name = var.network_name\n}\nvariable \"cluster_name\" {}\nvariable \"network_name\" {}\nvariable \"subnet_name\" {}\nvariable \"uid_suffix\" {}"
+      }
+    ],
+    "clarity": [],
+    "maintainability": [],
+    "code_organization": [],
+    "security": [],
+    "performance": []
+  }
+}
+
+---
+
+## STEP 1: POST IMPLEMENTATION PLAN (required BEFORE writing any code)
+
+Post a comment on Issue #355:
+
+```bash
+gh issue comment 355 --repo fkc1e100/gcp-template-forge --body "## Implementation Plan
+
+**Template directory:** `templates/<name>/`
+**shortName:** `<name>` (must be ≤ 20 chars, hyphens only)
+
+### terraform-helm/ resources
+- <GCP resource type>: <purpose>
+
+### config-connector/ resources
+- <KCC resource kind>: <purpose>
+OR: .kcc-unsupported because <reason from kcc-capabilities.yaml>
+
+### KCC capabilities check
+- <feature>: supported/unsupported (cite kcc-capabilities.yaml line)
+
+### Estimated CI time: ~N minutes"
+```
+
+Wait 30 minutes after posting. Check for 👎 reaction:
+```bash
+COMMENT_ID=<id>
+gh api repos/fkc1e100/gcp-template-forge/issues/comments/$COMMENT_ID/reactions \
+  --jq '.[] | select(.content == "-1") | .id'
+```
+If 👎: post "Awaiting clarification" and stop.
+If no 👎: proceed to Step 2.
+
+---
+
+## STEP 2: IMPLEMENT
+
+Working directory: current repo root (branch `feature/issue-355` already checked out)
+
+Required structure under `templates/<shortName>/`:
+```
+templates/<shortName>/
+├── template.yaml                  (shortName ≤ 20 chars, hyphens only)
+├── README.md                      (from scaffolds/README.template.md)
+├── validate.sh                    (from scaffolds/validate.template.sh)
+├── terraform-helm/                (for [TF] issues)
+│   ├── main.tf
+│   ├── variables.tf
+│   └── outputs.tf
+├── config-connector/              (for [KCC] issues — GCP resources ONLY)
+│   └── <resource>.yaml
+└── config-connector-workload/     (ALL raw K8s manifests — Deployments, Services, etc.)
+    └── <workload>.yaml
+```
+
+Hard rules:
+- deletion_protection = false on all clusters
+- node_locations required in every node pool
+- No local-exec, no helm provider
+- shortName: ≤ 20 chars, hyphens only
+- validate.sh MUST prove the workload works (not just that pods are Running):
+  Implement Test 5 in the scaffold (it exits 1 by default — you MUST replace it).
+  Pick the pattern for your workload: curl endpoint (HTTP 2xx), kubectl exec + client
+  command, kubectl wait CRD --for=condition=Ready, or submit test job + wait Complete.
+  Reference: templates/basic-gke-hello-world/validate.sh is the canonical example.
+
+Before committing:
+```bash
+terraform -chdir=terraform-helm fmt -check && terraform -chdir=terraform-helm validate
+```
+
+---
+
+## STEP 3: COMMIT AND CREATE PR
+
+```bash
+git add templates/
+git diff --cached --stat
+
+git commit -m "feat: implement #355 template"
+git push origin feature/issue-355
+
+PR_URL=$(gh pr create \
+  --title "feat: implement <shortName> template (closes #355)" \
+  --body "Closes #355
+
+## Summary
+- Template: `<shortName>`
+- Parent Epic: #318
+- Path: terraform-helm" \
+  --repo fkc1e100/gcp-template-forge)
+
+PR_NUM=$(echo "$PR_URL" | grep -o '[0-9]*$')
+gh pr merge --auto --merge "$PR_NUM" --repo fkc1e100/gcp-template-forge
+echo "✅ PR #$PR_NUM created with auto-merge enabled"
+```
+
+PR title MUST be exactly: `feat: implement <shortName> template (closes #355)`
+PR body MUST have `Closes #355` on its own line.

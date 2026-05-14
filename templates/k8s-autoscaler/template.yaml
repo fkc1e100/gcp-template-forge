@@ -1,0 +1,2 @@
+name: k8s-autoscaler
+description: Infrastructure and configuration for Kubernetes Horizontal Pod Autoscaler testing.

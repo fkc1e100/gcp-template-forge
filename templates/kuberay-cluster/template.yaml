@@ -1,0 +1,2 @@
+name: kuberay-cluster
+description: A production-ready KubeRay cluster on GKE for distributed machine learning workloads.
