@@ -164,9 +164,9 @@ All Validation Tests passed successfully for Online Boutique
 
 |  | Terraform + Helm | Config Connector |
 | --- | --- | --- |
-| **Status** | pending | pending |
-| **Date** | n/a | n/a |
-| **Duration** | n/a | n/a |
+| **Status** | success | pending |
+| **Date** | 2026-05-13 | n/a |
+| **Duration** | 18m 42s | n/a |
 | **Region** | us-central1 | us-central1 (KCC cluster) |
 | **Zones** | - | forge-management namespace |
 | **Cluster** | -- | krmapihost-kcc-instance |
