@@ -1,0 +1,5 @@
+shortName: kcc-template-online
+displayName: Online Boutique Demo
+description: Online Boutique microservices demo on GKE via Config Connector
+gcpServices: [GKE]
+issueNumber: 350
