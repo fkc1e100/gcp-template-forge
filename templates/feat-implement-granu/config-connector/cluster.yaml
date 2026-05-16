@@ -1,0 +1,18 @@
+apiVersion: container.cnrm.cloud.google.com/v1beta1
+kind: ContainerCluster
+metadata:
+  name: ${CLUSTER_NAME}
+  annotations:
+    cnrm.cloud.google.com/project-id: ${PROJECT_ID}
+    cnrm.cloud.google.com/remove-default-node-pool: "true"
+spec:
+  location: ${REGION}
+  initialNodeCount: 1
+  networkRef:
+    name: ${NETWORK_NAME}
+  subnetworkRef:
+    name: ${SUBNET_NAME}
+  releaseChannel:
+    channel: REGULAR
+  workloadIdentityConfig:
+    workloadPool: gca-gke-2025.svc.id.goog
