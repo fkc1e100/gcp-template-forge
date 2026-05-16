@@ -1,0 +1,17 @@
+apiVersion: container.cnrm.cloud.google.com/v1beta1
+kind: ContainerCluster
+metadata:
+  name: feat-implement-proac
+spec:
+  location: us-central1
+  initialNodeCount: 1
+  removeDefaultNodePool: true
+  networkRef:
+    name: feat-implement-proac
+  subnetworkRef:
+    name: feat-implement-proac
+  workloadIdentityConfig:
+    workloadPool: gca-gke-2025.svc.id.goog
+  datapathProvider: ADVANCED_DATAPATH
+  releaseChannel:
+    channel: REGULAR
