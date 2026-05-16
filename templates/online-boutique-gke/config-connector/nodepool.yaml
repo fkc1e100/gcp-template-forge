@@ -15,7 +15,7 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
 metadata:
-  name: ob-kcc-pool
+  name: online-boutique-gke-pool
   namespace: forge-management
   labels:
     project: gcp-template-forge
@@ -25,7 +25,7 @@ metadata:
 spec:
   location: us-central1
   clusterRef:
-    name: ob-kcc
+    name: online-boutique-gke
   nodeCount: 2
   nodeLocations:
     - us-central1-a

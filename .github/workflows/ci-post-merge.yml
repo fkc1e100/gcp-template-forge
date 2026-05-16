@@ -82,8 +82,7 @@ jobs:
           if [ ! -f "${TEMPLATE}/.validated" ]; then echo "skip=false" >> "$GITHUB_OUTPUT"; exit 0; fi
           VALIDATED_COMMIT=$(grep '^commit:' "${TEMPLATE}/.validated" | awk '{print $2}')
           if [ "$VALIDATED_COMMIT" = "$GITHUB_SHA" ]; then echo "skip=true" >> "$GITHUB_OUTPUT"; else echo "skip=false" >> "$GITHUB_OUTPUT"; fi
-      
-      - name: Auth and Setup GKE
+                                    - name: Auth and Setup GKE
         if: steps.skip-check.outputs.skip != 'true'
         uses: ./.github/actions/gcp-gke-auth
         with:
@@ -103,7 +102,7 @@ jobs:
           RUN_ID="${{ github.run_id }}"
           UID_SUFFIX="${RUN_ID: -6}"
           TEMPLATE="${{ matrix.template }}"
-          SHORT_NAME=$(yq e '.shortName' "../template.yaml")
+          SHORT_NAME=$(python3 -c "import yaml; print(yaml.safe_load(open('../template.yaml')).get('shortName', ''))")
           export TF_VAR_cluster_name="${SHORT_NAME}-${UID_SUFFIX}-tf"
           export TF_VAR_network_name="${SHORT_NAME}-${UID_SUFFIX}-tf-vpc"
           export TF_VAR_subnet_name="${SHORT_NAME}-${UID_SUFFIX}-tf-subnet"
@@ -120,8 +119,7 @@ jobs:
             terraform apply -auto-approve -input=false 2>&1 | tee /tmp/tf.log
             TF_EXIT=${PIPESTATUS[0]}
             set -e
-
-            if [ "$TF_EXIT" -eq 0 ]; then
+                              if [ "$TF_EXIT" -eq 0 ]; then
               SUCCESS=true; break
             else
               if grep -iE "RESOURCE_EXHAUSTED|ZONE_RESOURCE_POOL_EXHAUSTED|QUOTA_EXCEEDED|stockout" /tmp/tf.log; then
@@ -133,8 +131,7 @@ jobs:
             fi
           done
           [ "$SUCCESS" = true ] || exit 1
-
-      - name: Capture TF outputs
+                                    - name: Capture TF outputs
         id: tf-outputs
         if: always() && steps.tf-apply.outcome == 'success'
         working-directory: ${{ matrix.template }}/terraform-helm
@@ -145,8 +142,7 @@ jobs:
           LOCATION=$(terraform output -raw cluster_location 2>/dev/null || echo "")
           echo "tf_cluster=${CLUSTER}" >> "$GITHUB_OUTPUT"
           echo "tf_location=${LOCATION}" >> "$GITHUB_OUTPUT"
-
-      - name: Terraform Destroy
+                                    - name: Terraform Destroy
         if: always() && steps.tf-apply.outcome == 'success'
         working-directory: ${{ matrix.template }}/terraform-helm
         run: terraform destroy -auto-approve -input=false || true
@@ -163,8 +159,7 @@ jobs:
             "location": "${{ steps.tf-outputs.outputs.tf_location || '' }}"
           }
           EOF
-
-      - name: Set Slug
+                                    - name: Set Slug
         id: slug
         run: echo "template_slug=$(echo "${{ matrix.template }}" | tr '/' '-')" >> "$GITHUB_OUTPUT"
 
@@ -211,13 +206,12 @@ jobs:
           kubectl wait -n "$KCC_NAMESPACE" --for=condition=Ready --all --timeout=5400s -f "${TEMPLATE}/config-connector/"
           KCC_DURATION=$(( $(date -u +%s) - KCC_START ))
           echo "kcc_duration=${KCC_DURATION}" >> "$GITHUB_OUTPUT"
-      - name: KCC Teardown
+                  - name: KCC Teardown
         if: always()
         run: |
           TEMPLATE="${{ matrix.template }}"
           kubectl delete -n "$KCC_NAMESPACE" -f "${TEMPLATE}/config-connector/" --wait=true --timeout=900s || true
-
-      - name: Save KCC results
+                                    - name: Save KCC results
         if: always()
         run: |
           mkdir -p /tmp/kcc-results
@@ -227,8 +221,7 @@ jobs:
             "duration": "${{ steps.kcc-wait.outputs.kcc_duration || '' }}"
           }
           EOF
-
-      - name: Set Slug
+                                    - name: Set Slug
         id: slug
         run: echo "template_slug=$(echo "${{ matrix.template }}" | tr '/' '-')" >> "$GITHUB_OUTPUT"
 
@@ -300,46 +293,44 @@ jobs:
             printf "validated_at: %s\ncommit: %s\ntf_helm: %s\nkcc: %s\n" \
               "$TIMESTAMP" "$COMMIT" "$TF_STATUS" "$KCC_STATUS" \
               > "${TEMPLATE}/.validated"
-
-            # Accumulate metrics
+                              # Accumulate metrics
             python3 - "$TEMPLATE" << 'ACCUMPY'
-import json, os, sys, datetime
-template = sys.argv[1]
-metrics_file      = f'{template}/.agent-metrics'
-cumulative_file   = f'{template}/.agent-metrics-cumulative'
-current = {}
-if os.path.exists(metrics_file):
-    try:    current = json.load(open(metrics_file))
-    except: pass
-cumulative = {'total_input_tokens': 0, 'total_output_tokens': 0, 'total_cost_usd': 0.0, 'sessions': []}
-if os.path.exists(cumulative_file):
-    try:    cumulative = json.load(open(cumulative_file))
-    except: pass
-session_start    = current.get('session_start', '')
-already_counted  = session_start and any(s.get('session_start') == session_start for s in cumulative.get('sessions', []))
-if session_start and not already_counted:
-    in_tok, out_tok = current.get('input_tokens'), current.get('output_tokens')
-    cost = float(current.get('estimated_cost_usd') or 0)
-    if isinstance(in_tok, (int, float)) and in_tok:
-        cumulative['total_input_tokens']  += int(in_tok)
-        cumulative['total_output_tokens'] += int(out_tok or 0)
-        cumulative['total_cost_usd']       = round(cumulative['total_cost_usd'] + cost, 4)
-        cumulative.setdefault('sessions', []).append({'session_start': session_start, 'input_tokens': int(in_tok), 'output_tokens': int(out_tok or 0), 'estimated_cost_usd': str(cost), 'model': current.get('model', ''), 'counted_at': datetime.datetime.now(datetime.timezone.utc).isoformat()})
-        json.dump(cumulative, open(cumulative_file, 'w'), indent=2)
-ACCUMPY
-
-            # Read cumulative totals
+                  import json, os, sys, datetime
+                  template = sys.argv[1]
+                  metrics_file      = f'{template}/.agent-metrics'
+                  cumulative_file   = f'{template}/.agent-metrics-cumulative'
+                  current = {}
+          if os.path.exists(metrics_file):
+          try:    current = json.load(open(metrics_file))
+          except: pass
+          cumulative = {'total_input_tokens': 0, 'total_output_tokens': 0, 'total_cost_usd': 0.0, 'sessions': []}
+          if os.path.exists(cumulative_file):
+          try:    cumulative = json.load(open(cumulative_file))
+          except: pass
+          session_start    = current.get('session_start', '')
+          already_counted  = session_start and any(s.get('session_start') == session_start for s in cumulative.get('sessions', []))
+          if session_start and not already_counted:
+          in_tok, out_tok = current.get('input_tokens'), current.get('output_tokens')
+          cost = float(current.get('estimated_cost_usd') or 0)
+          if isinstance(in_tok, (int, float)) and in_tok:
+          cumulative['total_input_tokens']  += int(in_tok)
+          cumulative['total_output_tokens'] += int(out_tok or 0)
+          cumulative['total_cost_usd']       = round(cumulative['total_cost_usd'] + cost, 4)
+          cumulative.setdefault('sessions', []).append({'session_start': session_start, 'input_tokens': int(in_tok), 'output_tokens': int(out_tok or 0), 'estimated_cost_usd': str(cost), 'model': current.get('model', ''), 'counted_at': datetime.datetime.now(datetime.timezone.utc).isoformat()})
+          json.dump(cumulative, open(cumulative_file, 'w'), indent=2)
+          ACCUMPY
+                      # Read cumulative totals
             eval "$(python3 - "$TEMPLATE" << 'READPY'
-import json, os, sys
-template = sys.argv[1]
-f = f'{template}/.agent-metrics-cumulative'
-d = json.load(open(f)) if os.path.exists(f) else {}
-n, in_t, out_t, cost = len(d.get('sessions', [])), d.get('total_input_tokens', 0), d.get('total_output_tokens', 0), d.get('total_cost_usd', 0.0)
-if n > 0 and in_t > 0:
-    print(f'INPUT_TOKENS="{in_t:,}"'); print(f'OUTPUT_TOKENS="{out_t:,}"'); print(f'AGENT_COST="{cost}"'); print(f'SESSION_SUFFIX=" ({n} session{"s" if n != 1 else ""})"')
-else:
-    print('INPUT_TOKENS=""'); print('OUTPUT_TOKENS=""'); print('AGENT_COST=""'); print('SESSION_SUFFIX=""')
-READPY
+          import json, os, sys
+          template = sys.argv[1]
+          f = f'{template}/.agent-metrics-cumulative'
+          d = json.load(open(f)) if os.path.exists(f) else {}
+          n, in_t, out_t, cost = len(d.get('sessions', [])), d.get('total_input_tokens', 0), d.get('total_output_tokens', 0), d.get('total_cost_usd', 0.0)
+          if n > 0 and in_t > 0:
+          print(f'INPUT_TOKENS="{in_t:,}"'); print(f'OUTPUT_TOKENS="{out_t:,}"'); print(f'AGENT_COST="{cost}"'); print(f'SESSION_SUFFIX=" ({n} session{"s" if n != 1 else ""})"')
+          else:
+          print('INPUT_TOKENS=""'); print('OUTPUT_TOKENS=""'); print('AGENT_COST=""'); print('SESSION_SUFFIX=""')
+          READPY
             )"
             TOKEN_STR="${INPUT_TOKENS:+${INPUT_TOKENS} in / ${OUTPUT_TOKENS} out${SESSION_SUFFIX}}"
             COST_STR="${AGENT_COST:+\$${AGENT_COST}}"
@@ -350,46 +341,42 @@ READPY
               # Robust truncation and standardized table generation using Python
               python3 - "$README" "$DATE" "$TF_STATUS" "$KCC_STATUS" "$TF_DUR" "$KCC_DUR" \
                 "$TF_LOCATION" "$TF_CLUSTER" "${COMMIT:0:8}" "${TOKEN_STR:-not recorded}" "${COST_STR:--}" << 'PYEOF'
-import sys, os
-readme, date, tf_s, kcc_s, tf_d, kcc_d, region, cluster, commit, tokens, cost = sys.argv[1:]
-
-# Standardized vertical table format
-rows = [
-    ("**Status**",         tf_s,      kcc_s),
-    ("**Date**",           date,      date),
-    ("**Duration**",       tf_d,      kcc_d),
-    ("**Region**",         region,    "us-central1 (KCC cluster)"),
-    ("**Zones**",          "-",       "forge-management namespace"),
-    ("**Cluster**",        cluster,   "krmapihost-kcc-instance"),
-    ("**Agent tokens**",   tokens,    "(shared session)"),
-    ("**Estimated cost**", cost,      "--"),
-    ("**Commit**",         commit,    commit),
-]
-
-sep = " | "
-header = sep.join(["", "", "Terraform + Helm", "Config Connector", ""]).strip()
-divider = sep.join(["", "---", "---", "---", ""]).strip()
-lines = ["\n## Validation Record\n", header, divider]
-for label, tf_val, kcc_val in rows:
-    lines.append(sep.join(["", label, tf_val, kcc_val, ""]).strip())
-
-# Truncate after the CI marker (defensive check)
-content = []
-found = False
-with open(readme, 'r') as f:
-    for i, line in enumerate(f):
-        content.append(line)
-        if '<!-- CI: validation record' in line:
+          import sys, os
+          readme, date, tf_s, kcc_s, tf_d, kcc_d, region, cluster, commit, tokens, cost = sys.argv[1:]
+                    # Standardized vertical table format
+          rows = [
+          ("**Status**",         tf_s,      kcc_s),
+          ("**Date**",           date,      date),
+          ("**Duration**",       tf_d,      kcc_d),
+          ("**Region**",         region,    "us-central1 (KCC cluster)"),
+          ("**Zones**",          "-",       "forge-management namespace"),
+          ("**Cluster**",        cluster,   "krmapihost-kcc-instance"),
+          ("**Agent tokens**",   tokens,    "(shared session)"),
+          ("**Estimated cost**", cost,      "--"),
+          ("**Commit**",         commit,    commit),
+          ]
+                    sep = " | "
+          header = sep.join(["", "", "Terraform + Helm", "Config Connector", ""]).strip()
+          divider = sep.join(["", "---", "---", "---", ""]).strip()
+          lines = ["\n## Validation Record\n", header, divider]
+          for label, tf_val, kcc_val in rows:
+          lines.append(sep.join(["", label, tf_val, kcc_val, ""]).strip())
+                    # Truncate after the CI marker (defensive check)
+          content = []
+          found = False
+          with open(readme, 'r') as f:
+          for i, line in enumerate(f):
+          content.append(line)
+          if '<!-- CI: validation record' in line:
             if i < 10:
                 print(f"WARNING: Marker found on line {i+1} in {readme}. Ignoring to prevent truncation.")
                 continue
             found = True
             break
-
-with open(readme, 'w') as f:
-    f.writelines(content)
-    f.write("\n".join(lines) + "\n")
-PYEOF
+                    with open(readme, 'w') as f:
+          f.writelines(content)
+          f.write("\n".join(lines) + "\n")
+          PYEOF
             fi
           done
           

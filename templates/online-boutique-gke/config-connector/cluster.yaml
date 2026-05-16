@@ -15,7 +15,7 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerCluster
 metadata:
-  name: ob-kcc
+  name: online-boutique-gke
   namespace: forge-management
   labels:
     project: gcp-template-forge
@@ -27,9 +27,9 @@ spec:
   location: us-central1
   initialNodeCount: 1
   networkRef:
-    name: ob-kcc-vpc
+    name: online-boutique-gke-vpc
   subnetworkRef:
-    name: ob-kcc-subnet
+    name: online-boutique-gke-subnet
   ipAllocationPolicy:
     clusterSecondaryRangeName: pods
     servicesSecondaryRangeName: services
