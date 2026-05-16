@@ -1,0 +1,5 @@
+shortName: feat-integrate-progr
+displayName: Dashboard Progress SSE
+description: Mocks a dashboard server verifying Server-Sent Events (SSE) progress streaming over a GKE cluster.
+gcpServices: [GKE]
+issueNumber: 304
