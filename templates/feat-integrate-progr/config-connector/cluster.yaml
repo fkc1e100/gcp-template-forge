@@ -1,0 +1,19 @@
+apiVersion: container.cnrm.cloud.google.com/v1beta1
+kind: ContainerCluster
+metadata:
+  name: feat-integrate-progr-cluster
+spec:
+  location: us-central1
+  initialNodeCount: 1
+  removeDefaultNodePool: true
+  networkRef:
+    name: feat-integrate-progr-vpc
+  subnetworkRef:
+    name: feat-integrate-progr-subnet
+  workloadIdentityConfig:
+    workloadPool: gca-gke-2025.svc.id.goog
+  releaseChannel:
+    channel: REGULAR
+  ipAllocationPolicy:
+    clusterSecondaryRangeName: pods
+    servicesSecondaryRangeName: services
