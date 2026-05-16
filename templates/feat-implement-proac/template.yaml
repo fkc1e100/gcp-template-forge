@@ -1,0 +1,7 @@
+shortName: feat-implement-proac
+displayName: Proactive Rebasing Watcher
+description: Infrastructure and workload for the proactive rebasing watcher service.
+gcpServices:
+  - GKE
+  - Compute
+issueNumber: 308
