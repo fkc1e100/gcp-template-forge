@@ -173,3 +173,4 @@ All Validation Tests passed successfully for Online Boutique
 | **Agent tokens** | - | (shared session) |
 | **Estimated cost** | - | -- |
 | **Commit** | n/a | n/a |
+<!-- Trigger CI for online-boutique-gke -->
