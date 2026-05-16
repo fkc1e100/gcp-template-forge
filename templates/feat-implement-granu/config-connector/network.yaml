@@ -1,0 +1,22 @@
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeNetwork
+metadata:
+  name: ${NETWORK_NAME}
+  annotations:
+    cnrm.cloud.google.com/project-id: ${PROJECT_ID}
+spec:
+  autoCreateSubnetworks: false
+  routingMode: REGIONAL
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeSubnetwork
+metadata:
+  name: ${SUBNET_NAME}
+  annotations:
+    cnrm.cloud.google.com/project-id: ${PROJECT_ID}
+spec:
+  region: ${REGION}
+  ipCidrRange: 10.0.0.0/16
+  networkRef:
+    name: ${NETWORK_NAME}
+  privateIpGoogleAccess: true

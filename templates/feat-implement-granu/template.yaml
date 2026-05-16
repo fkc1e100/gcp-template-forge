@@ -1,0 +1,5 @@
+shortName: "feat-implement-granu"
+displayName: "Granular Progress Tracking"
+description: "Implements granular progress tracking via progress.json for recovery."
+gcpServices: [GKE]
+issueNumber: 303

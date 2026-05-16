@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tracker-script
+data:
+  app.py: |
+    import json, http.server, socketserver, os
+    PORT = 8080
+    FILE_PATH = "/data/progress.json"
+    if not os.path.exists("/data"): os.makedirs("/data", exist_ok=True)
+    with open(FILE_PATH, "w") as f: json.dump({"status": "resumed", "completed_steps": 5}, f)
+    class Handler(http.server.SimpleHTTPRequestHandler):
+        def do_GET(self):
+            self.send_response(200)
+            self.send_header("Content-type", "application/json")
+            self.end_headers()
+            with open(FILE_PATH, "r") as f: self.wfile.write(f.read().encode())
+    with socketserver.TCPServer(("", PORT), Handler) as httpd:
+        httpd.serve_forever()
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: progress-tracker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: progress-tracker
+  template:
+    metadata:
+      labels:
+        app: progress-tracker
+    spec:
+      containers:
+        - name: python-server
+          image: python:3.9-slim
+          command: ["python", "/script/app.py"]
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: script-vol
+              mountPath: /script
+            - name: data-vol
+              mountPath: /data
+      volumes:
+        - name: script-vol
+          configMap:
+            name: tracker-script
+        - name: data-vol
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: progress-tracker-svc
+spec:
+  type: LoadBalancer
+  selector:
+    app: progress-tracker
+  ports:
+    - port: 80
+      targetPort: 8080
