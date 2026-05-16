@@ -1,0 +1,22 @@
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeNetwork
+metadata:
+  name: kcc-boutique-network
+  annotations:
+    cnrm.cloud.google.com/project-id: "gca-gke-2025"
+spec:
+  autoCreateSubnetworks: false
+  routingMode: REGIONAL
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeSubnetwork
+metadata:
+  name: kcc-boutique-subnet
+  annotations:
+    cnrm.cloud.google.com/project-id: "gca-gke-2025"
+spec:
+  region: us-central1
+  ipCidrRange: 10.0.0.0/16
+  networkRef:
+    name: kcc-boutique-network
+  privateIpGoogleAccess: true

@@ -1,0 +1,6 @@
+shortName: kcc-boutique
+displayName: Online Boutique
+description: Online Boutique microservices demo on GKE
+gcpServices:
+  - GKE
+issueNumber: 350
