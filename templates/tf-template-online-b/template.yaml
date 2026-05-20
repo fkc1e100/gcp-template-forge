@@ -1,0 +1,5 @@
+shortName: tf-template-online-b
+displayName: Online Boutique Demo
+description: Standard mock microservices demo (Frontend + Redis Cart)
+gcpServices: [GKE, Compute]
+issueNumber: 318

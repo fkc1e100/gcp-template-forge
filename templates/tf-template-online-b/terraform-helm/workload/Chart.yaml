@@ -1,0 +1,4 @@
+apiVersion: v2
+name: online-boutique
+description: A mock Helm chart for Online Boutique microservices
+version: 0.1.0
