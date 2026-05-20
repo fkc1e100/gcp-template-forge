@@ -1,0 +1,18 @@
+apiVersion: container.cnrm.cloud.google.com/v1beta1
+kind: ContainerCluster
+metadata:
+  name: ci-bug-readme-missin-cluster
+  namespace: config-control
+spec:
+  location: us-central1
+  networkRef:
+    name: ci-bug-readme-missin-vpc
+  subnetworkRef:
+    name: ci-bug-readme-missin-subnet
+  ipAllocationPolicy:
+    useIpAliases: true
+  workloadIdentityConfig:
+    workloadPool: gca-gke-2025.svc.id.goog
+  addonsConfig:
+    gcsFuseCsiDriverConfig:
+      enabled: true

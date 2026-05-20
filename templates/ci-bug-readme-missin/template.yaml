@@ -1,0 +1,7 @@
+shortName: ci-bug-readme-missin
+displayName: "K8s Autoscaler Example"
+description: "GKE Cluster and autoscaling example featuring Horizontal Pod Autoscaling and GKE Autoscaler."
+gcpServices:
+  - "GKE"
+  - "Compute Engine"
+issueNumber: 123
