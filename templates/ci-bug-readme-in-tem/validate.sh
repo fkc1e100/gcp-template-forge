@@ -1,39 +1,23 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/bash
+set -ex
 
-echo "=== STEP 1: Waiting for Deployment 'hello-pod' ==="
-kubectl rollout status deployment/hello-pod --timeout=300s
+# Wait for the deployment to become available
+kubectl wait --for=condition=available --timeout=300s deployment/hello-app
 
-echo "=== STEP 2: Creating a curl client test pod ==="
-# Clean up any existing test-pod
-kubectl delete pod test-pod --force --grace-period=0 || true
-
-# Run busybox pod to curl the service
-kubectl run test-pod --image=busybox --restart=Never --overrides='{"spec": {"activeDeadlineSeconds": 60}}' -- sh -c "wget -O- -q http://hello-service"
-
-echo "=== STEP 3: Waiting for test-pod to complete ==="
-success=false
+# Get the Service IP
+SERVICE_IP=""
 for i in {1..30}; do
-  status=$(kubectl get pod test-pod -o jsonpath='{.status.phase}' 2d>/dev/null || echo "Waiting")
-  if [ "$status" = "Succeeded" ]; then
-     success=true
-     break
-  elif [ "$status" = "Failed" ]; then
-     echo "test-pod failed!"
-     break
+  SERVICE_IP=$(kubectl get svc hello-service -o jsonphath='{.status.loadBalancer.ingress[0].ip')
+  if [ -n "$SERVICE_IP" ]; then
+    break
   fi
-  sleep 2
-do
+  sleep 10
+done
 
-echo "=== STEP 4: Outputting logs and verifying response ==="
-kubectl logs test-pod
- 
-if [ "$success" = "true" ] && kubectl logs test-pod | grep -q "Hello, world!"; then
-  echo "=== SUCCESS: hello-service is fully responsive ==="
-  kubectl delete pod test-pod --force --grace-period=0
-  exit 0
-else
-  echo "=== FAILURE: hello-service did not return expected response ==="
-  kubectl delete pod test-pod --force --grace-period=0
+if [ -z "$SERVICE_IP" ]; then
+  echo "Failed to get Service IP"
   exit 1
 fi
+
+# Verify the endpoint returns a successful response
+curl -sS --fail http://${SERVICE_IP} | grep "Hello, world!"

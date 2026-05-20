@@ -1,21 +1,20 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
 metadata:
-  name: ci-bug-readme-in-tem-nodepool
+  name: ${CLUSTER_NAME}-np
 spec:
+  location: ${REGION}
   clusterRef:
-    name: ci-bug-readme-in-tem-cluster
-  location: us-central1
-  nodeLocations:
-    - us-central1-a
-    - us-central1-b
+    name: ${CLUSTER_NAME}
   initialNodeCount: 1
+  autoscaling:
+    minNodeCount: 1
+    maxNodeCount: 3
   nodeConfig:
     machineType: e2-standard-4
     diskSizeGb: 50
     diskType: pd-standard
     oauthScopes:
-      - "https://www.googleapis.com/auth/cloud-platform"
-  autoscaling:
-    minNodeCount: 1
-    maxNodeCount: 3
+      - https://www.googleapis.com/auth/cloud-platform
+  nodeLocations:
+    - ${ZONE}

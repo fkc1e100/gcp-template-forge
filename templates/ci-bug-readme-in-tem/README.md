@@ -1,14 +1,12 @@
-# GKE Autoscaler Example
+# K8s Autoscaler (CI Bug Fix)
 
-This template demonstrates GKE Autoscaling using Config Connector and Horizontal Pod Autoscaler (HPA).
+Fixes the missing CI validation record marker for the K8s autoscaler template.
 
-## Resources Created
-- VPC Network & Subnetwork
-- Container Cluster (GKE Standard)
-- Container Node Pool with Autoscaling enabled (1 to 3 nodes)
-- Hello World Deployment, Service, and Human-friendly HPA
+## CI Status
 
-## Ci Validation Record
+<!-- BEGIN CI VALIDATION RECORD -->
+<!-- END CI VALIDATION RECORD -->
 
-<!-- CI_VALIDATION_RECORD_START -->
-<!-- CI_VALIDATION_RECORD_END -->
+## Architecture
+
+GKE Cluster with autoscaling enabled.

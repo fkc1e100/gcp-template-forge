@@ -1,15 +1,19 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerCluster
 metadata:
-  networkRef:
-    name: ci-bug-readme-in-tem-network
-  subnetworkRef:
-    name: ci-bug-readme-in-tem-subnet
-  name: ci-bug-readme-in-tem-cluster
+  name: ${CLUSTER_NAME}
 spec:
-  location: us-central1
+  location: ${REGION}
   initialNodeCount: 1
+  networkRef:
+    name: ${NETWORK_NAME}
+  subnetworkRef:
+    name: ${SUBNET_NAME}
   workloadIdentityConfig:
     workloadPool: gca-gke-2025.svc.id.goog
-  ipAllocationPolicy:
-    useIpAliases: true
+  removeDefaultNodePool: true
+  addonsConfig:
+    gcsFuseCsiDriverConfig:
+      enabled: true
+  gatewayApiConfig:
+    channel: CHANNEL_STANDARD
