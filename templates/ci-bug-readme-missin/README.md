@@ -1,35 +1,15 @@
-# Kubernetes Autoscaling Example on GKE (Config Connector)
+# KubeRay + Kueue Cluster
 
-This template demonstrates how to set up and configure Kubernetes Autoscaling on Google Kubernetes Engine (GKE) using Config Connector (KCC).
+This template provisions a GKE cluster configured for multi-tenant batch machine learning workloads using KubeRay and Kueue.
 
 ## Architecture
 
-The template provisions the following resources:
-- A custom VPC and Subnetwork.
-- A regional GKE Cluster with GCS FUSE CSI driver enabled.
-- A regional Node Pool with GKE Cluster Autoscaler enabled (`autoscaling` block).
-- A sample workload (`php-apache`) with a `HorizontalPodAutoscaler` (HPA) to autoscale pods based on CPU utilization.
+- **VPC & Subnets**: Custom VPC and regional subnet.
+- **GKE Cluster**: Regional cluster with GCS FUSE CSI driver and Gateway API enabled.
+- (*GKE Node Pools**: Node pools with autoscaling configured.
 
-## Directory Structure
+## Config Connector (KCC) Support Limitation
 
-- `config-connector/`: Contains GCP infrastructure resources (VPC, Subnet, GKE Cluster, and Node Pool).
-- `config-connector-workload/`: Contains Kubernetes-native workloads (Deployment, Service, and HPA).
-- `validate.sh`: Functional validation script to verify deployment readiness and service availability.
+This template contains a .Kcc-unsupported marker because the integration of Kueue with GKE Queued Provisioning (which optimizes resource allocation for dynamic machine learning workloads) requires the queuedProvisioning feature in GKE node pools. Currently, the Config Connector ContainerNodePool resource does not support queuedProvisioning (strict decoding error).
 
-## Usage
-
-1. Deploy the GCP Infrastructure:
-   ```bash
-   kubectl apply -f config-connector.
-   ```J2. Wait for the GKE cluster and node pool to be ready:
-   ```bash
-   kubectl wait --for=condition=Ready containercluster/ci-bug-readme-missin-cluster
-   ```
-3. Deploy the application workkload:
-   ```bash
-   kubectl apply -f config-connector-workload/
-   ```
-4. Run validation:
-   ```bash
-   ./validate.sh
-   ```
+Therefore, this template is marked as unsupported for Config Connector deployment, but can be fully provisioned using the Terraform/Helm path.

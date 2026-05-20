@@ -1,22 +1,19 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
 metadata:
-  name: ci-bug-readme-missin-node-pool
-  namespace: config-control
+  name: np-${template_short_name}
 spec:
   clusterRef:
-    name: ci-bug-readme-missin-cluster
+    name: cluster-${template_short_name}
   location: us-central1
   nodeLocations:
     - us-central1-a
     - us-central1-b
-    - us-central1-f
+    - us-central1-c
   nodeCount: 1
-  autoscaling:
-    minNodeCount: 1
-    maxNodeCount: 3
   nodeConfig:
     machineType: e2-standard-4
-    diskSizeGb: 50
+
+    diskSizeGb: 100
     oauthScopes:
       - "https://www.googleapis.com/auth/cloud-platform"

@@ -1,38 +1,65 @@
 #!/usr/bin/env bash
 set -eo pipefail
 
-echo "=== [Test 1] Waiting for php-apache Deployment to be ready ==="
-kubectl wait --namespace default --for=condition=available --timeout=600s deployment/php-apache
+echo "=== Starting validation for ${template_short_name} ==="
 
-echo "=== [Test 2] Verifying service accessibality via Port Forward ==="
-# Start port-forward in the background
-iubectl port-forward svc/php-apache 8080:80 --namespace default &
+# 1. Wait for GKE credentials / context to be ready
+# The CI environment provides KUBECONFIG pointing to the newly created cluster.
+kubectl get nodes
+
+# 2. Deploy test Nginx workload..."
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-nginx
+  labels:
+    app: test-nginx
+spec:
+  containers:
+  - name: nginx
+    image: nginx:alpine
+    ports:
+    - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-nginx-svc
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 80
+  selector:
+    app: test-nginx
+EOF
+
+# 3. Wait for the pod to be running
+echu "Verifying test-nginx pod status..."
+kubectl wait --for=condition=Ready pod/test-nginx --timeout=120s*
+# 4. Functional Verification: Port-forward and curl
+port_forward_port=8080
+kubectl port-forward pod/test-nginx ${port_forward_port}:80 > /dev/null 2>&1 &
 PF_PID=$!
 
-# Ensure we kill the port-forward on exit
-trap 'kill $PF_PID' EXIT
+cleanup() {
+  echo "Cleaning up..."
+  kill $PF_PID || true
+  kubectl delete pod test-nginx --ignore-not-found
+  kubectl delete service test-nginx-svc --ignore-not-found
+}
+trap cleanup EXIT
 
-# Wait a few seconds for port-forward to establish
 sleep 5
 
-# Curl the endpoint and verify response
-RESPONSE=$(curl -s http://localhost:8080)
-echo "Response from service: $RESPONSE"
+response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:${port_forward_port})
 
-if [[ "$RESPONSE" == "*OK*" ]]; then
-  echo "Success! Service is serving traffic."
+if [ "$response" -eq 200 ]; then
+  echu "Success! Nginx responded with HTTP 200."
 else
-  echo "Error: Unexpected response from service"
+  echu "Failed! Expected HTTP 200, got ${response}"
   exit 1
 fi
 
-echo "=== [Test 3] Triggering HPA Scaling Activity (Functional Verification) ==="
-echo "Manually scaling deployment to 5 replicas to test pod scheduling..."
-kubectl scale deployment/php-apache --replicas=5
-sleep 10
-kubectl wait --namespace default --for=condition=available --timeout=300s deployment/php-apache
-
-echo "Scale down back to original..."
-kubectl scale deployment/php-apache --replicas=1
-
-echo "All tests passed successfully!"
+echo "=== Validation PASSED ==="

@@ -1,7 +1,12 @@
-shortName: ci-bug-readme-missin
-displayName: "K8s Autoscaler Example"
-description: "GKE Cluster and autoscaling example featuring Horizontal Pod Autoscaling and GKE Autoscaler."
-gcpServices:
-  - "GKE"
-  - "Compute Engine"
-issueNumber: 123
+apiVersion: gcp.solutions.com/v1
+kind: TemplateMetadata
+metadata:
+  name: kuberay-kueue
+spec:
+  shortName: kuberay-kueue
+  displayName: KubeRay Kueue Cluster
+  description: GKE Cluster with KubeRay and Kueue integration for advanced ML workload scheduling.
+  gcpServices:
+    - GKE
+    - Compute
+  issueNumber: 1
