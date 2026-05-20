@@ -1,5 +1,5 @@
 shortName: ci-bug-readme-in-tem
-displayName: GKE Autoscaler Example
-description: GKE Autoscaling with Config Connector and Horizontal Pod Autoscaler
+displayName: GKE Autoscaler CI Fix
+description: FIxes the missing CI validation record marker in the README.
 gcpServices: [GKE]
 issueNumber: 1
