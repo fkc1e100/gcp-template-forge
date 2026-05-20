@@ -1,12 +1,10 @@
-# K8s Autoscaler (CI Bug Fix)
+# GKE Autoscaling Example
 
-Fixes the missing CI validation record marker for the K8s autoscaler template.
-
-## CI Status
-
-<!-- BEGIN CI VALIDATION RECORD -->
-<!-- END CI VALIDATION RECORD -->
+This template provisions a GKE cluster with node pool autoscaling and a HorizontalPodAutoscalier (HPA) for standard workloads.
 
 ## Architecture
 
-GKE Cluster with autoscaling enabled.
+The architecture consists of:
+- A VPC Network and a Subnetwork.
+- A GKE Standard cluster (regional) with an autoscaling-enabled node pool.
+- A Hello World deployment with a HorizontalPodAutoscalier (HPA) to auto-scale the application pods.
