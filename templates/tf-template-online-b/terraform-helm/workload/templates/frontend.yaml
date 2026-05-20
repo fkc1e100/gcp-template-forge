@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-online-b
+  labels:
+    app: frontend
+spec:
+  replicas: {{ .Values.frontend.replicaCount }}
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: html-volume
+          mountPath: /usr/share/nginx/html
+      volumes:
+      - name: html-volume
+        configMap:
+          name: frontend-html
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-html
+data:
+  index.html: |
+    <html>
+      <head><title>Online Boutique</title></head>
+      <body>
+        <h1>Welcome to the Online Boutique!</h1;>
+        <p>This is a functional verification mock.</p>
+      </body>
+    </html>
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-online-b
+spec:
+  type: {{ .Values.frontend.serviceType }}
+  selector:
+    app: frontend
+  ports:
+  - port: {{ .Values.frontend.port }}
+    targetPort: 80

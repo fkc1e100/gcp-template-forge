@@ -1,0 +1,6 @@
+frontend:
+  replicaCount: 2
+  serviceType: LoadBalancer
+  port: 80
+redis:
+  replicaCount: 1
