@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kuberay-system
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kuberay-kueue-info
+  namespace: kuberay-system
+data:
+  info: "KubeRay and Kueue are not deployed via KCC due to lack of GKE Queued Provisioning support in KCC."

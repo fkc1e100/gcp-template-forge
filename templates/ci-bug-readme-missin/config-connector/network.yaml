@@ -1,8 +1,7 @@
 apiVersion: compute.cnrm.cloud.google.com/v1beta1
 kind: ComputeNetwork
 metadata:
-  name: ci-bug-readme-missin-vpc
-  namespace: config-control
+  name: net-${template_short_name}
 spec:
   routingMode: REGIONAL
   autoCreateSubnetworks: false
@@ -10,10 +9,9 @@ spec:
 apiVersion: compute.cnrm.cloud.google.com/v1beta1
 kind: ComputeSubnetwork
 metadata:
-  name: ci-bug-readme-missin-subnet
-  namespace: config-control
+  name: subnet-${template_short_name}
 spec:
   ipCidrRange: 10.0.0.0/16
   region: us-central1
   networkRef:
-    name: ci-bug-readme-missin-vpc
+    name: net-${template_short_name}

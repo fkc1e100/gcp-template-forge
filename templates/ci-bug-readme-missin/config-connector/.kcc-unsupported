@@ -1,0 +1,1 @@
+KubeRay with Kueue integration requires GKE Queued Provisioning (queued_provisioning) for dynamic node provisioning, which is currently unsupported in Config Connector (KCC) because the ContainerNodePool CRD does not support the queuedProvisioning field.
