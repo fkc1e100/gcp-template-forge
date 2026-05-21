@@ -1,7 +1,6 @@
 shortName: ci-bug-readme-in-tem
-displayName: GKE Autoscaling Example
-description: GKE Cluster with Node Pool Autoscaling and GPA
+displayName: CI Bug Readme in Tem
+description: GKE cluster with hello-nginx workload using KCC
 gcpServices:
   - GKE
-  - Compute Engine
 issueNumber: 1
