@@ -1,20 +1,47 @@
 #!/usr/bin/env bash
 set -eo pipefail
 
-echo "Waiting for hello-app deployment to be ready..."
-kubectl rollout status deployment/hello-app --timeout=300s
+echo "========================================="
+echo "Starting functional validation of workload"
+echo "========================================="
 
-echo "Verifying hello-app deployment is running..."
-kubectl get pods -l app=hello
+echo "Waiting for hello-nginx deployment to be ready..."
+kubectl rollout status deployment/hello-nginx --timeout=10m
 
-echo "Testing connectivity to hello-service..."
-RESPONSE=$(kubectl run curl-test --image=curlimages/curl:8.4.0 --restart=Never --rm -i -- curl -s --connect-timeout 5 http://hello-service)
-echo "Response from hello-service: $RESPONSE"
+echo "Waiting for hello-nginx-service LoadBalancer IP..."
+EXTERNAL_IP=""
+for i in {1..60}; do
+  EXTERNAL_IP=$(kubectl get svc hello-nginx-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)
+  if [ -n "$EXTERNAL_IP" ]; then
+    echo "Found LoadBalancer IP: $EXTERNAL_IP"
+    break
+  fi
+  echo "Still waiting for LoadBalancer IP... (attempt $i/60)"
+  sleep 10
+done
 
-if [[ "$RESPONSE" == *"Hello, world!"* ]]; then
-  echo "Success! The workload is serving traffic correctly."
-  exit 0
-else
-  echo "Error: Unexpected response or connection failed."
+if [ -z "$EXTERNAL_IP" ]; then
+  echo "Error: Failed to obtain LoadBalancer IP within timeout"
   exit 1
 fi
+
+echo "Verifying service is accessible and serving traffic..."
+success=false
+for i in {1..12}; do
+  if curl --connect-timeout 5 -sSf "http://${EXTERNAL_IP}" > /dev/null; then
+    echo "Success: hello-nginx-service is up and reachable!"
+    success=true
+    break
+  fi
+  echo "Service not reachable yet, retrying... (attempt $i/12)"
+  sleep 10
+done
+
+if [ "$success" = false ]; then
+  echo "Error: Failed to connect to hello-nginx-service"
+  exit 1
+fi
+
+echo "========================================="
+echo "Validation completed successfully!"
+echo "========================================="

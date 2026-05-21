@@ -1,60 +1,34 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: hello-app
+  name: hello-nginx
   namespace: default
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
-      app: hello
+      app: hello-nginx
   template:
     metadata:
       labels:
-        app: hello
+        app: hello-nginx
     spec:
       containers:
-      - name: hello
-        image: us-docker.pkg.dev/google-samples/containers/gke/hello-app:1.0
-        ports: 
-        - containerPort: 8080
-        resources:
-          requests:
-            cpu: "100m"
-            memory: "100Mi"
-          limits:
-            cpu: "200m"
-            memory: "200Mi"
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: hello-service
+  name: hello-nginx-service
   namespace: default
 spec:
-  type: ClusterIP
+  type: LoadBalancer
   selector:
-    app: hello
+    app: hello-nginx
   ports:
-  - port: 80
-    targetPort: 8080
----
-apiVersion: autoscaling/v2
-kind: HorizontalPodAutoscaler
-metadata:
-  name: hello-hpa
-  namespace: default
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: hello-app
-  minReplicas: 1
-  maxReplicas: 10
-  metrics:
-  - type: Resource
-    resource:
-      name: cpu
-      target:
-        type: Utilization
-        averageUtilization: 50
+  - protocol: TCP
+    port: 80
+    targetPort: 80
