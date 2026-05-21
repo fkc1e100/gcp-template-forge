@@ -1,0 +1,6 @@
+shortName: online-boutique-micr
+displayName: Online Boutique
+description: Google Cloud Online Boutique microservices demo deployed on GKE via Config Connector.
+gcpServices:
+  - GKE
+issueNumber: 318
