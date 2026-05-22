@@ -1,9 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Release.Name }}-service
-  labels:
-    app: {{ .Release.Name }}-workload
+  name: custom-compute-service
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -12,4 +10,4 @@ spec:
       protocol: TCP
       name: http
   selector:
-    app: {{ .Release.Name }}-workload
+    app: custom-compute-app
