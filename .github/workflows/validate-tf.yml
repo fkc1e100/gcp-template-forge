@@ -97,6 +97,7 @@ jobs:
     timeout-minutes: 60
     strategy:
       fail-fast: false
+      max-parallel: 2
       matrix:
         template: ${{ fromJson(needs.detect-changes.outputs.tf_templates) }}
     steps:
@@ -126,7 +127,19 @@ jobs:
             -backend-config="bucket=${TF_STATE_BUCKET}" \
             -backend-config="prefix=${TEMPLATE}-${{ github.run_id }}/terraform-helm"
           
-          REGIONS=("us-central1" "us-east1" "us-west1")
+          # Hash the template path to pick a starting region (us-central1, us-east1, us-west1)
+          # This dynamic routing avoids quota/IP exhaustion and stockouts under parallel runs
+          TEMPLATE_HASH=$(echo -n "${{ matrix.template }}" | cksum | cut -f1 -d' ')
+          ALL_REGIONS=("us-central1" "us-east1" "us-west1")
+          START_IDX=$(( TEMPLATE_HASH % 3 ))
+          
+          # Reorder regions starting with the hashed index
+          REGIONS=()
+          for ((i=0; i<3; i++)); do
+            REGIONS+=("${ALL_REGIONS[$(( (START_IDX + i) % 3 ))]}")
+          done
+          echo "Hashed region validation order: ${REGIONS[*]}"
+          
           SUCCESS=false
           for REGION in "${REGIONS[@]}"; do
             echo "Attempting deployment in $REGION..."
@@ -160,6 +173,7 @@ jobs:
     timeout-minutes: 60
     strategy:
       fail-fast: false
+      max-parallel: 2
       matrix:
         template: ${{ fromJson(needs.detect-changes.outputs.tf_templates) }}
     steps:
@@ -208,6 +222,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      max-parallel: 2
       matrix:
         template: ${{ fromJson(needs.detect-changes.outputs.tf_templates) }}
     steps:
