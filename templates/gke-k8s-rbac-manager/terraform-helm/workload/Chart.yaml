@@ -1,0 +1,6 @@
+apiVersion: v2
+name: rbac-manager-workload
+description: A Helm chart for deploying the K8s RBAC Manager custom resources
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
