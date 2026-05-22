@@ -18,3 +18,9 @@ output "endpoint" {
   description = "The GKE cluster endpoint."
   sensitive   = true
 }
+
+output "cluster_location" {
+  value       = google_container_cluster.primary.location
+  description = "The GKE cluster location (zone or region)."
+}
+
