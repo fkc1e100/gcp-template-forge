@@ -1,0 +1,7 @@
+shortName: kcc-gke-custom-compu
+displayName: "GKE Custom Compute Node Pool"
+description: "Deploys a GKE cluster with a custom compute node pool using custom machine types (Config Connector)."
+gcpServices:
+  - GKE
+  - Compute Engine
+issueNumber: 386
