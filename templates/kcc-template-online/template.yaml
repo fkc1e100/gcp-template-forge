@@ -1,5 +1,6 @@
 shortName: kcc-template-online
-displayName: Online Boutique Demo
-description: Online Boutique microservices demo on GKE via Config Connector
-gcpServices: [GKE]
-issueNumber: 350
+displayName: GKE Online App (KCC)
+description: A standard online microservice workload deployed on Google Kubernetes Engine via Config Connector.
+gcpServices:
+  - GKE
+issueNumber: 318
