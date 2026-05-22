@@ -83,12 +83,12 @@ KCC is temporarily unsupported on this isolation branch.
 
 | | Terraform + Helm | Config Connector |
 | --- | --- | --- |
-| **Status** | pending | pending |
-| **Date** | n/a | n/a |
-| **Duration** | n/a | n/a |
+| **Status** | success | skipped |
+| **Date** | 2026-05-22 | 2026-05-22 |
+| **Duration** | 46s | n/a |
 | **Region** | us-central1 | us-central1 (KCC cluster) |
 | **Zones** | - | forge-management namespace |
-| **Cluster** | -- | krmapihost-kcc-instance |
+| **Cluster** | k8s-rbac-mgr-tf | krmapihost-kcc-instance |
 | **Agent tokens** | - | (shared session) |
 | **Estimated cost** | - | -- |
-| **Commit** | n/a | n/a |
+| **Commit** | f7dc8204 | f7dc8204 |
