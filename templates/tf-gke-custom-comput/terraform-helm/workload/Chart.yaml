@@ -1,0 +1,6 @@
+apiVersion: v2
+name: workload
+description: A Helm chart for deploying the web workload on GKE custom compute nodes
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
