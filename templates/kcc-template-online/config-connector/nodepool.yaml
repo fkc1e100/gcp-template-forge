@@ -15,17 +15,17 @@
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerNodePool
 metadata:
-  name: gke-basic-pool
+  name: kcc-template-online-pool
   namespace: forge-management
   labels:
     project: gcp-template-forge
-    template: gke-basic
+    template: kcc-template-online
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
 spec:
   location: us-central1
   clusterRef:
-    name: gke-basic-kcc
+    name: kcc-template-online-cluster
   nodeCount: 1
   nodeConfig:
     spot: true
@@ -38,4 +38,4 @@ spec:
       mode: GKE_METADATA
     labels:
       project: gcp-template-forge
-      template: gke-basic
+      template: kcc-template-online
