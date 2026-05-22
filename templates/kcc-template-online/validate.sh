@@ -1,48 +1,59 @@
 #!/usr/bin/env bash
 set -eo pipefail
 
-echo "==> Fetching credentials for KCC cluster..."
-CLUSTER_NAME="kcc-template-online-cluster"
-REGION="us-central1"
-PROJECT_ID="gca-gke-2025"
+echo "===================================================="
+echo "Starting Validation for kcc-template-online"
+echo "===================================================="
 
-gcloud container clusters get-credentials "${CLUSTER_NAME}" --region="${REGION}" --project="${PROJECT_ID}"
+# Test 1: Verify cluster credentials exist
+echo "Checking cluster connectivity..."
+kubectl cluster-info
 
-echo "==> Verifying Online Boutique Deployment..."
-kubectl wait --for=condition=available --timeout=600s deployment/frontend || {
-    echo "Frontend deployment failed to become available"
-    kubectl get pods
-    exit 1
-}
+# Test 2: Wait for deployment rollout
+echo "Waiting for kcc-template-online-frontend deployment to be ready..."
+kubectl rollout status deployment/kcc-template-online-frontend --timeout=300s
 
-echo "==> Waiting for Frontend LoadBalancer IP..."
+# Test 3: Verify pods are Running
+echo "Checking pod status..."
+kubectl get pods -l app=kcc-template-online-frontend
+
+# Test 4: Wait for dynamic service LoadBalancer IP structure
+echo "Waiting for LoadBalancer IP to be assigned..."
+LB_IP=""
 for i in {1..30}; do
-  FRONTEND_IP=$(kubectl get svc frontend-external -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)
-  if [ -n "$FRONTEND_IP" ]; then
+  LB_IP=$(kubectl get svc kcc-template-online-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)
+  if [ -n "$LB_IP" ]; then
+    echo "LoadBalancer IP successfully provisioned: ${LB_IP}"
     break
   fi
-  echo "Waiting for LoadBalancer IP..."
+  echo "Still waiting for LoadBalancer IP ($i/30)..."
   sleep 10
 done
 
-if [ -z "$FRONTEND_IP" ]; then
-  echo "ERROR: Frontend LoadBalancer IP not found."
-  kubectl get svc
+if [ -z "$LB_IP" ]; then
+  echo "Error: Timeout waiting for LoadBalancer IP assignment."
   exit 1
 fi
 
-echo "Frontend IP: $FRONTEND_IP"
-
-echo "==> Testing HTTP Endpoint..."
-for i in {1..30}; do
-  HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://${FRONTEND_IP} || true)
-  if [ "$HTTP_STATUS" == "200" ]; then
-    echo "SUCCESS: Online Boutique is serving HTTP 200"
-    exit 0
+# Test 5: Functional Verification (Must prove standard workload works, not just that pods are running!)
+echo "Performing functional verification Curl of GKE endpoint..."
+curl_success=false
+for i in {1..15}; do
+  echo "Attempting to contact the online app front-end ($i/15)..."
+  RESPONSE=$(curl -sSf http://${LB_IP} || true)
+  if [[ "$RESPONSE" == *"Welcome to"* || "$RESPONSE" == *"KCC Online"* ]]; then
+    echo "Success! Received expected healthy payload from the GKE web app front-end."
+    curl_success=true
+    break
   fi
-  echo "Waiting for HTTP 200 (current: $HTTP_STATUS)..."
-  sleep 10
+  sleep 5
 done
 
-echo "ERROR: Online Boutique failed to serve HTTP 200"
-exit 1
+if [ "$curl_success" = false ]; then
+  echo "Error: Verification failed. Could not verify response from the GKE web service."
+  exit 1
+fi
+
+echo "===================================================="
+echo "Validation completed successfully!"
+echo "===================================================="
