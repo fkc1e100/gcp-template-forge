@@ -1,47 +1,18 @@
-# Copyright 2026 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 apiVersion: container.cnrm.cloud.google.com/v1beta1
 kind: ContainerCluster
 metadata:
-  name: gke-basic-kcc
-  namespace: forge-management
-  labels:
-    project: gcp-template-forge
-    template: gke-basic
+  name: kcc-gke-custom-compu-cluster
   annotations:
     cnrm.cloud.google.com/project-id: gca-gke-2025
-    cnrm.cloud.google.com/remove-default-node-pool: "true"
 spec:
   location: us-central1
-  # GKE Standard cluster — explicit node pool defined in nodepool.yaml
-  initialNodeCount: 1
   networkRef:
-    name: gke-basic-kcc-vpc
+    name: kcc-gke-custom-compu-vpc
   subnetworkRef:
-    name: gke-basic-kcc-subnet
+    name: kcc-gke-custom-compu-subnet
   ipAllocationPolicy:
-    clusterSecondaryRangeName: pods
-    servicesSecondaryRangeName: services
+    useIpAliases: true
+  removeDefaultNodePool: true
+  initialNodeCount: 1
   workloadIdentityConfig:
     workloadPool: gca-gke-2025.svc.id.goog
-  releaseChannel:
-    channel: REGULAR
-  loggingConfig:
-    enableComponents:
-      - SYSTEM_COMPONENTS
-  securityPostureConfig:
-    mode: BASIC
-    vulnerabilityMode: VULNERABILITY_BASIC
-# KCC validation trigger
