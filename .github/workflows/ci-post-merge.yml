@@ -64,6 +64,7 @@ jobs:
   validate-tf-helm:
     name: Validate TF+Helm (${{ matrix.template }})
     needs: detect-changes
+    if: needs.detect-changes.outputs.tf_templates != '[]' && needs.detect-changes.outputs.tf_templates != ''
     runs-on: ubuntu-latest
     timeout-minutes: 120
     strategy:
@@ -179,6 +180,7 @@ jobs:
   validate-kcc:
     name: Validate KCC (${{ matrix.template }})
     needs: detect-changes
+    if: needs.detect-changes.outputs.kcc_templates != '[]' && needs.detect-changes.outputs.kcc_templates != ''
     runs-on: ubuntu-latest
     timeout-minutes: 120
     strategy:
