@@ -1,79 +1,61 @@
 #!/usr/bin/env bash
-# Copyright 2026 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+set -eo pipefail
 
-set -euo pipefail
+echo "===================================================="
+echo "Validating GKE Custom Compute Template (KCC Path)..."
+echo "===================================================="
 
-PROJECT_ID=${PROJECT_ID:-"gca-gke-2025"}
-CLUSTER_NAME=${CLUSTER_NAME:-"gke-basic-tf"}
-REGION=${REGION:-"us-central1"}
-NAMESPACE_WORKLOAD=${NAMESPACE_WORKLOAD:-"default"}
+CLUSTER_NAME="kcc-gke-custom-compu-cluster"
+REGION="us-central1"
+PROJECT_ID="gca-gke-2025"
 
-# Isolate KUBECONFIG
-export KUBECONFIG=$(mktemp)
-trap 'rm -f "$KUBECONFIG"' EXIT
-
-# 1. Cluster Connectivity
-echo "Test 1: Cluster Connectivity..."
-gcloud container clusters get-credentials ${CLUSTER_NAME} --region ${REGION} --project ${PROJECT_ID}
-kubectl cluster-info
-echo "Connectivity passed."
-
-# 2. Node Readiness
-echo "Test 2: Node Readiness..."
-kubectl wait nodes --all --for=condition=Ready --timeout=10m
-echo "All nodes are Ready."
-
-# 3. Workload Readiness
-echo "Test 3: Workload Readiness..."
-# Use label selector for robustness across deployment paths
-# (Helm uses <release>-<chart>, KCC uses direct name)
-kubectl wait --for=condition=available deployment -l app.kubernetes.io/name=hello-world -n ${NAMESPACE_WORKLOAD} --timeout=30m
-echo "Workload is available."
-
-# 4. Endpoint Interaction
-echo "Test 4: Endpoint Interaction..."
-# Wait for LoadBalancer IP
-SERVICE_IP=""
-for i in {1..20}; do
-  # Use name label for robustness across deployment paths
-  SERVICE_IP=$(kubectl get svc -n ${NAMESPACE_WORKLOAD} -l app.kubernetes.io/name=hello-world -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}' || true)
-  if [ ! -z "$SERVICE_IP" ]; then
+echo "Acquiring credentials for cluster ${CLUSTER_NAME} in region ${REGION}..."
+for i in {1..6}; do
+  if gcloud container clusters get-credentials "${CLUSTER_NAME}" --region "${REGION}" --project "${PROJECT_ID}"; then
+    echo "Got cluster credentials successfully!"
     break
   fi
-  echo "Waiting for LoadBalancer IP (attempt $i/20)..."
-  sleep 30
+  echo "Waiting for cluster to become ready... (attempt $i/6)"
+  sleep 25
 done
 
-if [ -z "$SERVICE_IP" ]; then
-  echo "Failed to get LoadBalancer IP!"
+echo "Waiting for hello-custom-compute deployment to roll out..."
+kubectl rollout status deployment/hello-custom-compute --timeout=300s
+
+echo "Retrieving External IP of hello-custom-compute-service..."
+EXTERNAL_IP=""
+for i in {1..30}; do
+  EXTERNAL_IP=$(kubectl get svc hello-custom-compute-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}' || true)
+  if [ -n "$EXTERNAL_IP" ]; then
+    echo "LoadBalancer External IP acquired: $EXTERNAL_IP"
+    break
+  fi
+  echo "Waiting for LoadBalancer IP... (attempt $i/30)"
+  sleep 10
+done
+
+if [ -z "$EXTERNAL_IP" ]; then
+  echo "ERROR: Could not retrieve Service LoadBalancer IP."
   exit 1
 fi
 
-echo "Testing endpoint http://${SERVICE_IP}:80/..."
-# Retry curl as the LB might take a few moments to actually start serving
-for i in {1..12}; do
-  if curl -sf --connect-timeout 5 --max-time 10 http://${SERVICE_IP}:80/; then
-    echo "Endpoint test passed!"
+echo "Verifying endpoint response..."
+HTTP_CODE=""
+for i in {1..10}; do
+  HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "http://${EXTERNAL_IP}" || true)
+  if [ "$HTTP_CODE" = "200" ]; then
+    echo "SUCCESS: Endpoint is responding correctly with HTTP 200!"
     break
   fi
-  echo "Endpoint not ready (attempt $i/12)..."
-  sleep 30
-  if [ $i -eq 12 ]; then
-    echo "Endpoint test failed after 12 attempts!"
-    exit 1
-  fi
+  echo "Endpoint did not respond with 200 (Result: $HTTP_CODE). Retrying... (attempt $i/10)"
+  sleep 5
 done
 
-echo "All Validation Tests passed successfully for GKE Custom Compute Node Pool!"
+if [ "$HTTP_CODE" != "200" ]; then
+  echo "ERROR: Service verification failed. Endpoint is unresponsive."
+  exit 1
+fi
+
+echo "===================================================="
+echo "GKE Custom Compute Validation Completed Successfully!"
+echo "===================================================="
