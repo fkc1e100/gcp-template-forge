@@ -20,7 +20,7 @@ To ensure absolute reliability, every reference architecture undergoes automated
 | 📊 **[gke-kuberay-kueue](./gke-kuberay-kueue)** | ⚪ `skipped` | ⚪ `skipped` | **Skipped**: Retained from baseline. Skipped in recent pipeline runs to optimize build time since core files were unmodified. |
 | 🌟 **[gke-latest-features](./gke-latest-features)** | ⚪ `skipped` | ⚪ `skipped` | **Skipped**: Retained from baseline. Skipped in recent pipeline runs to optimize build time since core files were unmodified. |
 | 🛒 **[gke-online-boutique](./gke-online-boutique)** | 🟢 `success` | 🟡 `pending` | **Partially Verified**: Terraform path is successful. Config Connector trigger is active on feature branch awaiting live validation. |
-| 📈 **[gke-spot-autoscale](./gke-spot-autoscale)** | ➖ `n/a` | ➖ `n/a` | **No Record**: Baseline template structure. Currently lacks validation records; awaiting initial modification to trigger the CI. |
+| 📈 **[gke-spot-autoscale](./gke-spot-autoscale)** | 🟡 `pending` | 🟡 `pending` | **Pending**: Triggers deployed on active feature branch. Awaiting pipeline execution to record initial live success. |
 | 🧪 **[gke-test-kcc-skip](./gke-test-kcc-skip)** | ⚪ `skipped` | ⚪ `skipped` | **Skipped**: Config Connector is explicitly unsupported (`.kcc-unsupported` present) as GKE Hub cluster registers are not supported in the local test sandbox. |
 | 🗺️ **[gke-topo-routing](./gke-topo-routing)** | ⚪ `skipped` | ⚪ `skipped` | **Skipped**: Retained from baseline. Skipped in recent pipeline runs to optimize build time since core files were unmodified. |
 
