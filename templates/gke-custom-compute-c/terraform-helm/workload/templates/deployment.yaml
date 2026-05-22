@@ -1,28 +1,38 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: custom-compute-app
-  labels:
-    app: custom-compute-app
+  name: custom-workload
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: custom-compute-app
+      app: custom-workload
   template:
     metadata:
       labels:
-        app: custom-compute-app
+        app: custom-workload
     spec:
       containers:
-        - name: app
+        - name: web
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            - name: http
-              containerPort: {{ .Values.service.targetPort }}
-              protocol: TCP
+            - containerPort: 80
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
       nodeSelector:
-        {{- toYaml .Values.nodeSelector | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

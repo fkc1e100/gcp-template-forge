@@ -1,6 +1,6 @@
 apiVersion: v2
 name: custom-workload
-description: A Helm chart for deploying standard workloads to target native compute nodes.
+description: A Helm chart to deploy a custom compute demo hello-world application
 type: application
 version: 0.1.0
-appVersion: "1.0.0"
+appVersion: "1.16.0"
