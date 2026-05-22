@@ -1,7 +1,0 @@
-shortName: gke-custom-compute-c
-displayName: GKE Custom Compute Classes
-description: Provision GKE cluster with custom compute node pools and deploy simple workload via Helm.
-gcpServices:
-  - GKE
-  - Compute Engine
-issueNumber: 386

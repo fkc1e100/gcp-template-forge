@@ -1,0 +1,3 @@
+name: k8s-rbac-manager
+shortName: "gke-k8s-rbac-manager"
+description: Kubernetes RBAC management using Config Connector and Terraform.

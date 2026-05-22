@@ -1,0 +1,3 @@
+name: "GKE Custom Compute Node Pool Reference Architecture"
+shortName: "gke-custom-compute"
+description: "Reference architecture for provisioning zonal clusters with dynamic custom compute node pools and optimized Helm workloads."

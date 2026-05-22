@@ -1,0 +1,3 @@
+name: "GKE Online Boutique Microservices Reference Architecture"
+shortName: "gke-online-boutique"
+description: "Deploy the Google Online Boutique microservice stack on GKE using Terraform or Config Connector."

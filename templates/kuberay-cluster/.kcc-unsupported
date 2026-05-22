@@ -1,1 +1,0 @@
-KCC is currently unsupported for the KubeRay Cluster template as it requires advanced custom cluster resources and node pool configurations tailored for ML workloads that are better managed via the Terraform path.

@@ -1,3 +1,0 @@
-name: k8s-autoscaler-example
-shortName: k8s-autoscaler
-description: A demo template demonstrating basic Kubernetes workload deployment.

@@ -1,3 +1,0 @@
-name: k8s-rbac-manager
-shortName: k8s-rbac-mgr
-description: Kubernetes RBAC management using Config Connector and Terraform.

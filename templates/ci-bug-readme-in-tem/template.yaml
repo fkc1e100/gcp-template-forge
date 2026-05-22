@@ -1,6 +1,0 @@
-shortName: ci-bug-readme-in-tem
-displayName: CI Bug Readme in Tem
-description: GKE cluster with hello-nginx workload using KCC
-gcpServices:
-  - GKE
-issueNumber: 1

@@ -41,10 +41,51 @@ for template in $TEMPLATES; do
   template_name=$(basename "$template")
   [ "$template_name" == "README.md" ] && continue
 
+  # Ensure template folder matches standard naming schema ^gke-[a-z0-9-]+$
+  if [[ ! "$template_name" =~ ^gke-[a-z0-9-]+$ ]]; then
+    echo "ERROR: Template directory '${template_name}' does not follow the required naming pattern '^gke-[a-z0-9-]+$'"
+    exit 1
+  fi
+
   echo "--- Checking structure of $template_name ---"
+  
+  # Ensure .tf-unsupported has documented reasoning in both the marker and README.md
+  if [ -f "${template}/.tf-unsupported" ]; then
+    if [ ! -s "${template}/.tf-unsupported" ] || [ $(wc -c < "${template}/.tf-unsupported") -lt 10 ]; then
+      echo "ERROR: Template '${template_name}' has a '.tf-unsupported' marker but it is empty or too short. It must contain a detailed explanation of why the Terraform/Helm variant is not supported."
+      exit 1
+    fi
+    if [ ! -f "${template}/README.md" ]; then
+      echo "ERROR: Template '${template_name}' has a '.tf-unsupported' marker but is missing 'README.md' to document the limitation."
+      exit 1
+    fi
+    if ! grep -qi "limitations" "${template}/README.md" && ! grep -qi "unsupported" "${template}/README.md"; then
+      echo "ERROR: Template '${template_name}' has a '.tf-unsupported' marker, but its 'README.md' does not contain any explanation or 'Limitations' section."
+      exit 1
+    fi
+  fi
+
+  # Ensure .kcc-unsupported has documented reasoning in both the marker and README.md
+  if [ -f "${template}/.kcc-unsupported" ]; then
+    if [ ! -s "${template}/.kcc-unsupported" ] || [ $(wc -c < "${template}/.kcc-unsupported") -lt 10 ]; then
+      echo "ERROR: Template '${template_name}' has a '.kcc-unsupported' marker but it is empty or too short. It must contain a detailed explanation of why the Config Connector variant is not supported."
+      exit 1
+    fi
+    if [ ! -f "${template}/README.md" ]; then
+      echo "ERROR: Template '${template_name}' has a '.kcc-unsupported' marker but is missing 'README.md' to document the limitation."
+      exit 1
+    fi
+    if ! grep -qi "limitations" "${template}/README.md" && ! grep -qi "unsupported" "${template}/README.md"; then
+      echo "ERROR: Template '${template_name}' has a '.kcc-unsupported' marker, but its 'README.md' does not contain any explanation or 'Limitations' section."
+      exit 1
+    fi
+  fi
+
   MISSING=""
   if [ "$LINT_MODE" == "TF" ] || [ -z "$LINT_MODE" ]; then
-    [ ! -d "${template}/terraform-helm" ] && MISSING="${MISSING} terraform-helm/"
+    if [ ! -f "${template}/.tf-unsupported" ]; then
+      [ ! -d "${template}/terraform-helm" ] && MISSING="${MISSING} terraform-helm/"
+    fi
   fi
   if [ "$LINT_MODE" == "KCC" ] || [ -z "$LINT_MODE" ]; then
     if [ ! -f "${template}/.kcc-unsupported" ]; then
