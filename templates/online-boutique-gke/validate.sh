@@ -29,8 +29,7 @@ trap 'rm -f "$KUBECONFIG"' EXIT
 
 # ── 1. Cluster Connectivity ───────────────────────────────────────────────────
 echo "--- Test 1: Cluster Connectivity ---"
-gcloud container clusters get-credentials "${CLUSTER_NAME}" 
-  --region "${REGION}" --project "${PROJECT_ID}"
+gcloud container clusters get-credentials "${CLUSTER_NAME}" --region "${REGION}" --project "${PROJECT_ID}"
 kubectl cluster-info
 kubectl get nodes -o wide
 echo "PASS: Cluster is reachable."
@@ -42,19 +41,13 @@ echo "PASS: All nodes are Ready."
 
 # ── 3. Workload Deployment Readiness ─────────────────────────────────────────
 echo "--- Test 3: Workload Deployment Readiness ---"
-kubectl wait deployment 
-  -l "app=frontend" 
-  -n "${NAMESPACE}" 
-  --for=condition=available 
-  --timeout=30m
+kubectl wait deployment -l "app=frontend" -n "${NAMESPACE}" --for=condition=available --timeout=30m
 kubectl get pods -n "${NAMESPACE}" -l "app=frontend" -o wide
 echo "PASS: Workload Deployment is Available."
 
 # ── 4. Pod Log Sanity Check ───────────────────────────────────────────────────
 echo "--- Test 4: Pod Log Sanity ---"
-POD=$(kubectl get pod -n "${NAMESPACE}" -l "app=frontend" 
-  --field-selector=status.phase=Running 
-  -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
+POD=$(kubectl get pod -n "${NAMESPACE}" -l "app=frontend" --field-selector=status.phase=Running -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
 if [ -z "$POD" ]; then
   echo "ERROR: No Running pod found matching label app=frontend in namespace ${NAMESPACE}"
   kubectl get events -n "${NAMESPACE}" --sort-by='.lastTimestamp' | tail -20
@@ -85,8 +78,7 @@ fi
 echo "LoadBalancer IP: ${SERVICE_IP}"
 
 for i in $(seq 1 15); do
-  HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" 
-    --connect-timeout 5 --max-time 15 "http://${SERVICE_IP}:80/" || echo "000")
+  HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 5 --max-time 15 "http://${SERVICE_IP}:80/" || echo "000")
   if [[ "$HTTP_STATUS" =~ ^(200|201|204|301|302)$ ]]; then
     echo "PASS: Endpoint http://${SERVICE_IP}:80/ returned HTTP $HTTP_STATUS"
     break
