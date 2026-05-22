@@ -1,0 +1,7 @@
+shortName: tf-gke-custom-comput
+displayName: "GKE Custom Compute Node Pool"
+description: "GKE template with custom compute shapes and node-pool optimization"
+gcpServices:
+  - GKE
+  - Compute Engine
+issueNumber: 386
