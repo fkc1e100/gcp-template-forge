@@ -1,13 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: custom-compute-service
+  name: custom-workload
 spec:
   type: {{ .Values.service.type }}
   ports:
     - port: {{ .Values.service.port }}
-      targetPort: {{ .Values.service.targetPort }}
+      targetPort: 80
       protocol: TCP
-      name: http
   selector:
-    app: custom-compute-app
+    app: custom-workload
