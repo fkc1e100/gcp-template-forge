@@ -1,41 +1,41 @@
 variable "project_id" {
   type        = string
-  description = "The GCP Project ID"
+  description = "The GCP Project ID to host resources"
 }
 
 variable "region" {
   type        = string
-  description = "The GCP Region"
+  description = "The GCP Region to deploy regional components"
   default     = "us-central1"
 }
 
 variable "zone" {
   type        = string
-  description = "The GCP Zone"
+  description = "The initial Zone for compute workloads"
   default     = "us-central1-a"
 }
 
 variable "cluster_name" {
   type        = string
-  description = "The name of the GKE cluster"
+  description = "Name of the GKE cluster managed by CI"
 }
 
 variable "network_name" {
   type        = string
-  description = "The VPC network name"
+  description = "Name of the GCE VPC network managed by CI"
 }
 
 variable "subnet_name" {
   type        = string
-  description = "The subnet name"
+  description = "Name of the subnet managed by CI"
 }
 
 variable "uid_suffix" {
   type        = string
-  description = "The last 6 digits of the CI run ID"
+  description = "Unique short suffix allocated by CI"
 }
 
 variable "service_account" {
   type        = string
-  description = "The CI WIF service account"
+  description = "The GKE Node service account identifier"
 }

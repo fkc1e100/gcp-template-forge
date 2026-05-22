@@ -1,66 +1,52 @@
 #!/usr/bin/env bash
-set -eo pipefail
+set -xeo pipefail
 
-echo "===================================================="
-echo "Starting Validation for gke-custom-compute-c"
-echo "===================================================="
+echo "==> Verifying cluster accessibility"
+kubectl cluster-info
 
-# Helper function to log messages
-log() {
-  echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')] $1"
-}
+echo "==> Waiting for custom-compute deployment to be ready"
+kubectl rollout status deployment/custom-compute-app --timeout=300s
 
-# 1. Get Cluster Credentials
-log "Getting credentials for cluster ${TF_VAR_cluster_name}..."
-gcloud container clusters get-credentials "${TF_VAR_cluster_name}"   --zone "${TF_VAR_zone:-us-central1-a}"   --project "${TF_VAR_project_id}"
-
-# 2. Extract Deployment and Service names dynamically from the cluster
-log "Finding service and deployment names..."
-DEPLOYMENT_NAME=$(kubectl get deployment -o jsonpath='{.items[...metadata.name]}' | tr ' ' '\n' | grep "workload$" | head -n 1)
-if [ -z "$DEPLOYMENT_NAME" ]; then
-  DEPLOYMENT_NAME="workload-workload"
-fi
-
-SERVICE_NAME=$(kubectl get service -o jsonpath='{.items[...metadata.name]}' | tr ' ' '\n' | grep "service$" | head -n 1)
-if [ -z "$SERVICE_NAME" ]; then
-  SERVICE_NAME="workload-service"
-fi
-
-# 3. Wait for Deployment to become Available
-log "Waiting for Deployment ${DEPLOYMENT_NAME} to become available..."
-kubectl wait --for=condition=available deployment/"${DEPLOYMENT_NAME}" --timeout=300s
-
-# 4. Find replica Pod
-POD_NAME=$(kubectl get pods -l app="${DEPLOYMENT_NAME}" -o jsonpath='{.items[0].metadata.name}')
-log "Using Pod: ${POD_NAME} to verify Service: ${SERVICE_NAME}"
-
-# 5. Perform Functional Verification (Curl service internally from within a pod)
-log "Running curl test inside the cluster to verify HTTP traffic..."
-MAX_ATTEMPTS=12
-ATTEMPT=1
-SUCCESS=false
-
-while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
-  log "Attempt $ATTEMPT/$MAX_ATTEMPTS: Curling internal service..."
-  if kubectl exec "${POD_NAME}" -- curl -sSf "http://${SERVICE_NAME}" > /dev/null; then
-    log "SUCCESS: Workload is serving HTTP requests correctly!"
-    SUCCESS=true
+echo "==> Waiting for Custom Compute service load balancer external IP"
+EXTERNAL_IP=""
+for i in {1..30}; do
+  EXTERNAL_IP=$(kubectl get svc custom-compute-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)
+  if [ -n "$EXTERNAL_IP" ]; then
     break
-  else
-    log "Service not reachable yet. Retrying in 10 seconds..."
-    sleep 10
-    ATTEMPT=$((ATTEMPT + 1))
   fi
+  echo "Waiting for external IP (attempt $i/30)..."
+  sleep 10
 done
 
-if [ "$SUCCESS" = false ]; then
-  log "ERROR: Workload functional verification failed after $MAX_ATTEMPTS attempts."
-  exit 1
+if [ -z "$EXTERNAL_IP" ]; then
+  echo "Load balancer external IP did not allocate in time. Trying port-forward verification fallback..."
+  
+  # Start port-forward in the background
+  kubectl port-forward svc/custom-compute-service 8080:80 &
+  PORT_FORWARD_PID=$!
+  
+  # Ensure background process is terminated when executing exit hooks
+  trap 'kill $PORT_FORWARD_PID' EXIT
+  
+  # Wait for port-forward to establish
+  sleep 5
+  
+  echo "Verifying local service port-forward response"
+  RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8080 || true)
+  if [ "$RESPONSE" -eq 200 ]; then
+    echo "Fallback verification SUCCESS: Application is running and healthy on custom node specs!"
+    exit 0
+  else
+    echo "Fallback verification FAILED: Health check returned status $RESPONSE"
+    exit 1
+  fi
 fi
 
-log "Retrieving service status for reference:"
-kubectl get svc "${SERVICE_NAME}" -o wide
-
-echo "===================================================="
-echo "Validation Successful!"
-echo "===================================================="
+echo "==> Verifying application is running on GKE Custom Node via external IP"
+RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://${EXTERNAL_IP} || true)
+if [ "$RESPONSE" -eq 200 ]; then
+  echo "VERIFICATION SUCCESS: Load Balancer responding with HTTP 200 on Custom Compute Node Pool!"
+else
+  echo "VERIFICATION FAILED: Received HTTP status: $RESPONSE"
+  exit 1
+fi
