@@ -194,6 +194,7 @@ jobs:
           for REGION in us-central1 us-east1 us-west1; do
             if gcloud container clusters get-credentials "${BASE_NAME}-${UID_SUFFIX}-tf" --region "$REGION" --project "${{ env.PROJECT_ID }}" 2>/dev/null; then
               echo "REGION=$REGION" >> "$GITHUB_ENV"
+              echo "CLUSTER_NAME=${BASE_NAME}-${UID_SUFFIX}-tf" >> "$GITHUB_ENV"
               break
             fi
           done
@@ -242,12 +243,21 @@ jobs:
           TEMPLATE="${{ matrix.template }}"
           BASE_NAME=$(basename "$TEMPLATE")
           if [[ "$TEMPLATE" == *"gke-inference-fuse-cache"* ]]; then BASE_NAME="gke-inf-fuse-cache"; fi
+          
+          export TF_VAR_cluster_name="${BASE_NAME}-${UID_SUFFIX}-tf"
+          export TF_VAR_network_name="${BASE_NAME}-${UID_SUFFIX}-tf-vpc"
+          export TF_VAR_subnet_name="${BASE_NAME}-${UID_SUFFIX}-tf-subnet"
+          export TF_VAR_uid_suffix="${UID_SUFFIX}"
+          
           # Get Credentials (needed for helm uninstall)
-          for REGION in us-central1 us-east1 us-west1; do
-            if gcloud container clusters get-credentials "${BASE_NAME}-${UID_SUFFIX}-tf" --region "$REGION" --project "${{ env.PROJECT_ID }}" 2>/dev/null; then
+          for REG in us-central1 us-east1 us-west1; do
+            if gcloud container clusters get-credentials "${BASE_NAME}-${UID_SUFFIX}-tf" --region "$REG" --project "${{ env.PROJECT_ID }}" 2>/dev/null; then
+              export REGION="$REG"
+              export TF_VAR_region="$REG"
               break
             fi
           done
+          
           CHARTS=$(find . -name Chart.yaml -exec dirname {} \; 2>/dev/null)
           for chart in $CHARTS; do
             CHART_NAME=$(basename "$chart")
@@ -255,6 +265,7 @@ jobs:
             if [ "$CHART_NAME" == "workload" ]; then RELEASE_NAME="release"; fi
             helm uninstall "$RELEASE_NAME" --wait || true
           done
+          
           terraform init \
             -backend-config="bucket=$TF_STATE_BUCKET" \
             -backend-config="prefix=${{ matrix.template }}-${{ github.run_id }}/terraform-helm"
