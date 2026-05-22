@@ -73,6 +73,10 @@ Run the validation script:
 ./templates/k8s-rbac-manager/validate.sh
 ```
 
+## Limitations
+
+KCC is temporarily unsupported on this isolation branch.
+
 <!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
 
 ## Validation Record
