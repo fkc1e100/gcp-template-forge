@@ -1,0 +1,7 @@
+shortName: gke-custom-compute-c
+displayName: GKE Custom Compute
+description: GKE Cluster with Node Pools configured with custom machine types and standard workloads.
+gcpServices:
+  - GKE
+  - Compute Engine
+issueNumber: 386
