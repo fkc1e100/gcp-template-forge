@@ -97,6 +97,7 @@ jobs:
     timeout-minutes: 60
     strategy:
       fail-fast: false
+      max-parallel: 2
       matrix:
         template: ${{ fromJson(needs.detect-changes.outputs.tf_templates) }}
     steps:
@@ -126,7 +127,19 @@ jobs:
             -backend-config="bucket=${TF_STATE_BUCKET}" \
             -backend-config="prefix=${TEMPLATE}-${{ github.run_id }}/terraform-helm"
           
-          REGIONS=("us-central1" "us-east1" "us-west1")
+          # Hash the template path to pick a starting region (us-central1, us-east1, us-west1)
+          # This dynamic routing avoids quota/IP exhaustion and stockouts under parallel runs
+          TEMPLATE_HASH=$(echo -n "${{ matrix.template }}" | cksum | cut -f1 -d' ')
+          ALL_REGIONS=("us-central1" "us-east1" "us-west1")
+          START_IDX=$(( TEMPLATE_HASH % 3 ))
+          
+          # Reorder regions starting with the hashed index
+          REGIONS=()
+          for ((i=0; i<3; i++)); do
+            REGIONS+=("${ALL_REGIONS[$(( (START_IDX + i) % 3 ))]}")
+          done
+          echo "Hashed region validation order: ${REGIONS[*]}"
+          
           SUCCESS=false
           for REGION in "${REGIONS[@]}"; do
             echo "Attempting deployment in $REGION..."
@@ -160,6 +173,7 @@ jobs:
     timeout-minutes: 60
     strategy:
       fail-fast: false
+      max-parallel: 2
       matrix:
         template: ${{ fromJson(needs.detect-changes.outputs.tf_templates) }}
     steps:
@@ -180,6 +194,7 @@ jobs:
           for REGION in us-central1 us-east1 us-west1; do
             if gcloud container clusters get-credentials "${BASE_NAME}-${UID_SUFFIX}-tf" --region "$REGION" --project "${{ env.PROJECT_ID }}" 2>/dev/null; then
               echo "REGION=$REGION" >> "$GITHUB_ENV"
+              echo "CLUSTER_NAME=${BASE_NAME}-${UID_SUFFIX}-tf" >> "$GITHUB_ENV"
               break
             fi
           done
@@ -208,6 +223,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      max-parallel: 2
       matrix:
         template: ${{ fromJson(needs.detect-changes.outputs.tf_templates) }}
     steps:
@@ -227,12 +243,21 @@ jobs:
           TEMPLATE="${{ matrix.template }}"
           BASE_NAME=$(basename "$TEMPLATE")
           if [[ "$TEMPLATE" == *"gke-inference-fuse-cache"* ]]; then BASE_NAME="gke-inf-fuse-cache"; fi
+          
+          export TF_VAR_cluster_name="${BASE_NAME}-${UID_SUFFIX}-tf"
+          export TF_VAR_network_name="${BASE_NAME}-${UID_SUFFIX}-tf-vpc"
+          export TF_VAR_subnet_name="${BASE_NAME}-${UID_SUFFIX}-tf-subnet"
+          export TF_VAR_uid_suffix="${UID_SUFFIX}"
+          
           # Get Credentials (needed for helm uninstall)
-          for REGION in us-central1 us-east1 us-west1; do
-            if gcloud container clusters get-credentials "${BASE_NAME}-${UID_SUFFIX}-tf" --region "$REGION" --project "${{ env.PROJECT_ID }}" 2>/dev/null; then
+          for REG in us-central1 us-east1 us-west1; do
+            if gcloud container clusters get-credentials "${BASE_NAME}-${UID_SUFFIX}-tf" --region "$REG" --project "${{ env.PROJECT_ID }}" 2>/dev/null; then
+              export REGION="$REG"
+              export TF_VAR_region="$REG"
               break
             fi
           done
+          
           CHARTS=$(find . -name Chart.yaml -exec dirname {} \; 2>/dev/null)
           for chart in $CHARTS; do
             CHART_NAME=$(basename "$chart")
@@ -240,6 +265,7 @@ jobs:
             if [ "$CHART_NAME" == "workload" ]; then RELEASE_NAME="release"; fi
             helm uninstall "$RELEASE_NAME" --wait || true
           done
+          
           terraform init \
             -backend-config="bucket=$TF_STATE_BUCKET" \
             -backend-config="prefix=${{ matrix.template }}-${{ github.run_id }}/terraform-helm"
@@ -257,13 +283,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          COMMENTS=$(gh pr view "${{ github.event.number }}" --json comments -q '.comments[].body')
+          COMMENTS=$(gh pr view "${{ github.event.number }}" --repo "${{ github.repository }}" --json comments -q '.comments[].body')
           FAIL_COUNT=$(echo "$COMMENTS" | grep -c "Infrastructure failure detected" || echo "0")
           if [ "$FAIL_COUNT" -ge 3 ]; then
-            gh pr comment "${{ github.event.number }}" --body "🚨 **Circuit Breaker Tripped**: This PR has failed infrastructure validation 3+ times. Stopping automated retries."
+            gh pr comment "${{ github.event.number }}" --repo "${{ github.repository }}" --body "🚨 **Circuit Breaker Tripped**: This PR has failed infrastructure validation 3+ times. Stopping automated retries."
           else
-            gh pr comment "${{ github.event.number }}" --body "⚠️ Infrastructure failure detected (Attempt $((FAIL_COUNT + 1))). Re-adding status:ai-agent-active label."
-            gh pr edit "${{ github.event.number }}" --add-label "status:ai-agent-active"
+            gh pr comment "${{ github.event.number }}" --repo "${{ github.repository }}" --body "⚠️ Infrastructure failure detected (Attempt $((FAIL_COUNT + 1))). Re-adding status:ai-agent-active label."
+            gh pr edit "${{ github.event.number }}" --repo "${{ github.repository }}" --add-label "status:ai-agent-active"
           fi
 
   # Cleanup is handled by the openclaw-cleanup K3s CronJob (every 5 min).

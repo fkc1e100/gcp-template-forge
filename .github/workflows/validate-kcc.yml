@@ -90,6 +90,7 @@ jobs:
     timeout-minutes: 100
     strategy:
       fail-fast: false
+      max-parallel: 2
       matrix:
         template: ${{ fromJson(needs.detect-changes.outputs.kcc_templates) }}
     steps:
@@ -113,11 +114,18 @@ jobs:
           BASE_NAME=$(python3 -c "import yaml; print(yaml.safe_load(open('${TEMPLATE}/template.yaml')).get('shortName', ''))" 2>/dev/null)
           [ -z "$BASE_NAME" ] && BASE_NAME=$(basename "$TEMPLATE")
           python3 -c "
-          import os, re
+          import os, re, binascii
           template_dir = '${TEMPLATE}'
           base_name = '${BASE_NAME}'
           uid = '${UID_SUFFIX}'
           suffix = f'-{uid}-kcc'
+          
+          # Hash template name to dynamically select a starting region
+          template_hash = binascii.crc32(template_dir.encode('utf-8'))
+          regions = ['us-central1', 'us-east1', 'us-west1']
+          target_region = regions[template_hash % len(regions)]
+          print(f'Routing template {template_dir} to region: {target_region}')
+          
           def replace_func(match):
               old_word = match.group(0)
               new_word = old_word.replace(base_name, base_name + suffix)
@@ -130,7 +138,10 @@ jobs:
                       path = os.path.join(root, f)
                       with open(path, 'r') as file:
                           content = file.read()
+                      # Unique names
                       new_content = re.sub(r'[a-zA-Z0-9\-_]*' + re.escape(base_name) + r'[a-zA-Z0-9\-_]*', replace_func, content)
+                      # Dynamic region translation
+                      new_content = new_content.replace('us-central1', target_region)
                       with open(path, 'w') as file:
                           file.write(new_content)
           "
@@ -149,6 +160,7 @@ jobs:
     timeout-minutes: 60
     strategy:
       fail-fast: false
+      max-parallel: 2
       matrix:
         template: ${{ fromJson(needs.detect-changes.outputs.kcc_templates) }}
     steps:
@@ -216,6 +228,7 @@ jobs:
     timeout-minutes: 30
     strategy:
       fail-fast: false
+      max-parallel: 2
       matrix:
         template: ${{ fromJson(needs.detect-changes.outputs.kcc_templates) }}
     steps:
@@ -239,11 +252,18 @@ jobs:
           BASE_NAME=$(python3 -c "import yaml; print(yaml.safe_load(open('${TEMPLATE}/template.yaml')).get('shortName', ''))" 2>/dev/null)
           [ -z "$BASE_NAME" ] && BASE_NAME=$(basename "$TEMPLATE")
           python3 -c "
-          import os, re
+          import os, re, binascii
           template_dir = '${TEMPLATE}'
           base_name = '${BASE_NAME}'
           uid = '${UID_SUFFIX}'
           suffix = f'-{uid}-kcc'
+          
+          # Hash template name to dynamically select a starting region (must match provision step exactly)
+          template_hash = binascii.crc32(template_dir.encode('utf-8'))
+          regions = ['us-central1', 'us-east1', 'us-west1']
+          target_region = regions[template_hash % len(regions)]
+          print(f'Routing template {template_dir} teardown to region: {target_region}')
+          
           def replace_func(match):
               old_word = match.group(0)
               new_word = old_word.replace(base_name, base_name + suffix)
@@ -256,7 +276,10 @@ jobs:
                       path = os.path.join(root, f)
                       with open(path, 'r') as file:
                           content = file.read()
+                      # Unique names
                       new_content = re.sub(r'[a-zA-Z0-9\-_]*' + re.escape(base_name) + r'[a-zA-Z0-9\-_]*', replace_func, content)
+                      # Dynamic region translation
+                      new_content = new_content.replace('us-central1', target_region)
                       with open(path, 'w') as file:
                           file.write(new_content)
           "
@@ -274,13 +297,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          COMMENTS=$(gh pr view "${{ github.event.number }}" --json comments -q '.comments[].body')
+          COMMENTS=$(gh pr view "${{ github.event.number }}" --repo "${{ github.repository }}" --json comments -q '.comments[].body')
           FAIL_COUNT=$(echo "$COMMENTS" | grep -c "Infrastructure failure detected" || echo "0")
           if [ "$FAIL_COUNT" -ge 3 ]; then
-            gh pr comment "${{ github.event.number }}" --body "🚨 **Circuit Breaker Tripped**: This PR has failed infrastructure validation 3+ times. Stopping automated retries."
+            gh pr comment "${{ github.event.number }}" --repo "${{ github.repository }}" --body "🚨 **Circuit Breaker Tripped**: This PR has failed infrastructure validation 3+ times. Stopping automated retries."
           else
-            gh pr comment "${{ github.event.number }}" --body "⚠️ Infrastructure failure detected (Attempt $((FAIL_COUNT + 1))). Re-adding status:ai-agent-active label."
-            gh pr edit "${{ github.event.number }}" --add-label "status:ai-agent-active"
+            gh pr comment "${{ github.event.number }}" --repo "${{ github.repository }}" --body "⚠️ Infrastructure failure detected (Attempt $((FAIL_COUNT + 1))). Re-adding status:ai-agent-active label."
+            gh pr edit "${{ github.event.number }}" --repo "${{ github.repository }}" --add-label "status:ai-agent-active"
           fi
 
   # Cleanup is handled by the openclaw-cleanup K3s CronJob (every 5 min).

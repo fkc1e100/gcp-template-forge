@@ -1,0 +1,23 @@
+apiVersion: container.cnrm.cloud.google.com/v1beta1
+kind: ContainerCluster
+metadata:
+  name: gke-k8s-rbac-manager
+  namespace: forge-management
+  labels:
+    project: gcp-template-forge
+    template: gke-k8s-rbac-manager
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
+    cnrm.cloud.google.com/remove-default-node-pool: "true"
+spec:
+  location: us-central1
+  initialNodeCount: 1
+  networkRef:
+    name: gke-k8s-rbac-manager-vpc
+  subnetworkRef:
+    name: gke-k8s-rbac-manager-subnet
+  ipAllocationPolicy:
+    clusterSecondaryRangeName: pod-range
+    servicesSecondaryRangeName: services-range
+  releaseChannel:
+    channel: REGULAR
