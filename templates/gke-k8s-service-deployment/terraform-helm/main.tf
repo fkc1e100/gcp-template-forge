@@ -76,6 +76,11 @@ resource "google_container_node_pool" "primary_nodes" {
   name       = "main-pool"
   location   = var.region
   cluster    = google_container_cluster.primary.name
+  node_locations = [
+    data.google_compute_zones.available.names[0],
+    data.google_compute_zones.available.names[1],
+    data.google_compute_zones.available.names[2]
+  ]
   node_count = 1
 
   node_config {
@@ -110,4 +115,8 @@ resource "google_compute_router_nat" "nat" {
   region                             = var.region
   nat_ip_allocate_option             = "AUTO_ONLY"
   source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
+}
+
+data "google_compute_zones" "available" {
+  region = var.region
 }
