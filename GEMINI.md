@@ -59,22 +59,22 @@ The project infrastructure is hosted on Google Cloud Platform (Project: `gca-gke
     *   **Config Connector (KCC):** Installed in `cnrm-system`. It allows managing GCP resources (IAM, Service Accounts, etc.) using Kubernetes manifests.
     *   **Namespace `forge-management`:** Configured with a `ConfigConnectorContext` pointing to the `forge-kcc-admin@gca-gke-2025.iam.gserviceaccount.com` service account to manage project-specific infrastructure.
 
-### 2. Workload Cluster (Repo-Agent Standard)
+### 2. Workload Cluster (Forge Standard)
 
 ### Network Access (Gateway)
-*   **Gateway IP:** `34.30.138.59` (Gateway resource `repo-agent-gateway` in `repo-agent-system`)
-*   **Repo-Agent Dashboard / UI:** Accessible directly via the Gateway IP at `http://34.30.138.59/`
-*   **Repo-Agent API / Sandbox:** Accessible via the Gateway IP at `http://34.30.138.59/api` and `http://34.30.138.59/sandbox`
+*   **Gateway IP:** `34.30.138.59` (Gateway resource `repo-agent-gateway` in `repo-agent-system` [legacy name])
+*   **Forge Dashboard / UI:** Accessible directly via the Gateway IP at `http://34.30.138.59/`
+*   **Forge API / Sandbox:** Accessible via the Gateway IP at `http://34.30.138.59/api` and `http://34.30.138.59/sandbox`
 
 #### Troubleshooting Access Issues
 If the dashboard is inaccessible from specific devices or networks:
-*   **GCP Firewall Rules:** Access is allowed from `0.0.0.0/0` via rule `k8s-fw-a11aadadca2e941b68de468681bbf467`. However, it targets specific node tags (`gke-repo-agent-standard-0b155b4f-node`). Ensure no local/corporate firewalls block the public IP.
+*   **GCP Firewall Rules:** Access is allowed from `0.0.0.0/0` via rule `k8s-fw-a11aadadca2e941b68de468681bbf467`. However, it targets GKE node tags (`gke-repo-agent-standard-0b155b4f-node` [legacy tag]). Ensure no local/corporate firewalls block the public IP.
 *   **Load Balancer Health Checks:** The L7 Load Balancer uses Google health check ranges (`130.211.0.0/22`, `35.191.0.0/16`). If backends are slow to start, the LB may temporarily drop traffic.
 *   **MTU/VPN Mismatches:** If using a VPN, ensure the MTU is compatible with GCP's standard settings to avoid packet fragmentation issues.
-*   **Context:** `gke_gca-gke-2025_us-central1_repo-agent-standard`
-*   **Role:** Runs the application workloads and the agent platform.
+*   **Context:** `gke_gca-gke-2025_us-central1_repo-agent-standard` [legacy context name]
+*   **Role:** Runs the application workloads and the Forge platform.
 *   **Key Components:**
-    *   **Namespace `repo-agent-system`:** Core platform services.
+    *   **Namespace `repo-agent-system` [legacy name]:** Core platform services.
         *   `repowatch-controller`: Monitors repositories for changes, issues, and PRs.
         *   `syncer`: Handles repository synchronization.
         *   `github-mcp-server`: Model Context Protocol server for GitHub integration.
@@ -87,9 +87,9 @@ If the dashboard is inaccessible from specific devices or networks:
 
 ### 3. Dashboard Cluster (kcc-dash-dont-delete)
 *   **Context:** `gke_gca-gke-2025_us-central1_kcc-dash-dont-delete`
-*   **Role:** Runs specific components of the Repo-Agent platform, including Redis and the GitHub MCP server.
+*   **Role:** Runs specific components of the Forge platform, including Redis and the GitHub MCP server.
 *   **Key Components:**
-    *   **Namespace `repo-agent-system`:**
+    *   **Namespace `repo-agent-system` [legacy name]:**
         *   `redis-0`: In-memory data store.
         *   `github-mcp-server`: Model Context Protocol server.
         *   `pr-review-api`: API for PR reviews.
@@ -154,7 +154,7 @@ spec:
     maxActiveSandboxes: 6
     handlers:
     - name: fix
-      labels: [repo-agent]
+      labels: [repo-agent] # [legacy label]
       excludeLabels: [hold]
       taskType: fix-issue
       prompt: |
@@ -173,7 +173,9 @@ spec:
 - `assignedToSelf: true` → only issues assigned to the robot GitHub account are handled. **If no issues appear in the dashboard, check this field first — it was the root cause of the dashboard showing nothing.**
 - `issues: []` → watch ALL issues; `issues: [15, 16]` → only those numbers
 - `excludeLabels: [hold]` → issues with the `hold` label are skipped even if all other criteria match
-- `robotAccount: codebot-sfle` → the GitHub bot that commits/comments; must exist as a Kubernetes secret in `repo-agent-system/codebot-sfle` for the controller to copy it to user namespaces
+- `robotAccount: codebot-sfle` → the GitHub bot that commits/comments; must exist as a Kubernetes secret in `repo-agent-system` [legacy namespace]/`codebot-sfle` for the controller to copy it to user namespaces
+
+---
 
 **Force immediate reconciliation** (without waiting for next poll):
 ```bash
@@ -187,15 +189,15 @@ kubectl annotate repowatch -n fkc1e100 gcp-template-forge \
 
 | Secret Name | Namespace(s) | Contents | Purpose |
 |---|---|---|---|
-| `codebot-sfle` | `repo-agent-system`, `fkc1e100`, `overseer-gcp-template-forge` | `email`, `name`, `pat`, `userid` | GitHub bot identity and PAT for git operations |
+| `codebot-sfle` | `repo-agent-system` [legacy namespace], `fkc1e100`, `overseer-gcp-template-forge` | `email`, `name`, `pat`, `userid` | GitHub bot identity and PAT for git operations |
 | `github-pat` | `fkc1e100` | GitHub PAT | RepoWatch polls GitHub API with this |
 | `gemini-vscode-tokens` | `fkc1e100` | Gemini API keys | LLM calls from sandbox agents |
-| `gemini-api-key` | `repo-agent-system` | Gemini API key | System-level LLM key |
-| `github-token` | `repo-agent-system` | GitHub token | pr-review-api OAuth |
-| `repo-agent-tls` | `repo-agent-system` | TLS cert | Envoy Gateway TLS |
+| `gemini-api-key` | `repo-agent-system` [legacy namespace] | Gemini API key | System-level LLM key |
+| `github-token` | `repo-agent-system` [legacy namespace] | GitHub token | pr-review-api OAuth |
+| `repo-agent-tls` [legacy secret name] | `repo-agent-system` [legacy namespace] | TLS cert | Envoy Gateway TLS |
 | `huggingface-token` | GCP Secret Manager (`gca-gke-2025`) | HuggingFace token | Model weight access; **never in git** |
 
-**Secret copy mechanism:** `repowatch-controller` reads `{robotAccount}` from `repo-agent-system` as the **source** and copies it into the user namespace (e.g., `fkc1e100/codebot-sfle`). The source secret **must exist in `repo-agent-system`** — if it only exists in `fkc1e100`, the copy will fail with "Failed to find robot secret codebot-sfle in repo-agent-system".
+**Secret copy mechanism:** `repowatch-controller` reads `{robotAccount}` from `repo-agent-system` [legacy namespace] as the **source** and copies it into the user namespace (e.g., `fkc1e100/codebot-sfle`). The source secret **must exist in `repo-agent-system`** [legacy namespace] — if it only exists in `fkc1e100`, the copy will fail with "Failed to find robot secret codebot-sfle in repo-agent-system".
 
 **Race condition pattern:** The controller uses `Create` (not `CreateOrUpdate`) for the copy. If two reconcile goroutines run simultaneously (triggered by rapid annotation updates), the second will fail with "already exists". This is harmless — on the next clean single-goroutine reconciliation, the secret is already there and everything proceeds normally.
 
@@ -326,7 +328,7 @@ Tools pre-installed at image build time (not at runtime):
 ### Issue & PR Flow Summary
 
 ```
-GitHub Issue (label: repo-agent, no hold) 
+GitHub Issue (label: repo-agent [legacy label], no hold) 
   → repowatch-controller (polling fkc1e100 repo, 60s interval)
     → creates Sandbox in user namespace (fkc1e100)
     → creates SandboxTask (type: fix-issue, label: review.gemini.google.com/repowatch)
