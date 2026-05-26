@@ -16,15 +16,12 @@ Before working on any issue, read these files in order:
 
 ### OpenClaw Orchestration
 
-This project is driven by **OpenClaw** — a Gemini-powered autonomous agent running as a K8s
-Deployment in `openclaw-system` on the local K3s cluster. It is NOT the repowatch/repo-agent
-operator system.
+This project is driven by **OpenClaw** — a Gemini-powered autonomous agent running as a K8s Deployment in the `agentdev-system` namespace on the Standard GKE cluster.
 
 **How it works:**
-1. A GitHub Issue is labeled `repo-agent`
-2. `agent/watcher.sh` (running in `openclaw-watcher` pod) detects it and calls `bootstrap-epic.sh`
-3. `bootstrap-epic.sh` decomposes the EPIC into `[TF]` and `[KCC]` sub-issues, then runs
-   Tier-1 (local Gemma 4 via Ollama) and falls back to Tier-2 (Cloud Gemini `--yolo`)
+1. A GitHub Issue is labeled `agent-dev`
+2. `watcher.go` (running in the `agentdev-watcher` pod) detects it, marks it with `status:ai-agent-active`, and calls `bootstrap-epic.py`
+3. `bootstrap-epic.py` decomposes the EPIC into `[TF]` and `[KCC]` sub-issues, then runs local **Gemma 4 31b** (Tier 1) or escalates to **Gemini 3.1 Pro** (Tier 2)
 
 **To redeploy OpenClaw after script changes:**
 ```bash
@@ -36,13 +33,13 @@ operator system.
 **To trigger processing of a stalled epic:**
 ```bash
 # Re-add the trigger label — the watcher will pick it up within 60s
-gh issue edit <EPIC_NUM> --repo fkc1e100/gcp-template-forge --add-label repo-agent
+gh issue edit <EPIC_NUM> --repo fkc1e100/gcp-template-forge --add-label agent-dev
 ```
 
 **To watch agent logs:**
 ```bash
-kubectl logs -n openclaw-system deploy/openclaw-watcher -f
-kubectl logs -n openclaw-system deploy/openclaw-agent -f
+kubectl logs -n agentdev-system deploy/agentdev-watcher -f
+kubectl logs -n agentdev-system deploy/agentdev-agent -f
 ```
 
 ---

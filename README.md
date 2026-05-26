@@ -51,7 +51,7 @@ flowchart LR
 
 | Component | Role |
 |---|---|
-| **The Watcher** | A continuous polling service that monitors the repository for issues tagged with `status:ai-agent-active`. It provisions the workspace, creates a git branch, and delegates the task to the Agent Factory. |
+| **The Watcher** | A continuous polling service (`watcher.go`) that monitors the repository for issues tagged with `agent-dev`. It sets `status:ai-agent-active` during processing, provisions the workspace, creates a git branch, and delegates the task to the Agent Factory via `bootstrap-epic.py`. |
 | **Agent Factory** | An isolated environment that executes the LLM reasoning loop. The Factory reads repository standards, authors dual-path IaC files, and executes physical deployments against the sandbox project to ensure the architecture is functional. |
 | **CI Healer** | An active polling loop that monitors the GitHub Actions CI pipeline for a given PR. If checks fail (e.g. linting or validation), the Healer automatically fetches logs, applies fixes to the code, and pushes a new commit to restore pipeline health. |
 | **The Housekeeper** | A cron job that purges orphaned GCP infrastructure, breaks stale Terraform state locks, and cleans up the sandbox to maintain budget and quota efficiency. |
