@@ -12,6 +12,9 @@ metadata:
 spec:
   location: us-central1
   initialNodeCount: 1
+  resourceLabels:
+    project: gcp-template-forge
+    template: gke-k8s-rbac-manager
   networkRef:
     name: gke-k8s-rbac-manager-vpc
   subnetworkRef:
