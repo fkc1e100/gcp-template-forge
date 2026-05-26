@@ -20,4 +20,6 @@ spec:
       - https://www.googleapis.com/auth/cloud-platform
     labels:
       project: gcp-template-forge
+    resourceLabels:
+      project: gcp-template-forge
       template: gke-k8s-rbac-manager

@@ -35,6 +35,15 @@ echo "Test 2: Node Readiness..."
 kubectl wait nodes --all --for=condition=Ready --timeout=10m
 echo "All nodes are Ready."
 
+# 2.5 Apply KCC Workloads
+if [[ "$CLUSTER_NAME" == *"-kcc" ]]; then
+  echo "Applying KCC Workloads..."
+  DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  kubectl apply -f "$DIR/config-connector-workload/cluster.yaml"
+  kubectl wait --for=condition=Established crd/clusters.example.com --timeout=5m
+  kubectl apply -f "$DIR/config-connector-workload/rbac-manager-config.yaml"
+fi
+
 # 3. Workload Readiness
 echo "Test 3: Workload Readiness (CRD and Custom Resource)..."
 kubectl wait --for=condition=Established crd/clusters.example.com --timeout=5m

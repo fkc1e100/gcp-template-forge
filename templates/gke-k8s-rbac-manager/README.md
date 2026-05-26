@@ -41,7 +41,7 @@ This template supports two deployment paths that provision equivalent infrastruc
 **Prerequisites:** `terraform` ≥ 1.5, `helm` ≥ 3.10, `kubectl`, `gcloud` with ADC configured.
 
 ```bash
-cd templates/k8s-rbac-manager/terraform-helm
+cd templates/gke-k8s-rbac-manager/terraform-helm
 
 # Initialize
 terraform init
@@ -57,7 +57,7 @@ terraform apply -var="project_id=YOUR_PROJECT_ID"
 **Prerequisites:** A running GKE cluster with Config Connector installed.
 
 ```bash
-cd templates/k8s-rbac-manager/config-connector
+cd templates/gke-k8s-rbac-manager/config-connector
 
 # Apply the manifests
 kubectl apply -f .
@@ -70,12 +70,8 @@ kubectl apply -f .
 Run the validation script:
 
 ```bash
-./templates/k8s-rbac-manager/validate.sh
+./templates/gke-k8s-rbac-manager/validate.sh
 ```
-
-## Limitations
-
-KCC is temporarily unsupported on this isolation branch.
 
 <!-- CI: validation record appended here by ci-post-merge.yml — do not edit below this line manually -->
 
