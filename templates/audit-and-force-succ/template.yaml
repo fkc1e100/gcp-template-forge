@@ -1,5 +1,0 @@
-shortName: audit-and-force-succ
-displayName: Audit and Force Success
-description: Secure GKE Standard cluster with an audited Nginx workload deployed via Helm.
-gcpServices: [GKE]
-issueNumber: 430
