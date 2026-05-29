@@ -1,0 +1,24 @@
+apiVersion: container.cnrm.cloud.google.com/v1beta1
+kind: ContainerCluster
+metadata:
+  name: audit-and-force-succ-cls
+  annotations:
+    cnrm.cloud.google.com/project-id: gca-gke-2025
+spec:
+  location: us-central1
+  networkRef:
+    name: audit-and-force-succ-net
+  subnetworkRef:
+    name: audit-and-force-succ-sub
+  ipAllocationPolicy:
+    clusterSecondaryRangeName: pods
+    servicesSecondaryRangeName: services
+  releaseChannel:
+    channel: REGULAR
+  workloadIdentityConfig:
+    workloadPool: gca-gke-2025.svc.id.goog
+  addonsConfig:
+    httpLoadBalancing:
+      disabled: false
+  initialNodeCount: 1
+  removeDefaultNodePool: true

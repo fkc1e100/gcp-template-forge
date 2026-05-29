@@ -1,0 +1,7 @@
+shortName: audit-and-force-succ
+displayName: Audit and Force Success
+description: GKE Cluster configured with Config Connector demonstrating automated success and logging.
+gcpServices:
+  - Container
+  - Compute
+issueNumber: 430
