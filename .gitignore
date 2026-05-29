@@ -7,3 +7,7 @@ actionlint
 *.so
 *.dylib
 values.generated.yaml
+# Ignore all agent runtime scratch files
+prompt*.txt
+bug_research_*.md
+.gemini/
