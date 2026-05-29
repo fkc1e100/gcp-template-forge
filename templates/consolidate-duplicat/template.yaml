@@ -1,0 +1,6 @@
+shortName: consolidate-duplicat
+displayName: Consolidate Duplicate Workloads
+description: Standard GKE cluster setup with a robust Helm deployment demonstrating workload consolidation.
+gcpServices:
+  - GKE
+issueNumber: 425
