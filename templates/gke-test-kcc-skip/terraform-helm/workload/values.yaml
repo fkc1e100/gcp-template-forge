@@ -1,0 +1,12 @@
+replicaCount: 1
+
+image:
+  repository: nginx
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+fullnameOverride: "sample-workload"
+
+service:
+  type: ClusterIP
+  port: 80

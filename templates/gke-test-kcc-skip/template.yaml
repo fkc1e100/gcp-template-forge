@@ -1,0 +1,6 @@
+name: "gke-test-kcc-skip"
+shortName: "gke-test-skip"
+description: "GKE Cluster deployment with Terraform and Helm workloads (KCC skipped)"
+variants:
+  - name: "terraform-helm"
+    description: "Terraform + Helm"
