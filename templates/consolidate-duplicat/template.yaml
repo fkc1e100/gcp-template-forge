@@ -1,0 +1,5 @@
+shortName: consolidate-duplicat
+displayName: Consolidate Duplicate Workloads
+description: Config Connector configuration for high density, consolidated GKE workloads with isolated networking.
+gcpServices: [GKE, Compute]
+issueNumber: 425

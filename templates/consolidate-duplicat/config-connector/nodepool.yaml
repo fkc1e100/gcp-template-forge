@@ -1,0 +1,18 @@
+apiVersion: container.cnrm.cloud.google.com/v1beta1
+kind: ContainerNodePool
+metadata:
+  name: consolidate-duplicat-node-pool
+spec:
+  clusterRef:
+    name: consolidate-duplicat-cluster
+  location: us-central1
+  nodeLocations:
+    - us-central1-a
+    - us-central1-b
+    - us-central1-c
+  nodeConfig:
+    machineType: e2-medium
+    diskSizeGb: 50
+    oauthScopes:
+      - "https://www.googleapis.com/auth/cloud-platform"
+  initialNodeCount: 1
