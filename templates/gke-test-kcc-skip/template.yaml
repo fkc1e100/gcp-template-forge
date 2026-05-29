@@ -1,0 +1,6 @@
+shortName: gke-test-kcc-skip
+name: GKE Test KCC Skip
+description: A template designed to test the Config Connector (KCC) unsupported/skip path.
+version: 1.0.0
+category: GKE
+provider: ConfigConnector
