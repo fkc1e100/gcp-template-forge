@@ -1,3 +1,0 @@
-name: gke-spot-autoscale
-shortName: gke-spot
-description: GKE Cluster with Spot Instances and Cluster Autoscaler

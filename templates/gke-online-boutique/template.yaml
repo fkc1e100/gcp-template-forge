@@ -1,3 +1,0 @@
-name: gke-online-boutique
-shortName: "gke-online-boutique"
-description: Google Cloud Online Boutique reference architecture using Config Connector and Terraform.
