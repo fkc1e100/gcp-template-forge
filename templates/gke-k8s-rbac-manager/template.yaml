@@ -1,0 +1,6 @@
+name: gke-k8s-rbac-manager
+shortName: gke-rbac
+description: "GKE cluster with Kubernetes RBAC management setup"
+variants:
+  - name: config-connector
+    path: config-connector
