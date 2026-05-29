@@ -15,77 +15,92 @@
 
 set -euo pipefail
 
-echo "=== Validation: Online Boutique Microservices Demo ==="
+PROJECT_ID=${PROJECT_ID:-"gca-gke-2025"}
+CLUSTER_NAME=${CLUSTER_NAME:-"gke-online-boutique-tf"}
+REGION=${REGION:-"us-central1"}
 
-PROJECT_ID="${PROJECT_ID:-gca-gke-2025}"
-CLUSTER_NAME="${CLUSTER_NAME:-online-boutique-gke-tf}"
-REGION="${REGION:-us-central1}"
-NAMESPACE="${NAMESPACE:-default}"
-
-# Isolate kubeconfig — never pollute the runner's default context
-export KUBECONFIG
-KUBECONFIG=$(mktemp)
+# Isolate KUBECONFIG
+export KUBECONFIG=$(mktemp)
 trap 'rm -f "$KUBECONFIG"' EXIT
 
-# ── 1. Cluster Connectivity ───────────────────────────────────────────────────
-echo "--- Test 1: Cluster Connectivity ---"
-gcloud container clusters get-credentials "${CLUSTER_NAME}" --region "${REGION}" --project "${PROJECT_ID}"
+echo "1. Cluster Connectivity..."
+gcloud container clusters get-credentials ${CLUSTER_NAME} --region ${REGION} --project ${PROJECT_ID}
 kubectl cluster-info
-kubectl get nodes -o wide
-echo "PASS: Cluster is reachable."
+echo "Connectivity passed."
 
-# ── 2. Node Readiness ─────────────────────────────────────────────────────────
-echo "--- Test 2: Node Readiness ---"
+echo "2. Node Readiness..."
 kubectl wait nodes --all --for=condition=Ready --timeout=10m
-echo "PASS: All nodes are Ready."
+echo "All nodes are Ready."
 
-# ── 3. Workload Deployment Readiness ─────────────────────────────────────────
-echo "--- Test 3: Workload Deployment Readiness ---"
-kubectl wait deployment -l "app=frontend" -n "${NAMESPACE}" --for=condition=available --timeout=30m
-kubectl get pods -n "${NAMESPACE}" -l "app=frontend" -o wide
-echo "PASS: Workload Deployment is Available."
-
-# ── 4. Pod Log Sanity Check ───────────────────────────────────────────────────
-echo "--- Test 4: Pod Log Sanity ---"
-POD=$(kubectl get pod -n "${NAMESPACE}" -l "app=frontend" --field-selector=status.phase=Running -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
-if [ -z "$POD" ]; then
-  echo "ERROR: No Running pod found matching label app=frontend in namespace ${NAMESPACE}"
-  kubectl get events -n "${NAMESPACE}" --sort-by='.lastTimestamp' | tail -20
-  exit 1
+# 2.5 Apply KCC Workloads (if KCC path)
+if [[ "$CLUSTER_NAME" == *"-kcc" ]]; then
+  echo "Applying KCC Workloads..."
+  DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  kubectl apply -f "$DIR/config-connector-workload/online-boutique.yaml"
 fi
-echo "Checking logs for pod $POD (last 20 lines)..."
-kubectl logs "$POD" -n "${NAMESPACE}" --tail=20
-echo "PASS: Pod is running and producing logs."
 
-# ── 5. Workload Functional Verification ──────────────────────────────────────
-echo "--- Test 5: Workload Functional Verification ---"
+echo "3. Workload Readiness..."
+deployments=(
+  "adservice"
+  "cartservice"
+  "checkoutservice"
+  "currencyservice"
+  "emailservice"
+  "frontend"
+  "paymentservice"
+  "productcatalogservice"
+  "recommendationservice"
+  "shippingservice"
+  "redis-cart"
+)
 
-SERVICE_IP=""
-for i in $(seq 1 30); do
-  SERVICE_IP=$(kubectl get svc -n "${NAMESPACE}" frontend-external 
-    -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)
-  [ -n "$SERVICE_IP" ] && break
-  echo "Waiting for LoadBalancer IP (attempt $i/30)..."
-  sleep 10
+echo "Waiting for all microservice deployments to become available..."
+for dep in "${deployments[@]}"; do
+  echo "Waiting for deployment: $dep..."
+  kubectl wait --namespace default --for=condition=available "deployment/$dep" --timeout=600s
 done
+echo "All deployments are ready!"
 
-if [ -z "$SERVICE_IP" ]; then
-  echo "ERROR: LoadBalancer IP for frontend-external not assigned after 5 minutes"
-  kubectl get svc -n "${NAMESPACE}"
-  exit 1
+# 4. Functional Verification
+echo "4. Retrieving Frontend service external IP..."
+SVC_NAME="frontend"
+if [[ "$CLUSTER_NAME" == *"-kcc" ]]; then
+  SVC_NAME="frontend-external"
 fi
 
-echo "LoadBalancer IP: ${SERVICE_IP}"
-
-for i in $(seq 1 15); do
-  HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 5 --max-time 15 "http://${SERVICE_IP}:80/" || echo "000")
-  if [[ "$HTTP_STATUS" =~ ^(200|201|204|301|302)$ ]]; then
-    echo "PASS: Endpoint http://${SERVICE_IP}:80/ returned HTTP $HTTP_STATUS"
+EXTERNAL_IP=""
+MAX_ATTEMPTS=40
+for ((i=1; i<=MAX_ATTEMPTS; i++)); do
+  EXTERNAL_IP=$(kubectl get svc "$SVC_NAME" -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)
+  if [[ -n "$EXTERNAL_IP" ]]; then
+    echo "Found external IP: $EXTERNAL_IP"
     break
   fi
-  echo "HTTP $HTTP_STATUS — retrying (attempt $i/15)..."
+  echo "Waiting for external IP (attempt $i/$MAX_ATTEMPTS)..."
   sleep 10
-  [ $i -eq 15 ] && { echo "ERROR: Endpoint failed after 15 attempts"; exit 1; }
 done
 
-echo "=== All Validation Tests PASSED for Online Boutique Microservices Demo ==="
+if [[ -z "$EXTERNAL_IP" ]]; then
+  echo "Error: Frontend external IP could not be resolved."
+  exit 1
+fi
+
+echo "Performing functional verification curl test..."
+CURL_SUCCESS=false
+for ((i=1; i<=15; i++)); do
+  echo "Curling external IP (attempt $i/15)..."
+  RESPONSE=$(curl -sf "http://$EXTERNAL_IP" || true)
+  if [[ "$RESPONSE" == *"Online Boutique"* ]]; then
+    echo "Success: Online Boutique frontend is serving correctly!"
+    CURL_SUCCESS=true
+    break
+  fi
+  sleep 5
+done
+
+if [ "$CURL_SUCCESS" = false ]; then
+  echo "Error: Did not receive expected response from Online Boutique frontend."
+  exit 1
+fi
+
+echo "All Validation Tests passed successfully for GKE Online Boutique!"

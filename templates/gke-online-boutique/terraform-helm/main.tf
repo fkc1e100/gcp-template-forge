@@ -1,34 +1,46 @@
+provider "google" {
+  project = var.project_id
+  region  = var.region
+}
+
 resource "google_compute_network" "vpc" {
   name                    = var.network_name
   auto_create_subnetworks = false
-  project                 = var.project_id
 }
 
 resource "google_compute_subnetwork" "subnet" {
   name          = var.subnet_name
-  ip_cidr_range = "10.0.0.0/16"
+  ip_cidr_range = "10.10.0.0/16"
   region        = var.region
   network       = google_compute_network.vpc.id
-  project       = var.project_id
+
+  secondary_ip_range {
+    range_name    = "pods"
+    ip_cidr_range = "10.100.0.0/16"
+  }
+
+  secondary_ip_range {
+    range_name    = "services"
+    ip_cidr_range = "10.200.0.0/16"
+  }
 }
 
 resource "google_container_cluster" "primary" {
   name     = var.cluster_name
-  location = var.region
-  project  = var.project_id
+  location = var.zone
 
-  network    = google_compute_network.vpc.name
-  subnetwork = google_compute_subnetwork.subnet.name
-
-  # Standard cluster
   remove_default_node_pool = true
   initial_node_count       = 1
 
-  deletion_protection = false
+  network    = google_compute_network.vpc.id
+  subnetwork = google_compute_subnetwork.subnet.id
 
-  workload_identity_config {
-    workload_pool = "${var.project_id}.svc.id.goog"
+  ip_allocation_policy {
+    cluster_secondary_range_name  = "pods"
+    services_secondary_range_name = "services"
   }
+
+  deletion_protection = false
 
   timeouts {
     create = "30m"
@@ -38,23 +50,24 @@ resource "google_container_cluster" "primary" {
 }
 
 resource "google_container_node_pool" "primary_nodes" {
-  name       = "main-pool"
-  location   = var.region
+  name       = "${var.cluster_name}-node-pool"
+  location   = var.zone
   cluster    = google_container_cluster.primary.name
-  project    = var.project_id
-  node_count = 1
+  node_count = 2
 
-  node_locations = [
-    "${var.region}-a",
-    "${var.region}-b",
-    "${var.region}-c",
-  ]
+  node_locations = [var.zone]
 
   node_config {
-    machine_type = "e2-standard-4"
+    machine_type    = "e2-standard-4"
+    service_account = var.service_account
+    oauth_scopes = [
+      "https://www.googleapis.com/auth/cloud-platform"
+    ]
+  }
 
-    workload_metadata_config {
-      mode = "GKE_METADATA"
-    }
+  timeouts {
+    create = "30m"
+    update = "30m"
+    delete = "30m"
   }
 }

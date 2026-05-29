@@ -1,7 +1,0 @@
-shortName: tf-template-online-b
-displayName: Online Boutique GKE
-description: Deploy the microservice-based Google Cloud Online Boutique on GKE with Terraform and Helm.
-gcpServices:
-  - GKE
-  - VPC
-issueNumber: 420

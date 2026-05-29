@@ -1,6 +1,0 @@
-apiVersion: v2
-name: online-boutique
-description: A Helm chart for Google Cloud Online Boutique microservices
-type: application
-version: 0.1.0
-appVersion: "0.10.0"
