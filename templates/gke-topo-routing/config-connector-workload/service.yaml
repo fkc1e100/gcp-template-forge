@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: topo-svc
+  annotations:
+    # Supported in older versions and 1.24+ standard:
+    service.kubernetes.io/topology-aware-hints: "auto"
+    # Modern approach introduced in newer K8s versions:
+    service.kubernetes.io/topology-mode: "Auto"
+spec:
+  selector:
+    app: topo-app
+  ports:
+    - port: 80
+      targetPort: 80

@@ -1,0 +1,17 @@
+apiVersion: container.cnrm.cloud.google.com/v1beta1
+kind: ContainerCluster
+metadata:
+  name: topo-cluster
+spec:
+  location: us-central1
+  networkRef:
+    name: topo-network
+  subnetworkRef:
+    name: topo-subnetwork
+  ipAllocationPolicy:
+    clusterSecondaryRangeName: pods
+    servicesSecondaryRangeName: services
+  initialNodeCount: 1
+  removeDefaultNodePool: true
+  # Advanced datapath (Dataplane V2) is recommended for optimized network routing
+  datapathProvider: ADVANCED_DATAPATH

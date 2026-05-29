@@ -1,0 +1,22 @@
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeNetwork
+metadata:
+  name: topo-network
+spec:
+  autoCreateSubnetworks: false
+  routingMode: REGIONAL
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeSubnetwork
+metadata:
+  name: topo-subnetwork
+spec:
+  region: us-central1
+  networkRef:
+    name: topo-network
+  ipCidrRange: 10.128.0.0/20
+  secondaryIpRange:
+    - rangeName: pods
+      ipCidrRange: 10.8.0.0/14
+    - rangeName: services
+      ipCidrRange: 10.12.0.0/20

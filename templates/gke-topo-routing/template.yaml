@@ -1,0 +1,7 @@
+name: "GKE Topology-Aware Routing"
+shortName: "gke-topo-routing"
+description: "Deploys a regional GKE cluster with topology-aware routing capabilities using Config Connector, and deploys a multi-zonal workload utilizing EndpointSlice topology hints."
+technologies:
+  - "GKE"
+  - "Config Connector"
+  - "Kubernetes"
