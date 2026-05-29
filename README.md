@@ -1,13 +1,9 @@
-# GCP Template Forge
+# GCP Template Forge (Template Catalog)
 
-> An autonomous, AI-driven Factory pipeline that designs, deploys, and validates production-ready GKE reference architectures — dual-path (Terraform + Helm and Config Connector) — triggered entirely by GitHub issues.
+This repository serves as the **living, continuously-validated reference architecture template storage** for the **Forge Factory**—an autonomous, AI-driven IaC generation factory. 
 
-## Objectives
-
-1. **Autonomous Design** — Utilize a specialized AI Agent Factory (powered by Gemini models) to ingest GitHub Issues and autonomously author complete, enterprise-grade IaC templates from Google Cloud reference architectures, covering both Terraform/Helm and Config Connector deployment paths.
-2. **Deploy & Validate** — Ensure every generated template physically provisions in a real GCP sandbox (`gca-gke-2025`). The Agent actively monitors the deployment until all workloads reach a 'Running' state before opening a Pull Request. 
-3. **CI/CD Healing** — The Factory continuously monitors the repository's GitHub Actions pipeline. If CI validation fails, the Agent autonomously reads the logs, heals the codebase, and pushes fixes until the PR is green and mergeable.
-4. **Consolidate** — Act as a living, continuously-validated library of GKE patterns drawn from Google Cloud's public reference repositories, so platform teams can adopt them with confidence.
+> [!NOTE]
+> The actual pipeline orchestrator, Go watcher daemons, AI agent sandbox templates, and GKE Borg manifests reside in the separate control plane repository: **[fkc1e100/forge-factory](https://github.com/fkc1e100/forge-factory)**. This repository (`gcp-template-forge`) is strictly dedicated to hosting the production-ready template catalogue and the GitHub Actions validation engines.
 
 ---
 
@@ -94,15 +90,25 @@ Once the PR is opened, the native GitHub Actions pipeline acts as the independen
 
 ---
 
-## Templates
+## Reference Architecture Templates Catalogue
 
-| Template | TF+Helm | KCC | Validated |
-|---|---|---|---|
-| [basic-gke-hello-world](templates/basic-gke-hello-world/) | GKE Standard + hello-world | GKE Standard + hello-world | — |
-| [enterprise-gke](templates/enterprise-gke/) | GKE Standard + security stack + Helm workload | GKE Standard + security stack + KCC workload | — |
-| [latest-gke-features](templates/latest-gke-features/) | GKE Standard + Gateway API + NAP + Native Sidecars | GKE Standard + Native Sidecars + Gateway API | — |
-| [gke-fqdn-egress-security](templates/gke-fqdn-egress-security/) | GKE Standard + FQDN Network Policies + AI Egress | GKE Standard + KCC Networking | — |
-| [gke-topo-routing](templates/gke-topo-routing/) | GKE Standard + Topology-Aware Routing + Gateway API | GKE Standard + Topology-Aware Routing + Gateway API | — |
+The following is the official roster of advanced, production-ready GKE templates autonomously developed and continuously validated by the Forge Factory:
+
+| Template Directory | Description | Target GKE Capabilities Tested |
+|---|---|---|
+| **[gke-basic-hello-world](templates/gke-basic-hello-world/)** | VPC-Native GKE Standard baseline cluster. | Baseline nodes, custom networking, simple workloads. |
+| **[gke-custom-compute-class](templates/gke-custom-compute-class/)** | Advanced compute scheduling segregation with custom Node Classes. | Node Auto-Provisioning (NAP), taints, tolerations, namespace quotas. |
+| **[gke-enterprise-cluster](templates/gke-enterprise-cluster/)** | Hardened, regional multi-zone enterprise GKE Standard cluster. | Workload Identity Federation, custom regional node locations, IAM bindings. |
+| **[gke-fqdn-egress-security](templates/gke-fqdn-egress-security/)** | Secure GKE egress control utilizing fully qualified domain names. | FQDN-based network policies, egress validation, AI serving secure boundaries. |
+| **[gke-inference-fuse-cache](templates/gke-inference-fuse-cache/)** | High-performance GKE AI/ML dataset streaming cluster. | GCS FUSE CSI Driver addon, dataset local caching, read-only mounts. |
+| **[gke-k8s-rbac-manager](templates/gke-k8s-rbac-manager/)** | Declarative in-cluster Kubernetes RBAC management blueprint. | IAM custom role bindings, GKE ServiceAccounts, custom ClusterRoles. |
+| **[gke-k8s-service-deployment](templates/gke-k8s-service-deployment/)** | Highly-available regional workload distribution template. | Topological spread constraints, regional node scheduling, values override. |
+| **[gke-kuberay-kueue](templates/gke-kuberay-kueue/)** | Distributed GKE AI/ML ray processing queue engine. | KubeRay operator management, Kueue queue scheduling, ray jobs routing. |
+| **[gke-latest-features](templates/gke-latest-features/)** | GKE platform showcase leveraging the newest GKE API additions. | Native Sidecar Containers (init containers), GKE Gateway API, custom storage. |
+| **[gke-online-boutique](templates/gke-online-boutique/)** | Google's multi-service Online Boutique microservices suite. | Dual-path Helm/TF routing, raw KRM KCC workloads, load balancer egress. |
+| **[gke-spot-autoscale](templates/gke-spot-autoscale/)** | High-efficiency cost-optimized GKE autoscale blueprint. | Spot instances nodes pools, Horizontal Pod Autoscaler (HPA), capacity buffers. |
+| **[gke-test-kcc-skip](templates/gke-test-kcc-skip/)** | Specialized GKE validation testing benchmark template. | Validation skip properties, trigger controls, telemetry bypass. |
+| **[gke-topo-routing](templates/gke-topo-routing/)** | High-performance advanced networking and routing engine. | Topology-Aware Routing, GKE Gateway API class, service mesh baseline. |
 
 ---
 
